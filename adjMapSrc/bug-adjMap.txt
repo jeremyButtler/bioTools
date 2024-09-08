@@ -1,0 +1,5 @@
+b mainAdjMap.c:1147
+#b mainAdjMap.c:1204 if entryUL == 51047
+#b adjMap.c:261
+
+r -sam $HOME/files/testing/diflu/test-adjMap.sam -ref $HOME/files/testing/diflu/test-adjMap-ref.sam

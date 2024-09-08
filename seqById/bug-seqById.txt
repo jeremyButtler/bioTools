@@ -1,0 +1,8 @@
+b seqById.c:776
+b idSearch.c:323 if entrySL == 34033
+# problem f15df5ee-c6a2-493d-9930-8bf5fb23d2e5
+
+#r -id $HOME/files/testing/seqByIdTests/19999.ids -fq $HOME/files/testing/seqByIdTests/20kReads.fq
+#r -id $HOME/files/testing/seqByIdTests/allOnt.ids -fq $HOME/files/testing/seqByIdTests/AllUP9.fastq > del-bug.fq
+#r -id $HOME/files/testing/seqByIdTests/seqkit-benchmark-data/tmpEven20k.ids.filt -fq $HOME/files/testing/seqByIdTests/seqkit-benchmark-data/dataset_C.fq
+r -id $HOME/files/testing/BC33.sam -sam $HOME/files/testing/BC33.sam > del.sam
