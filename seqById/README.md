@@ -8,7 +8,8 @@ Extracts sequences using read ids from fastq and sam
 
 Each make file (mkfile) is prefixed by the OS type
   (mkfile.OS) it builds for and if it includes vector
-  (SIMD) support (mkfile.OS.SIMD).
+  (SIMD) support (mkfile.OS.SIMD). The SIMD support could
+  be better inlined, but it does work.
 
 - Make files
   - mkfile.unix: general unix, no SIMD support
@@ -17,14 +18,12 @@ Each make file (mkfile) is prefixed by the OS type
     - mkfile.unix.sse: unix with SSE suport
     - mkfile.unix.avx2: unix with AVX2 support
     - mkfile.unix.avx512: unix with AVX512 support
-      - needs to be fixed
   - mkfile.static: static builds for Linux/BSD, no SIMD
     - mkfile.unix neon: unix with NEON support (MAC/ARM)
       - Is slower then default (the irony)
     - mkfile.unix.sse: unix with SSE suport
     - mkfile.unix.avx2: unix with AVX2 support
     - mkfile.unix.avx512: unix with AVX512 support
-      - needs to be fixed
   - mkfile.win: for windows, no SIMD support
     - you could get SIMD support, just have to add it in
 

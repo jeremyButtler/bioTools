@@ -341,23 +341,23 @@ endLine_vectScan(
    ^  - find end of line
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   _store_mask64(
-      (__mmask64 *) maskUL,
-      _mm512_cmpeq_epi8_mask(
-         buffVect,
-         lineVect
-      ) /*check if have newline*/
-   ); /*get mask for comparision*/
+   maskUL =
+      _cvtmask64_u64(
+         _mm512_cmpeq_epi8_mask(
+            buffVect,
+            lineVect
+         ) /*check if have newline*/
+      ); /*get mask for comparision*/
 
    if(! maskUL)
    { /*If: no new line*/
-      _store_mask64(
-         (__mmask64 *) maskUL,
-         _mm512_cmpeq_epi8_mask(
-            buffVect,
-            nullVect
-         ) /*check if have null*/
-      ); /*get mask for comparision*/
+      maskUL =
+         _cvtmask64_u64(
+            _mm512_cmpeq_epi8_mask(
+               buffVect,
+               nullVect
+            ) /*check if have null*/
+         ); /*get mask for comparision*/
    } /*If: no new line*/
 
    while(! maskUL)
@@ -367,23 +367,23 @@ endLine_vectScan(
       buffVect =
          _mm512_loadu_si512((__m512i *) &buffStr[posUL]);
 
-      _store_mask64(
-         (__mmask64 *) maskUL,
-         _mm512_cmpeq_epi8_mask(
-            buffVect,
-            lineVect
-         ) /*check if have newline*/
-      ); /*get mask for comparision*/
+      maskUL =
+         _cvtmask64_u64(
+            _mm512_cmpeq_epi8_mask(
+               buffVect,
+               lineVect
+            ) /*check if have newline*/
+         ); /*get mask for comparision*/
 
       if(! maskUL)
       { /*If: no new line*/
-         _store_mask64(
-            (__mmask64 *) maskUL,
-            _mm512_cmpeq_epi8_mask(
-               buffVect,
-               nullVect
-            ) /*check if have null*/
-         ); /*get mask for comparision*/
+         maskUL =
+            _cvtmask64_u64(
+               _mm512_cmpeq_epi8_mask(
+                  buffVect,
+                  nullVect
+               ) /*check if have null*/
+            ); /*get mask for comparision*/
       } /*If: no new line*/
    } /*Loop: find end of line/buffer*/
 

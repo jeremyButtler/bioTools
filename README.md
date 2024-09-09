@@ -23,8 +23,8 @@ Primary is unlicense (public domain), but if publice
       fastq files
   - filtsam (freezeTB):
     - filter sam files by flag, length, median/mean
-      q-scores, coordinates
-    - also supports read trimming
+      q-scores, and coordinates
+    - also supports read soft mask removal
   - alnwater (alnSeq):
     - waterman alignment with gap extension penalties
     - slower than striped watermans
