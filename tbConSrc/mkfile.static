@@ -1,29 +1,27 @@
-CC=cc
 LD=cc
-CFLAGS= -O0 -static -Wall -Wextra -Werror -ggdb -g
-NAME=edDist
+CC=cc
+CFLAGS= -O3 -static -std=c89 -Wall -Wextra
+NAME=tbCon
 PREFIX=/usr/local/bin
 genLib=../genLib
 genAln=../genAln
-O=.o.bug
+O=.o.static
 
 objFiles=\
    $(genLib)/base10str$O \
    $(genLib)/ulCp$O \
    $(genLib)/charCp$O \
    $(genLib)/numToStr$O \
-   $(genLib)/samEntry$O \
-   $(genLib)/edDist$O \
-   mainEdDist$O
+   $(genLib)/samEntry$O
 
-all: mainEdDist$O
-	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
+all: mainTbCon$O $(objFiles)
+	$(LD) -o $(NAME) $(CFLAGS) mainTbCon$O tbCon$O $(objFiles)
 
-mainEdDist$O: mainEdDist.c $(genLib)/edDist$O
-	$(CC) -o mainEdDist$O -c $(CFLAGS) mainEdDist.c
+mainTbCon$O: mainTbCon.c tbCon$O $(genLib)/charCp$O
+	$(CC) -o mainTbCon$O -c $(CFLAGS) mainTbCon.c
 
-$(genLib)/edDist$O: $(genLib)/edDist.c $(genLib)/edDist.h $(genLib)/samEntry$O $(genLib)/charCp$O $(genLib)/genMath.h
-	$(CC) -o $(genLib)/edDist$O -c $(CFLAGS) $(genLib)/edDist.c
+tbCon$O: tbCon.c tbCon.h tbConDefs.h $(genLib)/samEntry$O $(genLib)/genMath.h
+	$(CC) -o tbCon$O -c $(CFLAGS) tbCon.c
 
 $(genLib)/base10str$O: $(genLib)/base10str.c $(genLib)/base10str.h
 	$(CC) -o $(genLib)/base10str$O -c $(CFLAGS) $(genLib)/base10str.c
@@ -40,5 +38,9 @@ $(genLib)/numToStr$O: $(genLib)/numToStr.c $(genLib)/numToStr.h
 $(genLib)/samEntry$O: $(genLib)/samEntry.c $(genLib)/samEntry.h $(genLib)/ulCp$O $(genLib)/base10str$O $(genLib)/numToStr$O $(genLib)/ntTo5Bit.h $(genLib)/dataTypeShortHand.h
 	$(CC) -o $(genLib)/samEntry$O -c $(CFLAGS) $(genLib)/samEntry.c
 
+install:
+	mv $(NAME) $(PREFIX)
+	chmod a+x $(PREFIX)/$(NAME)
+
 clean:
-	rm $(objFiles);
+	rm $(objFiles) mainTbCon$O tbCon$O;

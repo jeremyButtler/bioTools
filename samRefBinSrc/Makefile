@@ -1,6 +1,6 @@
 CC=cc
 PREFIX=/usr/local/bin
-NAME=samClust
+NAME=samRefBin
 
 CFLAGS=\
    -O3 \
@@ -18,13 +18,13 @@ BUGCFLAGS=\
    -std=c89 \
    -Wall \
    -Wextra \
-   -g \
-   -ggdb
+   -ggdb \
+   -g
 
 SOURCE=\
    ../generalLib/samEntry.c \
-   samClust.c \
-   mainClust.c
+   samBin.c \
+   samRefBin.c
 
 all:
 	$(CC) -o $(NAME) $(CFLAGS) $(SOURCE)
@@ -38,7 +38,3 @@ check:
 bug:
 	$(CC) -o $(NAME) $(BUGCFLAGS) $(SOURCE)
 	gdb -x bug-$(NAME).txt $(NAME)
-
-install:
-	cp $(NAME) $(PREFIX)
-	chmod a+x $(PREFIX)/$(NAME)

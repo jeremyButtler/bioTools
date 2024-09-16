@@ -5,9 +5,8 @@
 '     - included libraries
 '   o .c fun01: scoreIndel_water
 '     - gets the indel score for a water alignment
-'   o fun01 water:
-'     - run a memory efficent Waterman Smith alignment on
-'       input sequences
+'   o fun01 needle:
+'     - run a Needleman Wunsch alignment on two sequences
 '   o license:
 '     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/

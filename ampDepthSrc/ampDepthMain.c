@@ -176,21 +176,33 @@ void phelp_ampDepthMain(
 
    fprintf(
      (FILE *) outFILE,
-     "    o Format: \n"
+     "    o Format:\n"
    );
 
    fprintf(
      (FILE *) outFILE,
-     "      - There is no header (ref = reference)\n"
+     "      - first line is ignored (header)\n"
    );
 
    fprintf(
-     (FILE *) outFILE,
-     "      - gene_name\\tref_name\\tdirection"
+      (FILE *) outFILE,
+      "     - example:\n"
    );
+
+
    fprintf(
-     (FILE *) outFILE,
-     "\\tref_start\\tref_end\n"
+      (FILE *) outFILE,
+      "       gene\tref\tdirection\tstart\tend\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "       dnaA\tNC000962.3\tF\t1\t1525\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "       pknB\tNC000962.3\tR\t15590\t17470\n"
    );
 
    /*****************************************************\
@@ -726,11 +738,7 @@ input_ampDepth(
 |  - Prints:
 |    o The tsv file mentioned in phelp_ampDepthMain
 \-------------------------------------------------------*/
-#ifdef PLAN9
-char
-#else
 int
-#endif
 main(
    int numArgsSI,       /*Number of arguments input*/
    char *argAryStr[]  /*User input arguments*/

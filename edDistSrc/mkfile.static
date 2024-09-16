@@ -1,11 +1,11 @@
 CC=cc
 LD=cc
-CFLAGS= -O0 -static -Wall -Wextra -Werror -ggdb -g
+CFLAGS= -O3 -Wall -Wextra -static
 NAME=edDist
 PREFIX=/usr/local/bin
 genLib=../genLib
 genAln=../genAln
-O=.o.bug
+O=.o.static
 
 objFiles=\
    $(genLib)/base10str$O \
@@ -39,6 +39,10 @@ $(genLib)/numToStr$O: $(genLib)/numToStr.c $(genLib)/numToStr.h
 
 $(genLib)/samEntry$O: $(genLib)/samEntry.c $(genLib)/samEntry.h $(genLib)/ulCp$O $(genLib)/base10str$O $(genLib)/numToStr$O $(genLib)/ntTo5Bit.h $(genLib)/dataTypeShortHand.h
 	$(CC) -o $(genLib)/samEntry$O -c $(CFLAGS) $(genLib)/samEntry.c
+
+install:
+	mv $(NAME) $(PREFIX)
+	chmod a+x $(PREFIX)/$(NAME)
 
 clean:
 	rm $(objFiles);

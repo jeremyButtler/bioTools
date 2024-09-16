@@ -1,5 +1,3 @@
-# Use:
-
 ampDepth gets the rough location of an amplicon, the genes
   in an amplicon, and the mean, maximum, and minimum depth
   for amplicons. The graphAmpDepth.r script can be used to
@@ -33,13 +31,10 @@ Put the graphAmpDepth.r script were you want to run it.
 # Running:
 
 You will need a tsv file with the reference gene
-  coordinates for each gene to run this code. I have
-  included the gene coordinates for NC000962.3.fa in
-  "../../freezTBFiles/genes-tbl.tsv". To use a different
-  reference, you will have to make a file in the same
-  format as "genes-tbl.tsv" (see help message for format).
+  coordinates for each gene to run this code.
 
-Print the help message for ampDepth with `ampDepth -h`.
+You can print the help message for ampDepth
+  with `ampDepth -h`.
 
 Print the help message for graphAmpDepth with
   `graphAmpDepth -h`.
@@ -48,26 +43,26 @@ Print the help message for graphAmpDepth with
 # Map the reads to the reference
 minimap2 -a -x map-ont ref.fasta reads.fastq > out.sam;
 
-## Minimum
-ampDepth -gene-tbl gene-tbl.tsv -sam out.sam -out out.tsv;
-
-## Change the label in column one to ONT
+## Change the label in column one to filtered
 ampDepth -flag Filtered -gene-tbl gene-tbl.tsv -sam out.sam -out out.tsv;
 
 # Build the graphs
 graphAmpDepth.r -stats out.tsv -who ../freezeTbFiles/who-2023.tsv;
 ```
 
-You can grab the row of a gene from the tsv made by
-  ampDepth by using `grep "geneName" out.tsv`.
+## Gene table:
 
-# Dummy figure
+You will need a list of genes and their coordinates on the
+  reference genome. The first line should be a header
+  (is ignored), while the remaining lines should have
+  "gene_name reference_id direction start end". See
+  gene-tbl.tsv for a tuberculosis gene table example.
 
-![Read depth figure made by graphAmpDepth.r](
-  demo-readDepth.svg)
+You can build a gene table for ampDepth from a list of
+  genes list downloaded from nuccore (Genbank)
+  using `sed -n -f genesFormat.sed sequence.txt > tbl.tsv`
 
-![Ampilcon gene coverage figure made by graphAmpDepth.r](
-  demo-ampMap.svg)
+# example output
 
 | flag | ampNumber | refStart | refEnd | ampStart | ampEnd | avgAmpDepth | minAmpDepth | maxAmpDepth | geneId       | refGeneStart | refGeneEnd | firstBaseDepth | lastBaseDepth | avgDepth | minDepth | maxDepth |
 |:----:|:----------|:---------|:-------|:---------|:-------|:------------|:------------|:------------|:------------:|:-------------|:-----------|:---------------|:--------------|:---------|:---------|:---------|

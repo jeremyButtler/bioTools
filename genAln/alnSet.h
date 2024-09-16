@@ -228,8 +228,11 @@ freeHeap_alnSet(
 |      matrix
 | Output:
 |  - Returns:
-|    o defBaseMatch if the bases matched (same)
-|    o defBaseSnp if bases were not a match (different)
+|    o def_ntEql_alnDefs if the bases matched (same)
+|    o def_ntNotEql_alnDefs if bases were not a match
+|    o def_anonymous_alnDefs for anonymous bases
+|    o def_anonymous_alnDefs | def_ntEql_alnDefs for
+|      anonymous matches (anoymous base could be same)
 |  - default
 |    o This assumes that the sequences are converted to
 |      indexes

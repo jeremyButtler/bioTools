@@ -1,0 +1,48 @@
+LD=cc
+CC=cc
+CFLAGS= -DNEON -flax-vector-conversions -O3 -Wall -Wextra -std=c89
+NAME=seqById
+PREFIX=/usr/local/bin
+genLib=../genLib
+ext=unix.neon
+O=.o.$(ext)
+
+objFiles=\
+   $(genLib)/ulCp$O \
+   $(genLib)/charCp$O \
+   vectScan$O \
+   getSeq$O \
+   searchST$O \
+   idSearch$O \
+   seqById$O
+
+all: seqById$O
+	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
+
+seqById$O: seqById.c idSearch$O $(genLib)/charCp$O
+	$(CC) -o seqById$O -c $(CFLAGS) seqById.c
+
+idSearch$O: idSearch.c idSearch.h getSeq$O searchST$O
+	$(CC) -o idSearch$O -c $(CFLAGS) idSearch.c
+
+getSeq$O: getSeq.c getSeq.h vectScan$O $(genLib)/ulCp$O $(genLib)/dataTypeShortHand.h
+	$(CC) -o getSeq$O -c $(CFLAGS) getSeq.c
+
+vectScan$O: vectScan.c vectScan.h $(genLib)/ulCp$O
+	$(CC) -o vectScan$O -c $(CFLAGS) vectScan.c
+
+searchST$O: searchST.c searchST.h idLkTbl.h $(genLib)/ulCp$O $(genLib)/genMath.h $(genLib)/dataTypeShortHand.h
+	$(CC) -o searchST$O -c $(CFLAGS) searchST.c
+
+$(genLib)/ulCp$O: $(genLib)/ulCp.c $(genLib)/ulCp.h
+	$(CC) -o $(genLib)/ulCp$O -c $(CFLAGS) $(genLib)/ulCp.c
+
+$(genLib)/charCp$O: $(genLib)/charCp.c $(genLib)/charCp.h
+	$(CC) -o $(genLib)/charCp$O -c $(CFLAGS) $(genLib)/charCp.c
+
+install:
+	cp $(NAME) $(PREFIX)
+	chmod a+x $(PREFIX)/$(NAME)
+
+clean:
+	rm $(objFiles)

@@ -41,7 +41,6 @@
 #include "../genLib/charCp.h"
 #include "../genLib/geneCoord.h"
 #include "../genLib/samEntry.h"
-#include "../freezeTBSrc/freezeTBPaths.h"
 #include "adjCoords.h"
 
 /*These have no .c files*/
@@ -175,15 +174,26 @@ phelp_adjCoordsMain(
       "    o tsv file with coordiantes of each gene\n"
     );
 
-    fprintf(
-      outFILE,
-      "       - gene_name\\tref_name_ignored\\tdirection"
-    );
+   fprintf(
+      (FILE *) outFILE,
+      "     - example:\n"
+   );
 
-    fprintf(
-      outFILE,
-      "\\tref_start\\tref_end\n"
-    );
+
+   fprintf(
+      (FILE *) outFILE,
+      "       gene\tref_ignored\tdirection\tstart\tend\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "       dnaA\tNC000962.3\tF\t1\t1525\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "       pknB\tNC000962.3\tR\t15590\t17470\n"
+   );
 
    /*****************************************************\
    * Fun02 Sec02 Sub03:

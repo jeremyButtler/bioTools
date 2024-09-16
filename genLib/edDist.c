@@ -9,6 +9,12 @@
 '     - not used (manually inlined), but here for future
 '   o fun02: readCmpDist_edDist
 '     - gets edit distances between the query & reference
+'   o fun03: dist_edDist
+'     - gets edit distances for reference
+'   o fun04: distProb_edDist
+'     - finds probablity of reads matching by chance
+'   o license:
+'     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*-------------------------------------------------------\
@@ -125,12 +131,20 @@ isTransNt_edDist(
 |     o minimum length for a indel to count as an event
 |   - minQUC:
 |     o minimum q-score to not discard an snp
+|   - overlapUI:
+|     o pointer to unsigned int to hold nubmer of
+|       reference base covered by query
 |   - numIndelUI:
-|     o pointer to unsigned long to hold the number of
-|       indel events
+|     o pointer to unisigned int to hold the number of
+|       indels in edit distance
+|   - indelEventsUI:
+|     o pointer to unsigned int to hold the number of
+|       indel events (times a group of indels occured)
 | Output:
 |   - Modifies:
-|     o numIndelUI to have number of large indel events
+|     o numIndelUI to have number indels kept
+|     o indelEventsUI to have number of indel events
+|     o overlapUI to hold number of overlapped bases
 |   - Returns:
 |     o edit distance between query and ref
 |     o negative value if could not find distance
@@ -145,7 +159,9 @@ readCmpDist_edDist(
    struct samEntry *refSTPtr, /*ref to compare*/
    unsigned int indelLenUI,   /*min indel length*/
    unsigned char minQUC,      /*min Q-score (snp/ins)*/
-   unsigned int *numIndelUI   /*holds numer indel events*/
+   unsigned int *overlapUI,   /*overlap length*/
+   unsigned int *numIndelUI,  /*number indels kept*/
+   unsigned int *indelEventsUI /*nubmer indel events*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun02 TOC:
    '   - gets edit distances between the query & reference
@@ -189,6 +205,10 @@ readCmpDist_edDist(
    ^   - check if can get edit distance
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
+   *overlapUI = 0;
+   *indelEventsUI = 0;
+   *numIndelUI = 0;
+
    if(qrySTPtr->flagUS & 4)
       goto noMap_fun02_sec06;
 
@@ -227,19 +247,30 @@ readCmpDist_edDist(
    ^   - initialize and check if have q-score entreis
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   *numIndelUI = 0;
 
    if(
-         qrySTPtr->qStr[0] != '*'
-      && qrySTPtr->qStr[1] != '\0'
-      && qrySTPtr->qStr[0] != '\0'
-   ) qryQBl = 1;
+         qrySTPtr->qStr[0] == '\0'
+      ||
+         (
+             qrySTPtr->qStr[0] == '*'
+          && qrySTPtr->qStr[1] == '\0'
+         )
+   ) qryQBl = 0;
+
+   else
+      qryQBl = 1;
 
    if(
-         refSTPtr->qStr[0] != '*'
-      && refSTPtr->qStr[1] != '\0'
-      && refSTPtr->qStr[0] != '\0'
-   ) refQBl = 1;
+         refSTPtr->qStr[0] == '\0'
+      ||
+         (
+             refSTPtr->qStr[0] == '*'
+          && refSTPtr->qStr[1] == '\0'
+         )
+   ) refQBl = 0;
+
+   else
+      refQBl = 1;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun02 Sec04:
@@ -341,7 +372,7 @@ readCmpDist_edDist(
 
    while(
          siQryCig < (sint) qrySTPtr->lenCigUI
-      && siRefCig < (sint) qrySTPtr->lenCigUI
+      && siRefCig < (sint) refSTPtr->lenCigUI
    ){ /*Loop: get edit distance*/
       if(refSTPtr->cigTypeStr[siRefCig] == 'S')
          break; /*soft masking only at ends (finished)*/
@@ -421,6 +452,8 @@ readCmpDist_edDist(
                   qryValSI
                );
 
+            *overlapUI += tmpSI;
+
             while(tmpSI > 0)
             { /*Loop: count number of SNPs*/
                if(
@@ -487,6 +520,7 @@ readCmpDist_edDist(
             { /*If: not deletion event*/
                uiRef += tmpSI;
                uiQry += tmpSI;
+               *overlapUI += tmpSI;
             } /*If: not deletion event*/
 
             break;
@@ -511,20 +545,21 @@ readCmpDist_edDist(
             if(tmpSI >= (sint) indelLenUI)
             { /*If: keeping deletion event*/
                distSL += tmpSI;
-               ++(*numIndelUI);
+               ++(*indelEventsUI);
+               *numIndelUI += tmpSI;
             } /*If: keeping deletion event*/
 
             if(refSTPtr->cigTypeStr[siRefCig] == 'D')
-            { /*If: reference is deletion*/
                uiQry += tmpSI;
-               qryValSI -= tmpSI;
-            } /*If: reference is deletion*/
 
             else
-            { /*Else: query is deletion*/
+            { /*Else: query was a deletion*/
                uiRef += tmpSI;
-               refValSI -= tmpSI;
-            } /*Else: query is deletion*/
+               *overlapUI += tmpSI;
+            } /*Else: query was a deletion*/
+
+            qryValSI -= tmpSI;
+            refValSI -= tmpSI;
 
             break;
          /*Case: deletion (only one sequence)*/
@@ -557,8 +592,12 @@ readCmpDist_edDist(
             if(tmpSI >= (sint) indelLenUI)
             { /*If: keeping query deletion*/
                distSL += tmpSI;
-               ++(*numIndelUI);
+               ++(*indelEventsUI);
+               *numIndelUI += tmpSI;
             } /*If: keeping query deletion*/
+
+            if(qrySTPtr->cigTypeStr[siRefCig] == 'D')
+               *overlapUI += tmpSI;
 
             break;
          /*Case: insertion (only one sequence)*/
@@ -608,3 +647,370 @@ readCmpDist_edDist(
    ret_fun02_sec06:;
    return distSL;
 } /*readCmpDist_edDist*/
+
+/*-------------------------------------------------------\
+| Fun03: dist_edDist
+|   - gets edit distances for mapped reference
+|   - deletions and insertions are only counted if they
+|     execed a minimum length.
+| Input:
+|   - qrySTPtr:
+|     o pointer to samEntry structure with read (query) to
+|       find the edit distance for
+|   - indelLenUI:
+|     o minimum length for a indel to count as an event
+|   - minQUC:
+|     o minimum q-score to not discard an snp
+|   - numIndelUI:
+|     o pointer to unisigned int to hold the number of
+|       indels in edit distance
+|   - indelEventsUI:
+|     o pointer to unsigned int to hold the number of
+|       indel events (times a group of indels occured)
+| Output:
+|   - Modifies:
+|     o numIndelUI to have number indels kept
+|     o indelEventsUI to have number of indel events
+|     o overlapUI to hold number of overlapped bases
+|   - Returns:
+|     o edit distance for query and mapped reference
+|     o negative value if could not find distance
+|       - def_noSeq_edDist if one read is missing sequence
+|       - def_noMap_edDist if one read is unmapped
+\-------------------------------------------------------*/
+signed long
+dist_edDist(
+   struct samEntry *qrySTPtr, /*read for edit distance*/
+   unsigned int indelLenUI,   /*min indel length*/
+   unsigned char minQUC,      /*min Q-score (snp/ins)*/
+   unsigned int *numIndelUI,  /*number indels kept*/
+   unsigned int *indelEventsUI /*nubmer indel events*/
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun03 TOC:
+   '   - gets edit distances between the query & reference
+   '   o fun03 sec01:
+   '     - variable declerations
+   '   o fun03 sec02:
+   '     - check if can get edit distance
+   '   o fun03 sec03:
+   '     - initialize and check if have q-score entreis
+   '   o fun03 sec04:
+   '     - find edit distance
+   '   o fun03 sec06:
+   '     - return the edit distance
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec01:
+   ^   - variable declerations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   sint siQryCig = 0;  /*query cigar position*/
+   sint qryValSI = 0;
+   uint uiQry = 0;     /*query nucleotide on*/
+
+   slong distSL = 0;    /*edit distance*/
+
+   schar qryQBl = 0;
+   uchar qUC = 0;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec02:
+   ^   - check if can get edit distance
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   *indelEventsUI = 0;
+   *numIndelUI = 0;
+
+   if(qrySTPtr->flagUS & 4)
+      goto noMap_fun03_sec06;
+
+   if(
+         ! qrySTPtr->seqStr
+      || *qrySTPtr->seqStr == '*' 
+      || *qrySTPtr->seqStr == '\0'
+   ) goto noSeq_fun03_sec06;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec03:
+   ^   - initialize and check if have q-score entreis
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(
+         qrySTPtr->qStr[0] == '\0'
+      ||
+         (
+             qrySTPtr->qStr[0] == '*'
+          && qrySTPtr->qStr[1] != '\0'
+         )
+   ) qryQBl = 0;
+
+   else
+      qryQBl = 1;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec04:
+   ^   - find edit distance
+   ^   o fun03 sec04 sub01:
+   ^     - get past masking at start
+   ^   o fun03 sec04 sub02:
+   ^     - start loop and check if at end (hard/soft mask)
+   ^   o fun03 sec04 note01:
+   ^     - table of cigar entries added together
+   ^   o fun03 sec04 sub03:
+   ^     - start switch/check match/possible snp combos
+   ^   o fun03 sec04 sub04:
+   ^     - check matches or same error type
+   ^   o fun03 sec04 sub05:
+   ^     - handel deletion cases
+   ^   o fun03 sec04 sub06:
+   ^     - handel insertion cases
+   ^   o fun03 sec04 sub07:
+   ^     - check if move to next cigar entry
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Fun03 Sec04 Sub01:
+   *   - get past masking at start
+   \*****************************************************/
+
+   if(qrySTPtr->cigTypeStr[siQryCig] == 'S')
+   { /*If: have softmasked region*/
+      uiQry += qryValSI;
+      ++siQryCig;
+      qryValSI = qrySTPtr->cigArySI[siQryCig];
+   } /*If: have softmasked region*/
+
+   if(qrySTPtr->cigTypeStr[siQryCig] == 'H')
+   { /*If: have hardmaksed region*/
+      ++siQryCig;
+      qryValSI = qrySTPtr->cigArySI[siQryCig];
+   } /*If: have hardmasked region*/
+
+   /*****************************************************\
+   * Fun03 Sec04 Sub02:
+   *   - start loop and check if at end (hard/soft mask)
+   \*****************************************************/
+
+   while(siQryCig < (sint) qrySTPtr->lenCigUI)
+   { /*Loop: get edit distance*/
+      if(qrySTPtr->cigTypeStr[siQryCig] == 'S')
+         break; /*soft masking only at ends (finished)*/
+
+      if(qrySTPtr->cigTypeStr[siQryCig] == 'H')
+         break; /*hard masking only at ends (finished)*/
+
+      /**************************************************\
+      * Fun03 Sec04 Sub03:
+      *   - start switch/check match/possible snp combos
+      *   o fun03 sec04 sub03 cat01:
+      *     - find number shared snps/matchs + check case
+      *   o fun03 sec04 sub03 cat02:
+      *     - find snps passing min quality scores
+      *   o fun03 sec04 sub03 cat03:
+      *     - check if SNP (passed) is a transversion
+      *   o fun03 sec04 sub03 cat04:
+      *     - move to next SNP/match
+      \**************************************************/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec04 Sub03 Cat01:
+      +   - find number shared snps/matchs + check case
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      switch(qrySTPtr->cigTypeStr[siQryCig])
+      { /*Switch: find mutation combination*/
+         /*cases were I have to compare sequences*/
+         case 'M':
+         case '=':
+         /*Case: likley match (or no way to check)*/
+            uiQry += qryValSI;
+            break;
+         /*Case: likley match (or no way to check)*/
+
+         case 'X':
+         /*Case: snp*/
+            while(qryValSI > 0)
+            { /*Loop: count number of SNPs*/
+               if(qryQBl)
+               { /*If: have query q-score entry*/
+                  qUC =
+                       qrySTPtr->qStr[uiQry]
+                     - def_adjQ_samEntry;
+
+                  if(qUC >= minQUC)
+                     ++distSL;
+               } /*If: have query q-score entry*/
+
+               else
+                  ++distSL;
+
+               ++uiQry;
+               --qryValSI;
+            } /*Loop: count number of SNPs*/
+
+            break;
+         /*Case: snp*/
+
+         /***********************************************\
+         * Fun03 Sec04 Sub05:
+         *   - handel deletion cases
+         \***********************************************/
+
+         /*deletion cases*/
+         case 'D':
+         /*Case: deletion*/
+            if(qryValSI >= (sint) indelLenUI)
+            { /*If: keeping deletion event*/
+               distSL += qryValSI;
+               ++(*indelEventsUI);
+               *numIndelUI += qryValSI;
+            } /*If: keeping deletion event*/
+
+            break;
+         /*Case: deletion*/
+
+         /***********************************************\
+         * Fun03 Sec04 Sub06:
+         *   - handel insertion cases
+         \***********************************************/
+
+         case 'I':
+         /*Case: insertion*/
+            uiQry += qryValSI;
+
+            if(qryValSI >= (sint) indelLenUI)
+            { /*If: keeping query deletion*/
+               distSL += qryValSI;
+               ++(*indelEventsUI);
+               *numIndelUI += qryValSI;
+            } /*If: keeping query deletion*/
+
+            break;
+         /*Case: insertion*/
+      } /*Switch: find mutation combination*/
+
+      /**************************************************\
+      * Fun03 Sec04 Sub07:
+      *   - check if move to next cigar entry
+      \**************************************************/
+
+      ++siQryCig;
+      qryValSI = qrySTPtr->cigArySI[siQryCig];
+   } /*Loop: get edit distance*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec06:
+   ^   - return the edit distance
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   goto ret_fun03_sec06;
+
+   noSeq_fun03_sec06:;
+   distSL = def_noSeq_edDist;
+   goto ret_fun03_sec06;
+
+   noMap_fun03_sec06:;
+   distSL = def_noMap_edDist;
+   goto ret_fun03_sec06;
+
+   ret_fun03_sec06:;
+   return distSL;
+} /*dist_edDist*/
+
+/*-------------------------------------------------------\
+| Fun04: percDist_edDist
+|   - gives a rough idea on precentage of difference from
+|     error
+|   - not great, but allows lumping reads together
+| Input:
+|   - distSL:
+|     o edit distance to find probablity for
+|   - overlapUI:
+|     o length of alignment (overlap between query & ref)
+|   - percErrF:
+|     o expected percent of errors (0 to 1) in reads
+|     o if doing read to read comparsions; double this
+| Output:
+|   - Returns:
+|     o probablity of edit distance due to chance
+\-------------------------------------------------------*/
+signed int
+percDist_edDist(
+   signed long distSL,
+   unsigned int overlapUI,
+   float percErrF
+){
+   return 100 * (distSL / (overlapUI * percErrF));
+} /*percDist_edDist*/
+
+/*=======================================================\
+: License:
+: 
+: This code is under the unlicense (public domain).
+:   However, for cases were the public domain is not
+:   suitable, such as countries that do not respect the
+:   public domain or were working with the public domain
+:   is inconvient / not possible, this code is under the
+:   MIT license.
+: 
+: Public domain:
+: 
+: This is free and unencumbered software released into the
+:   public domain.
+: 
+: Anyone is free to copy, modify, publish, use, compile,
+:   sell, or distribute this software, either in source
+:   code form or as a compiled binary, for any purpose,
+:   commercial or non-commercial, and by any means.
+: 
+: In jurisdictions that recognize copyright laws, the
+:   author or authors of this software dedicate any and
+:   all copyright interest in the software to the public
+:   domain. We make this dedication for the benefit of the
+:   public at large and to the detriment of our heirs and
+:   successors. We intend this dedication to be an overt
+:   act of relinquishment in perpetuity of all present and
+:   future rights to this software under copyright law.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO
+:   EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM,
+:   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+:   CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+:   IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+:   DEALINGS IN THE SOFTWARE.
+: 
+: For more information, please refer to
+:   <https://unlicense.org>
+: 
+: MIT License:
+: 
+: Copyright (c) 2024 jeremyButtler
+: 
+: Permission is hereby granted, free of charge, to any
+:   person obtaining a copy of this software and
+:   associated documentation files (the "Software"), to
+:   deal in the Software without restriction, including
+:   without limitation the rights to use, copy, modify,
+:   merge, publish, distribute, sublicense, and/or sell
+:   copies of the Software, and to permit persons to whom
+:   the Software is furnished to do so, subject to the
+:   following conditions:
+: 
+: The above copyright notice and this permission notice
+:   shall be included in all copies or substantial
+:   portions of the Software.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+:   EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+:   FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+:   AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+:   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+:   USE OR OTHER DEALINGS IN THE SOFTWARE.
+\=======================================================*/

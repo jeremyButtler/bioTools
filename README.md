@@ -3,7 +3,9 @@
 Holds small tools I have made for biology programs. The
   tools are either niche tools, re-inventing the wheel, or
   just plain odd. They all should compile on Linux, BSDs,
-  Mac, and Windows (without cwygin).
+  Mac, and Windows (without cwygin). I use them, but I
+  would be suprised if other people used them. Basically
+  here incase someone else decides they need one.
 
 These tools are often built to help me with my projects or
   are smaller parts of my projects. I have included the
@@ -18,23 +20,35 @@ Primary is unlicense (public domain), but if publice
 # List of tools
 
 - re-inventing the wheel:
-  - seqById (fqGetIds):
+  - seqById (fqGetIds/find-co--infections):
     - extract sequences by read id from sam files and
       fastq files
+    - seqkit grep nock off, without regular expressions
   - filtsam (freezeTB):
     - filter sam files by flag, length, median/mean
       q-scores, and coordinates
     - also supports read soft mask removal
-  - alnwater (alnSeq):
+    - samtools view nock off, with an odd twist
+  - alnwater (alnSeq/fluDI):
     - waterman alignment with gap extension penalties
     - slower than striped watermans
-  - alnMemwater (alnSeq):
+    - watermans are a dime a dozen
+  - alnMemwater (alnSeq/freezeTB):
     - waterman alignment with gap extension penalties
     - only returns score and alignment coordinates, but
       also uses less memory
+    - watermans are a dime a dozen
   - primFind (fluDI/freezeTB):
     - find primers in sequence(s)
-- niche
+    - emboss primer finder program nock off (forgot name)
+  - tbCon (freezeTB):
+    - reference based majority consensus that saves the
+      cosensus as a sam file (convert cigar to eqx cigar
+      with cigToEqx)
+    - nock of of Ivar and who knows what other programs
+    - positions of low confidence are replaced with a 'N',
+      (no other anoymous bases)
+- niche or odd programs
   - adjCoords (freezeTB):
     - adjust mapping coordinates from genes to entire
       genome
@@ -54,10 +68,19 @@ Primary is unlicense (public domain), but if publice
     - mask primer sites by coordinates (for sam file)
     - tsv file with coordinates is needed
   - edDist (fluDI/freezeTB):
-    - working on, finds modified edit distances
+    - finds modified edit distances
       - modified means only large indels and snps with
         q-scores > 6
+      - for non-modified use the "NM:i:" entry in the
+        sam file
       - can do sam file to sam file or by ref
+    - not best program, but part of a bigger plan
+  - clustSam (fluDI/freezeTB):
+    - current module working on (probably will not be
+      very good)
+    - try to cluster reads by a profiling step
+    - uses edDist for quick sorting, then builds a SNP/
+      large indel profile to pull reads out by
   - adjMap (fluDI/freezeTB):
     - adjust mapping coordinates to a new reference
       - reference and reads must be sam files
@@ -76,3 +99,39 @@ genLib is for general libraries that do not have a
   specific task.
 
 genAln is for alignment tasks.
+
+# TODO:
+
+1. mixed infection detection (what focused on)
+   - main project (fluDI/freezeTB) and why edDist exists
+   - edDist will be a quick and dirty filter, then
+     will cluster surviving reads
+   - after that use tbCon to build a consensus
+2. finish debugging ajdMap (side project)
+   - not quite working, some reads get a few extra cigar
+     entries (think due to softmasked end)
+3. make alnneedle (personal project)
+   - copy alnwater and set up for needle.c in genAln
+4. add in hirschberg/myers miller (personal project)
+   - need to modify hirsch from alnSeq for new style
+     and OS portablility. So, conversion project, with a
+     bith of thought.
+6. add using_this_code guides (using in C code) for
+   programs and libraries
+   - less likely to happen, lot of work for shoddy guides
+7. fix valgrind errors in samToAln
+   - not major issues (will not crash or cause problems),
+     but still annoying
+8. convert graphAmpDepth.r to base R (remove ggplot)
+
+# Thanks
+
+- Eric and Tara Ness, Bryce Inman, and the rest of the
+  Bort's lab for providing a place to develop code
+  - Also, some of this code was developed for or to
+    debug freezeTB 
+- Devin Drown for his mentor ship. seqById was an improved
+  version of fqGetIds, a program I wrote for
+  find-co--infections
+- My dad for being there and supportive and a person to
+  bounce ids off or talk to
