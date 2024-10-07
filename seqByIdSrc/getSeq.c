@@ -149,7 +149,7 @@ ulfq_getSeq(
    '  o fun02 Sec06:
    '    - move past q-score entry
    '  o fun02 Sec07:
-   '    - adjust positoin for the next read
+   '    - adjust position for the next read
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\

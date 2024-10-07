@@ -1,45 +1,52 @@
 LD=link
 CC=cl
 CFLAGS= /O2 /Ot /Za /Tc
-NAME=trimSam
-PREFIX="C:\Program Files\freezeTB"
-genLib=../genLib
-O=.o.win
+NAME=trimSam.exe
+PREFIX=%%HOME%%\appData
+O=o.win
 
-objFiles=\
-   $(genLib)\base10str$O \
-   $(genLib)\ulCp$O \
-   $(genLib)\charCp$O \
-   $(genLib)\numToStr$O \
-   $(genLib)\samEntry$O \
-   $(genLib)\trimSam$O
+genBio=..\genBio
+genLib=..\genLib
 
-all: mainTrimSam$O $(objFiles)
-	$(LD) /out:$(NAME).exe mainTrimSam$O $(objFiles)
+objFiles= \
+   $(genBio)\trimSam.$O \
+   $(genBio)\samEntry.$O \
+   $(genLib)\strAry.$O \
+   $(genLib)\ulCp.$O \
+   $(genLib)\numToStr.$O \
+   $(genLib)\base10str.$O \
+   $(genLib)\charCp.$O \
+   mainTrimSam.$O
 
-mainTrimSam$O: mainTrimSam.c trimSamVer.h $(genLib)\trimSam$O
-	$(CC) /Fo:mainTrimSam$O /c $(CFLAGS) mainTrimSam.c
+all: mainTrimSam.$O
+	$(LD) /out:$(NAME).exe $(objFiles)
 
-$(genLib)\base10str$O: $(genLib)\base10str.c $(genLib)\base10str.h
-	$(CC) /Fo:$(genLib)\base10str$O /c $(CFLAGS) $(genLib)\base10str.c
+mainTrimSam.$O: mainTrimSam.c $(genBio)\trimSam.$O $(genLib)\charCp.$O
+	$(CC) /Fo:mainTrimSam.$O /c $(CFLAGS) mainTrimSam.c
 
-$(genLib)\charCp$O: $(genLib)\charCp.c $(genLib)\charCp.h
-	$(CC) /Fo:$(genLib)\charCp$O /c $(CFLAGS) $(genLib)\charCp.c
+$(genBio)\trimSam.$O: $(genBio)\trimSam.c $(genBio)\trimSam.h $(genBio)\samEntry.$O
+	$(CC) /Fo:$(genBio)\trimSam.$O /c $(CFLAGS) $(genBio)\trimSam.c
 
-$(genLib)\ulCp$O: $(genLib)\ulCp.c $(genLib)\ulCp.h
-	$(CC) /Fo:$(genLib)\ulCp$O /c $(CFLAGS) $(genLib)\ulCp.c
+$(genBio)\samEntry.$O: $(genBio)\samEntry.c $(genBio)\samEntry.h $(genLib)\strAry.$O $(genLib)\base10str.$O $(genLib)\numToStr.$O $(genBio)\ntTo5Bit.h $(genLib)\dataTypeShortHand.h
+	$(CC) /Fo:$(genBio)\samEntry.$O /c $(CFLAGS) $(genBio)\samEntry.c
 
-$(genLib)\numToStr$O: $(genLib)\numToStr.c $(genLib)\numToStr.h
-	$(CC) /Fo:$(genLib)\numToStr$O /c $(CFLAGS) $(genLib)\numToStr.c
+$(genLib)\strAry.$O: $(genLib)\strAry.c $(genLib)\strAry.h $(genLib)\ulCp.$O
+	$(CC) /Fo:$(genLib)\strAry.$O /c $(CFLAGS) $(genLib)\strAry.c
 
-$(genLib)\samEntry$O: $(genLib)\samEntry.c $(genLib)\samEntry.h $(genLib)\ulCp$O $(genLib)\base10str$O $(genLib)\numToStr$O $(genLib)\ntTo5Bit.h $(genLib)\dataTypeShortHand.h
-	$(CC) /Fo:$(genLib)\samEntry$O /c $(CFLAGS) $(genLib)\samEntry.c
+$(genLib)\ulCp.$O: $(genLib)\ulCp.c $(genLib)\ulCp.h
+	$(CC) /Fo:$(genLib)\ulCp.$O /c $(CFLAGS) $(genLib)\ulCp.c
 
-$(genLib)\trimSam$O: $(genLib)\trimSam.c $(genLib)\trimSam.h $(genLib)\samEntry$O
-	$(CC) /Fo:$(genLib)\trimSam$O /c $(CFLAGS) $(genLib)\trimSam.c
+$(genLib)\numToStr.$O: $(genLib)\numToStr.c $(genLib)\numToStr.h
+	$(CC) /Fo:$(genLib)\numToStr.$O /c $(CFLAGS) $(genLib)\numToStr.c
+
+$(genLib)\base10str.$O: $(genLib)\base10str.c $(genLib)\base10str.h
+	$(CC) /Fo:$(genLib)\base10str.$O /c $(CFLAGS) $(genLib)\base10str.c
+
+$(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
+	$(CC) /Fo:$(genLib)\charCp.$O /c $(CFLAGS) $(genLib)\charCp.c
 
 install:
-	move $(NAME).exe $(PREFIX)
+	copy $(NAME).exe $(PREFIX)
 
 clean:
-	del $(objFiles) mainTrimSam$O;
+	del $(objFiles)

@@ -11,11 +11,39 @@ These tools are often built to help me with my projects or
   are smaller parts of my projects. I have included the
   project they were designed for / first appeared in.
 
+Still need to do OS tests on all tools. This is a spare
+  time project, so does not get done.
+
 # License
 
 Primary is unlicense (public domain), but if publice
   domain does not work or is not desired it defaults to
   MIT (alternate).
+
+# Scripts
+
+The mkfileScripts directory has bash scripts to build
+  makefiles for bioTools.
+
+- buildMkfile.sh is a bash script to build a make file
+  for a specified OS type from the librarys
+  - Input: OS program-name main-file librarys
+  - Input: nothing or "-h" for help message
+  - here is the example for unix tbCon
+    - `bash buildMkfile.sh unix tbCon mainTbCon samEntry tbCon charCp`
+  - Options:
+    - bug: for debug (should not need)
+    - unix: for general unix
+    - static: for unix's that support static builds
+    - win: windows (still need to test some programs)
+    - plan9: for plan9 (have not tested all programs yet)
+- allOSMkfiles.sh is a bash scripts that calls
+  buildMkfile.sh for all its OS's
+  - Input: program-name main-file librarys
+  - Input: nothing or "-h" for help message
+  - Here is the example for the unix tbCon
+  - Here is the example for tbCon
+    - `bash allOSMkfiles.sh tbCon mainTbCon samEntry charCp tbCon charCp`
 
 # List of tools
 
@@ -24,6 +52,7 @@ Primary is unlicense (public domain), but if publice
     - extract sequences by read id from sam files and
       fastq files
     - seqkit grep nock off, without regular expressions
+      and no fasta file support
   - filtsam (freezeTB):
     - filter sam files by flag, length, median/mean
       q-scores, and coordinates
@@ -33,7 +62,7 @@ Primary is unlicense (public domain), but if publice
     - waterman alignment with gap extension penalties
     - slower than striped watermans
     - watermans are a dime a dozen
-  - alnMemwater (alnSeq/freezeTB):
+  - memwater (alnSeq/freezeTB):
     - waterman alignment with gap extension penalties
     - only returns score and alignment coordinates, but
       also uses less memory
@@ -47,7 +76,7 @@ Primary is unlicense (public domain), but if publice
       with cigToEqx)
     - nock of of Ivar and who knows what other programs
     - positions of low confidence are replaced with a 'N',
-      (no other anoymous bases)
+      (no other anoymous bases are used)
 - niche or odd programs
   - adjCoords (freezeTB):
     - adjust mapping coordinates from genes to entire
@@ -64,6 +93,9 @@ Primary is unlicense (public domain), but if publice
     - trims soft masking off reads in sam file
     - filtsam can do this with `-trim` and has filtering
       options
+  - illNano (freezeTB/fluDI dugging edClust):
+    - finds Illumina variants from tbCon tsv file and then
+      finds nanopore reads mapping Illumina profile
   - maskPrim (freezeTB):
     - mask primer sites by coordinates (for sam file)
     - tsv file with coordinates is needed
@@ -75,12 +107,10 @@ Primary is unlicense (public domain), but if publice
         sam file
       - can do sam file to sam file or by ref
     - not best program, but part of a bigger plan
-  - clustSam (fluDI/freezeTB):
+  - edClust (fluDI/freezeTB):
     - current module working on (probably will not be
       very good)
-    - try to cluster reads by a profiling step
-    - uses edDist for quick sorting, then builds a SNP/
-      large indel profile to pull reads out by
+    - try to cluster reads by edit distance
   - adjMap (fluDI/freezeTB):
     - adjust mapping coordinates to a new reference
       - reference and reads must be sam files
@@ -104,9 +134,13 @@ genAln is for alignment tasks.
 
 1. mixed infection detection (what focused on)
    - main project (fluDI/freezeTB) and why edDist exists
-   - edDist will be a quick and dirty filter, then
-     will cluster surviving reads
-   - after that use tbCon to build a consensus
+   - profClust was one attempt that never took off, likley
+     will be abandoned
+2. make replacement for make (different repo/side project)
+   - make is getting to clunky, need to take some time to
+     make a OS portable replacement that is more geared to
+     projects like bioTools (many programs referencing
+     same set of libraries)
 2. finish debugging ajdMap (side project)
    - not quite working, some reads get a few extra cigar
      entries (think due to softmasked end)
@@ -119,10 +153,8 @@ genAln is for alignment tasks.
 6. add using_this_code guides (using in C code) for
    programs and libraries
    - less likely to happen, lot of work for shoddy guides
-7. fix valgrind errors in samToAln
-   - not major issues (will not crash or cause problems),
-     but still annoying
 8. convert graphAmpDepth.r to base R (remove ggplot)
+9. give samBin some attention (never conveted)
 
 # Thanks
 

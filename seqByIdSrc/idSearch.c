@@ -40,6 +40,8 @@
 !   - .h  #include "genMath.h" max .h macro only
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
+#define def_lenBuff_idSearch (1 << 17) /*around 65536*/
+
 /*-------------------------------------------------------\
 | Fun01: getFqSeq_idSearch
 |   - extract fastq sequences from file by read ids
@@ -87,10 +89,9 @@ getFqSeq_idSearch(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   uint lenBuffUI = 1 << 17; /*around 65536*/
-   schar buffStr[lenBuffUI + 1];
+   schar buffStr[def_lenBuff_idSearch + 1];
 
-   schar outBuffStr[lenBuffUI + 1];
+   schar outBuffStr[def_lenBuff_idSearch + 1];
    ulong outPosUL = 0; /*byte to copy at*/
 
    uchar hashBl = !!(searchSTPtr->hashTblUL);
@@ -117,7 +118,7 @@ getFqSeq_idSearch(
       fread(
          (char *) buffStr,
          sizeof(schar),
-         lenBuffUI - 1,
+         def_lenBuff_idSearch - 1,
          (FILE *) fqFILE
       ); /*read in first chunk from file*/
 
@@ -181,7 +182,7 @@ getFqSeq_idSearch(
                &startUL,
                outBuffStr,
                &outPosUL,
-               lenBuffUI,
+               def_lenBuff_idSearch,
                &bytesUL,
                fqFILE,
                outFILE
@@ -196,7 +197,7 @@ getFqSeq_idSearch(
                &startUL,
                outBuffStr,
                &outPosUL,
-               lenBuffUI,
+               def_lenBuff_idSearch,
                &bytesUL,
                fqFILE,
                0
@@ -272,10 +273,9 @@ getSamSeq_idSearch(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   uint lenBuffUI = 1 << 17; /*around 65536*/
-   schar buffStr[lenBuffUI + 1];
+   schar buffStr[def_lenBuff_idSearch + 1];
 
-   schar outBuffStr[lenBuffUI + 1];
+   schar outBuffStr[def_lenBuff_idSearch + 1];
    ulong outPosUL = 0; /*byte to copy at*/
    ulong tmpUL = 0;
 
@@ -305,7 +305,7 @@ getSamSeq_idSearch(
       fread(
          (char *) buffStr,
          sizeof(schar),
-         lenBuffUI - 1,
+         def_lenBuff_idSearch - 1,
          (FILE *) samFILE
       ); /*read in first chunk from file*/
 
@@ -348,7 +348,7 @@ getSamSeq_idSearch(
             &tmpUL,
             outBuffStr,
             &outPosUL,
-            lenBuffUI,
+            def_lenBuff_idSearch,
             outFILE
          );
 
@@ -396,7 +396,7 @@ getSamSeq_idSearch(
                &startUL,
                outBuffStr,
                &outPosUL,
-               lenBuffUI,
+               def_lenBuff_idSearch,
                &bytesUL,
                samFILE,
                outFILE
@@ -411,7 +411,7 @@ getSamSeq_idSearch(
                &startUL,
                outBuffStr,
                &outPosUL,
-               lenBuffUI,
+               def_lenBuff_idSearch,
                &bytesUL,
                samFILE,
                0

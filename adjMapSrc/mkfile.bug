@@ -13,6 +13,7 @@ objFiles=\
    $(genLib)/charCp$O \
    $(genLib)/numToStr$O \
    $(genLib)/seqST$O \
+   $(genLib)/strAry.$O \
    $(genLib)/samEntry$O \
    $(genAln)/indexToCoord$O \
    $(genAln)/alnSet$O \
@@ -49,8 +50,11 @@ $(genLib)/numToStr$O: $(genLib)/numToStr.c $(genLib)/numToStr.h
 $(genLib)/seqST$O: $(genLib)/seqST.c $(genLib)/seqST.h $(genLib)/ulCp$O $(genLib)/dataTypeShortHand.h
 	$(CC) -o $(genLib)/seqST$O -c $(CFLAGS) $(genLib)/seqST.c
 
-$(genLib)/samEntry$O: $(genLib)/samEntry.c $(genLib)/samEntry.h $(genLib)/ulCp$O $(genLib)/base10str$O $(genLib)/numToStr$O $(genLib)/ntTo5Bit.h $(genLib)/dataTypeShortHand.h
-	$(CC) -o $(genLib)/samEntry$O -c $(CFLAGS) $(genLib)/samEntry.c
+$(genLib)/samEntry.$O: $(genLib)/samEntry.c $(genLib)/samEntry.h $(genLib)/strAry.$O $(genLib)/base10str.$O $(genLib)/numToStr.$O $(genLib)/ntTo5Bit.h $(genLib)/dataTypeShortHand.h
+	$(CC) -o $(genLib)/samEntry.$O -c $(CFLAGS) $(genLib)/samEntry.c
+
+$(genLib)/strAry.$O: $(genLib)/strAry.c $(genLib)/strAry.h $(genLib)/ulCp.$O
+	$(CC) -o $(genLib)/strAry.$O -c $(CFLAGS) $(genLib)/strAry.c
 
 $(genAln)/indexToCoord$O: $(genAln)/indexToCoord.c $(genAln)/indexToCoord.h
 	$(CC) -o $(genAln)/indexToCoord$O -c $(CFLAGS) $(genAln)/indexToCoord.c

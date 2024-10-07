@@ -1,20 +1,7 @@
-/*########################################################
-# Name: maskPrimVersion
-#   - has version number and print function for maskPrim
-########################################################*/
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-' SOF: Start Of File
-'   o header:
-'     - guards and defined variables
-'   o license:
-'     - licensing for this code (public domain / mit)
+' maskPrimVersion SOF: Start Of File
+'   - has version number and print function for maskPrim
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-/*-------------------------------------------------------\
-| Header:
-|   - guards and defined variables
-\-------------------------------------------------------*/
 
 #ifndef PRIMER_MASK_VERSION_H
 #define PRIMER_MASK_VERSION_H

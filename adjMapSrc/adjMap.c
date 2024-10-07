@@ -41,6 +41,7 @@
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
 !   o std #include <stdio.h>
+!   o .c  #include "../genLib/strAry.h"
 !   o .c  #include "../genLib/base10str.h"
 !   o .c  #include "../genAln/indexToCoord.h"
 !   o .h  #include "../genLib/ntTo5Bit.h"

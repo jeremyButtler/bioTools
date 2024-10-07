@@ -1,0 +1,1 @@
+r -sam $HOME/files/testing/BC33.sam -prefix delete

@@ -1,7 +1,7 @@
-/*########################################################
-# Name: ampDepth-version
-#   - Holds the version number for ampDepth
-########################################################*/
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+' ampDepthDefs SOF: Start Of File
+'   - holds version number for ampDepth
+\~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #define def_year_ampDepthDefs 2024
 #define def_month_ampDepthDefs 8

@@ -25,7 +25,7 @@
 
 #include "needle.h"
 
-#include "../genLib/seqST.h"
+#include "../genBio/seqST.h"
 
 #include "alnSet.h"
 #include "dirMatrix.h"
@@ -43,8 +43,9 @@
 !   o .c  #include "../genLib/ulCp.h"
 !   o .c  #include "../genLib/charCp.h"
 !   o .c  #include "../genLib/numToStr.h"
-!   o .c  #include "../genLib/samEntry.h"
-!   o .h  #include "../genLib/ntTo5Bit.h"
+!   o .c  #include "../genLib/strAry.h"
+!   o .c  #include "../genBio/samEntry.h"
+!   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*-------------------------------------------------------\

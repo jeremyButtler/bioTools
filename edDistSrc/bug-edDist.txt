@@ -1,3 +1,4 @@
-b mainEdDist.c:1074
+b mainEdDist.c:1357
 
-r -sam del.sam
+#r -sam $HOME/files/testing/delete/rrs.sam -ref $HOME/files/testing/delete/rrs-1.sam -no-tran
+r -sam $HOME/files/testing/mixedInfect/fiveCo-60-65-81-85-86--map.sam -ref-fa $HOME/files/testing/mixedInfect/MW661279-noroRef.fa -no-tran -depth-prof

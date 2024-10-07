@@ -18,7 +18,7 @@
 
 #ifdef PLAN9
    #include <u.h>
-   #include <libc.h
+   #include <libc.h>
 #endif
 
 #include "../genLib/ulCp.h" /*scalar fallback*/

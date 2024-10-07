@@ -1,11 +1,7 @@
-/*#######################################################\
-# Name: mainTbCon
-#   - builds a consensus from a sam file aligned to a
-#     singed reference
-\#######################################################*/
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-' SOF: Start Of File
+' mainTbCon SOF: Start Of File
+'   - builds a consensus from a sam file aligned to a
+'     singed reference
 '   o header:
 '     - indcluded libraries
 '   o fun01: pversion_mainTbCon
@@ -37,18 +33,20 @@
 #include "../genLib/ulCp.h"
 #include "../genLib/charCp.h"
 #include "../genLib/base10str.h"
-#include "../genLib/samEntry.h"
 
-#include "tbCon.h"
+#include "../genBio/samEntry.h"
+#include "../genBio/tbCon.h"
 
 /*only using .h file (no .c or not using .c)*/
 #include "../genLib/dataTypeShortHand.h"
-#include "tbConDefs.h"
+#include "../genBio/tbConDefs.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden files
 !   - .c  #include "../genLib/numToStr.h"
 !   - .c  #include "../genLib/genMath.h"
+!   - .c  #include "../genLib/strAry.h"
+!   - .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*-------------------------------------------------------\

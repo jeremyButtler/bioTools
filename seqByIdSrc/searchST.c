@@ -65,7 +65,7 @@
 
 #ifdef PLAN9
    #include <u.h>
-   #include <libc.c>
+   #include <libc.h>
 #else
    #include<stdlib.h>
 #endif
@@ -368,6 +368,9 @@ sortIds_searchST(
    /*Recursion formula: h[0] = 1, h[n] = 3 * h[n - 1] +1*/
    subUL = 1; /*Initialzie first array*/
 
+   if(numElmUL < 1)
+      return; /*nothing (at most 1 item) to sort*/
+
    while(subUL < numElmUL - 1)
       subUL = (3 * subUL) + 1;
 
@@ -531,6 +534,9 @@ hashSortIds_searchST(
 
    /*Recursion formula: h[0] = 1, h[n] = 3 * h[n - 1] +1*/
    subUL = 1; /*Initialzie first array*/
+
+   if(numElmUL < 1)
+      return; /*nothing (at most 1 item) to sort*/
 
    while(subUL < numElmUL - 1)
       subUL = (3 * subUL) + 1;
@@ -1079,7 +1085,7 @@ getReadIds_searchST(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   sshort lenBuffUS = 4096;  /*maximum size of buffer*/
+   #define lenBuffUS 4096  /*maximum size of buffer*/
    schar buffStr[lenBuffUS]; /*buffer for file input*/
    ulong ulId = 0;
 

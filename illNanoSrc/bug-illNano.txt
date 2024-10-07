@@ -1,0 +1,4 @@
+b mainIllNano.c:1033
+b illNano.c:599 if readPosUI >= samSTPtr->readLenUI
+
+r -ill-tsv $HOME/files/testing/mixedInfect/illumina/1165-ill-con.tsv -sam-ont $HOME/files/testing/mixedInfect/SRR13951165-map.sam

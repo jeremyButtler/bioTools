@@ -1,47 +1,55 @@
-</$objtype/mkfile
-
-CFLAGS= -w -DPLAN9
+<$objtype/mkfile
+CFLAGS= -DPLAN9
 NAME=edDist
-PREFIX=
+PREFIX=$home/bin
+
+genBio=../genBio
 genLib=../genLib
-genAln=../genAln
 
-objFiles=\
-   $genLib/base10str$O \
-   $genLib/ulCp$O \
-   $genLib/charCp$O \
-   $genLib/numToStr$O \
-   $genLib/samEntry$O \
-   $genLib/edDist$O \
-   mainEdDist$O
+objFiles= \
+   $genBio/edDist.$O \
+   $genBio/samEntry.$O \
+   $genLib/strAry.$O \
+   $genLib/ulCp.$O \
+   $genLib/numToStr.$O \
+   $genLib/base10str.$O \
+   $genBio/seqST.$O \
+   $genLib/charCp.$O \
+   mainEdDist.$O
 
-all: mainEdDist$O
+all: mainEdDist.$O
 	$LD -o $NAME $CFLAGS $objFiles
 
-mainEdDist$O: mainEdDist.c $genLib/edDist$O
-	$CC -o mainEdDist$O -c $CFLAGS mainEdDist.c
+mainEdDist.$O: mainEdDist.c $genBio/edDist.$O $genLib/charCp.$O
+	$CC -o mainEdDist.$O  $CFLAGS mainEdDist.c
 
-$genLib/edDist$O: $genLib/edDist.c $genLib/edDist.h $genLib/samEntry$O $genLib/charCp$O $genLib/genMath.h
-	$CC -o $genLib/edDist$O -c $CFLAGS $genLib/edDist.c
+$genBio/edDist.$O: $genBio/edDist.c $genBio/edDist.h $genBio/samEntry.$O $genBio/seqST.$O $genLib/genMath.h
+	$CC -o $genBio/edDist.$O  $CFLAGS $genBio/edDist.c
 
-$genLib/base10str$O: $genLib/base10str.c $genLib/base10str.h
-	$CC -o $genLib/base10str$O -c $CFLAGS $genLib/base10str.c
+$genBio/samEntry.$O: $genBio/samEntry.c $genBio/samEntry.h $genLib/strAry.$O $genLib/base10str.$O $genLib/numToStr.$O $genBio/ntTo5Bit.h $genLib/dataTypeShortHand.h
+	$CC -o $genBio/samEntry.$O  $CFLAGS $genBio/samEntry.c
 
-$genLib/charCp$O: $genLib/charCp.c $genLib/charCp.h
-	$CC -o $genLib/charCp$O -c $CFLAGS $genLib/charCp.c
+$genLib/strAry.$O: $genLib/strAry.c $genLib/strAry.h $genLib/ulCp.$O
+	$CC -o $genLib/strAry.$O  $CFLAGS $genLib/strAry.c
 
-$genLib/ulCp$O: $genLib/ulCp.c $genLib/ulCp.h
-	$CC -o $genLib/ulCp$O -c $CFLAGS $genLib/ulCp.c
+$genLib/ulCp.$O: $genLib/ulCp.c $genLib/ulCp.h
+	$CC -o $genLib/ulCp.$O  $CFLAGS $genLib/ulCp.c
 
-$genLib/numToStr$O: $genLib/numToStr.c $genLib/numToStr.h
-	$CC -o $genLib/numToStr$O -c $CFLAGS $genLib/numToStr.c
+$genLib/numToStr.$O: $genLib/numToStr.c $genLib/numToStr.h
+	$CC -o $genLib/numToStr.$O  $CFLAGS $genLib/numToStr.c
 
-$genLib/samEntry$O: $genLib/samEntry.c $genLib/samEntry.h $genLib/ulCp$O $genLib/base10str$O $genLib/numToStr$O $genLib/ntTo5Bit.h $genLib/dataTypeShortHand.h
-	$CC -o $genLib/samEntry$O -c $CFLAGS $genLib/samEntry.c
+$genLib/base10str.$O: $genLib/base10str.c $genLib/base10str.h
+	$CC -o $genLib/base10str.$O  $CFLAGS $genLib/base10str.c
+
+$genBio/seqST.$O: $genBio/seqST.c $genBio/seqST.h $genLib/ulCp.$O $genLib/dataTypeShortHand.h
+	$CC -o $genBio/seqST.$O  $CFLAGS $genBio/seqST.c
+
+$genLib/charCp.$O: $genLib/charCp.c $genLib/charCp.h
+	$CC -o $genLib/charCp.$O  $CFLAGS $genLib/charCp.c
 
 install:
-	cp $NAME $PREFIX
-	chmod a+x $PREFIX/$NAME
+	cp $(NAME) $(PREFIX)
+	chmod a+x $(PREFIX)/$(NAME)
 
 clean:
-	rm $objFiles;
+	rm $(objFiles)

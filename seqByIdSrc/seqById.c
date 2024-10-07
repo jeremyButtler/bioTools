@@ -65,7 +65,7 @@
 
 #define def_year_seqById 2024
 #define def_month_seqById 9
-#define def_day_seqById 15
+#define def_day_seqById 17
 
 #define def_ignoreIds_seqById 0
     /*1: extract sequences not matching read ids*/
@@ -1210,7 +1210,7 @@ main(
       errSL =
          getSamSeq_idSearch(
             hashHeapST,
-            0,
+            compBl,
             headerStr,
             inFILE,
             outFILE
@@ -1220,7 +1220,7 @@ main(
       errSL =
          getFqSeq_idSearch(
             hashHeapST,
-            0,
+            compBl,
             inFILE,
             outFILE
          );
@@ -1324,7 +1324,7 @@ main(
 
    freeHeap_searchST(hashHeapST);
 
-   exit(errSL);
+   return errSL;
 } /*main*/
 
 /*=======================================================\

@@ -12,6 +12,7 @@ Primary is unlicense (public domain), but if publice
 
 # Updates:
 
+- 2024-09-17: fixed not extracting complement sequences
 - 2024-09-15: added in header entry for output sam files
 
 # Build:

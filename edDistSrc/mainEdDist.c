@@ -23,17 +23,26 @@
 #include <stdio.h>
 
 #include "../genLib/base10str.h"
+#include "../genLib/ulCp.h"
 #include "../genLib/charCp.h"
-#include "../genLib/samEntry.h"
-#include "../genLib/edDist.h"
+
+#include "../genBio/seqST.h"
+#include "../genBio/samEntry.h"
+#include "../genBio/edDist.h"
 
 /*.h files only*/
 #include "../genLib/dataTypeShortHand.h"
+#include "../genLib/genMath.h"
 
 #define def_readRate_mainEdDist 0
 #define def_minIndelLen_mainEdDist 10
 #define def_minSnpQ_mainEdDist 7
+#define def_noTran_mainEdDist 0 /*ingore transitions*/
 #define def_errRate_mainEdDist 0.023f
+#define def_minPercOverlap_mainEdDist 0.75f
+
+#define def_minDepth_mainEdDist 10 /*for depth profile*/
+#define def_depthProf_mainEdDist 0 /*run depth profile*/
 
 #define def_year_mainEdDist 2024
 #define def_month_mainEdDist 9
@@ -42,10 +51,11 @@
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
 !   o .c  #include "../genLib/ulCp.h"
-!   o .c   #include "../genLib/base10str.h"
-!   o .c   #include "../genLib/numToStr.h"
-!   o .h   #include "../genLib/ntTo5Bit.h"
-!   o .h   #include "../genLib/genMath.h" not using .c
+!   o .c  #include "../genLib/base10str.h"
+!   o .c  #include "../genLib/numToStr.h"
+!   o .c  #include "../genLib/strAry.h"
+!   o .h  #include "../genLib/genMath.h" not using .c
+!   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*-------------------------------------------------------\
@@ -207,6 +217,11 @@ phelp_mainEdDist(
 
    fprintf(
       (FILE *) outFILE,
+      "    o use \"-ref -\" for stdin input\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
       "    o edit distence is for -ref ref.sam not\n"
    );
 
@@ -225,10 +240,59 @@ phelp_mainEdDist(
       "      number of insertions present is checked\n"
    );
 
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -ref-fa ref.fa: [Optional; Replaces -ref]\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o fasta file with reference filter\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      transitions with (sets -no-tran)\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o use \"-ref-fa -\" for stdin input\n"
+   );
+
    /*****************************************************\
    * Fun02 Sec02 Sub04:
    *   - filtering input
+   *   o fun02 sec02 sub04 cat01:
+   *     - overlap flitering
+   *   o fun02 sec02 sub04 cat02:
+   *     - indel and snp filtering
+   *   o fun02 sec02 sub04 cat03:
+   *     - depth profiling
    \*****************************************************/
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub04 Cat01:
+   +   - overlap flitering
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -overlap %0.2f: [Optional; %0.2f]\n",
+      def_minPercOverlap_mainEdDist,
+      def_minPercOverlap_mainEdDist
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o minimum percent overlap to score read\n"
+   );
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub04 Cat02:
+   +   - indel and snp filtering
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
    fprintf(
       (FILE *) outFILE,
@@ -240,6 +304,29 @@ phelp_mainEdDist(
    fprintf(
       (FILE *) outFILE,
       "    o minimum q-score to count a SNP\n"
+   );
+
+
+   if(def_noTran_mainEdDist)
+      fprintf(
+         (FILE *) outFILE,
+         "  -no-tran: [Optional; Yes]\n"
+      );
+
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "  -no-tran: [Optional; No]\n"
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o ignore transitions (remove with \"-tran\")\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o -no-tran is ignored if no reference input\n"
    );
 
 
@@ -260,6 +347,53 @@ phelp_mainEdDist(
       "    o the full indel length is added to distance\n"
    );
 
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub04 Cat03:
+   +   - depth profiling
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(def_depthProf_mainEdDist)
+      fprintf(
+         (FILE *) outFILE,
+         "  -depth-prof: [Optional; Yes]\n"
+      );
+
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "  -depth-prof: [Optional; No]\n"
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o profile reference depth and only keep\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      differences > minimum depth\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o disable with \"-no-depth-prof\"\n"
+   );
+
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -min-depth %i: [Optional; %i]\n",
+     def_minDepth_mainEdDist,
+     def_minDepth_mainEdDist
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o minimum read depth for depth profiling\n"
+   );
+
+
    /*****************************************************\
    * Fun02 Sec02 Sub05:
    *   - error rate varaibles
@@ -267,7 +401,7 @@ phelp_mainEdDist(
 
    fprintf(
       (FILE *) outFILE,
-      "  -err %0.2f: [Optional; %0.2f]\n",
+      "  -err %0.3f: [Optional; %0.3f]\n",
       def_errRate_mainEdDist,
       def_errRate_mainEdDist
    );
@@ -369,6 +503,23 @@ phelp_mainEdDist(
 |     o pointer to signed char to be set to
 |     o 1: apply read comaprsion error rate
 |     o 0: do not apply read comaprsion error rate
+|   - depthProfBlPtr:
+|     o pointer to signed char to be set to
+|     o 1: do depth profling
+|     o 0: do not do depth profiling
+|   - minDepthUIPtr:
+|     o pointer to unsigned int to hold minimum read depth
+|       for depth profling
+|   - minOverlapFPtr:
+|     o pointert to float to hold min % overlap
+|   - refFaBlPtr:
+|     o pointer to signed char to be set to
+|     o 1: fasta reference input
+|     o 0: no fasta reference input (is null or sam)
+|   - noTranBlPtr:
+|     o pointer to signed char to be set to
+|     o 1: ignoring transitions
+|     o 0: keeping transitions
 | Output:
 |   - Modfies:
 |     o all input, except numArgsSI and argAryStr, to hold
@@ -392,7 +543,12 @@ input_mainEdDist(
    unsigned char *minQUCPtr,
    unsigned int *minIndelLenUIPtr,
    float *errRateFPtr,
-   signed char *readCmpBlPtr
+   signed char *readCmpBlPtr,
+   signed char *depthProfBlPtr,
+   unsigned int *minDepthUIPtr,
+   float *minOverlapFPtr,
+   signed char *faRefBlPtr,
+   signed char *noTranBlPtr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
    '   - gets input for edDist
@@ -472,6 +628,20 @@ input_mainEdDist(
       ){ /*Else If: reference file*/
          ++siArg;
          *refFileStrPtr = (schar *) argAryStr[siArg];
+         *faRefBlPtr = 0;
+      } /*Else If: reference file*/
+
+      else if(
+         ! eql_charCp(
+            (schar *) "-ref-fa",
+            (schar *) argAryStr[siArg],
+            (schar) '\0'
+         )
+      ){ /*Else If: reference file*/
+         ++siArg;
+         *refFileStrPtr = (schar *) argAryStr[siArg];
+         *faRefBlPtr = 1;
+         *noTranBlPtr = 1;
       } /*Else If: reference file*/
 
       else if(
@@ -488,7 +658,20 @@ input_mainEdDist(
       /**************************************************\
       * Fun03 Sec03 Sub02:
       *   - filter input
+      *   o fun03 sec03 sub02 cat01:
+      *     - q-score and indel length
+      *   o fun03 sec03 sub02 cat02:
+      *     - depth profiling input
+      *   o fun03 sec03 sub02 cat03:
+      *     - overlap length filtering
+      *   o fun03 sec03 sub02 cat04:
+      *     - transition filtering
       \**************************************************/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec03 Sub02 Cat01:
+      +   - q-score and indel length
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
       else if(
          ! eql_charCp(
@@ -545,6 +728,94 @@ input_mainEdDist(
             goto err_fun03_sec04;
          } /*If: non-numeric or to large*/
       } /*Else If: min indel length*/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec03 Sub02 Cat02:
+      +   - depth profiling input
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(
+         ! eql_charCp(
+            (schar *) "-min-depth",
+            (schar *) argAryStr[siArg],
+            (schar) '\0'
+         )
+      ){ /*Else If: min depth for depth profiling*/
+         ++siArg;
+         tmpStr = (schar *) argAryStr[siArg];
+
+         tmpStr +=
+            strToUI_base10str(
+               tmpStr,
+               minDepthUIPtr
+            );
+
+         if(*tmpStr != '\0')
+         { /*If: non-numeric or to large*/
+            fprintf(
+               stderr,
+               "-min-depth %s is to large/non-numeric\n",
+               argAryStr[siArg]
+            );
+
+            goto err_fun03_sec04;
+         } /*If: non-numeric or to large*/
+
+         *depthProfBlPtr = 1;
+      } /*Else If: min depth for depth profiling*/
+
+      else if(
+         ! eql_charCp(
+            (schar *) "-depth-prof",
+            (schar *) argAryStr[siArg],
+            (schar) '\0'
+         )
+      ) *depthProfBlPtr = 1;
+
+      else if(
+         ! eql_charCp(
+            (schar *) "-no-depth-prof",
+            (schar *) argAryStr[siArg],
+            (schar) '\0'
+         )
+      ) *depthProfBlPtr = 0;
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec03 Sub02 Cat03:
+      +   - overlap length filtering
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(
+         ! eql_charCp(
+            (schar *) "-overlap",
+            (schar *) argAryStr[siArg],
+            (schar) '\0'
+         )
+      ){ /*Else If: minimum perecent overlap*/
+         ++siArg;
+         *minOverlapFPtr = atof(argAryStr[siArg]);
+      } /*Else If: minimum perecent overlap*/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec03 Sub02 Cat04:
+      +   - transition filtering
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(
+         ! eql_charCp(
+            (schar *) "-no-tran",
+            (schar *) argAryStr[siArg],
+            (schar) '\0'
+         )
+      ) *noTranBlPtr = 1;
+
+      else if(
+         ! eql_charCp(
+            (schar *) "-tran",
+            (schar *) argAryStr[siArg],
+            (schar) '\0'
+         )
+      ) *noTranBlPtr = 0;
 
       /**************************************************\
       * Fun03 Sec03 Sub03:
@@ -779,15 +1050,22 @@ main(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    schar *refFileStr = 0;
+   schar refFaBl = 0;      /*tells if fasta ref input*/
    schar *samFileStr = 0;
    schar *outFileStr = 0;
 
    /*edit distance settings*/
+   schar noTranBl = def_noTran_mainEdDist;
    uint minIndelLenUI = def_minIndelLen_mainEdDist;
    uchar minQUC = def_minSnpQ_mainEdDist;
+   float minOverlapF = def_minPercOverlap_mainEdDist;
 
    float percErrF = def_errRate_mainEdDist;
    schar readCmpBl = def_readRate_mainEdDist;
+
+   schar depthProfileBl = def_depthProf_mainEdDist;
+   uint minDepthUI = def_minDepth_mainEdDist;
+   uint *depthHeapAryUI = 0; /*for depth profiling*/
 
    schar errSC = 0;
    slong distSL = 0;
@@ -796,11 +1074,13 @@ main(
    uint indelEventsUI = 0;
    uint numIndelsUI = 0;
    uint lenOverlapUI = 0;
+   uint startUI = 0;       /*first base in overalp*/
 
    FILE *samFILE = 0;
    FILE *outFILE = 0;
 
    struct samEntry refStackST;
+   struct seqST refSeqStackST;
    schar refBl = 0;
 
    struct samEntry qryStackST;
@@ -832,6 +1112,7 @@ main(
 
    init_samEntry(&refStackST);
    init_samEntry(&qryStackST);
+   init_seqST(&refSeqStackST);
 
    /*****************************************************\
    * Main Sec02 Sub02:
@@ -848,7 +1129,12 @@ main(
          &minQUC,
          &minIndelLenUI,
          &percErrF,
-         &readCmpBl
+         &readCmpBl,
+         &depthProfileBl,
+         &minDepthUI,
+         &minOverlapF,
+         &refFaBl,
+         &noTranBl
    ); /*get user input*/
 
    if(errSC)
@@ -895,10 +1181,12 @@ main(
    *   o main sec02 sub04 cat01:
    *     - open the reference file
    *   o main sec02 sub04 cat02:
-   *     - read in first sam file entry
+   *     - read in first reference (if fasta file input)
    *   o main sec02 sub04 cat03:
-   *     - get reference sequence and handel errors
+   *     - read in first reference (if sam file input)
    *   o main sec02 sub04 cat04:
+   *     - get reference sequence and handel errors
+   *   o main sec02 sub04 cat05:
    *     - no reference; set id to NA
    \*****************************************************/
 
@@ -911,64 +1199,95 @@ main(
    { /*If: user provided a reference to compare*/
       refBl = 1;
 
-      samFILE =
-         fopen(
-            (char *) refFileStr,
-            "r"
-         );
-
-      if(! samFILE)
-      { /*If: error*/
-         fprintf(
-            stderr,
-            "could not open -ref %s\n",
-            refFileStr
-         );
-
-         goto err_main_sec04_sub02;
-      } /*If: error*/
-
-      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Main Sec02 Sub04 Cat02:
-      +   - read in first sam file entry
-      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-      errSC =
-         get_samEntry(
-            &refStackST,
-            &buffHeapStr,
-            &lenBuffUL,
-            samFILE
-         );
-
-      if(errSC)
-      { /*If: error*/
-         if(errSC == def_memErr_samEntry)
+      if(*refFileStr == '-')
+      { /*If: stdin input*/
+         if(
+                ! samFileStr
+             || *samFileStr == '-'
+         ){ /*If: two files from stdin*/
             fprintf(
                stderr,
-               "memory error reading reference\n"
+               "-ref and -sam are both from stdin\n"
             );
 
-         else
+            goto err_main_sec04_sub02;
+         } /*If: two files from stdin*/
+
+         samFILE = stdin;
+      } /*If: stdin input*/
+
+      else
+      { /*Else: user provided reference file*/
+         samFILE =
+            fopen(
+               (char *) refFileStr,
+               "r"
+            );
+
+         if(! samFILE)
+         { /*If: error*/
             fprintf(
                stderr,
-               "-ref %s has nothing\n",
+               "could not open -ref %s\n",
                refFileStr
             );
 
-         goto err_main_sec04_sub02;
-      } /*If: error*/
+            goto err_main_sec04_sub02;
+         } /*If: error*/
+      } /*Else: user provided reference file*/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Main Sec02 Sub04 Cat02:
+      +   - read in first reference (if fasta input)
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      if(refFaBl)
+      { /*If: is fasta file*/
+         errSC =
+            getFaSeq_seqST(
+               samFILE,
+               &refSeqStackST
+            );
+
+         if(errSC)
+         { /*If: error*/
+            if(errSC & def_fileErr_seqST)
+            { /*If: file error*/
+               fprintf(
+                  stderr,
+                  "-ref-fa %s is not a fasta file\n",
+                  refFileStr
+               );
+
+               goto err_main_sec04_sub02;
+            } /*If: file error*/
+
+            if(errSC == def_memErr_seqST)
+            { /*If: memory error*/
+               fprintf(
+                  stderr,
+                  "memory error reading -ref-fa %s\n",
+                  refFileStr
+               );
+
+               goto err_main_sec04_sub02;
+            } /*If: memory error*/
+
+         } /*If: error*/
+
+         cpWhite_ulCp(
+            refStackST.qryIdStr,
+            refSeqStackST.idStr
+         );
+      } /*If: is fasta file*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
       + Main Sec02 Sub04 Cat03:
-      +   - get reference sequence and handel errors
+      +   - read in first reference (if sam file input)
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-      while(! errSC)
-      { /*Loop: get reference sequence*/
-         if(*refStackST.extraStr != '@')
-            break;
-
+      else
+      { /*Else: reference in sam file*/
          errSC =
             get_samEntry(
                &refStackST,
@@ -976,32 +1295,71 @@ main(
                &lenBuffUL,
                samFILE
             );
-      } /*Loop: get reference sequence*/
 
-      if(errSC)
-      { /*If: error*/
-         if(errSC == def_memErr_samEntry)
-            fprintf(
-               stderr,
-               "memory error reading reference\n"
-            );
+         if(errSC)
+         { /*If: error*/
+            if(errSC == def_memErr_samEntry)
+               fprintf(
+                  stderr,
+                  "memory error reading reference\n"
+               );
 
-         else if(*refStackST.extraStr == '@')
-            fprintf(
-               stderr,
-               "-ref %s has no sequences\n",
-               refFileStr
-            );
+            else
+               fprintf(
+                  stderr,
+                  "-ref %s has nothing\n",
+                  refFileStr
+               );
 
-         goto err_main_sec04_sub02;
-      } /*If: error*/
+            goto err_main_sec04_sub02;
+         } /*If: error*/
 
-      fclose(samFILE);
-      samFILE = 0;
+         /*++++++++++++++++++++++++++++++++++++++++++++++\
+         + Main Sec02 Sub04 Cat04:
+         +   - get reference sequence and handel errors
+         \++++++++++++++++++++++++++++++++++++++++++++++*/
+
+         while(! errSC)
+         { /*Loop: get reference sequence*/
+            if(*refStackST.extraStr != '@')
+               break;
+
+            errSC =
+               get_samEntry(
+                  &refStackST,
+                  &buffHeapStr,
+                  &lenBuffUL,
+                  samFILE
+               );
+         } /*Loop: get reference sequence*/
+
+         if(errSC)
+         { /*If: error*/
+            if(errSC == def_memErr_samEntry)
+               fprintf(
+                  stderr,
+                  "memory error reading reference\n"
+               );
+
+            else if(*refStackST.extraStr == '@')
+               fprintf(
+                  stderr,
+                  "-ref %s has no sequences\n",
+                  refFileStr
+               );
+
+            goto err_main_sec04_sub02;
+         } /*If: error*/
+
+         if(samFILE != stdin)
+            fclose(samFILE);
+
+         samFILE = 0;
+      } /*Else: reference in sam file*/
    } /*If: user provided a reference to compare*/
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Main Sec02 Sub04 Cat04:
+   + Main Sec02 Sub04 Cat05:
    +   - no reference; set id to NA
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1020,7 +1378,20 @@ main(
    if(
          ! samFileStr
       || *samFileStr == '-'
-   ) samFILE = stdin;
+   ){ /*If: stdin input*/
+      if(depthProfileBl)
+      { /*If: doing depth profiling*/
+         fprintf(
+            stderr,
+            "can not do depth profiling with stdin data\n"
+         );
+
+         goto err_main_sec04_sub02;
+      } /*If: doing depth profiling*/
+
+      else
+         samFILE = stdin;
+   } /*If: stdin input*/
 
    else
    { /*Else: user provided a sam file*/
@@ -1076,34 +1447,75 @@ main(
    ^ Main Sec03:
    ^   - get and print edit distances
    ^   o main sec03 sub01:
-   ^     - print header
+   ^     - get depth profile (if profiling)
    ^   o main sec03 sub02:
-   ^     - get first sam file entry
+   ^     - print header
    ^   o main sec03 sub03:
-   ^     - get and print edit distances
+   ^     - get first sam file entry
    ^   o main sec03 sub04:
+   ^     - get and print edit distances
+   ^   o main sec03 sub05:
    ^     - print out file errors
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
    * Main Sec03 Sub01:
+   *   - get depth profile (if profiling)
+   \*****************************************************/
+
+   if(depthProfileBl)
+   { /*If: doing depth profiling*/
+      depthHeapAryUI =
+         mkDepthProfile_edDist(
+            &refStackST,
+            minQUC,
+            minOverlapF,
+            &qryStackST,
+            &buffHeapStr,
+            &lenBuffUL,
+            samFILE,
+            &errSC
+         );
+
+      if(errSC)
+      { /*If: error*/
+         if(errSC == def_memErr_edDist)
+            fprintf(
+               stderr,
+               "memory error depth profiling -sam %s\n",
+               samFileStr
+            );
+
+         else
+            fprintf(
+               stderr,
+               "file error depth profiling -sam %s\n",
+               samFileStr
+            );
+
+         goto err_main_sec04_sub02;
+      } /*If: error*/
+   } /*If: doing depth profiling*/
+
+   /*****************************************************\
+   * Main Sec03 Sub02:
    *   - print header
    \*****************************************************/
 
    entryUL = 1;
 
    fprintf(
-      stdout,
-     "qry\tref\tdist\tdist_div_err\taln_len"
+      outFILE,
+     "qry\tref\tdist\tdist_div_err\tstart\taln_len"
    );
 
    fprintf(
-      stdout,
+      outFILE,
      "\tnum_indels\tindel_events\n"
    );
 
    /*****************************************************\
-   * Main Sec03 Sub02:
+   * Main Sec03 Sub03:
    *   - get first sam file entry
    \*****************************************************/
 
@@ -1136,15 +1548,15 @@ main(
    } /*If: error*/
 
    /*****************************************************\
-   * Main Sec03 Sub03:
-   *   - get and print edit distances
+   * Main Sec03 Sub04:
+   *   - get edit distances
    \*****************************************************/
 
    while(! errSC)
    { /*Loop: get edit distances*/
       ++entryUL;
 
-      if(refBl)
+      if(refBl && ! refFaBl)
       { /*If: comparing reference and read*/
          distSL =
             readCmpDist_edDist(
@@ -1152,25 +1564,61 @@ main(
                &refStackST,
                minIndelLenUI,
                minQUC,
+               minOverlapF,
+               minDepthUI,
+               depthHeapAryUI,
+               noTranBl,
                &lenOverlapUI,
                &numIndelsUI,
                &indelEventsUI
+            );
+
+         startUI =
+            max_genMath(
+               qryStackST.refStartUI,
+               refStackST.refStartUI
             );
       } /*If: comparing reference and read*/
 
       else
       { /*Else: compare read to mapped ref*/
-         distSL =
-            dist_edDist(
-               &qryStackST,
-               minIndelLenUI,
-               minQUC,
-               &numIndelsUI,
-               &indelEventsUI
-            );
+         startUI = qryStackST.refStartUI;
+
+         if(refFaBl)
+         { /*If: using reference for transitions*/
+            distSL =
+               dist_edDist(
+                  &qryStackST,
+                  &refSeqStackST,
+                  1,              /*ignoring transitions*/
+                  minIndelLenUI,
+                  minQUC,
+                  &numIndelsUI,
+                  &indelEventsUI
+               );
+         } /*If: using reference for transitions*/
+
+         else
+         { /*Else: not using reference*/
+            distSL =
+               dist_edDist(
+                  &qryStackST,
+                  0,              /*not using reference*/
+                  0,              /*ignoring transitions*/
+                  minIndelLenUI,
+                  minQUC,
+                  &numIndelsUI,
+                  &indelEventsUI
+               );
+         } /*Else: not using reference*/
 
          lenOverlapUI = qryStackST.alnReadLenUI;
       } /*Else: compare read to mapped ref*/
+
+      /**************************************************\
+      * Main Sec03 Sub05:
+      *   - print edit distances
+      \**************************************************/
 
       if(distSL >= 0)
       { /*If: have edit distance*/
@@ -1181,12 +1629,31 @@ main(
                percErrF
             ); /*probablity is true*/
 
-         printf(
-            "%s\t%s\t%li\t%i\t%u\t%u\t%u\n",
-            qryStackST.qryIdStr,
-            refStackST.qryIdStr,
+         fprintf(
+            outFILE,
+            "%s",
+            qryStackST.qryIdStr
+         );
+
+         if(refFileStr)
+            fprintf(
+               outFILE,
+               "\t%s",
+               refStackST.qryIdStr
+            ); /*print provided reference*/
+         else
+            fprintf(
+               outFILE,
+               "\t%s",
+               qryStackST.refIdStr
+            ); /*print mapped reference*/
+
+         fprintf(
+            outFILE,
+            "\t%li\t%i\t%u\t%u\t%u\t%u\n",
             distSL,
             probSI,
+            startUI,
             lenOverlapUI,
             numIndelsUI,
             indelEventsUI
@@ -1234,6 +1701,10 @@ main(
 
    cleanUp_main_sec04:;
 
+   if(depthHeapAryUI)
+      free(depthHeapAryUI);
+   depthHeapAryUI = 0;
+
    if(
          samFILE
       && samFILE != stdin
@@ -1252,11 +1723,12 @@ main(
 
    freeStack_samEntry(&refStackST);
    freeStack_samEntry(&qryStackST);
+   freeStack_seqST(&refSeqStackST);
 
    free(buffHeapStr);
    buffHeapStr = 0;
 
-   exit(0); 
+   return errSC;
 } /*main*/
 
 /*=======================================================\

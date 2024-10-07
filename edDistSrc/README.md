@@ -7,7 +7,7 @@ Finds an edit distance that accounts for errors between
 
 By accounting for errors, I mean that SNPs with low
   quality scores are discarded. Small indels are also
-  discarded.
+  discarded. So, not the best method.
 
 Insertions between a non-mapped reference and query are
   not aligned. Instead the size of the indel is compared

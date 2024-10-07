@@ -1,10 +1,6 @@
-/*#######################################################\
-# Name: trimSamFile.c
-#   - driver for triming sam file entries 
-\#######################################################*/
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-' SOF: Start Of File
+' mainTrimSam SOF: Start Of File
+'   - driver for triming sam file entries 
 '   o fun01: pversion_mainTrimSam
 '     - prints version number
 '   o fun02: phelp_mainTrimSam
@@ -20,7 +16,7 @@
 /*I still will have issues with fprintf on plan9, so this
 `  is just one part of the problem
 */
-#ifdef plan9
+#ifdef PLAN9
    #include <u.h>
    #include <libc.h> /*think includes <string.h>*/
 #else
@@ -30,8 +26,8 @@
 
 #include <stdio.h>
 
-#include "../genLib/trimSam.h"
-#include "../genLib/samEntry.h"
+#include "../genBio/trimSam.h"
+#include "../genBio/samEntry.h"
 
 /*no .c files*/
 #include "../genLib/dataTypeShortHand.h"
@@ -42,8 +38,9 @@
 !   - .c  #include "../genLib/ulCp.h"
 !   - .c  #include "../genLib/numToStr.h"
 !   - .c  #include "../genLib/base10str.h"
+!   - .c  #include "../genLib/strAry.h"
 !   - .h  #include "../genLib/dataTypeShortHand.h"
-!   - .h  #include "../genLib/ntTo5Bit.h"
+!   - .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 #define def_keepNoMap_mainTrimSam 0
@@ -805,7 +802,7 @@ main(
 
     outFILE = 0;
 
-    exit(errSC);
+    return errSC;
 } /*main function*/
 
 

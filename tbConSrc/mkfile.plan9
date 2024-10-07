@@ -1,45 +1,51 @@
-</$objtype/mkfile
-
-CFLAGS= -w -DPLAN9
+<$objtype/mkfile
+CFLAGS= -DPLAN9
 NAME=tbCon
-PREFIX=/usr/local/bin
+PREFIX=$home/bin
+
+genBio=../genBio
 genLib=../genLib
-genAln=../genAln
 
-objFiles=\
-   $genLib/base10str$O \
-   $genLib/ulCp$O \
-   $genLib/charCp$O \
-   $genLib/numToStr$O \
-   $genLib/samEntry$O
+objFiles= \
+   $genBio/tbCon.$O \
+   $genBio/samEntry.$O \
+   $genLib/strAry.$O \
+   $genLib/ulCp.$O \
+   $genLib/numToStr.$O \
+   $genLib/base10str.$O \
+   $genLib/charCp.$O \
+   mainTbCon.$O
 
-all: mainTbCon$O $objFiles
-	$LD -o $NAME $CFLAGS mainTbCon$O tbCon$O $objFiles
+all: mainTbCon.$O
+	$LD -o $NAME $CFLAGS $objFiles
 
-mainTbCon$O: mainTbCon.c tbCon$O $genLib/charCp$O
-	$CC g$CFLAGS mainTbCon.c
+mainTbCon.$O: mainTbCon.c $genBio/tbCon.$O $genLib/charCp.$O
+	$CC -o mainTbCon.$O  $CFLAGS mainTbCon.c
 
-tbCon$O: tbCon.c tbCon.h tbConDefs.h $genLib/samEntry$O $genLib/genMath.h
-	$CC g$CFLAGS tbCon.c
+$genBio/tbCon.$O: $genBio/tbCon.c $genBio/tbCon.h $genBio/samEntry.$O $genBio/tbConDefs.h $genLib/genMath.h
+	$CC -o $genBio/tbCon.$O  $CFLAGS $genBio/tbCon.c
 
-$genLib/base10str$O: $genLib/base10str.c $genLib/base10str.h
-	$CC g$CFLAGS $genLib/base10str.c
+$genBio/samEntry.$O: $genBio/samEntry.c $genBio/samEntry.h $genLib/strAry.$O $genLib/base10str.$O $genLib/numToStr.$O $genBio/ntTo5Bit.h $genLib/dataTypeShortHand.h
+	$CC -o $genBio/samEntry.$O  $CFLAGS $genBio/samEntry.c
 
-$genLib/charCp$O: $genLib/charCp.c $genLib/charCp.h
-	$CC g$CFLAGS $genLib/charCp.c
+$genLib/strAry.$O: $genLib/strAry.c $genLib/strAry.h $genLib/ulCp.$O
+	$CC -o $genLib/strAry.$O  $CFLAGS $genLib/strAry.c
 
-$genLib/ulCp$O: $genLib/ulCp.c $genLib/ulCp.h
-	$CC g$CFLAGS $genLib/ulCp.c
+$genLib/ulCp.$O: $genLib/ulCp.c $genLib/ulCp.h
+	$CC -o $genLib/ulCp.$O  $CFLAGS $genLib/ulCp.c
 
-$genLib/numToStr$O: $genLib/numToStr.c $genLib/numToStr.h
-	$CC g$CFLAGS $genLib/numToStr.c
+$genLib/numToStr.$O: $genLib/numToStr.c $genLib/numToStr.h
+	$CC -o $genLib/numToStr.$O  $CFLAGS $genLib/numToStr.c
 
-$genLib/samEntry$O: $genLib/samEntry.c $genLib/samEntry.h $genLib/ulCp$O $genLib/base10str$O $genLib/numToStr$O $genLib/ntTo5Bit.h $genLib/dataTypeShortHand.h
-	$CC g$CFLAGS $genLib/samEntry.c
+$genLib/base10str.$O: $genLib/base10str.c $genLib/base10str.h
+	$CC -o $genLib/base10str.$O  $CFLAGS $genLib/base10str.c
+
+$genLib/charCp.$O: $genLib/charCp.c $genLib/charCp.h
+	$CC -o $genLib/charCp.$O  $CFLAGS $genLib/charCp.c
 
 install:
-	mv $NAME $PREFIX
-	chmod a+x $PREFIX/$NAME
+	cp $(NAME) $(PREFIX)
+	chmod a+x $(PREFIX)/$(NAME)
 
 clean:
-	rm $objFiles mainTbCon$O tbCon$O;
+	rm $(objFiles)
