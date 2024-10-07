@@ -125,10 +125,12 @@ The mkfileScripts directory has bash scripts to build
 
 My general libraries.
 
-genLib is for general libraries that do not have a
-  specific task.
-
-genAln is for alignment tasks.
+- genLib is for general libraries that are not related to
+  biology.
+- genBio is for general biology tasks
+- genAln is for alignment tasks, such as pairwise aligners
+  or primer scanning (biology)
+- genClust is for clustering our grouping tasks (biology)
 
 # TODO:
 
