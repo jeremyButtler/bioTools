@@ -33,6 +33,7 @@
 #include <stdio.h>
 
 #include "../genLib/base10str.h"
+#include "../genLib/numToStr.h"
 #include "../genBio/samEntry.h"
 
 /*.h files only*/
@@ -607,6 +608,8 @@ getVarNano_illNano(
                if(profileStr[refPosUI] == '\0')
                   goto ret_fun02_sec04;
                
+               mapPosAryUI[numVarUI] = refPosUI;
+
                switch(
                   samSTPtr->seqStr[readPosUI] & ~32
                ){ /*Switch: find sequence base*/
@@ -618,8 +621,6 @@ getVarNano_illNano(
 
                   case 'A':
                   /*Case: read has A*/
-                     mapPosAryUI[numVarUI] = refPosUI;
-
                      if(
                           profileStr[refPosUI]
                         & def_A_illNano
@@ -644,8 +645,6 @@ getVarNano_illNano(
                            def_unkown_illNano;
                            /*no idea what is*/
 
-                     ++numVarUI;
-
                      break;
                   /*Case: read has A*/
 
@@ -656,8 +655,6 @@ getVarNano_illNano(
 
                   case 'C':
                   /*Case: read has C*/
-                     mapPosAryUI[numVarUI] = refPosUI;
-
                      if(
                           profileStr[refPosUI]
                         & def_C_illNano
@@ -682,8 +679,6 @@ getVarNano_illNano(
                            def_unkown_illNano;
                            /*no idea what is*/
 
-                     ++numVarUI;
-
                      break;
                   /*Case: read has C*/
 
@@ -694,8 +689,6 @@ getVarNano_illNano(
 
                   case 'G':
                   /*Case: read has G*/
-                     mapPosAryUI[numVarUI] = refPosUI;
-
                      if(
                           profileStr[refPosUI]
                         & def_G_illNano
@@ -719,9 +712,6 @@ getVarNano_illNano(
                         mapNtAryUI[numVarUI] =
                            def_unkown_illNano;
                            /*no idea what is*/
-
-                     ++numVarUI;
-
                      break;
                   /*Case: read has G*/
 
@@ -732,8 +722,6 @@ getVarNano_illNano(
 
                   case 'T':
                   /*Case: read has T*/
-                     mapPosAryUI[numVarUI] = refPosUI;
-
                      if(
                           profileStr[refPosUI]
                         & def_T_illNano
@@ -759,8 +747,6 @@ getVarNano_illNano(
                            def_unkown_illNano;
                            /*no idea what is*/
 
-                     ++numVarUI;
-
                      break;
                   /*Case: read has T*/
                } /*Switch: find sequence base*/
@@ -769,6 +755,8 @@ getVarNano_illNano(
                + Fun02 Sec03 Sub02 Cat06:
                +   - move to next base
                \++++++++++++++++++++++++++++++++++++++++*/
+
+               ++numVarUI; /*only fires if profile pos*/
 
                nextNt_fun02_sec03_sub02_cat06:;
 
@@ -796,7 +784,7 @@ getVarNano_illNano(
                   /*no more variants in profile*/;
 
                if(
-                     profileStr[numVarUI]
+                     profileStr[refPosUI]
                   != def_noBase_illNano
                ){ /*If: have variant at position*/
                   mapPosAryUI[numVarUI] = refPosUI;
@@ -920,6 +908,7 @@ getNanoReads_illNano(
    uint *mapNtArySC = 0;  /*nucleotide of mapped var*/
    uint numVarUI = 0;     /*number of variants*/
    uint uiVar = 0;        /*for printing variants*/
+   uint uiPos = 0;        /*position in output buffer*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun03 Sec02:
@@ -1016,22 +1005,32 @@ getNanoReads_illNano(
          numVarUI
       );
 
+      uiPos = 0;
+
       for(
          uiVar = 0;
          uiVar < numVarUI;
          ++uiVar
       ){ /*Loop: print out each variant position*/
-         fprintf(
-            (FILE *) outFILE,
-            "%u%c",
-            mapPosAryUI[uiVar] + 1, /*to index 1*/
-            mapNtArySC[uiVar]
-         );
+         if(uiVar > 0)
+            (*buffStrPtr)[uiPos++] = '_'; /*for humans*/
+         
+         uiPos +=
+            numToStr(
+               &(*buffStrPtr)[uiPos],
+               mapPosAryUI[uiVar] + 1  /*to index 1*/
+            );
+               
+         (*buffStrPtr)[uiPos++] = mapNtArySC[uiVar];
       } /*Loop: print out each variant position*/
+
+      (*buffStrPtr)[uiPos++] = '\n';
+      (*buffStrPtr)[uiPos] = '\0';
 
       fprintf(
          (FILE *) outFILE,
-         "\n"
+         "%s",
+         *buffStrPtr
       ); /*add new line ot end of line*/
 
       /**************************************************\

@@ -47,7 +47,7 @@
 
 #define def_year_mainIllNano 2024
 #define def_month_mainIllNano 10
-#define def_day_mainIllNano 6
+#define def_day_mainIllNano 8
 
 #define def_minDepth_mainIllNano 10
 #define def_minPercDepth_mainIllNano 0.001f
@@ -942,7 +942,7 @@ main(
       { /*If: file error*/
          fprintf(
             stderr,
-            "could not open -ill-tsv %s",
+            "could not open -ill-tsv %s\n",
             illTsvFileStr
          );
 
@@ -972,7 +972,7 @@ main(
       { /*If: file error*/
          fprintf(
             stderr,
-            "could not open -sam-ont %s",
+            "could not open -sam-ont %s\n",
             ontSamFileStr
          );
 
@@ -1016,7 +1016,7 @@ main(
       { /*If: file error*/
          fprintf(
             stderr,
-            "could not open -out %s",
+            "could not open -out %s\n",
             outFileStr
          );
 
