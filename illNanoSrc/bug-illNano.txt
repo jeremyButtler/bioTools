@@ -1,4 +1,3 @@
-b mainIllNano.c:1033
-b illNano.c:560
+b mainIllNano.c:1116
 
-r -ill-tsv $HOME/files/testing/mixedInfect/illumina/1181/SRR13951223-map-filt-con.tsv -sam-ont $HOME/files/testing/mixedInfect/SRR13951181-map.sam
+r -uniq-out del-uniq.tsv -ill-tsv $HOME/files/testing/mixedInfect/illumina/1181/SRR13951223-map-filt-con.tsv -sam-ont $HOME/files/testing/mixedInfect/SRR13951181-map.sam

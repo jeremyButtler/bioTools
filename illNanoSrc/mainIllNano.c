@@ -56,6 +56,9 @@
 #define def_transition_mainIllNano 0
    /*1: if unkown variant, assign to transition (if one)*/
 
+#define def_partOverlapMerge_mainIllNano 0
+   /*1: merge if overlaps are not complete*/
+
 /*-------------------------------------------------------\
 | Fun01: pversion_mainIllNano
 |   - prints version number for illNano
@@ -238,6 +241,26 @@ phelp_mainIllNano(
       "       o use \"-out -\" for stdout output \n"
    );
 
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub02 Cat05:
+   +   - print unique output file
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -uniq-out uniqe_profiles.tsv: [Optional; No]\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "       o file name to print unique profiles to\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "       o use \"-uniq-out -\" for stdout output \n"
+   );
+
    /*****************************************************\
    * Fun02 Sec02 Sub03:
    *   - print settings
@@ -366,6 +389,37 @@ phelp_mainIllNano(
       "       o use \"-no-tran\" to disable\n"
    );
 
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub03 Cat06:
+   +   - partial ovlerap setting
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(def_partOverlapMerge_mainIllNano)
+      fprintf(
+         (FILE *) outFILE,
+         "     -part-overlap: [Optional; Yes]\n"
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "     -part-overlap: [Optional; No]\n"
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "       o merge profiles were one read does not\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "         fully cover the other (can be longer)\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "       o disable with \"-full-overlap\"\n"
+   );
+
    /*****************************************************\
    * Fun02 Sec02 Sub04:
    *   - help message and version number
@@ -448,7 +502,7 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "      - example: 123A130D140X150G200T250C\n"
+      "      - example: 123A_130D_140X_150G_200T_250C\n"
    );
 } /*phelp_mainIllNano*/
 
@@ -468,6 +522,9 @@ phelp_mainIllNano(
 |       with nanopore reads
 |   - outFileStrPtr:
 |     o pointer to c-string to pointer to output file name
+|   - uniqFileStrPtr:
+|     o pointer to c-string to pointer to output file for
+|       unique profiles
 |   - minDepthUIPtr:
 |     o pointer to usigned int to hold minimum depth
 |   - minPercDepthFPtr:
@@ -478,6 +535,12 @@ phelp_mainIllNano(
 |     o pointer to signed char set to
 |       - 1: if assing unkown variants to transitions
 |       - 0: if not trying to guess unkown varaints
+|   - partOverlapBlPtr
+|     o pointer to signed char set to
+|       - 1: merge parital overlaps (both profiles have
+|            variants not present in other)
+|       - 0: require one profile to have all variants of
+|            other
 | Output:
 |   - Prints:
 |     o version number to outFILE
@@ -489,10 +552,12 @@ input_mainIllNano(
    signed char **illTsvFileStrPtr,/*illumina tsv file*/
    signed char **ontSamFileStrPtr,/*sam file with reads*/
    signed char **outFileStrPtr,   /*output file*/
+   signed char **uniqFileStrPtr,  /*uniqe output file*/
    unsigned int *minDepthUIPtr,   /*minimum read depth*/
    float *minPercDepthFPtr,       /*minimum % snp depth*/
    float *minPercDelFPtr,         /*minimum % del depth*/
-   signed char *tranBlPtr        /*assign to tranistions*/
+   signed char *tranBlPtr,       /*assign to tranistions*/
+   signed char *partOverlapBlPtr /*parital overlap merge*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
    '   - gets user input from array
@@ -584,6 +649,16 @@ input_mainIllNano(
          *outFileStrPtr = (schar *) argAryStr[siArg];
       } /*Else If: output file*/
 
+      else if(
+         ! eqlNull_ulCp(
+            (schar *) "-uniq-out",
+            (schar *) argAryStr[siArg]
+         )
+      ){ /*Else If: output file*/
+         ++siArg;
+         *uniqFileStrPtr = (schar *) argAryStr[siArg];
+      } /*Else If: output file*/
+
       /**************************************************\
       * Fun03 Sec03 Sub02:
       *   - settings
@@ -595,6 +670,8 @@ input_mainIllNano(
       *     - del minimum percent Illumina read depth
       *   o fun03 sec03 sub02 cat04:
       *     - transition check setting
+      *   o fun03 sec03 sub02 cat05:
+      *     - partail overlap setting
       \**************************************************/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -677,6 +754,25 @@ input_mainIllNano(
             (schar *) argAryStr[siArg]
          )
       ) *tranBlPtr = 0;
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec03 Sub02 Cat05:
+      +   - partail overlap setting
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (schar *) "-part-overlap",
+            (schar *) argAryStr[siArg]
+         )
+      ) *partOverlapBlPtr = 1;
+
+      else if(
+         ! eqlNull_ulCp(
+            (schar *) "-full-overlap",
+            (schar *) argAryStr[siArg]
+         )
+      ) *partOverlapBlPtr = 0;
 
       /**************************************************\
       * Fun03 Sec03 Sub03:
@@ -797,7 +893,7 @@ input_mainIllNano(
       { /*Else: ivalid input*/
          fprintf(
             stderr,
-            "%s is not recongnized",
+            "%s is not recongnized\n",
             argAryStr[siArg]
          );
 
@@ -873,15 +969,18 @@ main(
    schar *illTsvFileStr = 0;
    schar *ontSamFileStr = 0;
    schar *outFileStr = 0;
+   schar *uniqFileStr = 0; /*for printing uniq varaints*/
 
    uint minDepthUI = def_minDepth_mainIllNano;
    float minPercDepthF  = def_minPercDepth_mainIllNano;
    float minPercDelF  = def_minPercDel_mainIllNano;
    schar tranBl  = def_transition_mainIllNano;
+   schar partOverlapBl = def_partOverlapMerge_mainIllNano;
 
    FILE *illFILE = 0;
    FILE *ontFILE = 0;
    FILE *outFILE = 0;
+   FILE *uniqFILE = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec02:
@@ -908,10 +1007,12 @@ main(
          &illTsvFileStr,
          &ontSamFileStr,
          &outFileStr,
+         &uniqFileStr,
          &minDepthUI,
          &minPercDepthF,
          &minPercDelF,
-         &tranBl
+         &tranBl,
+         &partOverlapBl
       ); /*get input*/
 
    if(errSC)
@@ -1012,11 +1113,57 @@ main(
             "w"
          );
 
-      if(! ontFILE)
+      if(! outFILE)
       { /*If: file error*/
          fprintf(
             stderr,
             "could not open -out %s\n",
+            outFileStr
+         );
+
+         goto err_main_sec04;
+      } /*If: file error*/
+   } /*Else: user provided output file*/
+
+   /*****************************************************\
+   * Main Sec02 Sub05:
+   *   - open uniqe profile output file
+   \*****************************************************/
+
+   if(! uniqFileStr)
+      uniqFILE = 0;
+
+   else if(uniqFileStr[0] == '-')
+   { /*Else If: stdout output*/
+      if(outFILE == stdout)
+      { /*If: dual stdout output*/
+         fprintf(
+            stderr,
+            "printing uniqe profiles and ids tsv's to\n"
+          );
+
+         fprintf(
+            stderr,
+            "  stdout\n"
+          );
+      } /*If: dual stdout output*/
+
+      uniqFILE = stdout;
+   } /*Else If: stdout output*/
+
+   else
+   { /*Else: user provided output file*/
+      uniqFILE =
+         fopen(
+            (char *) uniqFileStr,
+            "w"
+         );
+
+      if(! uniqFILE)
+      { /*If: file error*/
+         fprintf(
+            stderr,
+            "could not open -uniq-out %s\n",
             outFileStr
          );
 
@@ -1029,16 +1176,18 @@ main(
    ^   - run illNano (find reads for Illumina varaints)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-    errSC =
-       run_illNano(
-          minDepthUI,
-          minPercDepthF,
-          minPercDelF,
-          tranBl,
-          illFILE,
-          ontFILE,
-          outFILE
-       ); /*get and print variant profiles for ont reads*/
+   errSC =
+      run_illNano(
+         minDepthUI,
+         minPercDepthF,
+         minPercDelF,
+         tranBl,
+         partOverlapBl,
+         illFILE,
+         ontFILE,
+         outFILE,
+         uniqFILE
+      ); /*get and print variant profiles for ont reads*/
 
    if(errSC)
    { /*If: had error*/
@@ -1093,7 +1242,13 @@ main(
          && outFILE != stdout
       ) fclose(outFILE);
 
-      outFILE = 0;
+      if(
+            uniqFILE
+         && uniqFILE != stdin
+         && uniqFILE != stdout
+      ) fclose(uniqFILE);
+
+      uniqFILE = 0;
 
       return errSC;
 } /*main*/

@@ -3,14 +3,48 @@
 '   - extracs ONT reads with Illumina variants
 '   o header:
 '     - included libraries
-'   o fun01: getIllSnp_illNano
+'   o .h st01: prof_illNano
+'     - holds a unique profile from illNano
+'   o .h st02: profList_illNano
+'     - head of a prof_illNano struct list
+'   o fun01: blank_prof_illNano
+'     - blanks a prof_illNano struct
+'   o fun02: init_prof_illNano
+'     - initialize a prof_illNano struct
+'   o fun03: freeStack_prof_illNano
+'     - frees arrays in prof_illNano (heap allocated)
+'   o fun04: freeHeap_prof_illNano
+'     - a heap allocated prof_illNano struct
+'   o fun05: freeHeapList_prof_illNano
+'     - a list of heap allocated prof_illNano structs
+'   o fun06: mk_prof_illNano
+'     - makes a prof_illNano struct
+'   o fun07: cmp_prof_illNano
+'     - compares two prof_illNano structs
+'   o fun08: swap_prof_illNano
+'     - swaps variables in two prof_illNano structs
+'   o fun09: merge_prof_illNano
+'     - merges two prof_illNano structs into one profile
+'   o fun10: blank_profList_illNano
+'     - blanks a profList_illNano struct (does nothing)
+'   o fun11: init_profList_illNano
+'     - initializes a profList_illNano struct
+'   o fun12: freeStack_profList_illNano
+'     - frees variables (list) inside a profList_illNano
+'   o fun13: freeHeap_profList_illNano
+'     - frees a profList_illNano struct
+'   o fun14: getIllSnp_illNano
 '     - gets snps from tbCon tsv file for Illumina data
-'   o fun02: getVarNano_illNano
+'   o fun15: getVarNano_illNano
 '     - identifies variants in a nanopore read using an
 '       Illumina profile
-'   o fun03: getNanoReads_illNano
+'   o fun16: getNanoReads_illNano
 '     - gets nanopore reads using Illumina profile
-'   o fun04: run_illNano
+'   o fun17: phead_profList_illNano
+'     - prints header for unique profile tsv
+'   o fun18: p_profList_illNano
+'     - prints unique profiles in a profList struct
+'   o fun19: run_illNano
 '     - runs the illNano algorithim
 '   o license:
 '     - licensing for this code (public domain / mit)
@@ -34,10 +68,12 @@
 
 #include "../genLib/base10str.h"
 #include "../genLib/numToStr.h"
+#include "../genLib/ulCp.h"
 #include "../genBio/samEntry.h"
 
 /*.h files only*/
 #include "../genLib/dataTypeShortHand.h"
+#include "../genLib/genMath.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries
@@ -47,7 +83,683 @@
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*-------------------------------------------------------\
-| Fun01: getIllSnp_illNano
+| Fun01: blank_prof_illNano
+|   - blanks a prof_illNano struct
+| Input:
+|   - profSTPtr:
+|     o pointer to prof_illNano struct to blank
+| Output:
+|   - Modifies:
+|     o varInProfUI, maxDiffUI, minDiffUI, and avgDiffF
+|       to be 0
+|     o all arrays to be filled with 0 (if have)
+\-------------------------------------------------------*/
+void
+blank_prof_illNano(
+   struct prof_illNano *profSTPtr
+){
+   uint uiPos = 0;
+
+   profSTPtr->varInProfUI = 0;
+
+   profSTPtr->maxDiffUI = 0;
+   profSTPtr->minDiffUI = 0;
+
+   profSTPtr->sumDiffUL = 0;
+   profSTPtr->overlapUI = 0;
+   profSTPtr->avgDiffF = 0;
+
+   if(
+         profSTPtr->posAryUI
+      || profSTPtr->ntArySC
+      || profSTPtr->depthAryUI
+      || profSTPtr->xDepthAryUI
+   ){ /*If: at least on array to blank*/
+      for(
+         uiPos = 0;
+         uiPos < profSTPtr->sizeProfUI;
+         ++uiPos
+      ){ /*Loop: blank arrays*/
+         if(profSTPtr->posAryUI)
+            profSTPtr->posAryUI = 0;
+
+         if(profSTPtr->ntArySC)
+            profSTPtr->ntArySC = (schar) '\0';
+
+         if(profSTPtr->depthAryUI)
+            profSTPtr->depthAryUI = 0;
+
+         if(profSTPtr->xDepthAryUI)
+            profSTPtr->xDepthAryUI = 0;
+      } /*Loop: blank arrays*/
+   } /*If: at least on array to blank*/
+} /*blank_prof_illNano*/
+
+/*-------------------------------------------------------\
+| Fun02: init_prof_illNano
+|   - initialize a prof_illNano struct
+| Input:
+|   - profSTPtr:
+|     o pointer to prof_illNano struct to initialize
+| Output:
+|   - Modifies:
+|     o all variants in profSTPtr to be 0
+\-------------------------------------------------------*/
+void
+init_prof_illNano(
+   struct prof_illNano *profSTPtr
+){
+   profSTPtr->posAryUI = 0;
+   profSTPtr->ntArySC = 0;
+   profSTPtr->depthAryUI = 0;
+   profSTPtr->xDepthAryUI = 0;
+
+   profSTPtr->sizeProfUI = 0;
+
+   profSTPtr->nextST = 0;
+   profSTPtr->lastST = 0;
+
+   blank_prof_illNano(profSTPtr);
+} /*init_prof_illNano*/
+
+/*-------------------------------------------------------\
+| Fun03: freeStack_prof_illNano
+|   - frees arrays in prof_illNano (assumes heap allocate)
+| Input:
+|   - profSTPtr:
+|     o pointer to prof_illNano struct with arrays to free
+| Output:
+|   - Frees:
+|     o posAryUI, ntArySC, depthAryUI, and xDepthAryUI in
+|       profSTPtr
+\-------------------------------------------------------*/
+void
+freeStack_prof_illNano(
+   struct prof_illNano *profSTPtr
+){
+   if(! profSTPtr)
+      return;
+
+   if(profSTPtr->ntArySC)
+      free(profSTPtr->ntArySC);
+
+   if(profSTPtr->posAryUI)
+      free(profSTPtr->posAryUI);
+
+   if(profSTPtr->depthAryUI)
+      free(profSTPtr->depthAryUI);
+
+   if(profSTPtr->xDepthAryUI)
+      free(profSTPtr->xDepthAryUI);
+
+   init_prof_illNano(profSTPtr);
+} /*freeStack_prof_illNano*/
+
+/*-------------------------------------------------------\
+| Fun04: freeHeap_prof_illNano
+|   - a heap allocated prof_illNano struct
+| Input:
+|   - profSTPtr:
+|     o pointer to prof_illNano struct to free
+| Output:
+|   - Frees:
+|     o profSTPtr (you must set to 0)
+|   - Returns:
+|     o next prof_illNano struct in list
+\-------------------------------------------------------*/
+struct prof_illNano *
+freeHeap_prof_illNano(
+   struct prof_illNano *profSTPtr
+){
+   struct prof_illNano *nextSTPtr = 0;
+
+   if(! profSTPtr)
+      return 0;
+
+   nextSTPtr = profSTPtr->nextST;
+   freeStack_prof_illNano(profSTPtr);
+   free(profSTPtr);
+   return nextSTPtr;
+} /*freeHeap_prof_illNano*/
+
+/*-------------------------------------------------------\
+| Fun05: freeHeapList_prof_illNano
+|   - a list of heap allocated prof_illNano structs
+| Input:
+|   - profSTPtr:
+|     o pointer to list of prof_illNano struct to free
+| Output:
+|   - Frees:
+|     o every prof_illNano struct in profSTPtr
+|       (you must set to profSTPtr to 0)
+\-------------------------------------------------------*/
+void
+freeHeapList_prof_illNano(
+   struct prof_illNano *profSTPtr
+){
+   while(profSTPtr)
+      profSTPtr = freeHeap_prof_illNano(profSTPtr);
+} /*freeHeapList_prof_illNano*/
+
+/*-------------------------------------------------------\
+| Fun06: mk_prof_illNano
+|   - makes a prof_illNano struct
+| Input:
+|   - posAryUI:
+|     o unsigned int array with positions to copy
+|     o use 0 (null) to not use
+|   - ntArySC:
+|     o signed char array with nucleotides to copy
+|     o use 0 (null) to not use
+|   - numVarUI:
+|     o number of variants in ntArySC and posAryUI
+| Output:
+|   - Returns:
+|     o heap allocated prof_illNano struct with copied
+|       arrays
+|     o 0 for errors
+\-------------------------------------------------------*/
+struct prof_illNano *
+mk_prof_illNano(
+   unsigned int *posAryUI, /*has positions to copy*/
+   signed char *ntArySC,   /*has nucleotides to copy*/
+   unsigned int numVarUI   /*number variants in arrays*/
+){
+   uint uiVar = 0;
+   struct prof_illNano *retHeapST = 0;
+
+
+   /*create struct*/
+   retHeapST = malloc(sizeof(struct prof_illNano));
+
+   if(! retHeapST)
+      goto memErr_fun06;
+
+   init_prof_illNano(retHeapST);
+
+
+   /*allocate array memory*/
+
+   retHeapST->posAryUI =
+      malloc((numVarUI + 9) * sizeof(uint));
+
+   if(! retHeapST->posAryUI)
+      goto memErr_fun06;
+
+
+   retHeapST->ntArySC =
+      malloc((numVarUI + 9) * sizeof(schar));
+
+   if(! retHeapST->ntArySC)
+      goto memErr_fun06;
+
+
+   retHeapST->depthAryUI =
+      malloc((numVarUI + 9) * sizeof(uint));
+
+   if(! retHeapST->depthAryUI)
+      goto memErr_fun06;
+
+
+   retHeapST->xDepthAryUI =
+      malloc((numVarUI + 9) * sizeof(uint));
+
+   if(! retHeapST->xDepthAryUI)
+      goto memErr_fun06;
+
+   for(
+      uiVar = 0;
+      uiVar < numVarUI;
+      ++uiVar
+   ){ /*Loop: initialize depth to 1 read*/
+      if(ntArySC[uiVar] == def_unkown_illNano)
+      { /*If: unknown base*/
+         retHeapST->depthAryUI[uiVar] = 0;
+         retHeapST->xDepthAryUI[uiVar] = 1;
+      } /*If: unknown base*/
+
+      else
+      { /*Else: actual variant base*/
+         retHeapST->depthAryUI[uiVar] = 1;
+         retHeapST->xDepthAryUI[uiVar] = 0;
+      } /*Else: actual variant base*/
+   } /*Loop: initialize depth to 1 read*/
+
+
+   /*copy array values*/
+   retHeapST->varInProfUI = numVarUI;
+   retHeapST->sizeProfUI = numVarUI;
+
+   cpLen_ulCp(
+      (schar *) retHeapST->posAryUI,
+      (schar *) posAryUI,
+      numVarUI * sizeof(uint)
+   );
+
+   cpLen_ulCp(
+      retHeapST->ntArySC,
+      ntArySC,
+      numVarUI
+   );
+
+   /*return result/clean up if needed*/
+
+   goto ret_fun06;
+
+   memErr_fun06:;
+      if(retHeapST)
+         freeHeap_prof_illNano(retHeapST);
+      retHeapST = 0;
+      goto ret_fun06;
+
+   ret_fun06:;
+      return retHeapST;
+} /*mk_prof_illNano*/
+
+/*-------------------------------------------------------\
+| Fun07: cmp_prof_illNano
+|   - compares two prof_illNano structs
+| Input:
+|   - firstProfSTPtr;
+|     o pointer to first prof_illNano struct to compare
+|   - secProfSTPtr;
+|     o pointer to second prof_illNano struct to compare
+|   - cmpSmallLapBl:
+|     o 1: compare event when only a few variants overlap
+|     o 0: require at least one profile to have at least
+|          the variants present in the other profile
+|          (can have more)
+| Output:
+|   - Returns:
+|     o > -1, number of differences between profiles
+|       - def_unkown_illNano bases are treated as wild
+|         cards
+|     o 0 no differences
+|     o < 0 no overlap
+\-------------------------------------------------------*/
+signed int
+cmp_prof_illNano(
+   struct prof_illNano *firstProfSTPtr, /*first struct*/
+   struct prof_illNano *secProfSTPtr,   /*second struct*/
+   signed char cmpSmallLapBl/*1 do not worry about exact*/
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun07 TOC: cmp_prof_illNano
+   '   - compares two prof_illNano structs
+   '   o fun07 sec01:
+   '     - variable declarations
+   '   o fun07 sec02:
+   '     - check if have variants
+   '   o fun07 sec03:
+   '     - move to first shared base in profile
+   '   o fun07 sec04:
+   '     - count number of differences
+   '   o fun07 sec05:
+   '     - return the number of differences
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun07 Sec01:
+   ^   - variable declarations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   uint uiFirst = 0;
+   uint uiSec = 0;
+   sint diffSI = 0;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun07 Sec02:
+   ^   - check if have variants
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(! firstProfSTPtr->varInProfUI)
+      goto ret_fun07_sec05;
+      /*no variants in first profile*/
+
+   if(! secProfSTPtr->varInProfUI)
+      goto ret_fun07_sec05;
+      /*no variants in second profile*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun07 Sec03:
+   ^   - move to first shared base in profile
+   ^   o fun07 sec03 sub01:
+   ^     - move till 1st profile position is not > 2nd
+   ^   o fun07 sec03 sub02:
+   ^     - move till 2nd profile position is not > first
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Fun07 Sec03 Sub01:
+   *   - move till 1st profile position is not > 2nd
+   \*****************************************************/
+
+   while(
+        firstProfSTPtr->posAryUI[uiFirst]
+      > secProfSTPtr->posAryUI[uiSec]
+   ){ /*Loop: find first matching position*/
+      ++uiFirst;
+      ++uiSec;
+
+      if(uiFirst >= firstProfSTPtr->varInProfUI)
+      { /*If: no ovlerapping variants*/
+         diffSI = -1 * firstProfSTPtr->varInProfUI;
+         goto ret_fun07_sec05;
+      } /*If: no ovlerapping variants*/
+
+      if(uiSec >= secProfSTPtr->varInProfUI)
+      { /*If: no ovlerapping variants*/
+         diffSI = -1 * secProfSTPtr->varInProfUI;
+         goto ret_fun07_sec05;
+      } /*If: no ovlerapping variants*/
+   } /*Loop: find first matching position*/
+
+   /*****************************************************\
+   * Fun07 Sec03 Sub02:
+   *   - move till 2nd profile position is not > first
+   \*****************************************************/
+
+   while(
+        firstProfSTPtr->posAryUI[uiFirst]
+      < secProfSTPtr->posAryUI[uiSec]
+   ){ /*Loop: find first matching position*/
+      ++uiFirst;
+      ++uiSec;
+
+      if(uiFirst >= firstProfSTPtr->varInProfUI)
+      { /*If: no ovlerapping variants*/
+         diffSI = -1 * firstProfSTPtr->varInProfUI;
+         goto ret_fun07_sec05;
+      } /*If: no ovlerapping variants*/
+
+      if(uiSec >= secProfSTPtr->varInProfUI)
+      { /*If: no ovlerapping variants*/
+         diffSI = -1 * secProfSTPtr->varInProfUI;
+         goto ret_fun07_sec05;
+      } /*If: no ovlerapping variants*/
+   } /*Loop: find first matching position*/
+
+   if(
+         uiFirst
+      && uiSec
+      && ! cmpSmallLapBl
+   ){ /*If: only comparing when have full coverage*/
+      diffSI = -1 * firstProfSTPtr->varInProfUI;
+      goto ret_fun07_sec05;
+   } /*If: only comparing when have full coverage*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun07 Sec04:
+   ^   - count number of differences
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*profiles are order by position (lowest first) and
+   `  either have variant base or consensus base, so
+   `  at this point profiles will be lined up and will
+   `  have 0 differences (though one might be missing a
+   `  few positions)
+   */
+
+   while(uiFirst < firstProfSTPtr->varInProfUI)
+   { /*Loop: find number of differences*/
+      if(
+           firstProfSTPtr->ntArySC[uiFirst]
+        == def_unkown_illNano
+      ) ;
+
+      else if(
+            secProfSTPtr->ntArySC[uiFirst]
+         == def_unkown_illNano
+      ) ;
+
+      else 
+      { /*Else: difference between profiles*/
+         diffSI +=
+            (     firstProfSTPtr->ntArySC[uiFirst]
+               != secProfSTPtr->ntArySC[uiSec]
+            ); /*check if difference*/
+      } /*Else: difference between profiles*/
+
+      ++uiFirst;
+      ++uiSec;
+
+      if(uiSec >= secProfSTPtr->varInProfUI)
+         goto ret_fun07_sec05;
+         /*at end or profile only covers part of first*/
+   } /*Loop: find number of differences*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun07 Sec05:
+   ^   - return the number of differences
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   ret_fun07_sec05:;
+      return diffSI;
+} /*cmp_prof_illNano*/
+
+/*-------------------------------------------------------\
+| Fun08: swap_prof_illNano
+|   - swaps variables in two prof_illNano structs
+| Input:
+|   - firstProfSTPtr;
+|     o pointer to first prof_illNano struct to swap
+|   - secProfSTPtr;
+|     o pointer to second prof_illNano struct to swap
+| Output:
+|   - Modifies:
+|     o firstProfSTPtr to have values of secProfSTPtr
+|     o secProfSTPtr to have values of firstProfSTPtr
+| WARNING:
+|   - does not swap nextST
+\-------------------------------------------------------*/
+void
+swap_prof_illNano(
+   struct prof_illNano *firstProfSTPtr, /*first struct*/
+   struct prof_illNano *secProfSTPtr    /*second struct*/
+){
+   schar *swapSCPtr = 0;
+   float swapF = 0;
+
+   /*swap the arrays*/
+   swapSCPtr = (schar *) firstProfSTPtr->posAryUI;
+   firstProfSTPtr->posAryUI = secProfSTPtr->posAryUI;
+   secProfSTPtr->posAryUI = (uint *) swapSCPtr;
+
+   swapSCPtr = firstProfSTPtr->ntArySC;
+   firstProfSTPtr->ntArySC = secProfSTPtr->ntArySC;
+   secProfSTPtr->ntArySC = swapSCPtr;
+
+   swapSCPtr = (schar *) firstProfSTPtr->depthAryUI;
+   firstProfSTPtr->depthAryUI = secProfSTPtr->depthAryUI;
+   secProfSTPtr->depthAryUI = (uint *) swapSCPtr;
+
+   swapSCPtr = (schar *) firstProfSTPtr->xDepthAryUI;
+   firstProfSTPtr->xDepthAryUI=secProfSTPtr->xDepthAryUI;
+   secProfSTPtr->xDepthAryUI = (uint *) swapSCPtr;
+
+   /*swap the array sizes, max, min, and mean*/
+   firstProfSTPtr->sizeProfUI ^= secProfSTPtr->sizeProfUI;
+   secProfSTPtr->sizeProfUI ^= firstProfSTPtr->sizeProfUI;
+   firstProfSTPtr->sizeProfUI ^= secProfSTPtr->sizeProfUI;
+
+   firstProfSTPtr->varInProfUI ^=
+      secProfSTPtr->varInProfUI;
+   secProfSTPtr->varInProfUI ^=
+      firstProfSTPtr->varInProfUI;
+   firstProfSTPtr->varInProfUI ^=
+      secProfSTPtr->varInProfUI;
+
+   firstProfSTPtr->maxDiffUI ^= secProfSTPtr->maxDiffUI;
+   secProfSTPtr->maxDiffUI ^= firstProfSTPtr->maxDiffUI;
+   firstProfSTPtr->maxDiffUI ^= secProfSTPtr->maxDiffUI;
+
+   firstProfSTPtr->minDiffUI ^= secProfSTPtr->minDiffUI;
+   secProfSTPtr->minDiffUI ^= firstProfSTPtr->minDiffUI;
+   firstProfSTPtr->minDiffUI ^= secProfSTPtr->minDiffUI;
+
+   firstProfSTPtr->sumDiffUL ^= secProfSTPtr->sumDiffUL;
+   secProfSTPtr->sumDiffUL ^= firstProfSTPtr->sumDiffUL;
+   firstProfSTPtr->sumDiffUL ^= secProfSTPtr->sumDiffUL;
+
+
+   swapF = firstProfSTPtr->avgDiffF;
+   firstProfSTPtr->avgDiffF = secProfSTPtr->avgDiffF;
+   secProfSTPtr->avgDiffF = swapF;
+} /*swap_prof_illNano*/
+
+/*-------------------------------------------------------\
+| Fun09: merge_prof_illNano
+|   - merges two prof_illNano structs into one profile
+| Input:
+|   - firstProfSTPtr;
+|     o pointer to first prof_illNano struct to merge
+|     o should have link to list
+|   - secProfSTPtr;
+|     o pointer to second prof_illNano struct to merge
+| Output:
+|   - Modifies:
+|     o firstProfSTPtr to have merged profile
+|     o secProfSTPtr to have umerged values to free
+| WARNING:
+|   - does not free the second structure
+|   - assumes one struct has all varaints in both structs
+|   - will swap first and second struct if needed, but
+|     will not swap nextST (list order)
+\-------------------------------------------------------*/
+void
+merge_prof_illNano(
+   struct prof_illNano *firstProfSTPtr, /*first struct*/
+   struct prof_illNano *secProfSTPtr    /*second struct*/
+){
+   uint uiFirst = 0;
+   uint uiSec = 0;
+
+   if(
+        firstProfSTPtr->varInProfUI
+      < secProfSTPtr->varInProfUI
+   ){ /*If: need to swap*/
+      swap_prof_illNano(
+         firstProfSTPtr,
+         secProfSTPtr
+      );
+   } /*If: need to swap*/
+
+
+   while(
+         firstProfSTPtr->posAryUI[uiFirst]
+      < secProfSTPtr->posAryUI[uiSec]
+   ) ++uiFirst; /*find first overlapping position*/
+
+
+   while(uiSec < secProfSTPtr->varInProfUI)
+   { /*Loop: merge profiles*/
+      if(
+            firstProfSTPtr->ntArySC[uiFirst]
+         == def_unkown_illNano
+      ){ /*If: no idea about base*/
+         firstProfSTPtr->ntArySC[uiFirst] =
+            secProfSTPtr->ntArySC[uiSec];
+      } /*If: no idea about base*/
+
+      firstProfSTPtr->depthAryUI[uiFirst] +=
+         secProfSTPtr->depthAryUI[uiSec];
+
+      firstProfSTPtr->xDepthAryUI[uiFirst] +=
+         secProfSTPtr->xDepthAryUI[uiSec];
+
+      firstProfSTPtr->maxDiffUI =
+         max_genMath(
+           firstProfSTPtr->maxDiffUI,
+           secProfSTPtr->maxDiffUI
+         );
+
+      firstProfSTPtr->minDiffUI =
+         min_genMath(
+           firstProfSTPtr->minDiffUI,
+           secProfSTPtr->minDiffUI
+         );
+
+      ++uiSec;
+      ++uiFirst;
+   } /*Loop: merge profiles*/
+} /*merge_prof_illNano*/
+
+/*-------------------------------------------------------\
+| Fun10: blank_profList_illNano
+|   - blanks a profList_illNano struct (does nothing)
+| Input:
+|   - profListSTPtr;
+|     o pointer to profList_illNano struct to blank
+| Output:
+\-------------------------------------------------------*/
+void
+blank_profList_illNano(
+   struct profList_illNano *profListSTPtr
+){
+   profListSTPtr=profListSTPtr; /*stop compiler warnings*/
+} /*blank_profList_illNano*/
+
+/*-------------------------------------------------------\
+| Fun11: init_profList_illNano
+|   - initializes a profList_illNano struct
+| Input:
+|   - profListSTPtr;
+|     o pointer to profList_illNano struct to initialize
+| Output:
+|   - Modifies:
+|     o all values in profListSTPtr to be 0 (null)
+\-------------------------------------------------------*/
+void
+init_profList_illNano(
+   struct profList_illNano *profListSTPtr
+){
+   profListSTPtr->numProfUL = 0;
+   profListSTPtr->listST = 0;
+} /*init_profList_illNano*/
+
+/*-------------------------------------------------------\
+| Fun12: freeStack_profList_illNano
+|   - frees variables (list) inside a profList_illNano
+| Input:
+|   - profListSTPtr;
+|     o pointer to profList_illNano with variables to free
+| Output:
+|   - Frees:j
+|     o heap allocated (list) variables in profListSTPtr
+\-------------------------------------------------------*/
+void
+freeStack_profList_illNano(
+   struct profList_illNano *profListSTPtr
+){
+   if(! profListSTPtr)
+      return;
+
+   freeHeapList_prof_illNano(profListSTPtr->listST);
+   init_profList_illNano(profListSTPtr);
+} /*freeStack_profList_illNano*/
+
+/*-------------------------------------------------------\
+| Fun13: freeHeap_profList_illNano
+|   - frees a profList_illNano struct
+| Input:
+|   - profListSTPtr;
+|     o pointer to profList_illNano struct to free
+| Output:
+|   - Frees:
+|     o profListSTPtr (you must set to 0 [null])
+\-------------------------------------------------------*/
+void
+freeHeap_profList_illNano(
+   struct profList_illNano *profListSTPtr
+){
+   if(! profListSTPtr)
+      return;
+
+   freeStack_profList_illNano(profListSTPtr);
+   free(profListSTPtr);
+} /*freeHeap_profList_illNano*/
+
+/*-------------------------------------------------------\
+| Fun14: getIllSnp_illNano
 |   - gets snps from tbCon tsv file for Illumina data
 | Input:
 |   - minDepthUI:
@@ -94,27 +806,27 @@ getIllSnp_illNano(
    void *tsvFILE,           /*tsv with snps*/
    signed char *errSCPtr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun01 TOC:
+   ' Fun14 TOC:
    '   - gets snps from tbCon tsv file for Illumina data
-   '   o fun01 sec01:
+   '   o fun14 sec01:
    '     - variable declarations
-   '   o fun01 sec02:
+   '   o fun14 sec02:
    '     - allocate profile memory (initial)
-   '   o fun01 sec03:
+   '   o fun14 sec03:
    '     - read in variants
-   '   o fun01 sec04:
+   '   o fun14 sec04:
    '     - remove positons with no varaints (one base)
-   '   o fun01 sec05:
+   '   o fun14 sec05:
    '     - clean up and return result
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun01 Sec01:
+   ^ Fun14 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   #define lenBuff_fun01 4096
-   schar buffStr[lenBuff_fun01];
+   #define lenBuff_fun14 4096
+   schar buffStr[lenBuff_fun14];
    uint uiPos = 0;
 
    uint refPosUI = 0;
@@ -129,7 +841,7 @@ getIllSnp_illNano(
    schar delBl = 0;   /*1: deletion entry*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun01 Sec02:
+   ^ Fun14 Sec02:
    ^   - allocate profile memory (initial)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -139,7 +851,7 @@ getIllSnp_illNano(
    sizeProfUI = 4095;
 
    if(! profileStr)
-      goto memErr_fun01_sec05;
+      goto memErr_fun14_sec05;
 
    for(
       tmpUI = 0;
@@ -148,28 +860,28 @@ getIllSnp_illNano(
    ) profileStr[tmpUI] = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun01 Sec03:
+   ^ Fun14 Sec03:
    ^   - read in variants
-   ^   o fun01 sec03 sub01:
+   ^   o fun14 sec03 sub01:
    ^     - get past reference id/name + start loop
-   ^   o fun01 sec03 sub02:
+   ^   o fun14 sec03 sub02:
    ^     - get reference position
-   ^   o fun01 sec03 sub03:
+   ^   o fun14 sec03 sub03:
    ^     - check mutation type
-   ^   o fun01 sec03 sub04:
+   ^   o fun14 sec03 sub04:
    ^     - get nucleotide (if snp)
-   ^   o fun01 sec03 sub05:
+   ^   o fun14 sec03 sub05:
    ^     - get read depth (do minimum depth checks)
-   ^   o fun01 sec03 sub06:
+   ^   o fun14 sec03 sub06:
    ^     - get percent read depth (do min/max check)
-   ^   o fun01 sec03 sub07:
+   ^   o fun14 sec03 sub07:
    ^     - check if profile needs more memory
-   ^   o fun01 sec03 sub08:
+   ^   o fun14 sec03 sub08:
    ^     - assign variant to profile
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun01 Sec03 Sub01:
+   * Fun14 Sec03 Sub01:
    *   - get past reference id/name + start loop
    \*****************************************************/
 
@@ -177,14 +889,14 @@ getIllSnp_illNano(
       (schar *)
       fgets(
          (char *) buffStr,
-         lenBuff_fun01,
+         lenBuff_fun14,
          (FILE *) tsvFILE
       ); /*get past header*/
 
    while(
       fgets(
          (char *) buffStr,
-         lenBuff_fun01,
+         lenBuff_fun14,
          (FILE *) tsvFILE
       )
    ){ /*Loop: get varaints*/
@@ -195,17 +907,17 @@ getIllSnp_illNano(
       if(
             buffStr[uiPos - 1] != '\t'
          && buffStr[uiPos - 1] != ' '
-      ) goto fileErr_fun01_sec05;
+      ) goto fileErr_fun14_sec05;
 
       while(buffStr[uiPos] < 33)
       { /*Loop: get off white space*/
          if(buffStr[uiPos] == '\0')
-            goto fileErr_fun01_sec05; /*end of line*/
+            goto fileErr_fun14_sec05; /*end of line*/
          ++uiPos;
       } /*Loop: get off white space*/
 
       /**************************************************\
-      * Fun01 Sec03 Sub02:
+      * Fun14 Sec03 Sub02:
       *   - get reference position
       \**************************************************/
 
@@ -220,19 +932,19 @@ getIllSnp_illNano(
       if(
             buffStr[uiPos] != '\t'
          && buffStr[uiPos] != ' '
-      ) goto fileErr_fun01_sec05;
+      ) goto fileErr_fun14_sec05;
 
       /*move to next entry*/
 
       while(buffStr[uiPos] < 33)
       { /*Loop: get off white space*/
          if(buffStr[uiPos] == '\0')
-            goto fileErr_fun01_sec05; /*end of line*/
+            goto fileErr_fun14_sec05; /*end of line*/
          ++uiPos;
       } /*Loop: get off white space*/
 
       /**************************************************\
-      * Fun01 Sec03 Sub03:
+      * Fun14 Sec03 Sub03:
       *   - check mutation type
       \**************************************************/
 
@@ -257,17 +969,17 @@ getIllSnp_illNano(
       if(
             buffStr[uiPos - 1] != '\t'
          && buffStr[uiPos - 1] != ' '
-      ) goto fileErr_fun01_sec05;
+      ) goto fileErr_fun14_sec05;
 
       while(buffStr[uiPos] < 33)
       { /*Loop: get off white space*/
          if(buffStr[uiPos] == '\0')
-            goto fileErr_fun01_sec05; /*end of line*/
+            goto fileErr_fun14_sec05; /*end of line*/
          ++uiPos;
       } /*Loop: get off white space*/
 
       /**************************************************\
-      * Fun01 Sec03 Sub04:
+      * Fun14 Sec03 Sub04:
       *   - get nucleotide (if snp)
       \**************************************************/
 
@@ -283,17 +995,17 @@ getIllSnp_illNano(
       if(
             buffStr[uiPos - 1] != '\t'
          && buffStr[uiPos - 1] != ' '
-      ) goto fileErr_fun01_sec05;
+      ) goto fileErr_fun14_sec05;
 
       while(buffStr[uiPos] < 33)
       { /*Loop: get off white space*/
          if(buffStr[uiPos] == '\0')
-            goto fileErr_fun01_sec05; /*end of line*/
+            goto fileErr_fun14_sec05; /*end of line*/
          ++uiPos;
       } /*Loop: get off white space*/
 
       /**************************************************\
-      * Fun01 Sec03 Sub05:
+      * Fun14 Sec03 Sub05:
       *   - get read depth (do minimum depth checks)
       \**************************************************/
 
@@ -306,10 +1018,10 @@ getIllSnp_illNano(
       if(
             buffStr[uiPos] != '\t'
          && buffStr[uiPos] != ' '
-      ) goto fileErr_fun01_sec05;
+      ) goto fileErr_fun14_sec05;
 
       if(buffStr[uiPos] > 32)
-         goto fileErr_fun01_sec05; /*end of line*/
+         goto fileErr_fun14_sec05; /*end of line*/
 
       if(depthUI < minDepthUI)
          continue; /*variant not worth keeping*/
@@ -319,12 +1031,12 @@ getIllSnp_illNano(
       while(buffStr[uiPos] < 33)
       { /*Loop: get off white space*/
          if(buffStr[uiPos] == '\0')
-            goto fileErr_fun01_sec05; /*end of line*/
+            goto fileErr_fun14_sec05; /*end of line*/
          ++uiPos;
       } /*Loop: get off white space*/
 
       /**************************************************\
-      * Fun01 Sec03 Sub06:
+      * Fun14 Sec03 Sub06:
       *   - get percent read depth (do min/max check)
       \**************************************************/
 
@@ -348,7 +1060,7 @@ getIllSnp_illNano(
       ) continue; /*deletion has to low support*/
 
       /**************************************************\
-      * Fun01 Sec03 Sub07:
+      * Fun14 Sec03 Sub07:
       *   - check if profile needs more memory
       \**************************************************/
 
@@ -361,7 +1073,7 @@ getIllSnp_illNano(
             );
 
          if(! tmpStr)
-            goto memErr_fun01_sec05;
+            goto memErr_fun14_sec05;
 
          profileStr = tmpStr;
          tmpStr = 0;
@@ -376,7 +1088,7 @@ getIllSnp_illNano(
       } /*If: need to resize array*/
 
       /**************************************************\
-      * Fun01 Sec03 Sub08:
+      * Fun14 Sec03 Sub08:
       *   - assign variant to profile
       \**************************************************/
 
@@ -406,7 +1118,7 @@ getIllSnp_illNano(
    } /*Loop: get varaints*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun01 Sec04:
+   ^ Fun14 Sec04:
    ^   - remove positons with no varaints (one base)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -445,33 +1157,33 @@ getIllSnp_illNano(
    profileStr[*lenProfUI] = '\0';
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun01 Sec05:
+   ^ Fun14 Sec05:
    ^   - clean up and return result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    *errSCPtr = 0;
-   goto ret_fun01_sec05;
+   goto ret_fun14_sec05;
 
-   memErr_fun01_sec05:;
+   memErr_fun14_sec05:;
      *errSCPtr = def_memErr_illNano;
-     goto errCleanUp_fun01_sec05;
+     goto errCleanUp_fun14_sec05;
 
-   fileErr_fun01_sec05:;
+   fileErr_fun14_sec05:;
       *errSCPtr = def_fileErr_illNano;
-      goto errCleanUp_fun01_sec05;
+      goto errCleanUp_fun14_sec05;
 
-   errCleanUp_fun01_sec05:;
+   errCleanUp_fun14_sec05:;
       if(profileStr)
          free(profileStr);
       profileStr=0;
-      goto ret_fun01_sec05;
+      goto ret_fun14_sec05;
 
-   ret_fun01_sec05:;
+   ret_fun14_sec05:;
       return profileStr;
 } /*getIllSnp_illNano*/
 
 /*-------------------------------------------------------\
-| Fun02: getVarNano_illNano
+| Fun15: getVarNano_illNano
 |   - identifies variants in a nanopore read using an
 |     Illumina profile
 | Input:
@@ -502,23 +1214,23 @@ getVarNano_illNano(
    signed char *profileStr,  /*illumina profile*/
    signed char tranBl,       /*1: is uknown transition*/
    unsigned int *mapPosAryUI,/*will have variant pos*/
-   unsigned int *mapNtAryUI  /*will have variant bases*/
+   signed char *mapNtAryUI  /*will have variant bases*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun02 TOC: getVarNano_illNano
+   ' Fun15 TOC: getVarNano_illNano
    '   - identifies variants in a nanopore read using an
    '     Illumina profile
-   '   o fun02 sec01:
+   '   o fun15 sec01:
    '     - allocate memory and get first line of sam file
-   '   o fun02 sec02:
+   '   o fun15 sec02:
    '     - get first line of sam file
-   '   o fun02 sec03:
+   '   o fun15 sec03:
    '     - scan read for variants
-   '   o fun02 sec04:
+   '   o fun15 sec04:
    '     - return number detected variants
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun02 Sec01:
+   ^ Fun15 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -530,22 +1242,22 @@ getVarNano_illNano(
    uint numVarUI = 0;     /*number of variants*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun02 Sec03:
+   ^ Fun15 Sec03:
    ^   - scan read for variants
-   ^   o fun02 sec03 sub01:
+   ^   o fun15 sec03 sub01:
    ^     - prepare for scan + start loop + cigar switch
-   ^   o fun02 sec03 sub02:
+   ^   o fun15 sec03 sub02:
    ^     - scan snp/matches for variants
-   ^   o fun02 sec03 sub03:
+   ^   o fun15 sec03 sub03:
    ^     - check if have deletion variants
-   ^   o fun02 sec03 sub04:
+   ^   o fun15 sec03 sub04:
    ^     - ignore indel variants
-   ^   o fun02 sec03 sub05:
+   ^   o fun15 sec03 sub05:
    ^     - move to next cigar entry
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun02 Sec03 Sub01:
+   * Fun15 Sec03 Sub01:
    *   - prepare for scan + start loop + cigar switch
    \*****************************************************/
 
@@ -564,30 +1276,30 @@ getVarNano_illNano(
    { /*Loop: go through cigar*/
 
       if(profileStr[refPosUI] == '\0')
-         goto ret_fun02_sec04;
+         goto ret_fun15_sec04;
 
       switch(samSTPtr->cigTypeStr[cigPosUI])
       { /*Switch: find mutation type*/
 
          /***********************************************\
-         * Fun02 Sec03 Sub02:
+         * Fun15 Sec03 Sub02:
          *   - scan snp/matches for variants
-         *   o fun02 sec03 sub02 cat01:
+         *   o fun15 sec03 sub02 cat01:
          *     - found match/snp; loop though bases
-         *   o fun02 sec03 sub02 cat02:
+         *   o fun15 sec03 sub02 cat02:
          *     - A variant cases
-         *   o fun02 sec03 sub02 cat03:
+         *   o fun15 sec03 sub02 cat03:
          *     - C variant cases
-         *   o fun02 sec03 sub02 cat04:
+         *   o fun15 sec03 sub02 cat04:
          *     - G variant cases
-         *   o fun02 sec03 sub02 cat05:
+         *   o fun15 sec03 sub02 cat05:
          *     - T variant cases
-         *   o fun02 sec03 sub02 cat06:
+         *   o fun15 sec03 sub02 cat06:
          *     - move to next base
          \***********************************************/
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
-         + Fun02 Sec03 Sub02 Cat01:
+         + Fun15 Sec03 Sub02 Cat01:
          +   - found match/snp; loop though bases
          \++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -602,11 +1314,11 @@ getVarNano_illNano(
                if(
                     profileStr[refPosUI]
                   & def_noBase_illNano
-               ) goto nextNt_fun02_sec03_sub02_cat06;
+               ) goto nextNt_fun15_sec03_sub02_cat06;
                   /*no variants kept for position*/
 
                if(profileStr[refPosUI] == '\0')
-                  goto ret_fun02_sec04;
+                  goto ret_fun15_sec04;
                
                mapPosAryUI[numVarUI] = refPosUI;
 
@@ -615,7 +1327,7 @@ getVarNano_illNano(
                ){ /*Switch: find sequence base*/
 
                   /*+++++++++++++++++++++++++++++++++++++\
-                  + Fun02 Sec03 Sub02 Cat02:
+                  + Fun15 Sec03 Sub02 Cat02:
                   +  - A variant cases
                   \+++++++++++++++++++++++++++++++++++++*/
 
@@ -649,7 +1361,7 @@ getVarNano_illNano(
                   /*Case: read has A*/
 
                   /*+++++++++++++++++++++++++++++++++++++\
-                  + Fun02 Sec03 Sub02 Cat03:
+                  + Fun15 Sec03 Sub02 Cat03:
                   +  - C variant cases
                   \+++++++++++++++++++++++++++++++++++++*/
 
@@ -683,7 +1395,7 @@ getVarNano_illNano(
                   /*Case: read has C*/
 
                   /*+++++++++++++++++++++++++++++++++++++\
-                  + Fun02 Sec03 Sub02 Cat04:
+                  + Fun15 Sec03 Sub02 Cat04:
                   +  - G variant cases
                   \+++++++++++++++++++++++++++++++++++++*/
 
@@ -716,7 +1428,7 @@ getVarNano_illNano(
                   /*Case: read has G*/
 
                   /*+++++++++++++++++++++++++++++++++++++\
-                  + Fun02 Sec03 Sub02 Cat05:
+                  + Fun15 Sec03 Sub02 Cat05:
                   +  - T variant cases
                   \+++++++++++++++++++++++++++++++++++++*/
 
@@ -752,13 +1464,13 @@ getVarNano_illNano(
                } /*Switch: find sequence base*/
 
                /*++++++++++++++++++++++++++++++++++++++++\
-               + Fun02 Sec03 Sub02 Cat06:
+               + Fun15 Sec03 Sub02 Cat06:
                +   - move to next base
                \++++++++++++++++++++++++++++++++++++++++*/
 
                ++numVarUI; /*only fires if profile pos*/
 
-               nextNt_fun02_sec03_sub02_cat06:;
+               nextNt_fun15_sec03_sub02_cat06:;
 
                --cigNtUI;
                ++readPosUI;
@@ -769,7 +1481,7 @@ getVarNano_illNano(
          /*Case: match or snp*/
 
          /***********************************************\
-         * Fun02 Sec03 Sub03:
+         * Fun15 Sec03 Sub03:
          *   - check if have deletion variants
          \***********************************************/
 
@@ -780,7 +1492,7 @@ getVarNano_illNano(
             while(cigNtUI > 0)
             { /*Loop: see if have variant*/
                if(profileStr[refPosUI] == '\0')
-                  goto ret_fun02_sec04;
+                  goto ret_fun15_sec04;
                   /*no more variants in profile*/;
 
                if(
@@ -810,7 +1522,7 @@ getVarNano_illNano(
          /*Case: deletion*/
 
          /***********************************************\
-         * Fun02 Sec03 Sub04:
+         * Fun15 Sec03 Sub04:
          *   - ignore indel variants
          \***********************************************/
 
@@ -822,7 +1534,7 @@ getVarNano_illNano(
       } /*Switch: find mutation type*/
 
       /**************************************************\
-      * Fun02 Sec03 Sub05:
+      * Fun15 Sec03 Sub05:
       *   - move to next cigar entry
       \**************************************************/
 
@@ -830,29 +1542,37 @@ getVarNano_illNano(
    } /*Loop: go through cigar*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun02 Sec04:
+   ^ Fun15 Sec04:
    ^   - return number detected variants
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    mapPosAryUI[numVarUI] = 0;
    mapNtAryUI[numVarUI] = '\0';
    
-   ret_fun02_sec04:;
+   ret_fun15_sec04:;
    return numVarUI;
 } /*getVarNano_illNano*/
 
 /*-------------------------------------------------------\
-| Fun03: getNanoReads_illNano
+| Fun16: getNanoReads_illNano
 |   - gets nanopore reads using Illumina profile
 | Input:
 |   - profileStr:
 |     o c-strint with variants (profile) to extract
 |   - lenProfileUI:
 |     o position of last reference base in profile
+|   - uniqProfSTPtr:
+|     o pointer to profList_illNano struct to store unqiue
+|       profile list (nothting done if 0)
 |   - tranBl:
 |     o 1: for unkown entries; assigned variant to a
 |          transversion
 |     o 0: all unidentifed entries are def_unkown_illNano
+|   - mergeOverBl:
+|     o 1: merge overlaps were a read does not completly
+|          cover, but their is no difference
+|     o 0: only merge when at least on read completly
+|          overlaps other
 |   - buffStrPtr:
 |     o pointer to c-string to use in reading sam file
 |   - lenBuffULPtr:
@@ -878,52 +1598,60 @@ signed char
 getNanoReads_illNano(  
    signed char *profileStr,  /*illumina profile*/
    unsigned int lenProfileUI,/*last ref position in prof*/
+   struct profList_illNano *profListSTPtr,
    signed char tranBl,       /*1: is uknown transition*/
+   signed char mergeOverBl,/*1 merge incompelte overlaps*/
    struct samEntry *samSTPtr,/*sam file reading*/
    signed char **buffStrPtr, /*buffer for file reading*/
    unsigned long *lenBuffULPtr,/*length of buffStrPtr*/
    void *samFILE,            /*sam file with ONT reads*/
    void *outFILE             /*file to save reads to*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun03 TOC: getNanoReads_illNano
+   ' Fun16 TOC: getNanoReads_illNano
    '   - gets nanopore reads using Illumina profile
-   '   o fun03 sec01:
+   '   o fun16 sec01:
    '     - allocate memory and get first line of sam file
-   '   o fun03 sec02:
+   '   o fun16 sec02:
    '     - get first line of sam file
-   '   o fun03 sec03:
+   '   o fun16 sec03:
    '     - get reads from sam file
-   '   o fun03 sec04:
+   '   o fun16 sec04:
    '     - clean up and return result
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun03 Sec01:
+   ^ Fun16 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    schar errSC = 0;
 
-   uint *mapPosAryUI = 0; /*holds position of mapped var*/
-   uint *mapNtArySC = 0;  /*nucleotide of mapped var*/
+   uint *mapPosHeapAryUI = 0; /*position of mapped var*/
+   schar *mapNtHeapArySC = 0; /*nucleotide of mapped var*/
    uint numVarUI = 0;     /*number of variants*/
    uint uiVar = 0;        /*for printing variants*/
    uint uiPos = 0;        /*position in output buffer*/
 
+   struct prof_illNano *tmpHeapProfST = 0;
+   struct prof_illNano *nodeSTPtr = 0; /*node in list*/
+
+   schar mergeBl = 0;
+   sint diffSI = 0;  /*# differences between profiles*/
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun03 Sec02:
+   ^ Fun16 Sec02:
    ^   - allocate memory and get first line of sam file
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   mapPosAryUI = malloc(lenProfileUI * sizeof(uint));
+   mapPosHeapAryUI = malloc(lenProfileUI * sizeof(uint));
 
-   if(! mapPosAryUI)
-      goto memErr_fun03_sec04;
+   if(! mapPosHeapAryUI)
+      goto memErr_fun16_sec04;
 
-   mapNtArySC = malloc(lenProfileUI * sizeof(schar));
+   mapNtHeapArySC = malloc(lenProfileUI * sizeof(schar));
 
-   if(! mapNtArySC)
-      goto memErr_fun03_sec04;
+   if(! mapNtHeapArySC)
+      goto memErr_fun16_sec04;
 
    errSC =
       get_samEntry(
@@ -936,28 +1664,32 @@ getNanoReads_illNano(
    if(errSC)
    { /*If: had error*/
       if(errSC == def_memErr_samEntry)
-        goto memErr_fun03_sec04;
+        goto memErr_fun16_sec04;
       else
-        goto fileErr_fun03_sec04;
+        goto fileErr_fun16_sec04;
    } /*If: had error*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun03 Sec03:
+   ^ Fun16 Sec03:
    ^   - get reads from sam file
-   ^   o fun03 sec03 sub01:
+   ^   o fun16 sec03 sub01:
    ^     - filter reads + start loop
-   ^   o fun03 sec03 sub02:
+   ^   o fun16 sec03 sub02:
    ^     - find Illumina variants in read
-   ^   o fun03 sec03 sub03:
+   ^   o fun16 sec03 sub03:
+   ^     - see if profile is unique (if asked to do)
+   ^   o fun16 sec03 sub04:
    ^     - print kept read (cluster is cigar like format)
-   ^   o fun03 sec03 sub04:
+   ^   o fun16 sec03 sub05:
    ^     - move to next read
-   ^   o fun03 sec03 sub05:
+   ^   o fun16 sec03 sub06:
    ^     - final error check
+   ^   o fun16 Sec03 Sub07:
+   ^     - find stats for profile list
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun03 Sec03 Sub01:
+   * Fun16 Sec03 Sub01:
    *   - filter reads + start loop
    \*****************************************************/
 
@@ -969,13 +1701,13 @@ getNanoReads_illNano(
    while(! errSC)
    { /*Loop: get reads*/
       if(samSTPtr->extraStr[0] == '@')
-         goto nextRead_fun03_sec03_sub04;
+         goto nextRead_fun16_sec03_sub05;
 
       if(samSTPtr->flagUS & (4 | 256 | 2048))
-         goto nextRead_fun03_sec03_sub04;
+         goto nextRead_fun16_sec03_sub05;
 
       /**************************************************\
-      * Fun03 Sec03 Sub02:
+      * Fun16 Sec03 Sub02:
       *   - find Illumina variants in read
       \**************************************************/
 
@@ -984,18 +1716,87 @@ getNanoReads_illNano(
             samSTPtr,
             profileStr,
             tranBl,
-            mapPosAryUI,
-            mapNtArySC
+            mapPosHeapAryUI,
+            mapNtHeapArySC
          );
 
+      if(numVarUI == 0)
+         goto nextRead_fun16_sec03_sub05;
+         /*no variant positions in read; ignore*/
+
       /**************************************************\
-      * Fun03 Sec03 Sub03:
+      * Fun16 Sec03 Sub03:
+      *   - see if profile is unique (if asked to do)
+      \**************************************************/
+
+      if(profListSTPtr)
+      { /*If: finding unique profiles*/
+         nodeSTPtr = profListSTPtr->listST;
+
+         tmpHeapProfST =
+            mk_prof_illNano(
+               mapPosHeapAryUI,
+               mapNtHeapArySC,
+               numVarUI
+            ); /*make a new node*/
+    
+         if(! tmpHeapProfST)
+            goto memErr_fun16_sec04;
+
+         if(! nodeSTPtr)
+         { /*If: first profile*/
+            profListSTPtr->numProfUL = 1;
+            profListSTPtr->listST = tmpHeapProfST;
+            tmpHeapProfST = 0;
+            goto pprofile_sec03_sub04;
+         } /*If: first profile*/
+
+         mergeBl = 0;
+
+         while(nodeSTPtr)
+         { /*Loop: compare profiles*/
+            diffSI =
+               cmp_prof_illNano(
+                  tmpHeapProfST,
+                  nodeSTPtr,
+                  mergeOverBl /*overlap limits*/
+               );
+
+            if(! diffSI)
+            { /*If: profiles same, or one covers other*/
+               merge_prof_illNano(
+                  nodeSTPtr,  /*want to merge into*/
+                  tmpHeapProfST
+               );
+
+               freeHeap_prof_illNano(tmpHeapProfST);
+               tmpHeapProfST = 0;
+               mergeBl = 1;
+               break;
+            } /*If: profiles same, or one covers other*/
+
+            if(! nodeSTPtr->nextST)
+               break;
+
+            nodeSTPtr = nodeSTPtr->nextST;
+         } /*Loop: compare profiles*/
+
+         if(! mergeBl)
+         { /*If: new profile is unique*/
+            ++profListSTPtr->numProfUL;
+            nodeSTPtr->nextST = tmpHeapProfST;
+            tmpHeapProfST->lastST = nodeSTPtr;
+         } /*If: new profile is unique*/
+
+         tmpHeapProfST = 0;
+      } /*If: finding unique profiles*/
+
+      /**************************************************\
+      * Fun16 Sec03 Sub04:
       *   - print kept read (cluster is cigar like format)
       \**************************************************/
 
-      if(numVarUI == 0)
-         goto nextRead_fun03_sec03_sub04;
-         /*no variant positions in read; ignore*/
+      pprofile_sec03_sub04:;
 
       fprintf(
          (FILE *) outFILE,
@@ -1018,10 +1819,10 @@ getNanoReads_illNano(
          uiPos +=
             numToStr(
                &(*buffStrPtr)[uiPos],
-               mapPosAryUI[uiVar] + 1  /*to index 1*/
+               mapPosHeapAryUI[uiVar] + 1  /*to index 1*/
             );
                
-         (*buffStrPtr)[uiPos++] = mapNtArySC[uiVar];
+         (*buffStrPtr)[uiPos++] = mapNtHeapArySC[uiVar];
       } /*Loop: print out each variant position*/
 
       (*buffStrPtr)[uiPos++] = '\n';
@@ -1034,11 +1835,11 @@ getNanoReads_illNano(
       ); /*add new line ot end of line*/
 
       /**************************************************\
-      * Fun03 Sec03 Sub04:
+      * Fun16 Sec03 Sub05:
       *   - move to next read
       \**************************************************/
 
-      nextRead_fun03_sec03_sub04:;
+      nextRead_fun16_sec03_sub05:;
 
       errSC =
          get_samEntry(
@@ -1050,44 +1851,352 @@ getNanoReads_illNano(
    } /*Loop: get varaints*/
 
    /*****************************************************\
-   * Fun03 Sec03 Sub05:
+   * Fun16 Sec03 Sub06:
    *   - move to next read
    \*****************************************************/
 
    if(errSC == def_memErr_samEntry)
-      goto memErr_fun03_sec04;
+      goto memErr_fun16_sec04;
+
+   /*****************************************************\
+   * Fun16 Sec03 Sub07:
+   *   - find stats for profile list
+   *   o fun16 sec03 sub07 cat01:
+   *     - blank stats
+   *   o fun16 sec03 sub07 cat02:
+   *     - do scan to merge overlapping profiles (n^2)
+   *   o fun16 sec03 sub07 cat03:
+   *     - get differences (n^2 loop)
+   *   o fun16 sec03 sub07 cat04:
+   *     - find means
+   \*****************************************************/
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun16 Sec03 Sub07 Cat01:
+   +   - blank stats
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(profListSTPtr)
+   { /*If: building profile list*/
+      nodeSTPtr = profListSTPtr->listST;
+
+      while(nodeSTPtr->nextST)
+      { /*Loop: blank stats*/
+         nodeSTPtr->minDiffUI = 0;
+         nodeSTPtr->maxDiffUI = 0;
+
+         nodeSTPtr->sumDiffUL = 0;
+         nodeSTPtr->overlapUI = 0;
+         nodeSTPtr->avgDiffF = 0;
+
+         nodeSTPtr = nodeSTPtr->nextST;
+      } /*Loop: blank stats*/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun16 Sec03 Sub07 Cat02:
+      +   - do scan to merge overlapping profiles (n^2)
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      nodeSTPtr = profListSTPtr->listST;
+      tmpHeapProfST = nodeSTPtr->nextST;
+
+      while(tmpHeapProfST)
+      { /*Loop: finish merging*/
+         diffSI =
+            cmp_prof_illNano(
+               nodeSTPtr,
+               tmpHeapProfST,
+               mergeOverBl /*overlap limits*/
+            );
+
+            if(! diffSI)
+            { /*If: merging old nodes*/
+               --profListSTPtr->numProfUL;
+
+               merge_prof_illNano(
+                  nodeSTPtr,  /*want to merge into*/
+                  tmpHeapProfST
+               );
+
+                tmpHeapProfST->lastST->nextST =
+                   tmpHeapProfST->nextST;
+
+               if(tmpHeapProfST->nextST)
+                  tmpHeapProfST->nextST->lastST =
+                     tmpHeapProfST->lastST;
+
+               freeHeap_prof_illNano(tmpHeapProfST);
+               goto nextNode_fun16_sec03_usb07_cat02;
+            } /*If: merging old nodes*/
+
+         if(tmpHeapProfST->nextST)
+            tmpHeapProfST = tmpHeapProfST->nextST;
+         else
+         { /*Else: moving to next node*/
+            nextNode_fun16_sec03_usb07_cat02:;
+
+            nodeSTPtr = nodeSTPtr->nextST;
+            tmpHeapProfST = nodeSTPtr->nextST;
+
+            if(! tmpHeapProfST)
+               break; /*no next node*/
+         } /*Else: moving to next node*/
+      } /*Loop: finish merging*/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun16 Sec03 Sub07 Cat03:
+      +   - get differences (n^2 loop)
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      nodeSTPtr = profListSTPtr->listST;
+      tmpHeapProfST = nodeSTPtr->nextST;
+
+      /*n^2 loop*/
+      while(tmpHeapProfST)
+      { /*Loop: compare profiles*/
+
+         diffSI =
+            cmp_prof_illNano(
+               nodeSTPtr,
+               tmpHeapProfST,
+               1          /*want difference*/
+            );
+
+         if(diffSI >= 0)
+         { /*If: profiles overlap*/
+            ++nodeSTPtr->overlapUI;
+            ++tmpHeapProfST->overlapUI;
+
+            nodeSTPtr->sumDiffUL += diffSI;
+            tmpHeapProfST->sumDiffUL += diffSI;
+
+
+            nodeSTPtr->minDiffUI =
+               min_genMath(
+                  nodeSTPtr->minDiffUI,
+                  (uint) diffSI
+               );
+
+            nodeSTPtr->nextST->minDiffUI =
+               min_genMath(
+                  tmpHeapProfST->minDiffUI,
+                  (uint) diffSI
+               );
+
+
+            nodeSTPtr->maxDiffUI =
+               max_genMath(
+                  nodeSTPtr->maxDiffUI,
+                  (uint) diffSI
+               );
+
+            nodeSTPtr->nextST->maxDiffUI =
+               max_genMath(
+                  tmpHeapProfST->maxDiffUI,
+                  (uint) diffSI
+               );
+         } /*If: profiles overlap*/
+
+         if(tmpHeapProfST->nextST)
+            tmpHeapProfST = tmpHeapProfST->nextST;
+         else
+         { /*Else: moving to next node*/
+            nodeSTPtr = nodeSTPtr->nextST;
+            tmpHeapProfST = nodeSTPtr->nextST;
+
+            if(! tmpHeapProfST)
+               break; /*no next node*/
+         } /*Else: moving to next node*/
+      } /*Loop: compare profiles*/
+
+      tmpHeapProfST = 0;
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun16 Sec03 Sub07 Cat04:
+      +   - find means
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      nodeSTPtr = profListSTPtr->listST;
+
+      while(nodeSTPtr->nextST)
+      { /*Loop: blank stats*/
+         nodeSTPtr->avgDiffF = (float)
+              (float) nodeSTPtr->sumDiffUL
+            / (float) (nodeSTPtr->overlapUI + 1);
+
+         nodeSTPtr = nodeSTPtr->nextST;
+      } /*Loop: blank stats*/
+   } /*If: building profile list*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun03 Sec04:
+   ^ Fun16 Sec04:
    ^   - clean up and return result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    errSC = 0;
-   goto ret_fun03_sec04;
+   goto ret_fun16_sec04;
 
-   memErr_fun03_sec04:;
+   memErr_fun16_sec04:;
       errSC = def_memErr_illNano;
-      goto ret_fun03_sec04;
+      goto ret_fun16_sec04;
 
-   fileErr_fun03_sec04:;
+   fileErr_fun16_sec04:;
       errSC = def_fileErr_illNano;
-      goto ret_fun03_sec04;
+      goto ret_fun16_sec04;
 
-   ret_fun03_sec04:;
-      if(mapPosAryUI)
-         free(mapPosAryUI);
-      mapPosAryUI = 0;
+   ret_fun16_sec04:;
+      if(tmpHeapProfST)
+         freeHeap_prof_illNano(tmpHeapProfST);
+      tmpHeapProfST = 0;
 
-      if(mapNtArySC)
-         free(mapNtArySC);
-      mapNtArySC = 0;
+      if(mapPosHeapAryUI)
+         free(mapPosHeapAryUI);
+      mapPosHeapAryUI = 0;
+
+      if(mapNtHeapArySC)
+         free(mapNtHeapArySC);
+      mapNtHeapArySC = 0;
 
       return errSC;
 } /*getNanoReads_illNano*/
 
+/*-------------------------------------------------------\
+| Fun17: phead_profList_illNano
+|   - prints header for unique profile tsv
+| Input
+|   - outFILE:
+|     o FILE pointer to print unique profiler header to
+| Output:
+|   - Prints:
+|     o header (unique profile) to outFILE
+\-------------------------------------------------------*/
+void
+phead_profList_illNano(
+   void *outFILE
+){
+   fprintf(
+      (FILE *) outFILE,
+      "num_var\tnum_overlap\tmin_diff\tavg_diff"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "\tmax_diff\tprofile\tvar_depth\tx_var_depth\n"
+   );
+} /*phead_profList_illNano*/
 
 /*-------------------------------------------------------\
-| Fun04: run_illNano
+| Fun18: p_profList_illNano
+|   - prints unique profiles in a profList struct
+| Input
+|   - profListSTPtr:
+|     o pointer to profListSTPtr with profiles to print
+|   - outFILE:
+|     o FILE pointer to print unique profiler header to
+| Output:
+|   - Prints:
+|     o unique profiles to outFILE
+\-------------------------------------------------------*/
+void
+p_profList_illNano(
+   struct profList_illNano *profListSTPtr,
+   void *outFILE
+){
+   uint uiVar = 0;
+   struct prof_illNano *nodeST = 0;
+
+   nodeST = profListSTPtr->listST;
+
+   while(nodeST)
+   { /*Loop: print profile list*/
+      fprintf(
+         (FILE *) outFILE,
+         "%u\t%u\t%u\t%0.3f\t%u\t",
+         nodeST->varInProfUI,
+         nodeST->overlapUI,
+         nodeST->minDiffUI,
+         nodeST->avgDiffF,
+         nodeST->maxDiffUI
+      ); /*print out stats*/
+
+      for(
+         uiVar = 0;
+         uiVar < nodeST->varInProfUI;
+         ++uiVar
+      ){ /*Loop: print profile*/
+         if(uiVar)
+            fprintf(
+               (FILE *) outFILE,
+               "_"
+            ); /*separator for new item*/
+
+         fprintf(
+            (FILE *) outFILE,
+            "%u%c",
+            nodeST->posAryUI[uiVar],
+            nodeST->ntArySC[uiVar]
+         ); /*print out variant*/
+      } /*Loop: print profile*/
+
+      fprintf(
+         (FILE *) outFILE,
+         "\t"
+      ); /*tab for depth entry*/
+
+      for(
+         uiVar = 0;
+         uiVar < nodeST->varInProfUI;
+         ++uiVar
+      ){ /*Loop: print depth for profile*/
+         if(uiVar)
+            fprintf(
+               (FILE *) outFILE,
+               "_"
+            ); /*separator for new item*/
+
+         fprintf(
+            (FILE *) outFILE,
+            "%u:%u",
+            nodeST->posAryUI[uiVar],
+            nodeST->depthAryUI[uiVar]
+         ); /*print out variant*/
+      } /*Loop: print depth for profile*/
+
+      fprintf(
+         (FILE *) outFILE,
+         "\t"
+      ); /*tab for depth entry*/
+
+      for(
+         uiVar = 0;
+         uiVar < nodeST->varInProfUI;
+         ++uiVar
+      ){ /*Loop: print unkown depth for profile*/
+         if(uiVar)
+            fprintf(
+               (FILE *) outFILE,
+               "_"
+            ); /*separator for new item*/
+
+         fprintf(
+            (FILE *) outFILE,
+            "%u:%u",
+            nodeST->posAryUI[uiVar],
+            nodeST->xDepthAryUI[uiVar]
+         ); /*print out variant*/
+      } /*Loop: print unkown depth for profile*/
+
+      fprintf(
+         (FILE *) outFILE,
+         "\n"
+      );
+
+      nodeST = nodeST->nextST;
+   } /*Loop: print profile list*/
+} /*p_profList_illNano*/
+
+/*-------------------------------------------------------\
+| Fun19: run_illNano
 |   - runs the illNano algorithim
 | Input:
 |   - minDepthUI:
@@ -1100,18 +2209,26 @@ getNanoReads_illNano(
 |     o 1: for unkown entries; assigned variant to a
 |          transversion
 |     o 0: all unidentifed entries are def_unkown_illNano
+|   - mergeOverBl:
+|     o 1: merge overlaps were a read does not completly
+|          cover, but their is no difference
+|     o 0: only merge when at least on read completly
+|          overlaps other
 |   - illTsvFILE:
 |     o FILE pointer to tbCon tsv file with Illumina vars
 |   - samFILE:
 |     o FILE pointer to sam file with reads to get
 |   - outFILE:
 |     o FILE pointer to file to print reads to
+|   - uniqFILE:
+|     o FILE pointer to file to print uniqe profiles to
 | Output:
 |   - Modifies:
 |     o illTsvFILE to point to end of file (EOF)
 |     o samFILE to point to end of file (EOF)
 |   - Prints:
 |     o read ids + profile to outFILE as tsv
+|     o unique profiels to uniqFILE (if provided)
 |   - Returns:
 |     o 0 for no errors
 |     o def_memErr_illNano for memory errors
@@ -1123,26 +2240,28 @@ run_illNano(
    float minPercDepthF,      /*min % depth for ill snp*/
    float minPercDelF,        /*min % depth for ill del*/
    signed char tranBl,       /*1: is uknown transition*/
+   signed char mergeOverBl,/*1 merge incompelte overlaps*/
    void *illTsvFILE,         /*tbCon tsv file for ill*/
    void *samFILE,            /*sam file with ONT reads*/
-   void *outFILE             /*file to save reads to*/
+   void *outFILE,            /*file to save reads to*/
+   void *uniqFILE            /*file for unique profiles*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun04 TOC:
+   ' Fun19 TOC:
    '   - runs the illNano algorithim
-   '   o fun04 sec01:
+   '   o fun19 sec01:
    '     - variable declarations
-   '   o fun04 sec02:
+   '   o fun19 sec02:
    '     - set up (initialize and memory allocation)
-   '   o fun04 sec03:
+   '   o fun19 sec03:
    '     - get illumina profile
-   '   o fun04 sec04:
+   '   o fun19 sec04:
    '     - find reads with variant positions in profile
-   '   o fun04 sec05:
+   '   o fun19 sec05:
    '     - clean up and return
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun04 Sec01:
+   ^ Fun19 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1155,19 +2274,27 @@ run_illNano(
    schar *buffHeapStr = 0;
    ulong lenBuffUL = 0;
 
+   struct profList_illNano profListStackST;
+   struct profList_illNano *profListSTPtr = 0;
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun04 Sec02:
+   ^ Fun19 Sec02:
    ^   - set up (initialize and memory allocation)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    init_samEntry(&samStackST);
+   init_profList_illNano(&profListStackST);
+
    errSC = setup_samEntry(&samStackST);
 
    if(errSC)
-      goto memErr_fun04_sec05;
+      goto memErr_fun19_sec05;
+
+   if(uniqFILE)
+      profListSTPtr = &profListStackST;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun04 Sec03:
+   ^ Fun19 Sec03:
    ^   - get illumina profile
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1184,13 +2311,13 @@ run_illNano(
    if(errSC)
    { /*If: have error*/
       if(errSC == def_memErr_illNano)
-         goto memErr_fun04_sec05;
+         goto memErr_fun19_sec05;
       else
-         goto fileErr_fun04_sec05;
+         goto fileErr_fun19_sec05;
    } /*If: have error*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun04 Sec04:
+   ^ Fun19 Sec04:
    ^   - find reads with variant positions in profile
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1198,7 +2325,9 @@ run_illNano(
       getNanoReads_illNano(
          profHeapStr,
          lenProfUI,
+         profListSTPtr,
          tranBl,
+         mergeOverBl,
          &samStackST,
          &buffHeapStr,
          &lenBuffUL,
@@ -1206,29 +2335,41 @@ run_illNano(
          outFILE
       ); /*extract reads with variant positions*/
 
+   profListSTPtr = 0;
+
    if(errSC == def_memErr_illNano)
-      goto memErr_fun04_sec05;
+      goto memErr_fun19_sec05;
 
    if(errSC == def_fileErr_illNano)
-      goto fileErr_fun04_sec05;
+      goto fileErr_fun19_sec05;
+
+   if(uniqFILE)
+   { /*If: printing unique profile ids*/
+      phead_profList_illNano(uniqFILE);
+
+      p_profList_illNano(
+         &profListStackST,
+         uniqFILE
+      );
+   } /*If: printing unique profile ids*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun04 Sec05:
+   ^ Fun19 Sec05:
    ^   - clean up and return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    errSC = 0;
-   goto ret_fun04_sec05;
+   goto ret_fun19_sec05;
 
-   memErr_fun04_sec05:;
+   memErr_fun19_sec05:;
       errSC = def_memErr_illNano;
-      goto ret_fun04_sec05;
+      goto ret_fun19_sec05;
 
-   fileErr_fun04_sec05:;
+   fileErr_fun19_sec05:;
       errSC = def_fileErr_illNano;
-      goto ret_fun04_sec05;
+      goto ret_fun19_sec05;
 
-   ret_fun04_sec05:;
+   ret_fun19_sec05:;
       if(profHeapStr)
          free(profHeapStr);
       profHeapStr = 0;
@@ -1240,6 +2381,7 @@ run_illNano(
       lenBuffUL = 0;
 
       freeStack_samEntry(&samStackST);
+      freeStack_profList_illNano(&profListStackST);
 
       return errSC;
 } /*run_illNano*/

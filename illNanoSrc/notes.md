@@ -1,4 +1,4 @@
-Just fiddling around.
+get data and run illNano
 
 ```
 prefetch SRR13951207;
@@ -41,75 +41,48 @@ tbCon \
 ./illNano \
     -ill-tsv 1165-ill-con.tsv \
     -sam-ont SRR13951165-map.sam \
-  > 1165-illNano_notran.tsv
+    -uniq-out 1165-map-tbCon-illNano_uniq.tsv \
+  > 1165-map-tbCon-illNano.tsv
 
+# -uniq-out gives me the unique depth profiles
+```
+
+get depths for each position
+
+```
 cut \
-    -f 4 \
-    1165-illNano_notran.tsv |
-  sort -V |
-  uniq -c |
-  sed 's/^[ \t]*//;' |
-  sort -V \
-  > 1165-illNano_notran-cont.txt
+    -f 7 \
+    1165-map-tbCon-illNano_uniq.tsv |
+  sed 's/[0-9]*://g s/_/ /g;'
+```
 
-awk \
-    'BEGIN{print "profile";};
-     {if($2 !~ /X/ && $1 >= 20) print $2;}
-    ' \
-    < 1165-illNano_notran-cont.txt |
-  grep \
-      -f - \
-      1165-illNano_notran.tsv | \
-  grep -v 'X' \
-  > 1165-illNano_notran-highCnt.tsv;
+get row number of profiles with depth over 10
 
+```
 cut \
-    -f 4 \
-    1165-illNano_notran-highCnt.tsv |
-  sort -V |
-  uniq |
-  grep -v "profile" |
-  awk \
-      '{
-          printf "grep \\\n    \"%s\" \\\n    ", $1;
-          printf "1165-illNano_notran-highCnt.tsv |\n  ";
-          printf "seqById \\\n    -id - \\\n    ";
-          printf "-sam ";
-          printf "SRR13951165-map.sam\" \\\n";
-          printf "    -out 1165-illNano-highCnt";
-          printf "-%s.sam;\n\n", $1;
-       }' \
-  > extractScript.sh
+    -f 7 \
+    1165-map-tbCon-illNano_uniq.tsv |
+  sed 's/[0-9]*://g; s/_/\t/g' |
+  awk '{
+      for(uiCol = 1; uiCol <= NF; ++uiCol)
+         if($uiCol > 9){print NR; next;};
+    };'
+```
 
-rm extractScript.sh;
+get profiles with at least 10x read depth
 
-# some files have to few reads
-rmReadsStr=( \
-    $(wc -l 1165-illNano-highCnt-* |
-      awk '{if($1 < 20) print $2;};') \
-    );
-
-for strRm in ${rmReadsStr[*]}; do
-   rm "$strRm";
-done
-
-conReadsAryStr=($(ls 1165-illNano-highCnt-*))
-
-for strCon in ${conReadsAryStr[*]}; do
-   conStr="$(sed 's/\.sam/-tbCon&/;' <<< "$strCon")";
-   tbCon \
-      -sam "$strCon" \
-      -min-depth 5 \
-      -out "$conStr";
-
-   filtsam \
-      -out-fasta \
-      -sam "$conStr" |
-    sed \
-      "s/>/>$conStr/;
-       s/1165-illNano-highCnt-//;
-       s/-tbCon.sam/-/;
-      " \
-    >> "1165-illNano-highCnt-allCons.fa";
-done
+```
+cut \
+    -f 7 \
+    1165-map-tbCon-illNano_uniq.tsv |
+  sed 's/[0-9]*://g; s/_/\t/g' |
+  awk '{
+      for(uiCol = 1; uiCol <= NF; ++uiCol)
+         if($uiCol > 9){print NR "p;"; next;};
+    };' |
+  sed \
+    -f - \
+    -n \
+    1165-map-tbCon-illNano_uniq.tsv \
+  > 1165-map-tbCon-illNano_uniq-10x.tsv;
 ```
