@@ -47,7 +47,7 @@
 
 #define def_year_mainIllNano 2024
 #define def_month_mainIllNano 10
-#define def_day_mainIllNano 8
+#define def_day_mainIllNano 9
 
 #define def_minDepth_mainIllNano 10
 #define def_minPercDepth_mainIllNano 0.001f

@@ -1862,9 +1862,9 @@ getNanoReads_illNano(
    * Fun16 Sec03 Sub07:
    *   - find stats for profile list
    *   o fun16 sec03 sub07 cat01:
-   *     - blank stats
-   *   o fun16 sec03 sub07 cat02:
    *     - do scan to merge overlapping profiles (n^2)
+   *   o fun16 sec03 sub07 cat02:
+   *     - blank stats
    *   o fun16 sec03 sub07 cat03:
    *     - get differences (n^2 loop)
    *   o fun16 sec03 sub07 cat04:
@@ -1873,29 +1873,11 @@ getNanoReads_illNano(
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
    + Fun16 Sec03 Sub07 Cat01:
-   +   - blank stats
+   +   - do scan to merge overlapping profiles (n^2)
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
    if(profListSTPtr)
    { /*If: building profile list*/
-      nodeSTPtr = profListSTPtr->listST;
-
-      while(nodeSTPtr->nextST)
-      { /*Loop: blank stats*/
-         nodeSTPtr->minDiffUI = 0;
-         nodeSTPtr->maxDiffUI = 0;
-
-         nodeSTPtr->sumDiffUL = 0;
-         nodeSTPtr->overlapUI = 0;
-         nodeSTPtr->avgDiffF = 0;
-
-         nodeSTPtr = nodeSTPtr->nextST;
-      } /*Loop: blank stats*/
-
-      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun16 Sec03 Sub07 Cat02:
-      +   - do scan to merge overlapping profiles (n^2)
-      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
       nodeSTPtr = profListSTPtr->listST;
       tmpHeapProfST = nodeSTPtr->nextST;
@@ -1944,6 +1926,30 @@ getNanoReads_illNano(
       } /*Loop: finish merging*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun16 Sec03 Sub07 Cat02:
+      +   - blank stats
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      nodeSTPtr = profListSTPtr->listST;
+
+      while(nodeSTPtr->nextST)
+      { /*Loop: blank stats*/
+         nodeSTPtr->overlapUI = 0;
+
+         nodeSTPtr->minDiffUI =
+            ((uint) 1 << (((sizeof(uint)) << 3) - 1)) - 1;
+            /*maximum value possible for sint*/
+
+         nodeSTPtr->maxDiffUI = 0;
+
+         nodeSTPtr->sumDiffUL = 0;
+         nodeSTPtr->avgDiffF = 0;
+
+         nodeSTPtr = nodeSTPtr->nextST;
+      } /*Loop: blank stats*/
+
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
       + Fun16 Sec03 Sub07 Cat03:
       +   - get differences (n^2 loop)
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -1977,7 +1983,7 @@ getNanoReads_illNano(
                   (uint) diffSI
                );
 
-            nodeSTPtr->nextST->minDiffUI =
+            tmpHeapProfST->minDiffUI =
                min_genMath(
                   tmpHeapProfST->minDiffUI,
                   (uint) diffSI
@@ -1990,7 +1996,7 @@ getNanoReads_illNano(
                   (uint) diffSI
                );
 
-            nodeSTPtr->nextST->maxDiffUI =
+            tmpHeapProfST->maxDiffUI =
                max_genMath(
                   tmpHeapProfST->maxDiffUI,
                   (uint) diffSI
@@ -2020,9 +2026,15 @@ getNanoReads_illNano(
 
       while(nodeSTPtr->nextST)
       { /*Loop: blank stats*/
-         nodeSTPtr->avgDiffF = (float)
-              (float) nodeSTPtr->sumDiffUL
-            / (float) (nodeSTPtr->overlapUI + 1);
+         if(! nodeSTPtr->overlapUI)
+           nodeSTPtr->minDiffUI = 0;
+
+         else
+         { /*Else: have overlaping profiles*/
+            nodeSTPtr->avgDiffF = (float)
+                 (float) nodeSTPtr->sumDiffUL
+               / (float) (nodeSTPtr->overlapUI);
+         } /*Else: have overlaping profiles*/
 
          nodeSTPtr = nodeSTPtr->nextST;
       } /*Loop: blank stats*/

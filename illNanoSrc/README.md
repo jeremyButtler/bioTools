@@ -65,10 +65,25 @@ minimap2 -a reference.fasta illumina-reads.fastq > illumina-reads.sam
 tbCon -sam illumina-reads.sam -out-tsv ill-vars.tsv -out ill-con.sam
 
 minimap2 -a reference.fasta ONT-reads.fastq > ONT-reads.sam
-illNano -ill-tsv ill-vars.tsv -sam-ont ONT-reads.sam > ONT-vars.tsv
+illNano -ill-tsv ill-vars.tsv -sam-ont ONT-reads.sam -out ONT-vars.tsv
 ```
 
 Then you need to figure out a way to filter variants.
+
+You can get a list of unique profiles
+  using `-uniq-out file.tsv`. However, this takes much
+  more memory and time.
+
+```
+illNano -uniq-out unique-profiles.tsv -ill-tsv ill-vars.tsv -sam-ont ONT-reads.sam -out ONT-vars.tsv
+```
+
+# Output:
+
+## default
+
+You can send the default output to a file
+  with `-out file.tsv`.
 
 - The output is a tsv with four columns (currently)
   1. ONT read id
@@ -101,3 +116,41 @@ See notes.md for some experimenting I did with filtering.
   SRR13951207. It is an Noro virus data set for 2019 base
   called with the fast model on guppy 3.3, so a very noisy
   dataset.
+
+## unique profiles
+
+The `-uniq-out file.tsv` command merges profiles that
+  look the same (X's are conisdered errors and are treated
+  as any variant).
+
+You can use `part-overlap` to merge profiles that share
+  at least one varaint position.
+
+- The unique profile has 8 colums.
+  1. num_var: number variant positions coverd by profile
+  2. num_overlap: number of other profiles that share at
+     least 1 variant position with this profile
+  3. min_diff: minimum difference between overlapping
+     profiles
+  4. avg_diff: average difference between overlapping
+     profiles
+  5. max_diff: maximum difference between overlapping
+     profiles
+  6. profile: profile (position_nucleotide)
+     - this includes bases that are variants and not
+       varaints
+     - position1Base1_position2Base2_...positionNBaseN
+  7. var_depth: depth for each variant position in the
+     profile (does not count X's)
+    - position1:depth1_postion2:depth2_...positionN:depthN
+  8. x_var_depth: depth for each variant position in the
+     profile that has a 'X' (only counts X's)
+    - position1:depth1_postion2:depth2_...positionN:depthN
+
+# Updates:
+
+- 2024-10-09:
+  - fixed issue with minimum difference being 0 when had
+    overlaps with `-part-ovlerap`
+- 2024-10-08:
+  - added unique profile output + minor fixes
