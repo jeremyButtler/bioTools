@@ -4,19 +4,31 @@
 '     filtering)
 '   o header:
 '     - included libraries
-'   o .c fun01: isTransNt_edDist
+'   o fun01: blank_res_edDist
+'     - blanks (sets 0) values in a res_edDist struct
+'   o fun02: init_res_edDist
+'     - initializes and res_edDist struct
+'   o fun03: freeStack_res_edDist
+'     - frees heap varaibles in a res_edDist struct
+'   o fun04: freeHeap_res_edDist
+'     - frees heap allocated res_edDist struct
+'   o .c fun05: isTransNt_edDist
 '     - checks to see if query base is a transversion
-'     - not used (manually inlined), but here for future
-'   o fun02: readCmpDist_edDist
+'     - not used but want to keep code
+'   o fun06: readCmpDist_edDist
 '     - gets edit distances between the query & reference
-'   o fun03: dist_edDist
+'   o fun07: dist_edDist
 '     - gets edit distances for reference
-'   o fun04: prob_edDist
+'   o fun08: percDist_edDist
 '     - finds probablity of reads matching by chance
-'   o fun05: addReadToDepth_edDist
+'   o fun09: addReadToDepth_edDist
 '     - adds a read to a depth profile
-'   o fun06: mkDepthProfile_edDist
+'   o fun10: mkDepthProfile_edDist
 '     - finds depth of every base in samEntry reference
+'   o fun11: phead_edDist
+'     - prints header for edDist output tsv
+'   o fun12: pdist_edDist
+'     - prints edit distance tsv line for edDist
 '   o license:
 '     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -41,7 +53,97 @@ typedef struct seqST seqST;
 #define def_noMap_edDist -8
 
 /*-------------------------------------------------------\
-| Fun02: readCmpDist_edDist
+| ST01: res_edDist
+|   - holds results and windows for edDist struct 
+\-------------------------------------------------------*/
+typedef struct res_edDist
+{
+   unsigned int *depthAryUI;   /*depth array for profile*/
+   unsigned long sizeDepthUL;  /*size of depthAryUI*/
+
+   unsigned int probUI;    /*percent dist/error*/
+   unsigned int overlapUI;     /*overlap between reads*/
+   unsigned int startUI;       /*first shared base*/
+   unsigned int numIndelUI;    /*number indels kept*/
+   unsigned int indelEventsUI; /*number indel events*/
+
+   unsigned int maxWinDistUI;  /*maximum dist in window*/
+   unsigned int probMaxWinUI;  /*max window % dist/error*/
+   unsigned int minWinDistUI;  /*minimum dist in window*/
+   float avgWinDistF;          /*average dist in window*/
+
+   unsigned int numFullWinUI;  /*number of full windows*/
+   unsigned int extraWinNtUI; 
+      /*number bases that did not fit in a window*/
+   unsigned int lastWinDiffUI;
+      /*number differences in last window*/
+
+   signed long edDistSL;       /*edit distance*/
+}res_edDist;
+
+/*-------------------------------------------------------\
+| Fun01: blank_res_edDist
+|   - blanks (sets 0) values in a res_edDist struct
+| Input:
+|   - resSTPtr
+|     o pointer to res_edDist struct to blank
+| Output:
+|   - Modifies:
+|     o all values in resSTPtr, except depthAryUI and
+|       sizeDepthUI to be 0
+\-------------------------------------------------------*/
+void
+blank_res_edDist(
+   struct res_edDist *resSTPtr
+);
+
+/*-------------------------------------------------------\
+| Fun02: init_res_edDist
+|   - initializes and res_edDist struct
+| Input:
+|   - resSTPtr
+|     o pointer to res_edDist struct to initialize
+| Output:
+|   - Modifies:
+|     o all values in resSTPtr to be 0
+\-------------------------------------------------------*/
+void
+init_res_edDist(
+   struct res_edDist *resSTPtr
+);
+
+/*-------------------------------------------------------\
+| Fun03: freeStack_res_edDist
+|   - frees heap varaibles in a res_edDist struct
+| Input:
+|   - resSTPtr
+|     o pointer to res_edDist struct with vars to free
+| Output:
+|   - Frees:
+|     o depthAryUI; the calls init_res_edDist (fun02)
+\-------------------------------------------------------*/
+void
+freeStack_res_edDist(
+   struct res_edDist *resSTPtr
+);
+
+/*-------------------------------------------------------\
+| Fun04: freeHeap_res_edDist
+|   - frees heap allocated res_edDist struct
+| Input:
+|   - resSTPtr
+|     o pointer to res_edDist struct to free
+| Output:
+|   - Frees:
+|     o resSTPtr (you must set to 0)
+\-------------------------------------------------------*/
+void
+freeHeap_res_edDist(
+   struct res_edDist *resSTPtr
+);
+
+/*-------------------------------------------------------\
+| Fun06: readCmpDist_edDist
 |   - gets edit distances between two reads mapped to the
 |     same reference
 |   - deletions and insertions are only counted if they
@@ -65,23 +167,24 @@ typedef struct seqST seqST;
 |   - depthAryUI:
 |     o unsigned int array with read depths for each
 |       reference base (use 0 to not use)
-|   - noTranBl:
-|     o 1 ignore transitions (a->g, c->t, t->c, g->a)
-|     o 0 keep transitions
-|   - overlapUI:
-|     o pointer to unsigned int to hold nubmer of
-|       reference base covered by query
-|   - numIndelUI:
-|     o pointer to unisigned int to hold the number of
-|       indels in edit distance
-|   - indelEventsUI:
-|     o pointer to unsigned int to hold the number of
-|       indel events (times a group of indels occured)
+|   - winSizeUI:
+|     o size of window for window error rates
+|     o windows shifts by size every time
+|   - resSTPtr:
+|     o pointer to res_edDist struct to have results
 | Output:
 |   - Modifies:
-|     o numIndelUI to have number indels kept
-|     o indelEventsUI to have number of indel events
-|     o overlapUI to hold number of overlapped bases
+|     o numIndelUI in resSTPtr to have number kept indels
+|     o indelEventsUI in resSTPtr to have number of indel
+|       events
+|     o overlapUI in resSTPtr to hold aligned length
+|     o maxWinDistUI in resSTPtr to hold maximum number
+|       of errors in all windows
+|     o minWinDistUI in resSTPtr to hold minimum number
+|       of errors in all windows
+|     o avgWinDistF in resSTPtr to hold mean number of
+|       errors in all widows
+|     o edDistSL in resSTPtr to have edit distance
 |   - Returns:
 |     o edit distance between query and ref
 |     o negative value if could not find distance
@@ -98,15 +201,12 @@ readCmpDist_edDist(
    unsigned char minQUC,      /*min Q-score (snp/ins)*/
    float minOverlapF,         /*min % overlap*/
    unsigned int minDepthUI,   /*min depth if profiling*/
-   unsigned int *depthAryUI,  /*depth profile*/
-   signed char noTranBl,        /*1: ignore transitions*/
-   unsigned int *overlapUI,   /*overlap length*/
-   unsigned int *numIndelUI,  /*number indels kept*/
-   unsigned int *indelEventsUI /*nubmer indel events*/
+   unsigned int winSizeUI,    /*size of one window*/
+   struct res_edDist *resSTPtr/*results/depth profile*/
 );
 
 /*-------------------------------------------------------\
-| Fun03: dist_edDist
+| Fun07: dist_edDist
 |   - gets edit distances for mapped reference
 |   - deletions and insertions are only counted if they
 |     execed a minimum length.
@@ -117,24 +217,28 @@ readCmpDist_edDist(
 |   - refSTPtr:
 |     o reference sequence, if provided checks 'M' cases
 |     o use 0 to not check
-|   - noTranBl:
-|     o 1 ingore transversion (refSTPtr must not be 0)
-|     o 0 keeps transversios (refSTPtr can be 0)
 |   - indelLenUI:
 |     o minimum length for a indel to count as an event
 |   - minQUC:
 |     o minimum q-score to not discard an snp
-|   - numIndelUI:
-|     o pointer to unisigned int to hold the number of
-|       indels in edit distance
-|   - indelEventsUI:
-|     o pointer to unsigned int to hold the number of
-|       indel events (times a group of indels occured)
+|   - winSizeUI:
+|     o size of window for window error rates
+|     o windows shifts by size every time
+|   - resSTPtr:
+|     o pointer to res_edDist struct to have results
 | Output:
 |   - Modifies:
-|     o numIndelUI to have number indels kept
-|     o indelEventsUI to have number of indel events
-|     o overlapUI to hold number of overlapped bases
+|     o numIndelUI in resSTPtr to have number kept indels
+|     o indelEventsUI in resSTPtr to have number of indel
+|       events
+|     o overlapUI in resSTPtr to hold aligned length
+|     o maxWinDistUI in resSTPtr to hold maximum number
+|       of errors in all windows
+|     o minWinDistUI in resSTPtr to hold minimum number
+|       of errors in all windows
+|     o avgWinDistF in resSTPtr to hold mean number of
+|       errors in all widows
+|     o edDistSL in resSTPtr to have edit distance
 |   - Returns:
 |     o edit distance for query and mapped reference
 |     o negative value if could not find distance
@@ -145,23 +249,23 @@ signed long
 dist_edDist(
    struct samEntry *qrySTPtr, /*read for edit distance*/
    struct seqST *refSTPtr,    /*has reference sequence*/
-   signed char noTranBl,       /*1: ignore transversions*/
    unsigned int indelLenUI,   /*min indel length*/
    unsigned char minQUC,      /*min Q-score (snp/ins)*/
-   unsigned int *numIndelUI,  /*number indels kept*/
-   unsigned int *indelEventsUI /*nubmer indel events*/
+   unsigned int winSizeUI,    /*size of one window*/
+   struct res_edDist *resSTPtr/*holds results*/
 );
 
 /*-------------------------------------------------------\
-| Fun04: percDist_edDist
+| Fun08: percDist_edDist
 |   - gives a rough idea on precentage of difference from
 |     error
 |   - not great, but allows lumping reads together
 | Input:
-|   - distSL:
-|     o edit distance to find probablity for
-|   - overlapUI:
-|     o length of alignment (overlap between query & ref)
+|   - resSTPtr:
+|     o pointer to res_edDist struct with edit distance
+|       and overlap size
+|   - winSizeUI:
+|     o size of one window
 |   - percErrF:
 |     o expected percent of errors (0 to 1) in reads
 |     o if doing read to read comparsions; double this
@@ -171,13 +275,13 @@ dist_edDist(
 \-------------------------------------------------------*/
 signed int
 percDist_edDist(
-   signed long distSL,
-   unsigned int overlapUI,
+   struct res_edDist *resSTPtr,
+   unsigned int winSizeUI,
    float percErrF
 );
 
 /*-------------------------------------------------------\
-| Fun05: addReadToDepth_edDist
+| Fun09: addReadToDepth_edDist
 |   - adds a read to a depth profile
 | Input:
 |   - refSTPtr:
@@ -188,12 +292,12 @@ percDist_edDist(
 |     o minimum q-score to keep snp
 |   - minOverlapF:
 |     o minimum percent overlap to score
-|   - depthAryUI:
-|     o unsigned int array of read depths (must be length
-|       of reference)
+|   - resSTPtr:
+|     o pointer to res_edDist struct with depth array to
+|       store read depths in (must be length of reference)
 | Output:
 |   - Modifies:
-|     o depthAryUI to have query added
+|     o depthAryUI in resSTPtr to have query added
 |   - Returns:
 |     o 0 for no errors
 |     o 1 if read was not added (failed filters)
@@ -204,11 +308,11 @@ addReadToDepth_edDist(
    struct samEntry *qrySTPtr, /*query samEntry*/
    unsigned char minQUC,      /*min Q-score (snp/ins)*/
    float minOverlapF,         /*min % overlap*/
-   unsigned int *depthAryUI   /*array of read depths*/
+   struct res_edDist *resSTPtr/*has depth profile array*/
 );
 
 /*-------------------------------------------------------\
-| Fun06: mkDepthProfile_edDist
+| Fun10: mkDepthProfile_edDist
 |   - finds the depth of every base in samEntry reference
 | Input:
 |   - refSTPtr:
@@ -217,6 +321,8 @@ addReadToDepth_edDist(
 |     o minimum q-score to keep snp
 |   - minOverlapF:
 |     o minimum percent overlap to score
+|   - resSTPtr:
+|     o pointer to res_edDist struct to have depth profile
 |   - samSTPtr:
 |     o for reading each line in the sam file
 |   - buffStrPtr:
@@ -225,8 +331,6 @@ addReadToDepth_edDist(
 |     o pointer to unsigned long to hold buffStrPtr size
 |   - samFILE:
 |     o sam file to scan
-|   - errSCPtr:
-|     o pointer to signed char to hold error type
 | Output:
 |   - Modifies:
 |     o samSTPtr to have last entry in file
@@ -234,24 +338,62 @@ addReadToDepth_edDist(
 |     o buffStrPtr to have last line in sam file and is
 |       resized if needed
 |     o lenBuffULPtr to new buffStrPtr size (if resized)
-|     o errSCPtr to:
-|       - 0 for no errors
-|       - def_memErr_edDist for memory errors
-|       - def_fileErr_edDist for memory errors
+|     o depthAryUI in resSTPtr to have depth profile
 |   - Returns:
-|     o unsigned int array with depths
-|     o 0 for memory error
+|     o 0 for no errors
+|     o def_memErr_edDist for memory errors
+|     o def_fileErr_edDist for memory errors
 \-------------------------------------------------------*/
-unsigned int *
+signed char
 mkDepthProfile_edDist(
    struct samEntry *refSTPtr, /*reference samEntry*/
    unsigned char minQUC,      /*min Q-score (snp/ins)*/
    float minOverlapF,         /*min % overlap*/
+   struct res_edDist *resSTPtr,/*has depth array*/
    struct samEntry *samSTPtr, /*for reading sam file*/
    signed char **buffStrPtr,  /*for reading sam file*/
    unsigned long *lenBuffULPtr, /*size of buffStrPtr*/
-   void *samFILE,
-   signed char *errSCPtr
+   void *samFILE
+);
+
+/*-------------------------------------------------------\
+| Fun11: phead_edDist
+|   - prints header for edDist output tsv
+| Input:
+|   - outFILE:
+|     o FILE pointer to print header to
+| Output:
+|   - Prints:
+|     o edDist header to outFILE
+\-------------------------------------------------------*/
+void
+phead_edDist(
+   void *outFILE
+);
+
+/*-------------------------------------------------------\
+| Fun12: pdist_edDist
+|   - prints edit distance tsv line for edDist
+| Input:
+|   - resSTPtr:
+|     o pointer to res_edDist struct with distance to
+|       print
+|   - qryIdStr:
+|     o c-string with query id (name) to print
+|   - refIdStr:
+|     o c-string with reference id (name) to print
+|   - outFILE:
+|     o FILE pointer to print header to
+| Output:
+|   - Prints:
+|     o edDist header to outFILE
+\-------------------------------------------------------*/
+void
+pdist_edDist(
+   struct res_edDist *resSTPtr,
+   signed char *qryIdStr,
+   signed char *refIdStr,
+   void *outFILE
 );
 
 #endif

@@ -37,7 +37,9 @@
 #define def_readRate_mainEdDist 0
 #define def_minIndelLen_mainEdDist 10
 #define def_minSnpQ_mainEdDist 7
-#define def_noTran_mainEdDist 0 /*ingore transitions*/
+
+#define def_winSize_mainEdDist 500
+
 #define def_errRate_mainEdDist 0.023f
 #define def_minPercOverlap_mainEdDist 0.75f
 
@@ -45,8 +47,8 @@
 #define def_depthProf_mainEdDist 0 /*run depth profile*/
 
 #define def_year_mainEdDist 2024
-#define def_month_mainEdDist 9
-#define def_day_mainEdDist 10
+#define def_month_mainEdDist 10
+#define def_day_mainEdDist 7
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
@@ -274,7 +276,7 @@ phelp_mainEdDist(
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
    + Fun02 Sec02 Sub04 Cat01:
-   +   - overlap flitering
+   +   - overlap flitering and window size
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
    fprintf(
@@ -287,6 +289,24 @@ phelp_mainEdDist(
    fprintf(
       (FILE *) outFILE,
       "    o minimum percent overlap to score read\n"
+   );
+
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -window %u: [Optional; %u]\n",
+      def_winSize_mainEdDist,
+      def_winSize_mainEdDist
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o size of window for window error rates\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o each window move is one full window\n"
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -304,29 +324,6 @@ phelp_mainEdDist(
    fprintf(
       (FILE *) outFILE,
       "    o minimum q-score to count a SNP\n"
-   );
-
-
-   if(def_noTran_mainEdDist)
-      fprintf(
-         (FILE *) outFILE,
-         "  -no-tran: [Optional; Yes]\n"
-      );
-
-   else
-      fprintf(
-         (FILE *) outFILE,
-         "  -no-tran: [Optional; No]\n"
-      );
-
-   fprintf(
-      (FILE *) outFILE,
-      "    o ignore transitions (remove with \"-tran\")\n"
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "    o -no-tran is ignored if no reference input\n"
    );
 
 
@@ -516,10 +513,8 @@ phelp_mainEdDist(
 |     o pointer to signed char to be set to
 |     o 1: fasta reference input
 |     o 0: no fasta reference input (is null or sam)
-|   - noTranBlPtr:
-|     o pointer to signed char to be set to
-|     o 1: ignoring transitions
-|     o 0: keeping transitions
+|   - winSizeUIPtr:
+|     o pointer to unsinged int to hold window size
 | Output:
 |   - Modfies:
 |     o all input, except numArgsSI and argAryStr, to hold
@@ -548,7 +543,7 @@ input_mainEdDist(
    unsigned int *minDepthUIPtr,
    float *minOverlapFPtr,
    signed char *faRefBlPtr,
-   signed char *noTranBlPtr
+   unsigned int *winSizeUIPtr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
    '   - gets input for edDist
@@ -641,7 +636,6 @@ input_mainEdDist(
          ++siArg;
          *refFileStrPtr = (schar *) argAryStr[siArg];
          *faRefBlPtr = 1;
-         *noTranBlPtr = 1;
       } /*Else If: reference file*/
 
       else if(
@@ -798,24 +792,36 @@ input_mainEdDist(
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
       + Fun03 Sec03 Sub02 Cat04:
-      +   - transition filtering
+      +   - window size
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-no-tran",
+            (schar *) "-window",
             (schar *) argAryStr[siArg],
             (schar) '\0'
          )
-      ) *noTranBlPtr = 1;
+      ){ /*Else If: window size*/
+         ++siArg;
+         tmpStr = (schar *) argAryStr[siArg];
 
-      else if(
-         ! eql_charCp(
-            (schar *) "-tran",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
-         )
-      ) *noTranBlPtr = 0;
+         tmpStr +=
+            strToUI_base10str(
+               tmpStr,
+               winSizeUIPtr     
+            );
+
+         if(*tmpStr != '\0')
+         { /*If: non-numeric or to large*/
+            fprintf(
+               stderr,
+               "-window %s is to large or non-numeric\n",
+               argAryStr[siArg]
+            );
+
+            goto err_fun03_sec04;
+         } /*If: non-numeric or to large*/
+      } /*Else If: window size*/
 
       /**************************************************\
       * Fun03 Sec03 Sub03:
@@ -1055,7 +1061,6 @@ main(
    schar *outFileStr = 0;
 
    /*edit distance settings*/
-   schar noTranBl = def_noTran_mainEdDist;
    uint minIndelLenUI = def_minIndelLen_mainEdDist;
    uchar minQUC = def_minSnpQ_mainEdDist;
    float minOverlapF = def_minPercOverlap_mainEdDist;
@@ -1065,28 +1070,24 @@ main(
 
    schar depthProfileBl = def_depthProf_mainEdDist;
    uint minDepthUI = def_minDepth_mainEdDist;
-   uint *depthHeapAryUI = 0; /*for depth profiling*/
+   uint winSizeUI = def_winSize_mainEdDist;
 
    schar errSC = 0;
    slong distSL = 0;
-   int probSI = 0;
-
-   uint indelEventsUI = 0;
-   uint numIndelsUI = 0;
-   uint lenOverlapUI = 0;
-   uint startUI = 0;       /*first base in overalp*/
 
    FILE *samFILE = 0;
    FILE *outFILE = 0;
 
-   struct samEntry refStackST;
    struct seqST refSeqStackST;
    schar refBl = 0;
 
+   struct samEntry refStackST;
    struct samEntry qryStackST;
    schar *buffHeapStr = 0;
    ulong lenBuffUL = 0;
    ulong entryUL = 0;
+
+   struct res_edDist resEdStackST;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec02:
@@ -1113,6 +1114,7 @@ main(
    init_samEntry(&refStackST);
    init_samEntry(&qryStackST);
    init_seqST(&refSeqStackST);
+   init_res_edDist(&resEdStackST);
 
    /*****************************************************\
    * Main Sec02 Sub02:
@@ -1134,7 +1136,7 @@ main(
          &minDepthUI,
          &minOverlapF,
          &refFaBl,
-         &noTranBl
+         &winSizeUI
    ); /*get user input*/
 
    if(errSC)
@@ -1465,16 +1467,16 @@ main(
 
    if(depthProfileBl)
    { /*If: doing depth profiling*/
-      depthHeapAryUI =
+      errSC =
          mkDepthProfile_edDist(
             &refStackST,
             minQUC,
             minOverlapF,
+            &resEdStackST,
             &qryStackST,
             &buffHeapStr,
             &lenBuffUL,
-            samFILE,
-            &errSC
+            samFILE
          );
 
       if(errSC)
@@ -1503,16 +1505,7 @@ main(
    \*****************************************************/
 
    entryUL = 1;
-
-   fprintf(
-      outFILE,
-     "qry\tref\tdist\tdist_div_err\tstart\taln_len"
-   );
-
-   fprintf(
-      outFILE,
-     "\tnum_indels\tindel_events\n"
-   );
+   phead_edDist(outFILE);
 
    /*****************************************************\
    * Main Sec03 Sub03:
@@ -1566,35 +1559,23 @@ main(
                minQUC,
                minOverlapF,
                minDepthUI,
-               depthHeapAryUI,
-               noTranBl,
-               &lenOverlapUI,
-               &numIndelsUI,
-               &indelEventsUI
-            );
-
-         startUI =
-            max_genMath(
-               qryStackST.refStartUI,
-               refStackST.refStartUI
+               winSizeUI,
+               &resEdStackST
             );
       } /*If: comparing reference and read*/
 
       else
       { /*Else: compare read to mapped ref*/
-         startUI = qryStackST.refStartUI;
-
          if(refFaBl)
          { /*If: using reference for transitions*/
             distSL =
                dist_edDist(
                   &qryStackST,
                   &refSeqStackST,
-                  1,              /*ignoring transitions*/
                   minIndelLenUI,
                   minQUC,
-                  &numIndelsUI,
-                  &indelEventsUI
+                  winSizeUI,
+                  &resEdStackST
                );
          } /*If: using reference for transitions*/
 
@@ -1604,15 +1585,12 @@ main(
                dist_edDist(
                   &qryStackST,
                   0,              /*not using reference*/
-                  0,              /*ignoring transitions*/
                   minIndelLenUI,
                   minQUC,
-                  &numIndelsUI,
-                  &indelEventsUI
+                  winSizeUI,
+                  &resEdStackST
                );
          } /*Else: not using reference*/
-
-         lenOverlapUI = qryStackST.alnReadLenUI;
       } /*Else: compare read to mapped ref*/
 
       /**************************************************\
@@ -1622,42 +1600,26 @@ main(
 
       if(distSL >= 0)
       { /*If: have edit distance*/
-         probSI =
-            percDist_edDist(
-               distSL,
-               lenOverlapUI,
-               percErrF
-            ); /*probablity is true*/
-
-         fprintf(
-            outFILE,
-            "%s",
-            qryStackST.qryIdStr
-         );
+         percDist_edDist(
+            &resEdStackST,
+            winSizeUI,
+            percErrF
+         ); /*probablity is true*/
 
          if(refFileStr)
-            fprintf(
-               outFILE,
-               "\t%s",
-               refStackST.qryIdStr
-            ); /*print provided reference*/
+            pdist_edDist(
+               &resEdStackST,
+               qryStackST.qryIdStr,
+               refStackST.qryIdStr,
+               outFILE
+            );
          else
-            fprintf(
-               outFILE,
-               "\t%s",
-               qryStackST.refIdStr
-            ); /*print mapped reference*/
-
-         fprintf(
-            outFILE,
-            "\t%li\t%i\t%u\t%u\t%u\t%u\n",
-            distSL,
-            probSI,
-            startUI,
-            lenOverlapUI,
-            numIndelsUI,
-            indelEventsUI
-         );
+            pdist_edDist(
+               &resEdStackST,
+               qryStackST.qryIdStr,
+               qryStackST.refIdStr,
+               outFILE
+            );
       } /*If: have edit distance*/
 
       errSC =
@@ -1696,39 +1658,35 @@ main(
    goto cleanUp_main_sec04;
 
    err_main_sec04_sub02:;
-   errSC = -1;
-   goto cleanUp_main_sec04;
+      errSC = -1;
+      goto cleanUp_main_sec04;
 
    cleanUp_main_sec04:;
+      if(
+            samFILE
+         && samFILE != stdin
+         && samFILE != stdout
+      ) fclose(samFILE);
 
-   if(depthHeapAryUI)
-      free(depthHeapAryUI);
-   depthHeapAryUI = 0;
+      samFILE = 0;
 
-   if(
-         samFILE
-      && samFILE != stdin
-      && samFILE != stdout
-   ) fclose(samFILE);
+      if(
+            outFILE
+         && outFILE != stdin
+         && outFILE != stdout
+      ) fclose(outFILE);
 
-   samFILE = 0;
+      outFILE = 0;
 
-   if(
-         outFILE
-      && outFILE != stdin
-      && outFILE != stdout
-   ) fclose(outFILE);
+      freeStack_samEntry(&refStackST);
+      freeStack_samEntry(&qryStackST);
+      freeStack_seqST(&refSeqStackST);
+      freeStack_res_edDist(&resEdStackST);
 
-   outFILE = 0;
+      free(buffHeapStr);
+      buffHeapStr = 0;
 
-   freeStack_samEntry(&refStackST);
-   freeStack_samEntry(&qryStackST);
-   freeStack_seqST(&refSeqStackST);
-
-   free(buffHeapStr);
-   buffHeapStr = 0;
-
-   return errSC;
+      return errSC;
 } /*main*/
 
 /*=======================================================\

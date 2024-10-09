@@ -4,19 +4,31 @@
 '     filtering)
 '   o header:
 '     - included libraries
-'   o .c fun01: isTransNt_edDist
+'   o fun01: blank_res_edDist
+'     - blanks (sets 0) values in a res_edDist struct
+'   o fun02: init_res_edDist
+'     - initializes and res_edDist struct
+'   o fun03: freeStack_res_edDist
+'     - frees heap varaibles in a res_edDist struct
+'   o fun04: freeHeap_res_edDist
+'     - frees heap allocated res_edDist struct
+'   o .c fun05: isTransNt_edDist
 '     - checks to see if query base is a transversion
-'     - not used (manually inlined), but here for future
-'   o fun02: readCmpDist_edDist
+'     - not used but want to keep code
+'   o fun06: readCmpDist_edDist
 '     - gets edit distances between the query & reference
-'   o fun03: dist_edDist
+'   o fun07: dist_edDist
 '     - gets edit distances for reference
-'   o fun04: distProb_edDist
+'   o fun08: percDist_edDist
 '     - finds probablity of reads matching by chance
-'   o fun05: addReadToDepth_edDist
+'   o fun09: addReadToDepth_edDist
 '     - adds a read to a depth profile
-'   o fun06: mkDepthProfile_edDist
+'   o fun10: mkDepthProfile_edDist
 '     - finds depth of every base in samEntry reference
+'   o fun11: phead_edDist
+'     - prints header for edDist output tsv
+'   o fun12: pdist_edDist
+'     - prints edit distance tsv line for edDist
 '   o license:
 '     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -54,7 +66,107 @@
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*-------------------------------------------------------\
-| Fun01: isTransNt_edDist
+| Fun01: blank_res_edDist
+|   - blanks (sets 0) values in a res_edDist struct
+| Input:
+|   - resSTPtr
+|     o pointer to res_edDist struct to blank
+| Output:
+|   - Modifies:
+|     o all values in resSTPtr, except depthAryUI and
+|       sizeDepthUI to be 0
+\-------------------------------------------------------*/
+void
+blank_res_edDist(
+   struct res_edDist *resSTPtr
+){
+   resSTPtr->probUI = 0;
+
+   resSTPtr->overlapUI = 0;
+   resSTPtr->startUI = 0;
+
+   resSTPtr->numIndelUI = 0;
+   resSTPtr->indelEventsUI = 0;
+
+   resSTPtr->maxWinDistUI = 0;
+   resSTPtr->probMaxWinUI = 0;
+   resSTPtr->minWinDistUI = 0;
+   resSTPtr->avgWinDistF = 0;
+
+   resSTPtr->numFullWinUI = 0;
+   resSTPtr->extraWinNtUI = 0;
+   resSTPtr->lastWinDiffUI = 0;
+
+   resSTPtr->edDistSL = 0;
+} /*blank_res_edDist*/
+
+/*-------------------------------------------------------\
+| Fun02: init_res_edDist
+|   - initializes and res_edDist struct
+| Input:
+|   - resSTPtr
+|     o pointer to res_edDist struct to initialize
+| Output:
+|   - Modifies:
+|     o all values in resSTPtr to be 0
+\-------------------------------------------------------*/
+void
+init_res_edDist(
+   struct res_edDist *resSTPtr
+){
+   resSTPtr->depthAryUI = 0;
+   resSTPtr->sizeDepthUL = 0;
+
+   blank_res_edDist(resSTPtr);
+} /*init_res_edDist*/
+
+/*-------------------------------------------------------\
+| Fun03: freeStack_res_edDist
+|   - frees heap varaibles in a res_edDist struct
+| Input:
+|   - resSTPtr
+|     o pointer to res_edDist struct with vars to free
+| Output:
+|   - Frees:
+|     o depthAryUI; the calls init_res_edDist (fun02)
+\-------------------------------------------------------*/
+void
+freeStack_res_edDist(
+   struct res_edDist *resSTPtr
+){
+   if(! resSTPtr)
+      return;
+
+   if(resSTPtr->depthAryUI)
+      free(resSTPtr->depthAryUI);
+
+   init_res_edDist(resSTPtr);
+} /*freeStack_res_edDist*/
+
+/*-------------------------------------------------------\
+| Fun04: freeHeap_res_edDist
+|   - frees heap allocated res_edDist struct
+| Input:
+|   - resSTPtr
+|     o pointer to res_edDist struct to free
+| Output:
+|   - Frees:
+|     o resSTPtr (you must set to 0)
+\-------------------------------------------------------*/
+void
+freeHeap_res_edDist(
+   struct res_edDist *resSTPtr
+){
+   if(! resSTPtr)
+      return;
+
+   freeStack_res_edDist(resSTPtr);
+   free(resSTPtr);
+   resSTPtr = 0;
+} /*freeHeap_res_edDist*/ 
+
+/*-------------------------------------------------------\
+| Fun05: isTransNt_edDist
 |   - checks to see if query base is a transversion
 | Input:
 |   - qryUC:
@@ -120,7 +232,7 @@ isTransNt_edDist(
 } /*isTransNt_edDist*/
 
 /*-------------------------------------------------------\
-| Fun02: readCmpDist_edDist
+| Fun06: readCmpDist_edDist
 |   - gets edit distances between two reads mapped to the
 |     same reference
 |   - deletions and insertions are only counted if they
@@ -144,23 +256,24 @@ isTransNt_edDist(
 |   - depthAryUI:
 |     o unsigned int array with read depths for each
 |       reference base (use 0 to not use)
-|   - noTranBl:
-|     o 1 ignore transitions (a->g, c->t, t->c, g->a)
-|     o 0 keep transitions
-|   - overlapUI:
-|     o pointer to unsigned int to hold nubmer of
-|       reference base covered by query
-|   - numIndelUI:
-|     o pointer to unisigned int to hold the number of
-|       indels in edit distance
-|   - indelEventsUI:
-|     o pointer to unsigned int to hold the number of
-|       indel events (times a group of indels occured)
+|   - winSizeUI:
+|     o size of window for window error rates
+|     o windows shifts by size every time
+|   - resSTPtr:
+|     o pointer to res_edDist struct to have results
 | Output:
 |   - Modifies:
-|     o numIndelUI to have number indels kept
-|     o indelEventsUI to have number of indel events
-|     o overlapUI to hold number of overlapped bases
+|     o numIndelUI in resSTPtr to have number kept indels
+|     o indelEventsUI in resSTPtr to have number of indel
+|       events
+|     o overlapUI in resSTPtr to hold aligned length
+|     o maxWinDistUI in resSTPtr to hold maximum number
+|       of errors in all windows
+|     o minWinDistUI in resSTPtr to hold minimum number
+|       of errors in all windows
+|     o avgWinDistF in resSTPtr to hold mean number of
+|       errors in all widows
+|     o edDistSL in resSTPtr to have edit distance
 |   - Returns:
 |     o edit distance between query and ref
 |     o negative value if could not find distance
@@ -177,30 +290,29 @@ readCmpDist_edDist(
    unsigned char minQUC,      /*min Q-score (snp/ins)*/
    float minOverlapF,         /*min % overlap*/
    unsigned int minDepthUI,   /*min depth if profiling*/
-   unsigned int *depthAryUI,  /*depth profile*/
-   signed char noTranBl,        /*1: ignore transitions*/
-   unsigned int *overlapUI,   /*overlap length*/
-   unsigned int *numIndelUI,  /*number indels kept*/
-   unsigned int *indelEventsUI /*nubmer indel events*/
+   unsigned int winSizeUI,    /*size of one window*/
+   struct res_edDist *resSTPtr/*results/depth profile*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun02 TOC:
+   ' Fun06 TOC:
    '   - gets edit distances between the query & reference
-   '   o fun02 sec01:
+   '   o fun06 sec01:
    '     - variable declerations
-   '   o fun02 sec02:
+   '   o fun06 sec02:
    '     - check if can get edit distance
-   '   o fun02 sec03:
+   '   o fun06 sec03:
    '     - initialize and check if have q-score entreis
-   '   o fun02 sec04:
+   '   o fun06 sec04:
    '     - find start of overlap between query & reference
-   '   o fun02 sec05:
+   '   o fun06 sec05:
    '     - find edit distance
-   '   o fun02 sec06:
+   '   o fun06 sec08:
+   '     - add last window to data
+   '   o fun06 sec07:
    '     - return the edit distance
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun02 Sec01:
+   ^ Fun06 Sec01:
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -215,32 +327,35 @@ readCmpDist_edDist(
    uint uiRef = 0;     /*reference nucleotide on*/
 
    float overlapF = 0;
-   slong distSL = 0;    /*edit distance*/
+   slong retSL = 0;    /*edit distance*/
 
    schar qryQBl = 0;
    schar refQBl = 0;
    uchar qUC = 0;
 
+   schar indelBl = 0;     /*for adding indesl to windows*/
+   uint baseInWinUI = 0;  /*number of bases in window*/
+   uint winDistUI = 0;    /*edit distance of window*/
+   uint indelAddUI = 0;   /*find offset for indels*/
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun02 Sec02:
+   ^ Fun06 Sec02:
    ^   - check if can get edit distance
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   *overlapUI = 0;
-   *indelEventsUI = 0;
-   *numIndelUI = 0;
+   blank_res_edDist(resSTPtr);
 
    if(qrySTPtr->flagUS & 4)
-      goto noMap_fun02_sec06;
+      goto noMap_fun06_sec07;
 
    if(refSTPtr->flagUS & 4)
-      goto noMap_fun02_sec06;
+      goto noMap_fun06_sec07;
 
    if(qrySTPtr->refEndUI < refSTPtr->refStartUI)
-      goto noOverlap_fun02_sec06;
+      goto noOverlap_fun06_sec07;
 
    if(qrySTPtr->refStartUI > refSTPtr->refEndUI)
-      goto noOverlap_fun02_sec06;
+      goto noOverlap_fun06_sec07;
 
    overlapF =
      (float)
@@ -262,19 +377,19 @@ readCmpDist_edDist(
       &&
              overlapF / (float) qrySTPtr->alnReadLenUI
            < minOverlapF
-   ) goto noOverlap_fun02_sec06;
+   ) goto noOverlap_fun06_sec07;
 
    if(
          ! qrySTPtr->seqStr
       || *qrySTPtr->seqStr == '*' 
       || *qrySTPtr->seqStr == '\0'
-   ) goto noSeq_fun02_sec06;
+   ) goto noSeq_fun06_sec07;
 
    if(
          ! refSTPtr->seqStr
       || *refSTPtr->seqStr == '*' 
       || *refSTPtr->seqStr == '\0'
-   ) goto noSeq_fun02_sec06;
+   ) goto noSeq_fun06_sec07;
 
    if(
       eql_ulCp(
@@ -283,11 +398,11 @@ readCmpDist_edDist(
          0,
          '\0'
       )
-   ) goto diffRef_fun02_sec06;
+   ) goto diffRef_fun06_sec07;
      /*reads are mapped to different references*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun02 Sec03:
+   ^ Fun06 Sec03:
    ^   - initialize and check if have q-score entreis
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -317,7 +432,7 @@ readCmpDist_edDist(
       refQBl = 1;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun02 Sec04:
+   ^ Fun06 Sec04:
    ^   - find start of overlap between query & reference
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -358,28 +473,28 @@ readCmpDist_edDist(
    } /*Else If: move query foward*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun02 Sec05:
+   ^ Fun06 Sec05:
    ^   - find edit distance
-   ^   o fun02 sec05 sub01:
+   ^   o fun06 sec05 sub01:
    ^     - get past masking at start
-   ^   o fun02 sec05 sub02:
+   ^   o fun06 sec05 sub02:
    ^     - start loop and check if at end (hard/soft mask)
-   ^   o fun02 sec05 note01:
+   ^   o fun06 sec05 note01:
    ^     - table of cigar entries added together
-   ^   o fun02 sec05 sub03:
+   ^   o fun06 sec05 sub03:
    ^     - start switch/check match/possible snp combos
-   ^   o fun02 sec05 sub04:
+   ^   o fun06 sec05 sub04:
    ^     - check matches or same error type
-   ^   o fun02 sec05 sub05:
+   ^   o fun06 sec05 sub05:
    ^     - handel deletion cases
-   ^   o fun02 sec05 sub06:
+   ^   o fun06 sec05 sub06:
    ^     - handel insertion cases
-   ^   o fun02 sec05 sub07:
+   ^   o fun06 sec05 sub07:
    ^     - check if move to next cigar entry
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun02 Sec05 Sub01:
+   * Fun06 Sec05 Sub01:
    *   - get past masking at start
    \*****************************************************/
 
@@ -410,7 +525,7 @@ readCmpDist_edDist(
    } /*If: have hardmasked region*/
 
    /*****************************************************\
-   * Fun02 Sec05 Sub02:
+   * Fun06 Sec05 Sub02:
    *   - start loop and check if at end (hard/soft mask)
    \*****************************************************/
 
@@ -431,7 +546,7 @@ readCmpDist_edDist(
          break; /*hard masking only at ends (finished)*/
 
       /*`````````````````````````````````````````````````\
-      ` Fun02 Sec05 Note01:
+      ` Fun06 Sec05 Note01:
       `   - table of cigar entries added together
       \`````````````````````````````````````````````````*/
 
@@ -462,22 +577,22 @@ readCmpDist_edDist(
       */
 
       /**************************************************\
-      * Fun02 Sec05 Sub03:
+      * Fun06 Sec05 Sub03:
       *   - start switch/check match/possible snp combos
-      *   o fun02 sec05 sub03 cat01:
+      *   o fun06 sec05 sub03 cat01:
       *     - get number shared snps/matchs + start loop
-      *   o fun02 sec05 sub03 cat02:
+      *   o fun06 sec05 sub03 cat02:
       *     - match, anonymous and q-score filter
-      *   o fun02 sec05 sub03 cat03:
+      *   o fun06 sec05 sub03 cat03:
       *     - depth array filtering (if using)
-      *   o fun02 sec05 sub03 cat04:
-      *     - transition filtering (if using)
-      *   o fun02 sec05 sub03 cat05:
+      *   o fun06 sec05 sub03 cat05:
+      *     - add base to window and edit distance
+      *   o fun06 sec05 sub03 cat04:
       *     - move to next nucleotide
       \**************************************************/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun02 Sec05 Sub03 Cat01:
+      + Fun06 Sec05 Sub03 Cat01:
       +   - get number shared snps/matchs + start loop
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -498,26 +613,26 @@ readCmpDist_edDist(
                   qryValSI
                );
 
-            *overlapUI += tmpSI;
+            resSTPtr->overlapUI += tmpSI;
 
             while(tmpSI > 0)
             { /*Loop: count number of SNPs*/
 
                /*++++++++++++++++++++++++++++++++++++++++\
-               + Fun02 Sec05 Sub03 Cat02:
+               + Fun06 Sec05 Sub03 Cat02:
                +   - match, anonymous and q-score filter
                \++++++++++++++++++++++++++++++++++++++++*/
 
                if(
                      refSTPtr->seqStr[uiRef]
                   == qrySTPtr->seqStr[uiQry]
-               ) goto nextNt_fun02_sec05_sub03_cat05;
+               ) goto nextNt_fun06_sec05_sub03_cat05;
 
                else if(refSTPtr->seqStr[uiRef] == 'N')
-                  goto nextNt_fun02_sec05_sub03_cat05;
+                  goto nextNt_fun06_sec05_sub03_cat05;
 
                else if(qrySTPtr->seqStr[uiQry] == 'N')
-                  goto nextNt_fun02_sec05_sub03_cat05;
+                  goto nextNt_fun06_sec05_sub03_cat05;
 
                if(qryQBl)
                { /*If: have query q-score entry*/
@@ -526,7 +641,7 @@ readCmpDist_edDist(
                      - def_adjQ_samEntry;
 
                   if(qUC < minQUC)
-                     goto nextNt_fun02_sec05_sub03_cat05;
+                     goto nextNt_fun06_sec05_sub03_cat05;
                } /*If: have query q-score entry*/
 
                if(refQBl)
@@ -536,80 +651,58 @@ readCmpDist_edDist(
                      - def_adjQ_samEntry;
 
                   if(qUC < minQUC)
-                     goto nextNt_fun02_sec05_sub03_cat05;
+                     goto nextNt_fun06_sec05_sub03_cat05;
                } /*If: have reference q-score entry*/
 
                /*++++++++++++++++++++++++++++++++++++++++\
-               + Fun02 Sec05 Sub03 Cat03:
+               + Fun06 Sec05 Sub03 Cat03:
                +   - depth array filtering (if using)
                \++++++++++++++++++++++++++++++++++++++++*/
 
-               if(depthAryUI)
+               if(resSTPtr->depthAryUI)
                { /*If: using a depth profile*/
-                  if(depthAryUI[uiRef] < minDepthUI)
-                     goto nextNt_fun02_sec05_sub03_cat05;
+                  if(
+                       resSTPtr->depthAryUI[uiRef]
+                     < minDepthUI
+                  ) goto nextNt_fun06_sec05_sub03_cat05;
                } /*If: using a depth profile*/
 
                /*++++++++++++++++++++++++++++++++++++++++\
-               + Fun02 Sec05 Sub03 Cat04:
-               +   - transition filtering (if using)
+               + Fun06 Sec05 Sub03 Cat04:
+               +   - add base to window and edit distance
                \++++++++++++++++++++++++++++++++++++++++*/
 
-               if(noTranBl)
-               { /*If: checking transitions*/
-                 switch(qrySTPtr->seqStr[uiQry] & (~32))
-                 { /*switch, reverse complement*/
-                   case 'A':
-                   case 'G':
-                   case 'R': /*A/G*/
-                   /*Case: query is A or G*/
-                    switch(
-                        refSTPtr->seqStr[uiRef]
-                      & (~32)
-                    ){ /*Switch: query A, G or R (A/G)*/
-                      case 'C': break; /*transversion*/
-                      case 'T': break; /*transversion*/
-                      case 'Y': break; /*CT transversion*/ 
-                      default:
-                      goto nextNt_fun02_sec05_sub03_cat05;
-                    } /*Switch: query is A, G or Y (C/T)*/
+               if(baseInWinUI >= winSizeUI)
+               { /*If: complete a window*/
+                  ++resSTPtr->numFullWinUI;
 
-                     break; /*is transversion*/
-                   /*Case: query is A or G*/
+                  resSTPtr->maxWinDistUI =
+                     max_genMath(
+                        resSTPtr->maxWinDistUI,
+                        winDistUI
+                     );
 
-                   case 'T':
-                   case 'U':
-                   case 'C':
-                   case 'Y': /*T/C*/
-                   /*Case: query is C, T/U, or Y (T/C)*/ 
-                     switch(
-                         refSTPtr->seqStr[uiRef]
-                       & (~32)
-                     ){ /*Switch: query c or t*/
-                      case 'A': break; /*transversion*/
-                      case 'G': break; /*transversion*/
-                      case 'R': break; /*AG transversion*/
-                      default:
-                      goto nextNt_fun02_sec05_sub03_cat05;
-                     } /*Switch: query c or t*/
+                  resSTPtr->minWinDistUI =
+                     min_genMath(
+                        resSTPtr->minWinDistUI,
+                        winDistUI
+                     );
 
-                     break; /*is transversion*/
-                   /*Case: query is C, T/U, or R (A/G)*/
+                  winDistUI = 0;
+                  baseInWinUI = 0;
+               } /*If: complete a window*/
 
-                   default:
-                      goto nextNt_fun02_sec05_sub03_cat05;
-                 } /*switch, reverse complement*/
-               } /*If: checking transitions*/
+               ++resSTPtr->edDistSL;
+               ++winDistUI;
 
                /*++++++++++++++++++++++++++++++++++++++++\
-               + Fun02 Sec05 Sub03 Cat05:
+               + Fun06 Sec05 Sub03 Cat05:
                +   - move to next nucleotide
                \++++++++++++++++++++++++++++++++++++++++*/
 
-               ++distSL;
+               nextNt_fun06_sec05_sub03_cat05:;
 
-               nextNt_fun02_sec05_sub03_cat05:;
-
+               ++baseInWinUI;
                ++uiQry;
                ++uiRef;
 
@@ -623,7 +716,7 @@ readCmpDist_edDist(
          /*Case: known snp or could be snp*/
 
          /***********************************************\
-         * Fun02 Sec05 Sub04:
+         * Fun06 Sec05 Sub04:
          *   - check matches or same error type
          \***********************************************/
 
@@ -645,16 +738,53 @@ readCmpDist_edDist(
             { /*If: not deletion event*/
                uiRef += tmpSI;
                uiQry += tmpSI;
-               *overlapUI += tmpSI;
+               resSTPtr->overlapUI += tmpSI;
+
+               baseInWinUI += tmpSI;
+
+               while(baseInWinUI >= winSizeUI)
+               { /*If: complete a window*/
+                  ++resSTPtr->numFullWinUI;
+
+                  resSTPtr->maxWinDistUI =
+                     max_genMath(
+                        resSTPtr->maxWinDistUI,
+                        winDistUI
+                     );
+
+                  resSTPtr->minWinDistUI =
+                     min_genMath(
+                        resSTPtr->minWinDistUI,
+                        winDistUI
+                     );
+
+                  winDistUI = 0;
+                  baseInWinUI -= winSizeUI;
+               } /*If: complete a window*/
             } /*If: not deletion event*/
 
             break;
          /*Case: treat as same*/
  
          /***********************************************\
-         * Fun02 Sec05 Sub05:
+         * Fun06 Sec05 Sub05:
          *   - handel deletion cases
+         *   o fun06 sec05 sub05 cat01:
+         *     - get number of bases in deletion
+         *   o fun06 sec05 sub05 cat02:
+         *     - check if keeping deletion
+         *   o fun06 sec05 sub05 cat03:
+         *     - handle query is insertion for windows
+         *   o fun06 sec05 sub05 cat04:
+         *     - handle query is deletion for windows
+         *   o fun06 sec05 sub05 cat05:
+         *     - move to next entries
          \***********************************************/
+
+         /*++++++++++++++++++++++++++++++++++++++++++++++\
+         + Fun06 Sec05 Sub05 Cat01:
+         +   - get number of bases in deletion
+         \++++++++++++++++++++++++++++++++++++++++++++++*/
 
          /*deletion cases*/
          case 145: /*D/M*/
@@ -667,35 +797,112 @@ readCmpDist_edDist(
                   qryValSI
                );
 
+            /*+++++++++++++++++++++++++++++++++++++++++++\
+            + Fun06 Sec05 Sub05 Cat02:
+            +   - check if keeping deletion
+            \+++++++++++++++++++++++++++++++++++++++++++*/
+
+            indelBl = 0;
+
             if(tmpSI >= (sint) indelLenUI)
             { /*If: keeping deletion event*/
-               if(depthAryUI)
-               { /*If: using a depth profile*/
-                  if(refSTPtr->cigTypeStr[siRefCig] =='I')
-                  { /*If: ref is insertion*/
-                     if(depthAryUI[uiRef] >= minDepthUI)
-                        distSL += tmpSI;
-                  } /*If: ref is insertion*/
-
-                  else
-                     distSL += tmpSI;
+               if(
+                     resSTPtr->depthAryUI
+                  && refSTPtr->cigTypeStr[siRefCig] != 'D'
+               ){ /*If: using a depth profile*/
+                  if(
+                       resSTPtr->depthAryUI[uiRef]
+                     < minDepthUI
+                  ) goto nextNt_fun06_sec05_sub05_cat03;
                } /*If: using a depth profile*/
 
-               else
-                  distSL += tmpSI;
-
-               ++(*indelEventsUI);
-               *numIndelUI += tmpSI;
+               indelBl = 1;
+               resSTPtr->edDistSL += tmpSI;
+               ++(resSTPtr->indelEventsUI);
+               resSTPtr->numIndelUI += tmpSI;
             } /*If: keeping deletion event*/
 
-            if(refSTPtr->cigTypeStr[siRefCig] == 'D')
-               uiQry += tmpSI;
+            /*+++++++++++++++++++++++++++++++++++++++++++\
+            + Fun06 Sec05 Sub05 Cat03:
+            +   - handle query is insertion for windows
+            \+++++++++++++++++++++++++++++++++++++++++++*/
+
+            nextNt_fun06_sec05_sub05_cat03:;
+
+            if(qrySTPtr->cigTypeStr[siQryCig] == 'D')
+            { /*If: query was deletion (ref ins)*/
+               uiRef += tmpSI;
+
+               if(indelBl)
+               { /*If: keeping indel*/
+                  if(baseInWinUI + tmpSI >= winSizeUI)
+                  { /*If: indels go beond window size*/
+                     indelAddUI = winSizeUI - baseInWinUI;
+                     winDistUI += indelAddUI;
+                     indelAddUI = tmpSI - indelAddUI;
+                  } /*If: indels go beond window size*/
+
+                  else
+                  { /*Else: all indels in window*/
+                     indelAddUI = 0;
+                     winDistUI += tmpSI;
+                  } /*Else: all indels in window*/
+               } /*If: keeping indel*/
+
+               baseInWinUI += tmpSI;
+
+               while(baseInWinUI >= winSizeUI)
+               { /*If: complete a window*/
+                  ++resSTPtr->numFullWinUI;
+
+                  resSTPtr->maxWinDistUI =
+                     max_genMath(
+                        resSTPtr->maxWinDistUI,
+                        winDistUI
+                     );
+
+                  resSTPtr->minWinDistUI =
+                     min_genMath(
+                        resSTPtr->minWinDistUI,
+                        winDistUI
+                     );
+
+                  if(indelBl)
+                  { /*If: keeping indels*/
+                     if(indelAddUI < winSizeUI)
+                        winDistUI = indelAddUI;
+                     else
+                     { /*Else: changes out of bounds*/
+                        winDistUI = winSizeUI;
+                        indelAddUI -= winSizeUI;
+                     } /*Else: changes out of bounds*/
+                  } /*If: keeping indels*/
+
+                  else
+                     winDistUI = 0;
+
+                  baseInWinUI -= winSizeUI;
+               } /*If: complete a window*/
+            } /*If: query was deletion (ref ins)*/
+
+            /*+++++++++++++++++++++++++++++++++++++++++++\
+            + Fun06 Sec05 Sub05 Cat04:
+            +   - handle query is deletion for windows
+            \+++++++++++++++++++++++++++++++++++++++++++*/
 
             else
-            { /*Else: query was a deletion*/
-               uiRef += tmpSI;
-               *overlapUI += tmpSI;
-            } /*Else: query was a deletion*/
+            { /*Else: reference was a deletion*/
+               if(indelBl)
+                  winDistUI += tmpSI;
+
+               uiQry += tmpSI;
+               resSTPtr->overlapUI += tmpSI;
+            } /*Else: reference was a deletion*/
+
+            /*+++++++++++++++++++++++++++++++++++++++++++\
+            + Fun06 Sec05 Sub05 Cat05:
+            +   - move to next entries
+            \+++++++++++++++++++++++++++++++++++++++++++*/
 
             qryValSI -= tmpSI;
             refValSI -= tmpSI;
@@ -704,9 +911,22 @@ readCmpDist_edDist(
          /*Case: deletion (only one sequence)*/
 
          /***********************************************\
-         * Fun02 Sec05 Sub06:
+         * Fun06 Sec05 Sub06:
          *   - handel insertion cases
+         *   o fun06 sec05 sub07 cat01:
+         *     - check if reference or query is insertion
+         *   o fun06 sec05 sub07 cat02:
+         *     - check if keeping insertion
+         *   o fun06 sec05 sub07 cat03:
+         *     - windows when query is insertion
+         *   o fun06 sec05 sub07 cat04:
+         *     - windows when reference is insertion
          \***********************************************/
+
+         /*++++++++++++++++++++++++++++++++++++++++++++++\
+         + Fun06 Sec05 Sub07 Cat01:
+         +   - check if reference or query is insertion
+         \++++++++++++++++++++++++++++++++++++++++++++++*/
 
          case 150: /*I/M*/
          case 134: /*I/=*/
@@ -728,36 +948,109 @@ readCmpDist_edDist(
                qryValSI = 0;
             } /*Else: query had insertion*/
 
+            /*+++++++++++++++++++++++++++++++++++++++++++\
+            + Fun06 Sec05 Sub07 Cat02:
+            +   - check if keeping insertion
+            \+++++++++++++++++++++++++++++++++++++++++++*/
+
+            indelBl = 0;
+
             if(tmpSI >= (sint) indelLenUI)
             { /*If: keeping query deletion*/
-               if(depthAryUI)
-               { /*If: using a depth profile*/
-                  if(refSTPtr->cigTypeStr[siRefCig] =='I')
-                  { /*If: ref is insertion*/
-                     if(depthAryUI[uiRef] >= minDepthUI)
-                        distSL += tmpSI;
-                  } /*If: ref is insertion*/
+               if(
+                     resSTPtr->depthAryUI
+                  && refSTPtr->cigTypeStr[siRefCig] == 'I'
+               ){ /*If: ref is insertion*/
+                if(
+                     resSTPtr->depthAryUI[uiRef]
+                   < minDepthUI
+                 ) goto ignoreIns_fun06_sec05_sub06_cat03;
+               } /*If: ref is insertion*/
 
-                  else
-                     distSL += tmpSI;
-               } /*If: using a depth profile*/
-
-               else
-                  distSL += tmpSI;
-
-               ++(*indelEventsUI);
-               *numIndelUI += tmpSI;
+               resSTPtr->edDistSL += tmpSI;
+               indelBl = 1;
+               ++(resSTPtr->indelEventsUI);
+               resSTPtr->numIndelUI += tmpSI;
             } /*If: keeping query deletion*/
 
-            if(qrySTPtr->cigTypeStr[siRefCig] == 'D')
-               *overlapUI += tmpSI;
+            /*+++++++++++++++++++++++++++++++++++++++++++\
+            + Fun06 Sec05 Sub07 Cat04:
+            +   - windows when query is insertion
+            \+++++++++++++++++++++++++++++++++++++++++++*/
+
+            ignoreIns_fun06_sec05_sub06_cat03:;
+
+            if(refSTPtr->cigTypeStr[siRefCig] == 'I')
+            { /*If: reference is insertion*/
+               if(indelBl)
+               { /*If: keeping indel*/
+                  if(baseInWinUI + tmpSI >= winSizeUI)
+                  { /*If: indels go beond window size*/
+                     indelAddUI = winSizeUI - baseInWinUI;
+                     winDistUI += indelAddUI;
+                     indelAddUI = tmpSI - indelAddUI;
+                  } /*If: indels go beond window size*/
+
+                  else
+                  { /*Else: all indels in window*/
+                     indelAddUI = 0;
+                     winDistUI += tmpSI;
+                  } /*Else: all indels in window*/
+               } /*If: keeping indel*/
+
+               baseInWinUI += tmpSI;
+
+               while(baseInWinUI >= winSizeUI)
+               { /*If: complete a window*/
+                  ++resSTPtr->numFullWinUI;
+
+                  resSTPtr->maxWinDistUI =
+                     max_genMath(
+                        resSTPtr->maxWinDistUI,
+                        winDistUI
+                     );
+
+                  resSTPtr->minWinDistUI =
+                     min_genMath(
+                        resSTPtr->minWinDistUI,
+                        winDistUI
+                     );
+
+                  if(indelBl)
+                  { /*If: keeping indels*/
+                     if(indelAddUI < winSizeUI)
+                        winDistUI = indelAddUI;
+                     else
+                     { /*Else: changes out of bounds*/
+                        winDistUI = winSizeUI;
+                        indelAddUI -= winSizeUI;
+                     } /*Else: changes out of bounds*/
+                  } /*If: keeping indels*/
+
+                  else
+                     winDistUI = 0;
+
+                  baseInWinUI -= winSizeUI;
+               } /*If: complete a window*/
+            } /*If: reference is insertion*/
+
+            /*+++++++++++++++++++++++++++++++++++++++++++\
+            + Fun06 Sec05 Sub07 Cat05:
+            +   - windows when reference is insertion
+            \+++++++++++++++++++++++++++++++++++++++++++*/
+
+            else
+            { /*Else: query had insertion*/
+               if(indelBl)
+                  winDistUI += tmpSI;
+            } /*Else: query had insertion*/
 
             break;
          /*Case: insertion (only one sequence)*/
       } /*Switch: find mutation combination*/
 
       /**************************************************\
-      * Fun02 Sec05 Sub07:
+      * Fun06 Sec05 Sub07:
       *   - check if move to next cigar entry
       \**************************************************/
 
@@ -775,34 +1068,86 @@ readCmpDist_edDist(
    } /*Loop: get edit distance*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun02 Sec06:
+   ^ Fun06 Sec06:
+   ^   - add last window to data
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(baseInWinUI >= winSizeUI)
+   { /*If: covered read had no partial windows*/
+      ++resSTPtr->numFullWinUI;
+
+      resSTPtr->maxWinDistUI =
+         max_genMath(
+            resSTPtr->maxWinDistUI,
+            winDistUI
+         );
+
+      resSTPtr->minWinDistUI =
+         min_genMath(
+            resSTPtr->minWinDistUI,
+            winDistUI
+         );
+
+      resSTPtr->extraWinNtUI = 0;
+      resSTPtr->lastWinDiffUI = 0;
+
+      resSTPtr->avgWinDistF =
+           (float) resSTPtr->edDistSL
+         / (float) resSTPtr->numFullWinUI;
+   } /*If: covered read had no partial windows*/
+
+   else
+   { /*Else: had a partial window*/
+      resSTPtr->extraWinNtUI = winSizeUI;
+      resSTPtr->lastWinDiffUI = winDistUI;
+
+      resSTPtr->maxWinDistUI =
+         max_genMath(
+            resSTPtr->maxWinDistUI,
+            winDistUI
+         );
+
+      resSTPtr->minWinDistUI =
+         min_genMath(
+            resSTPtr->minWinDistUI,
+            winDistUI
+         );
+
+      resSTPtr->avgWinDistF =
+           (float) resSTPtr->edDistSL
+         / ( (float) resSTPtr->numFullWinUI + 1 );
+   } /*Else: had a partial window*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun06 Sec07:
    ^   - return the edit distance
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   goto ret_fun02_sec06;
+   retSL = resSTPtr->edDistSL;
+   goto ret_fun06_sec07;
 
-   noOverlap_fun02_sec06:;
-   distSL = def_noOverlap_edDist;
-   goto ret_fun02_sec06;
+   noOverlap_fun06_sec07:;
+      retSL = def_noOverlap_edDist;
+      goto ret_fun06_sec07;
 
-   diffRef_fun02_sec06:;
-   distSL = def_diffRef_edDist;
-   goto ret_fun02_sec06;
+   diffRef_fun06_sec07:;
+      retSL = def_diffRef_edDist;
+      goto ret_fun06_sec07;
 
-   noSeq_fun02_sec06:;
-   distSL = def_noSeq_edDist;
-   goto ret_fun02_sec06;
+   noSeq_fun06_sec07:;
+      retSL = def_noSeq_edDist;
+      goto ret_fun06_sec07;
 
-   noMap_fun02_sec06:;
-   distSL = def_noMap_edDist;
-   goto ret_fun02_sec06;
+   noMap_fun06_sec07:;
+      retSL = def_noMap_edDist;
+      goto ret_fun06_sec07;
 
-   ret_fun02_sec06:;
-   return distSL;
+   ret_fun06_sec07:;
+      return retSL;
 } /*readCmpDist_edDist*/
 
 /*-------------------------------------------------------\
-| Fun03: dist_edDist
+| Fun07: dist_edDist
 |   - gets edit distances for mapped reference
 |   - deletions and insertions are only counted if they
 |     execed a minimum length.
@@ -813,24 +1158,28 @@ readCmpDist_edDist(
 |   - refSTPtr:
 |     o reference sequence, if provided checks 'M' cases
 |     o use 0 to not check
-|   - noTranBl:
-|     o 1 ingore transversion (refSTPtr must not be 0)
-|     o 0 keeps transversios (refSTPtr can be 0)
 |   - indelLenUI:
 |     o minimum length for a indel to count as an event
 |   - minQUC:
 |     o minimum q-score to not discard an snp
-|   - numIndelUI:
-|     o pointer to unisigned int to hold the number of
-|       indels in edit distance
-|   - indelEventsUI:
-|     o pointer to unsigned int to hold the number of
-|       indel events (times a group of indels occured)
+|   - winSizeUI:
+|     o size of window for window error rates
+|     o windows shifts by size every time
+|   - resSTPtr:
+|     o pointer to res_edDist struct to have results
 | Output:
 |   - Modifies:
-|     o numIndelUI to have number indels kept
-|     o indelEventsUI to have number of indel events
-|     o overlapUI to hold number of overlapped bases
+|     o numIndelUI in resSTPtr to have number kept indels
+|     o indelEventsUI in resSTPtr to have number of indel
+|       events
+|     o overlapUI in resSTPtr to hold aligned length
+|     o maxWinDistUI in resSTPtr to hold maximum number
+|       of errors in all windows
+|     o minWinDistUI in resSTPtr to hold minimum number
+|       of errors in all windows
+|     o avgWinDistF in resSTPtr to hold mean number of
+|       errors in all widows
+|     o edDistSL in resSTPtr to have edit distance
 |   - Returns:
 |     o edit distance for query and mapped reference
 |     o negative value if could not find distance
@@ -841,28 +1190,29 @@ signed long
 dist_edDist(
    struct samEntry *qrySTPtr, /*read for edit distance*/
    struct seqST *refSTPtr,    /*has reference sequence*/
-   signed char noTranBl,       /*1: ignore transversions*/
    unsigned int indelLenUI,   /*min indel length*/
    unsigned char minQUC,      /*min Q-score (snp/ins)*/
-   unsigned int *numIndelUI,  /*number indels kept*/
-   unsigned int *indelEventsUI /*nubmer indel events*/
+   unsigned int winSizeUI,    /*size of one window*/
+   struct res_edDist *resSTPtr/*holds results*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun03 TOC:
+   ' Fun07 TOC:
    '   - gets edit distances between the query & reference
-   '   o fun03 sec01:
+   '   o fun07 sec01:
    '     - variable declerations
-   '   o fun03 sec02:
+   '   o fun07 sec02:
    '     - check if can get edit distance
-   '   o fun03 sec03:
+   '   o fun07 sec03:
    '     - initialize and check if have q-score entreis
-   '   o fun03 sec04:
+   '   o fun07 sec04:
    '     - find edit distance
-   '   o fun03 sec06:
+   '   o fun07 sec06:
+   '     - add last window
+   '   o fun07 sec07:
    '     - return the edit distance
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun03 Sec01:
+   ^ Fun07 Sec01:
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -871,30 +1221,34 @@ dist_edDist(
    uint uiQry = 0;     /*query nucleotide on*/
    uint uiRef = 0;
 
-   slong distSL = 0;    /*edit distance*/
+   slong retSL = 0;    /*returned edit distance*/
 
    schar qryQBl = 0;
    uchar qUC = 0;
 
+   schar indelBl = 0;     /*for adding indesl to windows*/
+   uint baseInWinUI = 0;  /*number of bases in window*/
+   uint winDistUI = 0;    /*edit distance of window*/
+   uint indelAddUI = 0;   /*find offset for indels*/
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun03 Sec02:
+   ^ Fun07 Sec02:
    ^   - check if can get edit distance
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   *indelEventsUI = 0;
-   *numIndelUI = 0;
+   blank_res_edDist(resSTPtr);
 
    if(qrySTPtr->flagUS & 4)
-      goto noMap_fun03_sec06;
+      goto noMap_fun07_sec07;
 
    if(
          ! qrySTPtr->seqStr
       || *qrySTPtr->seqStr == '*' 
       || *qrySTPtr->seqStr == '\0'
-   ) goto noSeq_fun03_sec06;
+   ) goto noSeq_fun07_sec07;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun03 Sec03:
+   ^ Fun07 Sec03:
    ^   - initialize and check if have q-score entreis
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -911,28 +1265,28 @@ dist_edDist(
       qryQBl = 1;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun03 Sec04:
+   ^ Fun07 Sec04:
    ^   - find edit distance
-   ^   o fun03 sec04 sub01:
+   ^   o fun07 sec04 sub01:
    ^     - get past masking at start
-   ^   o fun03 sec04 sub02:
+   ^   o fun07 sec04 sub02:
    ^     - start loop and check if at end (hard/soft mask)
-   ^   o fun03 sec04 note01:
+   ^   o fun07 sec04 note01:
    ^     - table of cigar entries added together
-   ^   o fun03 sec04 sub03:
+   ^   o fun07 sec04 sub03:
    ^     - ignore matches (or check if have snps)
-   ^   o fun03 sec04 sub04:
+   ^   o fun07 sec04 sub04:
    ^     - check if keeping snp
-   ^   o fun03 sec04 sub05:
+   ^   o fun07 sec04 sub05:
    ^     - handel deletion cases
-   ^   o fun03 sec04 sub06:
+   ^   o fun07 sec04 sub06:
    ^     - handel insertion cases
-   ^   o fun03 sec04 sub07:
+   ^   o fun07 sec04 sub07:
    ^     - check if move to next cigar entry
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun03 Sec04 Sub01:
+   * Fun07 Sec04 Sub01:
    *   - get past masking at start
    \*****************************************************/
 
@@ -950,7 +1304,7 @@ dist_edDist(
    } /*If: have hardmasked region*/
 
    /*****************************************************\
-   * Fun03 Sec04 Sub02:
+   * Fun07 Sec04 Sub02:
    *   - start loop and check if at end (hard/soft mask)
    \*****************************************************/
 
@@ -963,7 +1317,7 @@ dist_edDist(
          break; /*hard masking only at ends (finished)*/
 
       /**************************************************\
-      * Fun03 Sec04 Sub03:
+      * Fun07 Sec04 Sub03:
       *   - ignore matches (or check if have snps)
       \**************************************************/
 
@@ -973,39 +1327,61 @@ dist_edDist(
          case 'M':
          /*Case: snp or match*/
             if(refSTPtr)
-               goto snp_fun03_sec04_sub04_cat01;
+               goto snp_fun07_sec04_sub04_cat01;
             else
-               goto match_fun03_sec04_sub03;
+               goto match_fun07_sec04_sub03;
 
          /*Case: snp or match*/
 
          case '=':
          /*Case: likley match (or no way to check)*/
-            match_fun03_sec04_sub03:;
+            match_fun07_sec04_sub03:;
             uiQry += qryValSI;
             uiRef += qryValSI;
+            baseInWinUI += qryValSI;
+
+            while(baseInWinUI >= winSizeUI)
+            { /*Loop: save complete a window*/
+               ++resSTPtr->numFullWinUI;
+
+               resSTPtr->maxWinDistUI =
+                  max_genMath(
+                     resSTPtr->maxWinDistUI,
+                     winDistUI
+                  );
+
+               resSTPtr->minWinDistUI =
+                  min_genMath(
+                     resSTPtr->minWinDistUI,
+                     winDistUI
+                  );
+
+               winDistUI = 0;
+               baseInWinUI -= winSizeUI;
+            } /*Loop: save complete a window*/
+
             break;
          /*Case: likley match (or no way to check)*/
 
          /***********************************************\
-         * Fun03 Sec04 Sub04:
+         * Fun07 Sec04 Sub04:
          *   - check if keeping snp
-         *   o fun03 sec04 sub04 cat01:
+         *   o fun07 sec04 sub04 cat01:
          *     - check snp quality score + start loop
-         *   o fun03 sec04 sub04 cat02:
+         *   o fun07 sec04 sub04 cat02:
          *     - ignore transitions (if ignoring)
-         *   o fun03 sec04 sub04 cat03:
+         *   o fun07 sec04 sub04 cat03:
          *     - count differnce (if kept) & move on
          \***********************************************/
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
-         + Fun03 Sec04 Sub04 Cat01:
+         + Fun07 Sec04 Sub04 Cat01:
          +   - check snp quality score + start loop
          \++++++++++++++++++++++++++++++++++++++++++++++*/
 
          case 'X':
          /*Case: snp*/
-            snp_fun03_sec04_sub04_cat01:;
+            snp_fun07_sec04_sub04_cat01:;
 
             while(qryValSI > 0)
             { /*Loop: count number of SNPs*/
@@ -1016,65 +1392,38 @@ dist_edDist(
                      - def_adjQ_samEntry;
 
                   if(qUC < minQUC)
-                     goto nextNt_fun03_sec04_sub03_cat03;
+                     goto nextNt_fun07_sec04_sub03_cat03;
                } /*If: have query q-score entry*/
 
-              /*+++++++++++++++++++++++++++++++++++++++++\
-              + Fun03 Sec04 Sub04 Cat02:
-              +   - ignore transitions (if ignoring)
-              \+++++++++++++++++++++++++++++++++++++++++*/
+               if(baseInWinUI >= winSizeUI)
+               { /*If: complete a window*/
+                  ++resSTPtr->numFullWinUI;
 
-               if(refSTPtr && noTranBl)
-               { /*If: have reference*/
-                  if(noTranBl)
-                    switch(qrySTPtr->seqStr[uiQry] & ~32)
-                    { /*switch, reverse complement*/
-                      case 'A':
-                      case 'G':
-                      case 'R': /*A/G*/
-                      /*Case: query is A or G*/
-                       switch(
-                           refSTPtr->seqStr[uiRef] & ~32
-                       ){ /*Switch: query A, G or R (A/G)*/
-                         case 'C': break;
-                         case 'T': break;
-                         case 'Y': break;
-                         default: goto nextNt_fun03_sec04_sub03_cat03;
-                       } /*Switch: query is A, G or Y (C/T)*/
+                  resSTPtr->maxWinDistUI =
+                     max_genMath(
+                        resSTPtr->maxWinDistUI,
+                        winDistUI
+                     );
 
-                        break; /*is transversion*/
-                      /*Case: query is A or G*/
+                  resSTPtr->minWinDistUI =
+                     min_genMath(
+                        resSTPtr->minWinDistUI,
+                        winDistUI
+                     );
 
-                      case 'T':
-                      case 'U':
-                      case 'C':
-                      case 'Y': /*T/C*/
-                      /*Case: query is C, T/U, or Y (T/C)*/ 
-                        switch(
-                            refSTPtr->seqStr[uiRef]
-                          & (~32)
-                        ){ /*Switch: query c or t*/
-                         case 'A': break; /*transversion*/
-                         case 'G': break; /*transversion*/
-                         case 'R': break; /*AG transversion*/
-                         default: goto nextNt_fun03_sec04_sub03_cat03;
-                        } /*Switch: query c or t*/
+                  winDistUI = 0;
+                  baseInWinUI = 0;
+               } /*If: complete a window*/
 
-                        break; /*is transversion*/
-                      /*Case: query is C, T/U, or R (A/G)*/
-
-                      default: goto nextNt_fun03_sec04_sub03_cat03;
-                    } /*switch, reverse complement*/
-               } /*If: have reference*/
+               ++resSTPtr->edDistSL;
+               ++winDistUI;
 
               /*+++++++++++++++++++++++++++++++++++++++++\
-              + Fun03 Sec04 Sub04 Cat03:
+              + Fun07 Sec04 Sub04 Cat03:
               +   - count differnce (if kept) & move on
               \+++++++++++++++++++++++++++++++++++++++++*/
 
-               ++distSL;
-
-               nextNt_fun03_sec04_sub03_cat03:;
+               nextNt_fun07_sec04_sub03_cat03:;
                ++uiQry;
                ++uiRef;
                --qryValSI;
@@ -1084,26 +1433,109 @@ dist_edDist(
          /*Case: snp*/
 
          /***********************************************\
-         * Fun03 Sec04 Sub05:
+         * Fun07 Sec04 Sub05:
          *   - handel deletion cases
+         *   o fun07 sec04 sub05 cat01:
+         *     - check if keeping deletion
+         *   o fun07 sec04 sub05 cat02:
+         *     - find if deletion overflows window
+         *   o fun07 sec04 sub05 cat03:
+         *     - update windows until pariatial window
+         *   o fun07 sec04 sub05 cat04:
+         *     - move to next reference base
          \***********************************************/
+
+         /*++++++++++++++++++++++++++++++++++++++++++++++\
+         + Fun07 Sec04 Sub05 Cat01:
+         +   - check if keeping deletion
+         \++++++++++++++++++++++++++++++++++++++++++++++*/
 
          /*deletion cases*/
          case 'D':
          /*Case: deletion*/
             if(qryValSI >= (sint) indelLenUI)
             { /*If: keeping deletion event*/
-               distSL += qryValSI;
-               ++(*indelEventsUI);
-               *numIndelUI += qryValSI;
+               resSTPtr->edDistSL += qryValSI;
+               ++resSTPtr->indelEventsUI;
+               resSTPtr->numIndelUI += qryValSI;
+               indelBl = 1; 
             } /*If: keeping deletion event*/
+
+            else
+               indelBl = 0; 
+
+            /*+++++++++++++++++++++++++++++++++++++++++++\
+            + Fun07 Sec04 Sub05 Cat02:
+            +   - find if deletion overflows window
+            \+++++++++++++++++++++++++++++++++++++++++++*/
+
+            if(indelBl)
+            { /*If: deletion was kept*/
+               if(baseInWinUI + qryValSI >= winSizeUI)
+               { /*If: indels go beond window size*/
+                  indelAddUI = winSizeUI - baseInWinUI;
+                  winDistUI += indelAddUI;
+                  indelAddUI = qryValSI - indelAddUI;
+               } /*If: indels go beond window size*/
+
+               else
+               { /*Else: all indels in window*/
+                  indelAddUI = 0;
+                  winDistUI += qryValSI;
+               } /*Else: all indels in window*/
+            } /*If: deletion was kept*/
+
+            /*+++++++++++++++++++++++++++++++++++++++++++\
+            + Fun07 Sec04 Sub05 Cat03:
+            +   - update windows until pariatial window
+            \+++++++++++++++++++++++++++++++++++++++++++*/
+
+            baseInWinUI += qryValSI;
+
+            while(baseInWinUI >= winSizeUI)
+            { /*Loop: save complete a window*/
+               ++resSTPtr->numFullWinUI;
+
+               resSTPtr->maxWinDistUI =
+                  max_genMath(
+                     resSTPtr->maxWinDistUI,
+                     winDistUI
+                  );
+
+               resSTPtr->minWinDistUI =
+                  min_genMath(
+                     resSTPtr->minWinDistUI,
+                     winDistUI
+                  );
+
+               if(indelBl)
+               { /*If: keeping indels*/
+                  if(indelAddUI < winSizeUI)
+                     winDistUI = indelAddUI;
+                  else
+                  { /*Else: changes out of bounds*/
+                     winDistUI = winSizeUI;
+                     indelAddUI -= winSizeUI;
+                  } /*Else: changes out of bounds*/
+               } /*If: keeping indels*/
+
+               else
+                  winDistUI = 0;
+
+               baseInWinUI -= winSizeUI;
+            } /*Loop: save complete a window*/
+
+            /*+++++++++++++++++++++++++++++++++++++++++++\
+            + Fun07 Sec04 Sub05 Cat04:
+            +   - move to next reference base
+            \+++++++++++++++++++++++++++++++++++++++++++*/
 
             uiRef += qryValSI;
             break;
          /*Case: deletion*/
 
          /***********************************************\
-         * Fun03 Sec04 Sub06:
+         * Fun07 Sec04 Sub06:
          *   - handel insertion cases
          \***********************************************/
 
@@ -1113,9 +1545,11 @@ dist_edDist(
 
             if(qryValSI >= (sint) indelLenUI)
             { /*If: keeping query deletion*/
-               distSL += qryValSI;
-               ++(*indelEventsUI);
-               *numIndelUI += qryValSI;
+               resSTPtr->edDistSL += qryValSI;
+               ++resSTPtr->indelEventsUI;
+               resSTPtr->numIndelUI += qryValSI;
+
+               winDistUI += qryValSI; /*not in reference*/
             } /*If: keeping query deletion*/
 
             break;
@@ -1123,7 +1557,7 @@ dist_edDist(
       } /*Switch: find mutation combination*/
 
       /**************************************************\
-      * Fun03 Sec04 Sub07:
+      * Fun07 Sec04 Sub07:
       *   - check if move to next cigar entry
       \**************************************************/
 
@@ -1132,34 +1566,90 @@ dist_edDist(
    } /*Loop: get edit distance*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun03 Sec06:
+   ^ Fun07 Sec06:
+   ^   - add last window
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(baseInWinUI >= winSizeUI)
+   { /*If: covered read had no partial windows*/
+      ++resSTPtr->numFullWinUI;
+
+      resSTPtr->maxWinDistUI =
+         max_genMath(
+            resSTPtr->maxWinDistUI,
+            winDistUI
+         );
+
+      resSTPtr->minWinDistUI =
+         min_genMath(
+            resSTPtr->minWinDistUI,
+            winDistUI
+         );
+
+      resSTPtr->extraWinNtUI = 0;
+      resSTPtr->lastWinDiffUI = 0;
+
+      resSTPtr->avgWinDistF =
+           (float) resSTPtr->edDistSL
+         / (float) resSTPtr->numFullWinUI;
+   } /*If: covered read had no partial windows*/
+
+   else
+   { /*Else: had a partial window*/
+      resSTPtr->extraWinNtUI = winSizeUI;
+      resSTPtr->lastWinDiffUI = winDistUI;
+
+      resSTPtr->maxWinDistUI =
+         max_genMath(
+            resSTPtr->maxWinDistUI,
+            winDistUI
+         );
+
+      resSTPtr->minWinDistUI =
+         min_genMath(
+            resSTPtr->minWinDistUI,
+            winDistUI
+         );
+
+      resSTPtr->avgWinDistF =
+           (float) resSTPtr->edDistSL
+         / ( (float) resSTPtr->numFullWinUI + 1 );
+   } /*Else: had a partial window*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun07 Sec07:
    ^   - return the edit distance
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   goto ret_fun03_sec06;
+   resSTPtr->startUI = qrySTPtr->refStartUI;
+   resSTPtr->overlapUI = qrySTPtr->alnReadLenUI;
 
-   noSeq_fun03_sec06:;
-   distSL = def_noSeq_edDist;
-   goto ret_fun03_sec06;
+   retSL = resSTPtr->edDistSL;
+   goto ret_fun07_sec07;
 
-   noMap_fun03_sec06:;
-   distSL = def_noMap_edDist;
-   goto ret_fun03_sec06;
+   noSeq_fun07_sec07:;
+      retSL = def_noSeq_edDist;
+      goto ret_fun07_sec07;
 
-   ret_fun03_sec06:;
-   return distSL;
+   noMap_fun07_sec07:;
+      retSL = def_noMap_edDist;
+      goto ret_fun07_sec07;
+
+   ret_fun07_sec07:;
+      return retSL;
 } /*dist_edDist*/
 
 /*-------------------------------------------------------\
-| Fun04: percDist_edDist
+| Fun08: percDist_edDist
 |   - gives a rough idea on precentage of difference from
 |     error
 |   - not great, but allows lumping reads together
 | Input:
-|   - distSL:
-|     o edit distance to find probablity for
-|   - overlapUI:
-|     o length of alignment (overlap between query & ref)
+|   - resSTPtr:
+|     o pointer to res_edDist struct with edit distance
+|       and overlap size
+|   - winSizeUI:
+|     o size of one window
 |   - percErrF:
 |     o expected percent of errors (0 to 1) in reads
 |     o if doing read to read comparsions; double this
@@ -1169,15 +1659,29 @@ dist_edDist(
 \-------------------------------------------------------*/
 signed int
 percDist_edDist(
-   signed long distSL,
-   unsigned int overlapUI,
+   struct res_edDist *resSTPtr,
+   unsigned int winSizeUI,
    float percErrF
 ){
-   return 100 * (distSL / (overlapUI * percErrF));
+   resSTPtr->probUI =
+         100
+      * (
+            resSTPtr->edDistSL
+          / (resSTPtr->overlapUI * percErrF)
+        );
+
+   resSTPtr->probMaxWinUI =
+         100
+      * (
+            resSTPtr->maxWinDistUI
+          / (winSizeUI * percErrF)
+        );
+
+   return resSTPtr->probUI;
 } /*percDist_edDist*/
 
 /*-------------------------------------------------------\
-| Fun05: addReadToDepth_edDist
+| Fun09: addReadToDepth_edDist
 |   - adds a read to a depth profile
 | Input:
 |   - refSTPtr:
@@ -1188,12 +1692,12 @@ percDist_edDist(
 |     o minimum q-score to keep snp
 |   - minOverlapF:
 |     o minimum percent overlap to score
-|   - depthAryUI:
-|     o unsigned int array of read depths (must be length
-|       of reference)
+|   - resSTPtr:
+|     o pointer to res_edDist struct with depth array to
+|       store read depths in (must be length of reference)
 | Output:
 |   - Modifies:
-|     o depthAryUI to have query added
+|     o depthAryUI in resSTPtr to have query added
 |   - Returns:
 |     o 0 for no errors
 |     o 1 if read was not added (failed filters)
@@ -1204,24 +1708,24 @@ addReadToDepth_edDist(
    struct samEntry *qrySTPtr, /*query samEntry*/
    unsigned char minQUC,      /*min Q-score (snp/ins)*/
    float minOverlapF,         /*min % overlap*/
-   unsigned int *depthAryUI   /*array of read depths*/
+   struct res_edDist *resSTPtr/*has depth profile array*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun05 TOC:
+   ' Fun09 TOC:
    '   - adds a read to a depth profile
-   '   o fun05 sec01:
+   '   o fun09 sec01:
    '     - variable declarations
-   '   o fun05 sec02:
+   '   o fun09 sec02:
    '     - filter reads
-   '   o fun05 sec03:
+   '   o fun09 sec03:
    '     - prepare for comparisions
-   '   o fun05 sec04:
+   '   o fun09 sec04:
    '     - add depths
-   '   o fun05 sec05:
+   '   o fun09 sec05:
    '     - return result
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun05 Sec01:
+   ^ Fun09 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1242,24 +1746,24 @@ addReadToDepth_edDist(
    schar refQBl = 0;    /*tells if ref has q-score*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun05 Sec02:
+   ^ Fun09 Sec02:
    ^   - filter reads
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    if(qrySTPtr->extraStr[0] == '@')
-      goto discard_fun05_sec05;
+      goto discard_fun09_sec05;
 
    if(qrySTPtr->flagUS & 4)
-      goto discard_fun05_sec05;
+      goto discard_fun09_sec05;
    
    if(qrySTPtr->refEndUI < refSTPtr->refStartUI)
-      goto discard_fun05_sec05;
+      goto discard_fun09_sec05;
 
    if(qrySTPtr->refStartUI > refSTPtr->refEndUI)
-      goto discard_fun05_sec05;
+      goto discard_fun09_sec05;
 
    if(qrySTPtr->refEndUI < refSTPtr->refStartUI)
-      goto discard_fun05_sec05;
+      goto discard_fun09_sec05;
 
    overlapF =
      (float)
@@ -1281,19 +1785,19 @@ addReadToDepth_edDist(
       &&
              overlapF / (float) qrySTPtr->alnReadLenUI
            < minOverlapF
-   ) goto discard_fun05_sec05;
+   ) goto discard_fun09_sec05;
 
    if(
          ! qrySTPtr->seqStr
       || *qrySTPtr->seqStr == '*' 
       || *qrySTPtr->seqStr == '\0'
-   ) goto discard_fun05_sec05;
+   ) goto discard_fun09_sec05;
 
    if(
          ! refSTPtr->seqStr
       || *refSTPtr->seqStr == '*' 
       || *refSTPtr->seqStr == '\0'
-   ) goto discard_fun05_sec05;
+   ) goto discard_fun09_sec05;
 
    if(
       eql_ulCp(
@@ -1302,21 +1806,21 @@ addReadToDepth_edDist(
          0,
          '\0'
       )
-   ) goto discard_fun05_sec05;
+   ) goto discard_fun09_sec05;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun05 Sec03:
+   ^ Fun09 Sec03:
    ^   - prepare for comparisions
-   ^   o fun05 sec03 sub01:
+   ^   o fun09 sec03 sub01:
    ^     - check if have q-score entries
-   ^   o fun05 sec03 sub02:
+   ^   o fun09 sec03 sub02:
    ^     - find start positions
-   ^   o fun05 sec03 sub03:
+   ^   o fun09 sec03 sub03:
    ^     - move past softmasking
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun05 Sec03 Sub01:
+   * Fun09 Sec03 Sub01:
    *   - check if have q-score entries
    \*****************************************************/
 
@@ -1345,9 +1849,15 @@ addReadToDepth_edDist(
       refQBl = 1;
 
    /*****************************************************\
-   * Fun05 Sec03 Sub02:
+   * Fun09 Sec03 Sub02:
    *   - find start positions
    \*****************************************************/
+
+   resSTPtr->startUI =
+      max_genMath(
+         refSTPtr->refStartUI,
+         qrySTPtr->refStartUI
+      );
 
    refValSI = refSTPtr->cigArySI[0];
    qryValSI = qrySTPtr->cigArySI[0];
@@ -1385,7 +1895,7 @@ addReadToDepth_edDist(
    } /*Else If: move query foward*/
 
    /*****************************************************\
-   * Fun05 Sec03 Sub03:
+   * Fun09 Sec03 Sub03:
    *   - move past softmasking
    \*****************************************************/
 
@@ -1416,26 +1926,26 @@ addReadToDepth_edDist(
    } /*If: have hardmasked region*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun05 Sec04:
+   ^ Fun09 Sec04:
    ^   - add depths
-   ^   o fun05 sec04 sub01:
+   ^   o fun09 sec04 sub01:
    ^     - start loop + break if softmasking at end
-   ^   o fun05 sec04 note01:
+   ^   o fun09 sec04 note01:
    ^     - table of cigar entries added together
-   ^   o fun05 sec04 sub02:
+   ^   o fun09 sec04 sub02:
    ^     - start switch/check match/possible snp combos
-   ^   o fun05 sec04 sub03:
+   ^   o fun09 sec04 sub03:
    ^     - check ins/ins or del/del
-   ^   o fun05 sec04 sub04:
+   ^   o fun09 sec04 sub04:
    ^     - handel deletion cases
-   ^   o fun05 sec04 sub05:
+   ^   o fun09 sec04 sub05:
    ^     - handel insertion cases
-   ^   o fun05 sec04 sub06:
+   ^   o fun09 sec04 sub06:
    ^     - check if move to next cigar entry
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun05 Sec04 Sub01:
+   * Fun09 Sec04 Sub01:
    *   - start loop + break if softmasking at end
    \*****************************************************/
 
@@ -1456,7 +1966,7 @@ addReadToDepth_edDist(
          break; /*hard masking only at ends (finished)*/
 
       /*`````````````````````````````````````````````````\
-      ` Fun05 Sec04 Note01:
+      ` Fun09 Sec04 Note01:
       `   - table of cigar entries added together
       \`````````````````````````````````````````````````*/
 
@@ -1487,20 +1997,20 @@ addReadToDepth_edDist(
       */
 
       /**************************************************\
-      * Fun05 Sec04 Sub02:
+      * Fun09 Sec04 Sub02:
       *   - start switch/check match/possible snp combos
-      *   o fun05 sec04 sub02 cat01:
+      *   o fun09 sec04 sub02 cat01:
       *     - find number shared snps/matchs + check case
-      *   o fun05 sec04 sub02 cat02:
+      *   o fun09 sec04 sub02 cat02:
       *     - find snps passing min quality scores
-      *   o fun05 sec04 sub02 cat03:
+      *   o fun09 sec04 sub02 cat03:
       *     - check if SNP (passed) is a transversion
-      *   o fun05 sec04 sub02 cat04:
+      *   o fun09 sec04 sub02 cat04:
       *     - move to next SNP/match
       \**************************************************/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun05 Sec04 Sub02 Cat01:
+      + Fun09 Sec04 Sub02 Cat01:
       +   - find number shared snps/matchs + check case
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1527,13 +2037,13 @@ addReadToDepth_edDist(
                if(
                      refSTPtr->seqStr[uiRef]
                   != qrySTPtr->seqStr[uiQry]
-               ) goto nextNt_fun05_sec04_sub02_cat02;
+               ) goto nextNt_fun09_sec04_sub02_cat02;
 
                else if(refSTPtr->seqStr[uiRef] == 'N')
-                  goto nextNt_fun05_sec04_sub02_cat02;
+                  goto nextNt_fun09_sec04_sub02_cat02;
 
                else if(qrySTPtr->seqStr[uiQry] == 'N')
-                  goto nextNt_fun05_sec04_sub02_cat02;
+                  goto nextNt_fun09_sec04_sub02_cat02;
 
                if(qryQBl)
                { /*If: have query q-score entry*/
@@ -1542,7 +2052,7 @@ addReadToDepth_edDist(
                      - def_adjQ_samEntry;
 
                   if(qUC < minQUC)
-                     goto nextNt_fun05_sec04_sub02_cat02;
+                     goto nextNt_fun09_sec04_sub02_cat02;
                } /*If: have query q-score entry*/
 
                if(refQBl)
@@ -1552,12 +2062,12 @@ addReadToDepth_edDist(
                      - def_adjQ_samEntry;
 
                   if(qUC < minQUC)
-                     goto nextNt_fun05_sec04_sub02_cat02;
+                     goto nextNt_fun09_sec04_sub02_cat02;
                } /*If: have reference q-score entry*/
 
-               ++depthAryUI[uiRef];
+               ++resSTPtr->depthAryUI[uiRef];
 
-               nextNt_fun05_sec04_sub02_cat02:;
+               nextNt_fun09_sec04_sub02_cat02:;
 
                ++uiQry;
                ++uiRef;
@@ -1572,7 +2082,7 @@ addReadToDepth_edDist(
          /*Case: match or snp*/
 
          /***********************************************\
-         * Fun05 Sec04 Sub03:
+         * Fun09 Sec04 Sub03:
          *   - check ins/ins or del/del
          \***********************************************/
 
@@ -1595,7 +2105,7 @@ addReadToDepth_edDist(
 
                while(tmpSI > 0)
                { /*Loop: add in depths*/
-                  ++depthAryUI[uiRef];
+                  ++resSTPtr->depthAryUI[uiRef];
                   --tmpSI;
                   ++uiRef;
                } /*Loop: add in depths*/
@@ -1605,7 +2115,7 @@ addReadToDepth_edDist(
          /*Case: treat as same*/
  
          /***********************************************\
-         * Fun05 Sec04 Sub04:
+         * Fun09 Sec04 Sub04:
          *   - handel deletion cases
          \***********************************************/
 
@@ -1632,7 +2142,7 @@ addReadToDepth_edDist(
          /*Case: deletion (only one sequence)*/
 
          /***********************************************\
-         * Fun05 Sec04 Sub05:
+         * Fun09 Sec04 Sub05:
          *   - handel insertion cases
          \***********************************************/
 
@@ -1661,7 +2171,7 @@ addReadToDepth_edDist(
       } /*Switch: find mutation combination*/
 
       /**************************************************\
-      * Fun05 Sec04 Sub06:
+      * Fun09 Sec04 Sub06:
       *   - check if move to next cigar entry
       \**************************************************/
 
@@ -1679,18 +2189,18 @@ addReadToDepth_edDist(
    } /*Loop: add depths*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun05 Sec05:
+   ^ Fun09 Sec05:
    ^   - return result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    return 0;
 
-   discard_fun05_sec05:;
+   discard_fun09_sec05:;
    return 1;
 } /*addReadToDepth_edDist*/
 
 /*-------------------------------------------------------\
-| Fun06: mkDepthProfile_edDist
+| Fun10: mkDepthProfile_edDist
 |   - finds the depth of every base in samEntry reference
 | Input:
 |   - refSTPtr:
@@ -1699,6 +2209,8 @@ addReadToDepth_edDist(
 |     o minimum q-score to keep snp
 |   - minOverlapF:
 |     o minimum percent overlap to score
+|   - resSTPtr:
+|     o pointer to res_edDist struct to have depth profile
 |   - samSTPtr:
 |     o for reading each line in the sam file
 |   - buffStrPtr:
@@ -1707,8 +2219,6 @@ addReadToDepth_edDist(
 |     o pointer to unsigned long to hold buffStrPtr size
 |   - samFILE:
 |     o sam file to scan
-|   - errSCPtr:
-|     o pointer to signed char to hold error type
 | Output:
 |   - Modifies:
 |     o samSTPtr to have last entry in file
@@ -1716,55 +2226,68 @@ addReadToDepth_edDist(
 |     o buffStrPtr to have last line in sam file and is
 |       resized if needed
 |     o lenBuffULPtr to new buffStrPtr size (if resized)
-|     o errSCPtr to:
-|       - 0 for no errors
-|       - def_memErr_edDist for memory errors
-|       - def_fileErr_edDist for memory errors
+|     o depthAryUI in resSTPtr to have depth profile
 |   - Returns:
-|     o unsigned int array with depths
-|     o 0 for memory error
+|     o 0 for no errors
+|     o def_memErr_edDist for memory errors
+|     o def_fileErr_edDist for memory errors
 \-------------------------------------------------------*/
-unsigned int *
+signed char
 mkDepthProfile_edDist(
    struct samEntry *refSTPtr, /*reference samEntry*/
    unsigned char minQUC,      /*min Q-score (snp/ins)*/
    float minOverlapF,         /*min % overlap*/
+   struct res_edDist *resSTPtr,/*has depth array*/
    struct samEntry *samSTPtr, /*for reading sam file*/
    signed char **buffStrPtr,  /*for reading sam file*/
    unsigned long *lenBuffULPtr, /*size of buffStrPtr*/
-   void *samFILE,
-   signed char *errSCPtr
+   void *samFILE
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   '   o fun06 sec01:
+   ' Fun10 TOC:
+   '   - finds depth of every base in samEntry reference
+   '   o fun10 sec01:
    '     - variable declarations
-   '   o fun06 sec02:
+   '   o fun10 sec02:
    '     - allocate memory and get first line
-   '   o fun06 sec03:
+   '   o fun10 sec03:
    '     - get depths
+   '   o fun10 sec04:
+   '     - clean up
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun06 Sec01:
+   ^ Fun10 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   unsigned int *depthHeapAryUI = 0; /*depth array*/
+   signed char errSC = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun06 Sec02:
+   ^ Fun10 Sec02:
    ^   - allocate memory and get first line
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   depthHeapAryUI =
-      calloc(
-         (refSTPtr->readLenUI + 9),
-         sizeof(uint)
-      );
+   if(resSTPtr->sizeDepthUL < refSTPtr->readLenUI)
+   { /*If: need more memory*/
+      free(resSTPtr->depthAryUI);
+      resSTPtr->depthAryUI = 0;
+   } /*If: need more memory*/
 
-   if(! depthHeapAryUI)
-      goto memErr_fun06_sec04_sub02;
+   if(! resSTPtr->depthAryUI)
+   { /*If: need to allocate memory for the depth array*/
+      resSTPtr->depthAryUI =
+         calloc(
+            (refSTPtr->readLenUI + 9),
+            sizeof(uint)
+         );
 
-   *errSCPtr =
+      if(! resSTPtr->depthAryUI)
+         goto memErr_fun10_sec04_sub02;
+
+      resSTPtr->sizeDepthUL = refSTPtr->readLenUI;
+   } /*If: need to allocate memory for the depth array*/
+
+   errSC =
       get_samEntry(
          samSTPtr,
          buffStrPtr,
@@ -1772,33 +2295,32 @@ mkDepthProfile_edDist(
          samFILE
       );
 
-   if(*errSCPtr)
+   if(errSC)
    { /*If: had error*/
-      if(*errSCPtr == def_memErr_samEntry)
-         goto memErr_fun06_sec04_sub02;
+      if(errSC == def_memErr_samEntry)
+         goto memErr_fun10_sec04_sub02;
 
       else
-         goto fileErr_fun06_sec04_sub03;
+         goto fileErr_fun10_sec04_sub03;
    } /*If: had error*/
 
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun06 Sec03:
+   ^ Fun10 Sec03:
    ^   - get depths
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   while(! *errSCPtr)
+   while(! errSC)
    { /*Loop: get depths*/
-
       addReadToDepth_edDist(
          refSTPtr,
          samSTPtr,
          minQUC,
          minOverlapF,
-         depthHeapAryUI
+         resSTPtr
       );
 
-      *errSCPtr =
+      errSC =
          get_samEntry(
             samSTPtr,
             buffStrPtr,
@@ -1807,41 +2329,118 @@ mkDepthProfile_edDist(
          );
    } /*Loop: get depths*/
 
-   if(*errSCPtr == def_memErr_samEntry)
-      goto memErr_fun06_sec04_sub02;
+   if(errSC == def_memErr_samEntry)
+      goto memErr_fun10_sec04_sub02;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun06 Sec04:
+   ^ Fun10 Sec04:
    ^   - clean up
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   *errSCPtr = 0;
-   goto ret_fun06_sec04_sub05;
+   errSC = 0;
+   goto ret_fun10_sec04_sub05;
 
-   memErr_fun06_sec04_sub02:;
-   *errSCPtr = def_memErr_edDist;
-   goto errCleanUp_fun06_sec04_sub04;
+   memErr_fun10_sec04_sub02:;
+      errSC = def_memErr_edDist;
+      goto ret_fun10_sec04_sub05;
 
-   fileErr_fun06_sec04_sub03:;
-   *errSCPtr = def_fileErr_edDist;
-   goto errCleanUp_fun06_sec04_sub04;
+   fileErr_fun10_sec04_sub03:;
+      errSC = def_fileErr_edDist;
+      goto ret_fun10_sec04_sub05;
 
-   errCleanUp_fun06_sec04_sub04:;
-   if(depthHeapAryUI)
-      free(depthHeapAryUI);
-   depthHeapAryUI = 0;
-   goto ret_fun06_sec04_sub05;
+   ret_fun10_sec04_sub05:;
+      fseek(
+         samFILE,
+         0,
+         SEEK_SET
+      );
 
-   ret_fun06_sec04_sub05:;
+      return errSC;
+} /*mkDepthProfile_edDist*/
 
-   fseek(
-      samFILE,
-      0,
-      SEEK_SET
+/*-------------------------------------------------------\
+| Fun11: phead_edDist
+|   - prints header for edDist output tsv
+| Input:
+|   - outFILE:
+|     o FILE pointer to print header to
+| Output:
+|   - Prints:
+|     o edDist header to outFILE
+\-------------------------------------------------------*/
+void
+phead_edDist(
+   void *outFILE
+){
+
+   fprintf(
+      (FILE *) outFILE,
+     "qry\tref\tdist\tdist_div_err\tstart\taln_len"
    );
 
-   return depthHeapAryUI;
-} /*mkDepthProfile_edDist*/
+   fprintf(
+      (FILE *) outFILE,
+     "\tnum_indels\tindel_events\tmin_win\tavg_win"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+     "\tmax_win\tmax_win_div_err\n"
+   );
+} /*phead_edDist*/
+
+/*-------------------------------------------------------\
+| Fun12: pdist_edDist
+|   - prints edit distance tsv line for edDist
+| Input:
+|   - resSTPtr:
+|     o pointer to res_edDist struct with distance to
+|       print
+|   - qryIdStr:
+|     o c-string with query id (name) to print
+|   - refIdStr:
+|     o c-string with reference id (name) to print
+|   - outFILE:
+|     o FILE pointer to print header to
+| Output:
+|   - Prints:
+|     o edDist header to outFILE
+\-------------------------------------------------------*/
+void
+pdist_edDist(
+   struct res_edDist *resSTPtr,
+   signed char *qryIdStr,
+   signed char *refIdStr,
+   void *outFILE
+){
+
+   fprintf(
+      outFILE,
+      "%s\t%s",
+      qryIdStr,
+      refIdStr
+   );
+
+   fprintf(
+      outFILE,
+      "\t%li\t%i\t%u\t%u\t%u\t%u",
+      resSTPtr->edDistSL,
+      resSTPtr->probUI,
+      resSTPtr->startUI,
+      resSTPtr->overlapUI,
+      resSTPtr->numIndelUI,
+      resSTPtr->indelEventsUI
+   );
+
+   fprintf(
+      outFILE,
+      "\t%u\t%0.3f\t%u\t%u\n",
+      resSTPtr->minWinDistUI,
+      resSTPtr->avgWinDistF,
+      resSTPtr->maxWinDistUI,
+      resSTPtr->probMaxWinUI
+   );
+} /*pdist_edDist*/
    
 /*=======================================================\
 : License:
