@@ -113,6 +113,8 @@ helpStr="$(basename "$0") OS program_name main_file libraries ...
        - water (genAln/water.c)
 
        - illNano (genClust/illNano.c)
+       - clustST (genClust/clustST.c)
+       - edClust (genClust/edClust.c)
 "
  
 
@@ -780,6 +782,10 @@ lenSamToAlnDep=$((1 + lenAlnSetDep + lenSamEntryDep + lenSeqSTDep));
 #   - genClust libraries
 #   o sec03 sub04 cat01:
 #     - illNano
+#   o sec03 sub04 cat02:
+#     - clustST
+#   o sec03 sub04 cat03:
+#     - edClust
 #*********************************************************
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -794,6 +800,30 @@ illNanoStr=""$genClustStr"illNano.\$O: "$genClustStr"illNano.c "$genClustStr"ill
 illNanoObj=""$genClustStr"illNano.\$O";
 illNanoDep=("samEntry" ${samEntryDep[*]});
 lenIllNanoDep=$((1 + lenSamEntryDep));
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub05 Cat02:
+#   - clustST
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+clustSTStr=""$genClustStr"clustST.\$O: "$genClustStr"clustST.c "$genClustStr"clustST.h "$genBioStr"samEntry.\$O "$genBioStr"tbCon.\$O "$genBioStr"edDist.\$O "$genLibStr"genMath.h
+	$ccStr "$dashOStr""$genClustStr"clustST.\$O "$dashCStr" $cflagsStr "$genClustStr"clustST.c";
+
+clustSTObj=""$genClustStr"clustST.\$O";
+clustSTDep=("samEntry" ${samEntryDep[*]} "tbCon" ${tbConDep[*]} "edDist" ${edDistDep[*]});
+lenClustSTDep=$((1 + lenSamEntryDep + lenTbConDep + lenEdDistDep));
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub05 Cat03:
+#   - edClust
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+edClustStr=""$genClustStr"edClust.\$O: "$genClustStr"edClust.c "$genClustStr"edClust.h "$genClustStr"clustST.\$O
+	$ccStr "$dashOStr""$genClustStr"edClust.\$O "$dashCStr" $cflagsStr "$genClustStr"edClust.c";
+
+edClustObj=""$genClustStr"edClust.\$O";
+edClustDep=("clustST" ${clustSTDep[*]});
+lenEdClustDep=$((1 + lenClustSTDep));
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # Sec04:
@@ -1663,6 +1693,10 @@ while [[ $# -gt 0 || "$depSI" -lt "$lenDep" ]]; do
    #   - genClust
    #   o sec04 sub05 cat01:
    #     - illNano
+   #   o sec04 sub05 cat02:
+   #     - clustST
+   #   o sec04 sub05 cat03:
+   #     - edClust
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1693,6 +1727,61 @@ while [[ $# -gt 0 || "$depSI" -lt "$lenDep" ]]; do
       fi
    # Else If: illNano library
 
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub05 Cat02:
+   #   - clustST
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [[ "$libStr" == "clustST" ]]; then
+   # Else If: clustST library
+      if [[ "$clustSTBl" == "" ]]; then
+         cmdStr="$cmdStr$newLineStr$clustSTStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr=""$objFilesStr""$clustSTObj"";
+
+         if [[ "$mainLibBl" == "" ]]; then
+            mainCmdStr="$mainCmdStr $clustSTObj";
+         fi
+
+         clustSTBl=1;
+
+         depAry+=(${clustSTDep[*]});
+         lenDep=$((lenDep + lenClustSTDep));
+      fi
+
+      if [[ "$genClustBl" -lt 1 ]]; then
+         genClustBl=1;
+         libPathStr="$libPathStr\ngenClust=.."$slashSC"genClust";
+      fi
+   # Else If: clustST library
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub05 Cat03:
+   #   - edClust
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [[ "$libStr" == "edClust" ]]; then
+   # Else If: edClust library
+      if [[ "$edClustBl" == "" ]]; then
+         cmdStr="$cmdStr$newLineStr$edClustStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr=""$objFilesStr""$edClustObj"";
+
+         if [[ "$mainLibBl" == "" ]]; then
+            mainCmdStr="$mainCmdStr $edClustObj";
+         fi
+
+         edClustBl=1;
+
+         depAry+=(${edClustDep[*]});
+         lenDep=$((lenDep + lenEdClustDep));
+      fi
+
+      if [[ "$genClustBl" -lt 1 ]]; then
+         genClustBl=1;
+         libPathStr="$libPathStr\ngenClust=.."$slashSC"genClust";
+      fi
+   # Else If: edClust library
 
    fi # check librarys called
 

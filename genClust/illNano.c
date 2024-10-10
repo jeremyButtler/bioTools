@@ -499,13 +499,17 @@ cmp_prof_illNano(
 
    while(uiFirst < firstProfSTPtr->varInProfUI)
    { /*Loop: find number of differences*/
+      if(uiSec >= secProfSTPtr->varInProfUI)
+         goto ret_fun07_sec05;
+         /*at end or profile only covers part of first*/
+
       if(
            firstProfSTPtr->ntArySC[uiFirst]
         == def_unkown_illNano
       ) ;
 
       else if(
-            secProfSTPtr->ntArySC[uiFirst]
+            secProfSTPtr->ntArySC[uiSec]
          == def_unkown_illNano
       ) ;
 
@@ -519,10 +523,6 @@ cmp_prof_illNano(
 
       ++uiFirst;
       ++uiSec;
-
-      if(uiSec >= secProfSTPtr->varInProfUI)
-         goto ret_fun07_sec05;
-         /*at end or profile only covers part of first*/
    } /*Loop: find number of differences*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -650,6 +650,9 @@ merge_prof_illNano(
 
    while(uiSec < secProfSTPtr->varInProfUI)
    { /*Loop: merge profiles*/
+      if(uiFirst >= firstProfSTPtr->varInProfUI)
+         break;
+
       if(
             firstProfSTPtr->ntArySC[uiFirst]
          == def_unkown_illNano
@@ -663,18 +666,6 @@ merge_prof_illNano(
 
       firstProfSTPtr->xDepthAryUI[uiFirst] +=
          secProfSTPtr->xDepthAryUI[uiSec];
-
-      firstProfSTPtr->maxDiffUI =
-         max_genMath(
-           firstProfSTPtr->maxDiffUI,
-           secProfSTPtr->maxDiffUI
-         );
-
-      firstProfSTPtr->minDiffUI =
-         min_genMath(
-           firstProfSTPtr->minDiffUI,
-           secProfSTPtr->minDiffUI
-         );
 
       ++uiSec;
       ++uiFirst;
