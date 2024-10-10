@@ -47,7 +47,7 @@
 
 #define def_year_mainIllNano 2024
 #define def_month_mainIllNano 10
-#define def_day_mainIllNano 9
+#define def_day_mainIllNano 10
 
 #define def_minDepth_mainIllNano 10
 #define def_minPercDepth_mainIllNano 0.001f
@@ -173,7 +173,7 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "   - File IO:\n"
+      "   FILE IO:\n"
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -283,7 +283,7 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "   - settings:\n"
+      "   SETTINGS:\n"
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -427,7 +427,7 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "   - other:\n"
+      "   OTHER:\n"
    );
 
    fprintf(
@@ -1191,7 +1191,19 @@ main(
 
    if(errSC)
    { /*If: had error*/
-      if(errSC == def_memErr_illNano)
+      if(errSC == def_noVar_illNano)
+      { /*If: no variants found*/
+         fprintf(
+            stderr,
+            "-ill-tsv %s has no variations\n",
+            illTsvFileStr
+         );
+
+         errSC = 0;
+         goto ret_main_sec04;
+      } /*If: no variants found*/
+
+      else if(errSC == def_memErr_illNano)
          fprintf(
             stderr,
             "memory error while running illNano\n"

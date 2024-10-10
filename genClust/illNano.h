@@ -56,6 +56,7 @@ typedef struct samEntry samEntry;
 
 #define def_memErr_illNano 1
 #define def_fileErr_illNano 2
+#define def_noVar_illNano 4   /*no variants in file*/
 
 #define def_A_illNano 1
 #define def_C_illNano 2
@@ -352,6 +353,9 @@ freeHeap_profList_illNano(
 |     o min percent read depth to keep deletion; you
 |       should use at least 50%, so deletion needs to be
 |       major choice
+|   - numVarUIPtr:
+|     o pointer to unsigned int to hold the number of
+|       variant positions found
 |   - lenProfUI:
 |     o pointer to unsigned int to hold length (final
 |       reference position) of profile
@@ -361,6 +365,7 @@ freeHeap_profList_illNano(
 |     o pointer to signed char to hold returned error
 | Output:
 |   - Modifies:
+|     o numVarUIPtr to have number of variant positions
 |     o lenProfUI to have reference position of last
 |       variant
 |     o tsvFILE to point to end of file (EOF)
@@ -384,6 +389,7 @@ getIllSnp_illNano(
    unsigned int minDepthUI, /*min depth to keep snp*/
    float minPercDepthF,     /*min % depth to keep snp*/
    float minPercDelF,       /*min % depth to keep del*/
+   unsigned int *numVarUIPtr,/*number variants found*/
    unsigned int *lenProfUI, /*length of final profile*/
    void *tsvFILE,           /*tsv with snps*/
    signed char *errSCPtr

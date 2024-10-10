@@ -117,6 +117,12 @@ See notes.md for some experimenting I did with filtering.
   called with the fast model on guppy 3.3, so a very noisy
   dataset.
 
+For SRR13951165, the unique profile setting took about 5
+  minutes at 10x Illumin variant depth, but about 5
+  seconds for 30x Illumina depth. Bear in mind, this has
+  deep read depth for Nanopore, but shallow read depth
+  for Illumina.
+
 ## unique profiles
 
 The `-uniq-out file.tsv` command merges profiles that
@@ -149,6 +155,12 @@ You can use `part-overlap` to merge profiles that share
 
 # Updates:
 
+- 2024-10-10:
+  - fixed issues with some profiles not being merged when
+    should be
+  - fixed issue with version number not printing
+  - fixed crash when no positions have multiple variants
+    in Illumina tsv file
 - 2024-10-09:
   - fixed issue with minimum difference being 0 when had
     overlaps with `-part-ovlerap`

@@ -437,7 +437,6 @@ cmp_prof_illNano(
         firstProfSTPtr->posAryUI[uiFirst]
       > secProfSTPtr->posAryUI[uiSec]
    ){ /*Loop: find first matching position*/
-      ++uiFirst;
       ++uiSec;
 
       if(uiFirst >= firstProfSTPtr->varInProfUI)
@@ -463,7 +462,6 @@ cmp_prof_illNano(
       < secProfSTPtr->posAryUI[uiSec]
    ){ /*Loop: find first matching position*/
       ++uiFirst;
-      ++uiSec;
 
       if(uiFirst >= firstProfSTPtr->varInProfUI)
       { /*If: no ovlerapping variants*/
@@ -770,6 +768,9 @@ freeHeap_profList_illNano(
 |     o min percent read depth to keep deletion; you
 |       should use at least 50%, so deletion needs to be
 |       major choice
+|   - numVarUIPtr:
+|     o pointer to unsigned int to hold the number of
+|       variant positions found
 |   - lenProfUI:
 |     o pointer to unsigned int to hold length (final
 |       reference position) of profile
@@ -779,6 +780,7 @@ freeHeap_profList_illNano(
 |     o pointer to signed char to hold returned error
 | Output:
 |   - Modifies:
+|     o numVarUIPtr to have number of variant positions
 |     o lenProfUI to have reference position of last
 |       variant
 |     o tsvFILE to point to end of file (EOF)
@@ -802,6 +804,7 @@ getIllSnp_illNano(
    unsigned int minDepthUI, /*min depth to keep snp*/
    float minPercDepthF,     /*min % depth to keep snp*/
    float minPercDelF,       /*min % depth to keep del*/
+   unsigned int *numVarUIPtr,/*number variants found*/
    unsigned int *lenProfUI, /*length of final profile*/
    void *tsvFILE,           /*tsv with snps*/
    signed char *errSCPtr
@@ -845,6 +848,7 @@ getIllSnp_illNano(
    ^   - allocate profile memory (initial)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
+   *numVarUIPtr = 0;
    *lenProfUI = 0;
 
    profileStr = malloc((4096 + 9) * sizeof(schar));
@@ -1152,6 +1156,8 @@ getIllSnp_illNano(
          /*this case is true most of the time, so
          `   branch prediction is good here
          */
+      else
+         ++(*numVarUIPtr); /*kept variant position*/
    } /*Loop: remove positons with one varaint*/
 
    profileStr[*lenProfUI] = '\0';
@@ -1932,7 +1938,7 @@ getNanoReads_illNano(
 
       nodeSTPtr = profListSTPtr->listST;
 
-      while(nodeSTPtr->nextST)
+      while(nodeSTPtr)
       { /*Loop: blank stats*/
          nodeSTPtr->overlapUI = 0;
 
@@ -2281,6 +2287,7 @@ run_illNano(
 
    schar *profHeapStr = 0;
    uint lenProfUI = 0;
+   uint varPosUI = 0;  /*number of variant positions*/
 
    struct samEntry samStackST;
    schar *buffHeapStr = 0;
@@ -2315,6 +2322,7 @@ run_illNano(
          minDepthUI,
          minPercDepthF,
          minPercDelF,
+         &varPosUI,
          &lenProfUI,
          illTsvFILE,
          &errSC
@@ -2327,6 +2335,9 @@ run_illNano(
       else
          goto fileErr_fun19_sec05;
    } /*If: have error*/
+
+   if(! varPosUI)
+      goto noVars_fun19_sec05;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun19 Sec04:
@@ -2379,6 +2390,10 @@ run_illNano(
 
    fileErr_fun19_sec05:;
       errSC = def_fileErr_illNano;
+      goto ret_fun19_sec05;
+
+   noVars_fun19_sec05:;
+      errSC = def_noVar_illNano;
       goto ret_fun19_sec05;
 
    ret_fun19_sec05:;
