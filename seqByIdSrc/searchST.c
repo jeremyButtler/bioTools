@@ -5,52 +5,56 @@
 '     - -DADD_ID_LEN: adds read id length to id long.
 '       o slower for ONT. (may be faster for Illuminia??)
 '     - -DTHIRTY_TWO_BIT:
-'       o for 32 bit cpus (only changes sum part of fun01)
+'       o for 32 bit cpus (only changes sum part of fun03)
 '   o header:
 '     - included libraries and defined variables
 '   o .h st01: searchST
 '     - holds the hash table and read ids
 '   o .c tbl01: hexTblUC_searchST
 '     - conversion table of read id character to hex
-'   o fun01: cnvtIdToHexAry_searchST
+'   o .h fun01: upperUL_searchST
+'     - gets upper half of unsigned long
+'   o .h fun02: lowerUL_searchST
+'     - gets lower half of unsigned long
+'   o fun03: cnvtIdToHexAry_searchST
 '     - converts an read id to a series of hex numbers
-'   o .c fun02: swapIds_searchST
+'   o .c fun04: swapIds_searchST
 '     - swaps two ids in a searchST structure
-'   o .h fun03: getHash_searchST
+'   o .h fun05: getHash_searchST
 '     - get the hash for a read id
-'   o fun04: cmpIds_searchST
+'   o fun06: cmpIds_searchST
 '     - compares two read ids
-'   o fun05: sortIds_searchST
+'   o fun07: sortIds_searchST
 '     - sorts ids in a searchST numerically
-'   o fun06: hashSortIds_searchST
+'   o fun08: hashSortIds_searchST
 '     - sorts ids in a searchST by hash value
-'   o fun07: evenLimbs_seachST
+'   o fun09: evenLimbs_seachST
 '     - takes a read id array with unequal number of limbs
 '       (longs) per limb and makes all ids hae the same
 '       number of limbs
-'   o .c fun08: mkSkip_searchST
+'   o .c fun10: mkSkip_searchST
 '     - converts a sorted list of read ids to a skip list
-'   o .c fun09: majicNum_searchST
+'   o .c fun11: majicNum_searchST
 '     - finds the majic number for an hash table
-'   o fun10: mkhash_searchST
+'   o fun12: mkhash_searchST
 '     - takes in a searchST structure with ids and makes a
 '       hash table for it
-'   o fun11: getReadIds_searchST
+'   o fun13: getReadIds_searchST
 '     - get read ids from a file and make a hash table
-'   o fun12: searchId_searchST
+'   o fun14: searchId_searchST
 '     - search for a read id in a searchST structure not
 '       set up as a hash table
-'   o fun13: searchHash_searchST
+'   o fun15: searchHash_searchST
 '     - search for a read id in a searchST hash table
-'   o fun14: blank_searchST
+'   o fun16: blank_searchST
 '     - here in case need in future. Does nothing
-'   o fun15: init_searchST
+'   o fun17: init_searchST
 '     - initializes a searchST structure
-'   o fun16: freeStack_searchST
+'   o fun18: freeStack_searchST
 '     - frees all variables in a searchST structure
-'   o fun17: freeHeap_searchST
+'   o fun19: freeHeap_searchST
 '     - frees a searchST structure
-'   o fun18: idToHexAry_maxLimb_searchST
+'   o fun20: idToHexAry_maxLimb_searchST
 '     - converts an read id to a series of hex numbers and
 '       does not go past a max limb count
 '     - this is here for idSearch
@@ -86,7 +90,7 @@
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*-------------------------------------------------------\
-| Fun01: cnvtIdToHexAry_searchST
+| Fun03: cnvtIdToHexAry_searchST
 |   - converts an read id to a series of hex numbers
 | Input:
 |   - idStr:
@@ -116,17 +120,17 @@ cnvtIdToHexAry_searchST(
    unsigned long *idAryUL,
    unsigned long *posInUL
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun01: cnvtIdToHexAry_searchST
-   '   o fun01 sec01:
+   ' Fun03: cnvtIdToHexAry_searchST
+   '   o fun03 sec01:
    '     - variable declerations
-   '   o fun01 sec02:
+   '   o fun03 sec02:
    '     - convert the read id
-   '   o fun01 sec03:
+   '   o fun03 sec03:
    '     - add in the id length and number limbs used
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun01 Sec01:
+   ^ Fun03 Sec01:
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -140,7 +144,7 @@ cnvtIdToHexAry_searchST(
    uchar hexUC = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun01 Sec02:
+   ^ Fun03 Sec02:
    ^   - convert the read id
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -174,19 +178,13 @@ cnvtIdToHexAry_searchST(
          idAryUL[(*posInUL)] |= hexUC;
       } /*Loop: add each id character to the list*/
 
-      #ifdef THIRTY_TWO_BIT
-         idAryUL[sumPosUL] = 
-            ((ushort *) &idAryUL[*posInUL])[0] +
-            ((ushort *) &idAryUL[*posInUL])[1];
-      #else
-         idAryUL[sumPosUL] = 
-            ((uint *) &idAryUL[*posInUL])[0] +
-            ((uint *) &idAryUL[*posInUL])[1];
-      #endif
+      idAryUL[sumPosUL] = 
+           upperUL_searchST(idAryUL[*posInUL])
+         + lowerUL_searchST(idAryUL[*posInUL]);
    } /*Loop: convert the read id*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun01 Sec03:
+   ^ Fun03 Sec03:
    ^   - add in the id length and number limbs used
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -210,7 +208,7 @@ cnvtIdToHexAry_searchST(
 } /*cnvtIdToHexAry_searchST*/
 
 /*-------------------------------------------------------\
-| Fun02: swapIds_searchST
+| Fun04: swapIds_searchST
 |   - swaps two ids in a searchST structure
 | Input:
 |   - hashSTPtr:
@@ -249,7 +247,7 @@ swapIds_searchST(
 } /*swapIds_searchST*/
 
 /*-------------------------------------------------------\
-| Fun04: cmpIds_searchST
+| Fun06: cmpIds_searchST
 |   - compares two read ids
 | Input:
 |   - hashSTPtr:
@@ -309,7 +307,7 @@ cmpIds_searchST(
 } /*getHash_searchST*/
 
 /*-------------------------------------------------------\
-| Fun05: sortIds_searchST
+| Fun07: sortIds_searchST
 |   - sorts ids in a searchST numerically
 | Input:
 |   - hashSTPtr:
@@ -323,7 +321,7 @@ void
 sortIds_searchST(
    struct searchST *hashSTPtr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun05 TOC:
+   ' Fun07 TOC:
    '  - Sorts the input array by hashid
    '  - Shell sort taken from:
    '    - Adam Drozdek. 2013. Data Structures and
@@ -331,16 +329,16 @@ sortIds_searchST(
    '      edition. pages 505-508
    '    - I made some minor changes, but is mostly the
    '      same
-   '  o fun05 sec01:
+   '  o fun07 sec01:
    '    - Variable declerations
-   '  o fun05 sec02:
+   '  o fun07 sec02:
    '    - Find the number of rounds to sort for
-   '  o fun05 sec03:
+   '  o fun07 sec03:
    '    - Sort the array
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun05 Sec01:
+   ^ Fun07 Sec01:
    ^  - Variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -361,7 +359,7 @@ sortIds_searchST(
    slong idEqlSL = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun05 Sec02:
+   ^ Fun07 Sec02:
    ^  - Find the max search value (number rounds to sort)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -378,20 +376,20 @@ sortIds_searchST(
    subUL *= hashSTPtr->maxLimbsUC;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun05 Sec03:
+   ^ Fun07 Sec03:
    ^  - Sort the arrays in genIndiceST
-   ^  o fun05 sec03 sub01:
+   ^  o fun07 sec03 sub01:
    ^    - start the sorting loops
-   ^  o fun05 sec03 sub02:
+   ^  o fun07 sec03 sub02:
    ^    - check if I need to swap ids
-   ^  o fun05 sec03 sub03:
+   ^  o fun07 sec03 sub03:
    ^    - check if need to move id further back
-   ^  o fun05 sec03 sub04:
+   ^  o fun07 sec03 sub04:
    ^    - move to the next subset/round
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun05 Sec05 Sub01:
+   * Fun07 Sec05 Sub01:
    *   - start the sorting loops
    \*****************************************************/
 
@@ -411,7 +409,7 @@ sortIds_searchST(
            nextElmUL = ulElm + subUL;
 
            /*********************************************\
-           * Fun05 Sec05 Sub02:
+           * Fun07 Sec05 Sub02:
            *   - check if I need to swap ids
            \*********************************************/
 
@@ -431,7 +429,7 @@ sortIds_searchST(
                );
 
               /******************************************\
-              * Fun05 Sec05 Sub03:
+              * Fun07 Sec05 Sub03:
               *   - check if need to move id further back
               \******************************************/
 
@@ -465,7 +463,7 @@ sortIds_searchST(
       } /*For each element in the subarray*/
 
       /**************************************************\
-      * Fun05 Sec05 Sub04:
+      * Fun07 Sec05 Sub04:
       *   - move to the next subset/round
       \**************************************************/
 
@@ -476,7 +474,7 @@ sortIds_searchST(
 } /*sortIds_searchST*/
 
 /*-------------------------------------------------------\
-| Fun06: hashSortIds_searchST
+| Fun08: hashSortIds_searchST
 |   - sorts ids in a searchST by hash value
 | Input:
 |   - hashSTPtr:
@@ -490,7 +488,7 @@ void
 hashSortIds_searchST(
    struct searchST *hashSTPtr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun06 TOC:
+   ' Fun08 TOC:
    '  - Sorts the input array by hashid
    '  - Shell sort taken from:
    '    - Adam Drozdek. 2013. Data Structures and
@@ -498,16 +496,16 @@ hashSortIds_searchST(
    '      edition. pages 505-508
    '    - I made some minor changes, but is mostly the
    '      same
-   '  o fun06 sec01:
+   '  o fun08 sec01:
    '    - Variable declerations
-   '  o fun06 sec02:
+   '  o fun08 sec02:
    '    - Find the number of rounds to sort for
-   '  o fun06 sec03:
+   '  o fun08 sec03:
    '    - Sort the array
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun06 Sec01:
+   ^ Fun08 Sec01:
    ^  - Variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -528,7 +526,7 @@ hashSortIds_searchST(
    slong hashIdSL = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun06 Sec02:
+   ^ Fun08 Sec02:
    ^  - Find the max search value (number rounds to sort)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -545,20 +543,20 @@ hashSortIds_searchST(
    subUL *= hashSTPtr->maxLimbsUC;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun06 Sec03:
+   ^ Fun08 Sec03:
    ^  - Sort the arrays in genIndiceST
-   ^  o fun06 sec03 sub01:
+   ^  o fun08 sec03 sub01:
    ^    - start the sorting loops
-   ^  o fun06 sec03 sub02:
+   ^  o fun08 sec03 sub02:
    ^    - check if I need to swap ids
-   ^  o fun06 sec03 sub03:
+   ^  o fun08 sec03 sub03:
    ^    - check if need to move id further back
-   ^  o fun06 sec03 sub04:
+   ^  o fun08 sec03 sub04:
    ^    - move to the next subset/round
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun06 Sec05 Sub01:
+   * Fun08 Sec05 Sub01:
    *   - start the sorting loops
    \*****************************************************/
 
@@ -578,7 +576,7 @@ hashSortIds_searchST(
            nextElmUL = ulElm + subUL;
 
            /*********************************************\
-           * Fun06 Sec05 Sub02:
+           * Fun08 Sec05 Sub02:
            *   - check if I need to swap ids
            \*********************************************/
 
@@ -613,7 +611,7 @@ hashSortIds_searchST(
                );
 
               /******************************************\
-              * Fun06 Sec05 Sub03:
+              * Fun08 Sec05 Sub03:
               *   - check if need to move id further back
               \******************************************/
 
@@ -662,7 +660,7 @@ hashSortIds_searchST(
       } /*For each element in the subarray*/
 
       /**************************************************\
-      * Fun06 Sec05 Sub04:
+      * Fun08 Sec05 Sub04:
       *   - move to the next subset/round
       \**************************************************/
 
@@ -673,7 +671,7 @@ hashSortIds_searchST(
 } /*hashSortIds_searchST*/
 
 /*-------------------------------------------------------\
-| Fun07: evenLimbs_seachST
+| Fun09: evenLimbs_seachST
 |   - takes a read id array with unequal number of limbs
 |     (longs) per limb and makes all ids hae the same
 |     number of limbs
@@ -695,22 +693,22 @@ void
 evenLimbs_searchST(
    struct searchST *searchSTPtr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun07 TOC:
+   ' Fun09 TOC:
    '   - takes a read id array with unequal number of
    '     limbs (longs) per limb and makes all ids have the
    '     same number of limbs
-   '   o fun07 sec01:
+   '   o fun09 sec01:
    '     - variable declarations
-   '   o fun07 sec02:
+   '   o fun09 sec02:
    '     - add first few ids to buffer array
-   '   o fun07 sec03:
+   '   o fun09 sec03:
    '     - make all ids have same number of limbs
-   '   o fun07 sec04:
+   '   o fun09 sec04:
    '     - add first few ids in buffer to the end of array
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun07 Sec01:
+   ^ Fun09 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -723,7 +721,7 @@ evenLimbs_searchST(
    ulong ulLimb = 0;   /*copy index for shifting*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun07 Sec02:
+   ^ Fun09 Sec02:
    ^   - blank id list and set up for loop
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -751,7 +749,7 @@ evenLimbs_searchST(
    dupPosUL = endAryUL;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun07 Sec03:
+   ^ Fun09 Sec03:
    ^   - start loop and even ids
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -789,7 +787,7 @@ evenLimbs_searchST(
 } /*evenLimbs_searchST*/
 
 /*-------------------------------------------------------\
-| Fun08: mkSkip_searchST
+| Fun10: mkSkip_searchST
 |   - converts a sorted list of read ids to a skip list
 | Input:
 |   - idAryUL:
@@ -847,7 +845,7 @@ mkSkip_searchST(
 } /*mkSkip_searchST*/
 
 /*-------------------------------------------------------\
-| Fun09: majicNum_searchST
+| Fun11: majicNum_searchST
 |   - finds the majic number for an hash table
 |   - this is system independent
 | Input:
@@ -889,7 +887,7 @@ majicNum_searchST(
 } /*majicNum_searchST*/
 
 /*-------------------------------------------------------\
-| Fun10: mkhash_searchST
+| Fun12: mkhash_searchST
 |   - takes in a searchST structure with ids and makes a
 |     hash table for it
 | Input:
@@ -916,14 +914,14 @@ signed char
 mkhash_searchST(
    struct searchST *searchSTPtr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun10 TOC:
+   ' Fun12 TOC:
    '   - takes in a searchST structure with ids and makes
    '     a hash table for it
-   '   o fun10 sec01:
+   '   o fun12 sec01:
    '     - variable declarations
-   '   o fun10 sec02:
+   '   o fun12 sec02:
    '     - find key values needed for hashing
-   '   o fun10 sec03:
+   '   o fun12 sec03:
    '     - make sure id array has enough room for hash
    '       table
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -937,12 +935,12 @@ mkhash_searchST(
    ulong *tmpULPtr = 0; /*for reallocs or iterating*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun10 Sec01:
+   ^ Fun12 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun10 Sec02:
+   ^ Fun12 Sec02:
    ^   - find key values needed for hashing
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -962,7 +960,7 @@ mkhash_searchST(
    searchSTPtr->hashSizeUL <<= 1; /*double hash array*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun10 Sec03:
+   ^ Fun12 Sec03:
    ^   - make sure id array has enough room for hash table
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -978,7 +976,7 @@ mkhash_searchST(
          );
 
       if(! tmpULPtr)
-         goto memErr_fun10_sec05;
+         goto memErr_fun12_sec05;
 
       searchSTPtr->idAryUL = tmpULPtr;
    } /*If: not enough array to hold the has values*/
@@ -990,7 +988,7 @@ mkhash_searchST(
    searchSTPtr->hashTblUL = searchSTPtr->idAryUL + posUL;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun10 Sec04:
+   ^ Fun12 Sec04:
    ^   - sort ids by hash and set hash values and indexs
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1031,19 +1029,19 @@ mkhash_searchST(
    } /*Loop: find number of ids in hash table*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun10 Sec05:
+   ^ Fun12 Sec05:
    ^   - return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    return 0;
 
-   memErr_fun10_sec05:;
+   memErr_fun12_sec05:;
 
    return 1;
 } /*mkhash_searchST*/
 
 /*-------------------------------------------------------\
-| Fun11: getReadIds_searchST
+| Fun13: getReadIds_searchST
 |   - get read ids from a file and make a hash table
 | Input:
 |   - idFILE:
@@ -1066,22 +1064,22 @@ getReadIds_searchST(
    signed char hashBl,
    signed char *errSC
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun11 TOC:
+   ' Fun13 TOC:
    '   - get the read ids and build the hash table
-   '   o fun11 sec01:
+   '   o fun13 sec01:
    '     - variable declerations
-   '   o fun11 sec02:
+   '   o fun13 sec02:
    '     - open files and initialize variables
-   '   o fun11 sec03:
+   '   o fun13 sec03:
    '     - read in the read ids
-   '   o fun11 sec04:
+   '   o fun13 sec04:
    '     - even limbs, sort arrays, and make hash tables
-   '   o fun11 sec05:
+   '   o fun13 sec05:
    '     - clean up and return
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec01:
+   ^ Fun13 Sec01:
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1101,14 +1099,14 @@ getReadIds_searchST(
    struct searchST *hashHeapST = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec02:
+   ^ Fun13 Sec02:
    ^   - open files and initialize variables
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    hashHeapST = malloc(sizeof(struct searchST));
 
    if(! hashHeapST)
-      goto memErr_fun11_sec05_sub02;
+      goto memErr_fun13_sec05_sub02;
 
    init_searchST(hashHeapST);
      /*will allocate some memroy for read id array*/
@@ -1117,29 +1115,29 @@ getReadIds_searchST(
    hashHeapST->idAryUL = malloc(1024 * 5 * sizeof(ulong));
 
    if(! hashHeapST->idAryUL)
-      goto memErr_fun11_sec05_sub02;
+      goto memErr_fun13_sec05_sub02;
    
    hashHeapST->lenIdAryUL = 1024 * 5;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec03:
+   ^ Fun13 Sec03:
    ^   - read in the read ids
-   ^   o fun11 sec03 sub01:
+   ^   o fun13 sec03 sub01:
    ^     - read in first part of file and start loop
-   ^   o fun11 sec03 sub02:
+   ^   o fun13 sec03 sub02:
    ^     - check if need to resize read id array
-   ^   o fun11 sec03 sub03:
+   ^   o fun13 sec03 sub03:
    ^     - check if need to read more file
-   ^   o fun11 sec03 sub04:
+   ^   o fun13 sec03 sub04:
    ^     - convert read id
-   ^   o fun11 sec03 sub05:
+   ^   o fun13 sec03 sub05:
    ^     - find end of read id line
-   ^   o fun11 sec03 sub06:
+   ^   o fun13 sec03 sub06:
    ^     - check if have a few bytes remaing to process
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun11 Sec03 Sub01:
+   * Fun13 Sec03 Sub01:
    *   - read in first part of file and start loop
    \*****************************************************/
 
@@ -1159,7 +1157,7 @@ getReadIds_searchST(
    { /*Loop: read in each read id*/
 
       /**************************************************\
-      * Fun11 Sec03 Sub02:
+      * Fun13 Sec03 Sub02:
       *   - check if I need to resize read id array
       \**************************************************/
 
@@ -1184,13 +1182,13 @@ getReadIds_searchST(
             );
 
          if(! tmpULPtr)
-            goto memErr_fun11_sec05_sub02;
+            goto memErr_fun13_sec05_sub02;
 
          hashHeapST->idAryUL = tmpULPtr;
       } /*If: I need to make an larger array*/
       
       /**************************************************\
-      * Fun11 Sec03 Sub03:
+      * Fun13 Sec03 Sub03:
       *   - check if I need to read more file
       \**************************************************/
 
@@ -1218,12 +1216,12 @@ getReadIds_searchST(
       } /*If: I need to get more file*/
 
       /**************************************************\
-      * Fun11 Sec03 Sub04:
+      * Fun13 Sec03 Sub04:
       *   - convert read id
       \**************************************************/
 
       /*on the last few characters*/
-      finishId_fun11_sec03_sub04:;
+      finishId_fun13_sec03_sub04:;
 
       oldPosUL = posUL;
 
@@ -1254,7 +1252,7 @@ getReadIds_searchST(
       ++hashHeapST->numIdsUL;
 
       /**************************************************\
-      * Fun11 Sec03 Sub05:
+      * Fun13 Sec03 Sub05:
       *   - find end of read id line
       \**************************************************/
 
@@ -1282,7 +1280,7 @@ getReadIds_searchST(
    } /*Loop: read in each read id*/
 
    /*****************************************************\
-   * Fun11 Sec03 Sub06:
+   * Fun13 Sec03 Sub06:
    *   - check if have a few bytes remaing to process
    \*****************************************************/
 
@@ -1291,10 +1289,10 @@ getReadIds_searchST(
 
    /*checked if I finished the last line*/
    if(ulId < bytesUL)
-      goto finishId_fun11_sec03_sub04;
+      goto finishId_fun13_sec03_sub04;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec04:
+   ^ Fun13 Sec04:
    ^   - even limbs, sort arrays, and make hash tables
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1307,7 +1305,7 @@ getReadIds_searchST(
       sortIds_searchST(hashHeapST);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec05:
+   ^ Fun13 Sec05:
    ^   - clean up and return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1315,7 +1313,7 @@ getReadIds_searchST(
 
    /*deal with errors (memory only)*/
 
-   memErr_fun11_sec05_sub02:;
+   memErr_fun13_sec05_sub02:;
 
    *errSC = def_memErr_searchST;
    freeHeap_searchST(hashHeapST);
@@ -1325,7 +1323,7 @@ getReadIds_searchST(
 } /*getReadIds_searchST*/
 
 /*-------------------------------------------------------\
-| Fun12: searchId_searchST
+| Fun14: searchId_searchST
 |   - search for a read id in a searchST structure not
 |     set up as a hash table
 | Input:
@@ -1378,7 +1376,7 @@ searchId_searchST(
 } /*searchForId_searchST*/
 
 /*-------------------------------------------------------\
-| Fun13: searchHash_searchST
+| Fun15: searchHash_searchST
 |   - search for a read id in a searchST hash table
 | Input:
 |   - searchSTPtr:
@@ -1444,7 +1442,7 @@ searchHash_searchST(
 } /*searchHash_searchST*/
 
 /*-------------------------------------------------------\
-| Fun13: blank_searchST
+| Fun15: blank_searchST
 |   - here in case need in future. Currently does nothing
 | Input:
 |   - searchSTPtr:
@@ -1461,7 +1459,7 @@ blank_searchST(
 } /*blank_searchST*/
    
 /*-------------------------------------------------------\
-| Fun13: init_searchST
+| Fun15: init_searchST
 |   - initializes a searchST structure
 | Input:
 |   - searchSTPtr:
@@ -1489,14 +1487,14 @@ init_searchST(
 } /*init_searchST*/
 
 /*-------------------------------------------------------\
-| Fun16: freeStack_searchST
+| Fun18: freeStack_searchST
 |   - frees all variables in a searchST structure
 | Input:
 |   - searchSTPtr:
 |     o pointer to a searchST structure to free variables
 | Output:
 |   - Frees:
-|     o all variables & calls init_searchST (fun13)
+|     o all variables & calls init_searchST (fun15)
 \-------------------------------------------------------*/
 void
 freeStack_searchST(
@@ -1525,7 +1523,7 @@ freeStack_searchST(
 } /*freeStack_searchST*/
 
 /*-------------------------------------------------------\
-| Fun17: freeHeap_searchST
+| Fun19: freeHeap_searchST
 |   - frees a searchST structure
 | Input:
 |   - searchSTPtr:
@@ -1543,7 +1541,7 @@ freeHeap_searchST(
 } /*freeHeap_searchST*/
 
 /*-------------------------------------------------------\
-| Fun18: idToHexAry_maxLimb_searchST
+| Fun20: idToHexAry_maxLimb_searchST
 |   - converts an read id to a series of hex numbers and
 |     does not go past a max limb count
 | Input:

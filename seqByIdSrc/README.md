@@ -12,8 +12,14 @@ Primary is unlicense (public domain), but if publice
 
 # Updates:
 
-- 2024-09-17: fixed not extracting complement sequences
-- 2024-09-15: added in header entry for output sam files
+- 2024-10-13:
+  - removed need for 32 bit flag 
+    - found solution to always split id in half that
+      relies on `sizeof()` instead of using `#ifdef`
+- 2024-09-17:
+  - fixed not extracting complement sequences
+- 2024-09-15:
+  - added in header entry for output sam files
 
 # Build:
 
@@ -85,11 +91,6 @@ make -f mkfile.unix
 make -f mkfile.unix install PREFIX="$HOME/local/bin"
 ```
 
-For 32 bit systems
-  do `make -f mkfile.unix CFLAGS=-O3 -DTHIRTY_TWO_BIT`
-  instead of `make -f mkfile.unix`. Not tested, but it
-  should work.
-
 ## global install
 
 Everyone has access, but you need to install as root.
@@ -110,11 +111,6 @@ sudo make -f mkfile.unix install
 
 You will be prompted for your user password.
 
-For 32 bit systems
-  do `make -f mkfile.unix CFLAGS=-O3 -DTHIRTY_TWO_BIT`
-  instead of `make -f mkfile.unix`. Not tested, but it
-  should work.
-
 # Windows
 
 Make sure the developer terminal is installed (install
@@ -128,11 +124,6 @@ Make sure the developer terminal is installed (install
 cd %HOME%\Downloads\bioTools\seqByIdSrc
 nmake /F mkfile.win
 ```
-
-For 32 bit systems
-  do `make -f mkfile.unix CFLAGS=/O2 /Ot /Za -DTHIRTY_TWO_BIT /Tc`
-  instead of `make -f mkfile.unix`. Not tested, but it
-  should work.
 
 At this point copy the `seqById.exe` to your desired
   install location. Sorry I have no advice on were to
@@ -163,8 +154,8 @@ seqById -id file.ids -sam file.sam -out extracted.sam
    (idLkTbl.h has conversion table) and the id sum is
    found
    - converion ends at space, tab, or new line
-   - all id values are summed up into a single 32 bit
-     (16 bit for -DTHIRTY_TWO_BIT) number
+   - all id values are split into two halfs and the halfs
+     are added together
    - there is overlap, so not best method for fasta files
    - 0-9 + a-f is 0 to 15
    - g-t is 1 to 14

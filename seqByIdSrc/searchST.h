@@ -5,52 +5,56 @@
 '     - -DADD_ID_LEN: adds read id length to id long.
 '       o slower for ONT. (may be faster for Illuminia??)
 '     - -DTHIRTY_TWO_BIT:
-'       o for 32 bit cpus (only changes sum part of fun01)
+'       o for 32 bit cpus (only changes sum part of fun03)
 '   o header:
 '     - defined variables and guards
 '   o .h st01: searchST
 '     - holds the hash table and read ids
 '   o .c tbl01: hexTblUC_searchST
 '     - conversion table of read id character to hex
-'   o fun01: cnvtIdToHexAry_searchST
+'   o .h fun01: upperUL_searchST
+'     - gets upper half of unsigned long
+'   o .h fun02: lowerUL_searchST
+'     - gets lower half of unsigned long
+'   o fun03: cnvtIdToHexAry_searchST
 '     - converts an read id to a series of hex numbers
-'   o .c fun02: swapIds_searchST
+'   o .c fun04: swapIds_searchST
 '     - swaps two ids in a searchST structure
-'   o .h fun03: getHash_searchST
+'   o .h fun05: getHash_searchST
 '     - get the hash for a read id
-'   o fun04: cmpIds_searchST
+'   o fun06: cmpIds_searchST
 '     - compares two read ids
-'   o fun05: sortIds_searchST
+'   o fun07: sortIds_searchST
 '     - sorts ids in a searchST numerically
-'   o fun06: hashSortIds_searchST
+'   o fun08: hashSortIds_searchST
 '     - sorts ids in a searchST by hash value
-'   o fun07: evenLimbs_seachST
+'   o fun09: evenLimbs_seachST
 '     - takes a read id array with unequal number of limbs
 '       (longs) per limb and makes all ids hae the same
 '       number of limbs
-'   o .c fun08: mkSkip_searchST
+'   o .c fun10: mkSkip_searchST
 '     - converts a sorted list of read ids to a skip list
-'   o .c fun09: majicNum_searchST
+'   o .c fun11: majicNum_searchST
 '     - finds the majic number for an hash table
-'   o fun10: mkhash_searchST
+'   o fun12: mkhash_searchST
 '     - takes in a searchST structure with ids and makes a
 '       hash table for it
-'   o fun10: getReadIds_searchST
+'   o fun12: getReadIds_searchST
 '     - get read ids from a file and make a hash table
-'   o fun12: searchId_searchST
+'   o fun14: searchId_searchST
 '     - search for a read id in a searchST structure not
 '       set up as a hash table
-'   o fun13: searchHash_searchST
+'   o fun15: searchHash_searchST
 '     - search for a read id in a searchST hash table
-'   o fun13: blank_searchST
+'   o fun16: blank_searchST
 '     - here in case need in future. Does nothing
-'   o fun13: init_searchST
+'   o fun17: init_searchST
 '     - initializes a searchST structure
-'   o fun16: freeStack_searchST
+'   o fun18: freeStack_searchST
 '     - frees all variables in a searchST structure
-'   o fun17: freeHeap_searchST
+'   o fun19: freeHeap_searchST
 '     - frees a searchST structure
-'   o fun18: idToHexAry_maxLimb_searchST
+'   o fun20: idToHexAry_maxLimb_searchST
 '     - converts an read id to a series of hex numbers and
 '       does not go past a max limb count
 '     - this is here for idSearch
@@ -118,7 +122,48 @@ typedef struct searchST
 }searchST;
 
 /*-------------------------------------------------------\
-| Fun01: cnvtIdToHexAry_searchST
+| Fun01: upperUL_searchST
+|   - gets upper half of unsigned long
+| Input:
+|   - number:
+|     o number to convert to half the size of a long
+| Output:
+|   - Returns
+|     o upper half of the long (number)
+\-------------------------------------------------------*/
+#define upperUL_searchST(number) ( (number) >> (sizeof(unsigned long) << 2) )
+   /*Logic: convets upper half of long to 1/2 of data type
+   `   - shiftBy: sizeof((unsigned long)) << 2):
+   `     o number of bits to shift by to remove 1/2 of
+   `       a long
+   `   - number >> shiftBy:
+   `     o shits upper half of long to lower half
+   */
+
+/*-------------------------------------------------------\
+| Fun02: lowerUL_searchST
+|   - gets lower half of unsigned long
+| Input:
+|   - number:
+|     o number to convert to half the size of a long
+| Output:
+|   - Returns
+|     o lower half of the long (number)
+\-------------------------------------------------------*/
+#define lowerUL_searchST(number) ( (number) & ((unsigned long) -1 >> (sizeof(unsigned long) << 2)) )
+   /*Logic: removes upper half (converts to 1/2 datatype
+   `   - shiftBy: sizeof((unsigned long)) << 2):
+   `     o number of bits to shift by to remove 1/2 of
+   `       a long
+   `   - mask: ((unsigned long) -1) >> shiftBy:
+   `     o creats a mask that clears the upper bits
+   `   - number & mask:
+   `     o clears upper half of long
+   */
+
+
+/*-------------------------------------------------------\
+| Fun03: cnvtIdToHexAry_searchST
 |   - converts an read id to a series of hex numbers
 | Input:
 |   - idStr:
@@ -150,7 +195,7 @@ cnvtIdToHexAry_searchST(
 );
 
 /*-------------------------------------------------------\
-| Fun03: getHash_searchST
+| Fun05: getHash_searchST
 |   - get the hash for a read id
 | Input:
 |   - hashSTPtr:
@@ -168,7 +213,7 @@ cnvtIdToHexAry_searchST(
 
 
 /*-------------------------------------------------------\
-| Fun04: cmpIds_searchST
+| Fun06: cmpIds_searchST
 |   - compares two read ids
 | Input:
 |   - hashSTPtr:
@@ -192,7 +237,7 @@ cmpIds_searchST(
 );
 
 /*-------------------------------------------------------\
-| Fun05: sortIds_searchST
+| Fun07: sortIds_searchST
 |   - sorts ids in a searchST numerically
 | Input:
 |   - hashSTPtr:
@@ -208,7 +253,7 @@ sortIds_searchST(
 );
 
 /*-------------------------------------------------------\
-| Fun06: hashSortIds_searchST
+| Fun08: hashSortIds_searchST
 |   - sorts ids in a searchST by hash value
 | Input:
 |   - hashSTPtr:
@@ -224,7 +269,7 @@ hashSortIds_searchST(
 );
 
 /*-------------------------------------------------------\
-| Fun07: evenLimbs_seachST
+| Fun09: evenLimbs_seachST
 |   - takes a read id array with unequal number of limbs
 |     (longs) per limb and makes all ids hae the same
 |     number of limbs
@@ -252,7 +297,7 @@ evenLimbs_searchST(
 );
 
 /*-------------------------------------------------------\
-| Fun10: mkhash_searchST
+| Fun12: mkhash_searchST
 |   - takes in a searchST structure with ids and makes a
 |     hash table for it
 | Input:
@@ -281,7 +326,7 @@ mkhash_searchST(
 );
 
 /*-------------------------------------------------------\
-| Fun10: getReadIds_searchST
+| Fun12: getReadIds_searchST
 |   - get read ids from a file and make a hash table
 | Input:
 |   - idFILE:
@@ -306,7 +351,7 @@ getReadIds_searchST(
 );
 
 /*-------------------------------------------------------\
-| Fun12: searchId_searchST
+| Fun14: searchId_searchST
 |   - search for a read id in a searchST structure not
 |     set up as a hash table
 | Input:
@@ -328,7 +373,7 @@ searchId_searchST(
 );
 
 /*-------------------------------------------------------\
-| Fun13: searchHash_searchST
+| Fun15: searchHash_searchST
 |   - search for a read id in a searchST hash table
 | Input:
 |   - searchSTPtr:
@@ -349,7 +394,7 @@ searchHash_searchST(
 );
 
 /*-------------------------------------------------------\
-| Fun13: blank_searchST
+| Fun16: blank_searchST
 |   - here in case need in future. Currently does nothing
 | Input:
 |   - searchSTPtr:
@@ -364,7 +409,7 @@ blank_searchST(
 );
 
 /*-------------------------------------------------------\
-| Fun13: init_searchST
+| Fun17: init_searchST
 |   - initializes a searchST structure
 | Input:
 |   - searchSTPtr:
@@ -379,14 +424,14 @@ init_searchST(
 );
    
 /*-------------------------------------------------------\
-| Fun16: freeStack_searchST
+| Fun18: freeStack_searchST
 |   - frees all variables in a searchST structure
 | Input:
 |   - searchSTPtr:
 |     o pointer to a searchST structure to free variables
 | Output:
 |   - Frees:
-|     o all variables & calls init_searchST (fun13)
+|     o all variables & calls init_searchST (fun15)
 \-------------------------------------------------------*/
 void
 freeStack_searchST(
@@ -394,7 +439,7 @@ freeStack_searchST(
 );
 
 /*-------------------------------------------------------\
-| Fun17: freeHeap_searchST
+| Fun19: freeHeap_searchST
 |   - frees a searchST structure
 | Input:
 |   - searchSTPtr:
@@ -409,7 +454,7 @@ freeHeap_searchST(
 );
 
 /*-------------------------------------------------------\
-| Fun18: idToHexAry_maxLimb_searchST
+| Fun20: idToHexAry_maxLimb_searchST
 |   - converts an read id to a series of hex numbers and
 |     does not go past a max limb count
 | Input:

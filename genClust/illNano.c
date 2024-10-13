@@ -497,11 +497,17 @@ cmp_prof_illNano(
    `  few positions)
    */
 
-   while(uiFirst < firstProfSTPtr->varInProfUI)
+   while(uiSec < secProfSTPtr->varInProfUI)
    { /*Loop: find number of differences*/
-      if(uiSec >= secProfSTPtr->varInProfUI)
+      if(uiFirst >= firstProfSTPtr->varInProfUI)
+      { /*If: had end of second profile*/
+         if(! cmpSmallLapBl)
+            diffSI *= -1;
+            /*second reference has extra bases*/
+
          goto ret_fun07_sec05;
          /*at end or profile only covers part of first*/
+      } /*If: had end of second profile*/
 
       if(
            firstProfSTPtr->ntArySC[uiFirst]

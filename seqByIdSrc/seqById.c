@@ -64,8 +64,8 @@
 \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
 #define def_year_seqById 2024
-#define def_month_seqById 9
-#define def_day_seqById 17
+#define def_month_seqById 10
+#define def_day_seqById 13
 
 #define def_ignoreIds_seqById 0
     /*1: extract sequences not matching read ids*/
