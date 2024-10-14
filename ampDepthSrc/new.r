@@ -10,6 +10,8 @@
 #     - checks to see if a freezeTB file exists
 #   o fun02: phelp_graphAmpDepth
 #     - help message function
+#   o fun03: save_graphAmpDepth
+#     - saves a graph (call before plotting graph)
 #   o part02:
 #     - script variables, user input, and prep
 #   o part03:
@@ -197,6 +199,84 @@ phelp_graphAmpDepth = function(inStr){
 } # pGraphAmpDephtHelp
 
 #---------------------------------------------------------
+# Fun03: save_graphAmpDepth
+#   - saves a graph (call before plotting graph)
+# Input:
+#   - extStr:
+#     o extension to save graph as
+#       - png, tiff, jpeg, svg, pdf, 
+# Output:
+#   - Saves:
+#     o current graph to file
+#   - Note;
+#     o make sure you call dev.off() to clear graph
+#---------------------------------------------------------
+save_graphAmpDepth = function(nameStr, extStr = "png"){
+   extStr = tolower(extStr); # ignore case
+
+   if(extStr == "png"){
+      png(
+         paste(
+            nameStr,
+            ".",
+            extStr,
+            sep = ""
+         ) # add extension
+      ); # save graph as file
+
+   }else if(extStr == "tiff"){
+      tiff(
+         paste(
+            nameStr,
+            ".",
+            extStr,
+            sep = ""
+         ) # add extension
+      ); # save graph as file
+
+   }else if(extStr == "jpeg"){
+      jpeg(
+         paste(
+            nameStr,
+            ".",
+            extStr,
+            sep = ""
+         ) # add extension
+      ); # save graph as file
+
+   }else if(extStr == "jpg"){
+      jpeg(
+         paste(
+            nameStr,
+            ".",
+            extStr,
+            sep = ""
+         ) # add extension
+      ); # save graph as file
+
+   }else if(extStr == "svg"){
+      svg(
+         paste(
+            nameStr,
+            ".",
+            extStr,
+            sep = ""
+         ) # add extension
+      ); # save graph as file
+
+   }else if(extStr == "pdf"){
+      pdf(
+         paste(
+            nameStr,
+            ".",
+            extStr,
+            sep = ""
+         ) # add extension
+      ); # save graph as file
+   }
+} # save_graphAmpDepth 
+
+#---------------------------------------------------------
 # Part02:
 #   - script variables, user input, and prep
 #   o part02 sec01:
@@ -245,7 +325,7 @@ minLenSI = 50;   # amplicon covers at least 20 bp
 
 # Are for pasting the gene names together
 numBarsI = 0;
-extStr = "tiff";
+extStr = "png";
 dataStr = "";
 
 # graph output
@@ -394,6 +474,7 @@ if(errBl == TRUE){
 # FOR DEBUGGING
 dataStr = "test.tsv";
 amrFileStr = "/usr/local/share/freezeTBFiles/amrDb.tsv";
+prefixStr = "delete"
 
 
 dataDF =
@@ -462,6 +543,7 @@ dataDF =
 siGene = 1;
 numGenesSI = length(dataDF$geneId);
 dataDF$geneFlag = dataDF$geneId;
+dataDF$repUI = dataDF$ampNumber;
 numRepSI = 0;
 
 while(siGene <= numGenesSI - 1)
@@ -475,6 +557,7 @@ while(siGene <= numGenesSI - 1)
                numRepSI,
                sep = '-'
             );
+         dataDF[siGene,]$repUI = numRepSI;
       } else{
          numRepSI = numRepSI + 1;
 
@@ -486,6 +569,7 @@ while(siGene <= numGenesSI - 1)
                sep = '-'
             );
 
+         dataDF[siGene,]$repUI = numRepSI;
          numRepSI = 0; # if new set of genes
       }
    }else if(
@@ -500,6 +584,8 @@ while(siGene <= numGenesSI - 1)
             numRepSI,
             sep = '-'
          );
+
+      dataDF[siGene,]$repUI = numRepSI;
    }else{
       numRepSI = 0;
 
@@ -510,6 +596,8 @@ while(siGene <= numGenesSI - 1)
             numRepSI,
             sep = '-'
          );
+
+      dataDF[siGene,]$repUI = numRepSI;
    } # check if same gene name
 
    siGene = siGene + 1;
@@ -538,10 +626,28 @@ colAryStr =
 dataDF$indexUI = as.numeric(factor(dataDF$flag));
 dataDF$color = colAryStr[dataDF$indexUI];
 
-#*********************************************************
-# Part02 Sec03 Sub04:
-#  - build mean read depth graph
-#*********************************************************
+#---------------------------------------------------------
+# Part03:
+#   - build read depth graph
+#   o part02 sec01:
+#     - build mean read depth graph
+#   o part03 sec02:
+#    - add legend to mean read depth graph
+#---------------------------------------------------------
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# Part03 Sec01:
+#   - build mean read depth graph
+#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+save_graphAmpDepth(
+   paste(
+      prefixStr,
+      "-readDepth",
+      sep = ""
+    ),
+    extStr
+);
 
 dataDF$boxPlot =
    seq(
@@ -552,19 +658,27 @@ dataDF$boxPlot =
 
 barplot(
    height = dataDF[dataDF$indexUI == 1 ,]$avgDepth, # y
-   names = dataDF[dataDF$indexUI == 1 ,]$geneId,  # x
+   names = 
+      paste(
+         dataDF[dataDF$indexUI == 1 ,]$geneId,
+         dataDF[dataDF$indexUI == 1 ,]$repUI
+      ),
    col = colPalAry[1],
    xlab = "gene name",           # x-axis title
    ylab = "mean read depth",     # y-axis title
    las = 2,                      # x-axis at 90 degrees
    cex.axis = 0.75,              # y-axis ticks
-   cex.names = 0.75,             # x-axis names
+   cex.names = 0.75              # x-axis names
 );
 
 if(numFlagsUI >= 1){ 
    barplot(
-      height = dataDF[ dataDF$indexUI == 2 ,]$avgDepth, #y
-      names = dataDF[dataDF$indexUI == 2 ,]$geneId, # x
+      height = dataDF[dataDF$indexUI == 2 ,]$avgDepth, # y
+   names = 
+         paste(
+            dataDF[dataDF$indexUI == 2 ,]$geneId,
+            dataDF[dataDF$indexUI == 2 ,]$repUI
+         ),
       col = colPalAry[10],
       xlab = "gene name",           # x-axis title
       ylab = "mean read depth",     # y-axis title
@@ -617,10 +731,10 @@ segments(
    col = colPalAry[5] # color (yellow)
 ); # 100x read depth line
 
-#*********************************************************
-# Part02 Sec03 Sub05:
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# Part03 Sec02:
 #  - add legend to mean read depth graph
-#*********************************************************
+#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 if(numFlagsUI >= 1){ 
    legendAryStr =
@@ -669,6 +783,43 @@ legend(
    text.width = strwidth(legendAryStr) # lengend spacing
 );
 
+dev.off();
+
+#---------------------------------------------------------
+# Part04:
+#   - build coverage graph
+#   o part02 sec01:
+#   o part03 sec02:
+#---------------------------------------------------------
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# Part04 Sec01:
+#   - 
+#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+# merge graphs:
+#par(mfrow = c(rows, columns))
+  # or mfcol for column arangement
+#plotCmd(x, main = "Left plot")
+  # plot
+    # use type = "l" for line
+  # text to add test to a plot
+  # points to add points to graph
+  # boxplot
+  # hist
+
+# can use layout for more complex plots
+  # can adjust plot width/heigths with height/width
+  # x = layout(
+     # matrix(c(1, 2, 3),
+     # nrow = value,
+     # ncol = value,
+     # byrow = TRUE
+ # )
+ # call  layout.show(x) to set up for graphs
+
+# save plot with pdf, svg, png, jpeg, tiff
+# close graphical device with dev.off()
 } # Else: have valid input
 
 #*=======================================================\
