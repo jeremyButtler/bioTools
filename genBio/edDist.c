@@ -250,6 +250,8 @@ isTransNt_edDist(
 |     o minimum q-score to not discard an snp
 |   - minOverlapF:
 |     o minimum percent overlap to score
+|     o use 0 or negative value to not check overlap
+|       - still checks to see reads share bases
 |   - minDepthUI:
 |     o minimum depth for reference base to keep
 |       difference if using a depth profile (depthAryUI)
@@ -357,27 +359,30 @@ readCmpDist_edDist(
    if(qrySTPtr->refStartUI > refSTPtr->refEndUI)
       goto noOverlap_fun06_sec07;
 
-   overlapF =
-     (float)
-     min_genMath(
-        qrySTPtr->refEndUI,
-        refSTPtr->refEndUI
-     );
+   if(minOverlapF > 0)
+   { /*If: user wanted overlap check*/
+      overlapF =
+        (float)
+        min_genMath(
+           qrySTPtr->refEndUI,
+           refSTPtr->refEndUI
+        );
 
-   overlapF -=
-     (float)
-     max_genMath(
-        qrySTPtr->refStartUI,
-        refSTPtr->refStartUI
-     );
+      overlapF -=
+        (float)
+        max_genMath(
+           qrySTPtr->refStartUI,
+           refSTPtr->refStartUI
+        );
 
-   if(
-             overlapF / (float) refSTPtr->alnReadLenUI
-           < minOverlapF
-      &&
-             overlapF / (float) qrySTPtr->alnReadLenUI
-           < minOverlapF
-   ) goto noOverlap_fun06_sec07;
+      if(
+                overlapF / (float) refSTPtr->alnReadLenUI
+              < minOverlapF
+         &&
+                overlapF / (float) qrySTPtr->alnReadLenUI
+              < minOverlapF
+      ) goto noOverlap_fun06_sec07;
+   } /*If: user wanted overlap check*/
 
    if(
          ! qrySTPtr->seqStr
@@ -1692,6 +1697,8 @@ percDist_edDist(
 |     o minimum q-score to keep snp
 |   - minOverlapF:
 |     o minimum percent overlap to score
+|     o use 0 or negative value to not check overlap
+|       - still checks to see reads share bases
 |   - resSTPtr:
 |     o pointer to res_edDist struct with depth array to
 |       store read depths in (must be length of reference)
@@ -1765,27 +1772,30 @@ addReadToDepth_edDist(
    if(qrySTPtr->refEndUI < refSTPtr->refStartUI)
       goto discard_fun09_sec05;
 
-   overlapF =
-     (float)
-     min_genMath(
-        qrySTPtr->refEndUI,
-        refSTPtr->refEndUI
-     );
+   if(minOverlapF > 0)
+   { /*If: user wanted overlap checks*/
+      overlapF =
+        (float)
+        min_genMath(
+           qrySTPtr->refEndUI,
+           refSTPtr->refEndUI
+        );
 
-   overlapF -=
-     (float)
-     max_genMath(
-        qrySTPtr->refStartUI,
-        refSTPtr->refStartUI
-     );
+      overlapF -=
+        (float)
+        max_genMath(
+           qrySTPtr->refStartUI,
+           refSTPtr->refStartUI
+        );
 
-   if(
-             overlapF / (float) refSTPtr->alnReadLenUI
-           < minOverlapF
-      &&
-             overlapF / (float) qrySTPtr->alnReadLenUI
-           < minOverlapF
-   ) goto discard_fun09_sec05;
+      if(
+                overlapF / (float) refSTPtr->alnReadLenUI
+              < minOverlapF
+         &&
+                overlapF / (float) qrySTPtr->alnReadLenUI
+              < minOverlapF
+      ) goto discard_fun09_sec05;
+   } /*If: user wanted overlap checks*/
 
    if(
          ! qrySTPtr->seqStr

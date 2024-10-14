@@ -161,6 +161,8 @@ freeHeap_res_edDist(
 |     o minimum q-score to not discard an snp
 |   - minOverlapF:
 |     o minimum percent overlap to score
+|     o use 0 or negative value to not check overlap
+|       - still checks to see reads share bases
 |   - minDepthUI:
 |     o minimum depth for reference base to keep
 |       difference if using a depth profile (depthAryUI)
@@ -292,6 +294,8 @@ percDist_edDist(
 |     o minimum q-score to keep snp
 |   - minOverlapF:
 |     o minimum percent overlap to score
+|     o use 0 or negative value to not check overlap
+|       - still checks to see reads share bases
 |   - resSTPtr:
 |     o pointer to res_edDist struct with depth array to
 |       store read depths in (must be length of reference)

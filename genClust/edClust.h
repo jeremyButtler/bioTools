@@ -23,6 +23,8 @@
 
 typedef struct samEntry samEntry;
 typedef struct set_tbCon set_tbCon;
+typedef struct res_edDist res_edDist;
+
 typedef struct set_clustST set_clustST;
 typedef struct index_clustST index_clustST;
 typedef struct con_clustST con_clustST;
@@ -79,6 +81,9 @@ getBestRead_edClust(
 |     o pointer to index_clustST struct with file index's
 |   - clustSetSTPtr:
 |     o pointer to set_clustST struct with settings
+|   - resEdDistSTPtr:
+|     o pointer to res_edDist struct for holding edit
+|       distance results
 |   - samSTPtr:
 |     o pointer to samEntry struct to use in file reading
 |   - buffStr:
@@ -86,38 +91,39 @@ getBestRead_edClust(
 |     o needs to be able to hold largest line in file
 |   - samFILE:
 |     o FILE pointer to sam file with reads
-|   - errSCPtr:
-|     o pointer to signed char to hold errors
 | Output:
 |   - Modifies:
 |     o samSTPtr to have last read in file
 |     o buffStr to have last line in file
 |     o samFILE to point to the start
 |     o errSCPtr to hold error messages:
-|       - 0 for no error
-|       - def_memErr_edClust for memory error
-|       - def_fileErr_edClust for file error
 |  - Returns:
-|    o pointer to unsigned int array with depth profile
-|    o 0 for errors
+|    o 0 for no errors
+|    o def_memErr_edClust for memory error
+|    o def_fileErr_edClust for file error
 \-------------------------------------------------------*/
-unsigned int *
+signed char
 depthProf_edClust(
    struct samEntry *refSTPtr, /*read to get profile for*/
    unsigned int refNumUI,   /*reference read mapped to*/
    signed int clustSI,               /*cluster on*/
    struct index_clustST *indexSTPtr, /*has file index's*/
    struct set_clustST *clustSetSTPtr,/*settings*/
+   struct res_edDist *resEdDistSTPtr,/*for edDist result*/
    struct samEntry *samSTPtr,        /*for reading file*/
    signed char *buffStr,             /*for reading file*/
-   void *samFILE,                    /*sam file*/
-   signed char *errSCPtr             /*holds errors*/
+   void *samFILE                     /*sam file*/
 );
 
 /*-------------------------------------------------------\
 | Fun03: findNumMap_edClust
 |   - finds number of reads mapping to best read
 | Input:
+|   - numReadsSL:
+|     o pointer to unsigned long to have number of mapped
+|       reads
+|   - lenConUI:
+|     o pointer to unsigned int to have consensus length
 |   - bestSTPtr:
 |     o pointer to samEntry struct with best read
 |   - bestIndexSL:
@@ -128,6 +134,9 @@ depthProf_edClust(
 |   - indexSTPtr:
 |     o pointer to index_clustST struct with reads index's
 |       and open reads
+|   - resEdDistSTPtr:
+|     o pointer to res_edDist struct to hold results from
+|       edDist comparision
 |   - clustSI:
 |     o cluster working on (what to assign to targArySI)
 |   - conBl:
@@ -143,29 +152,36 @@ depthProf_edClust(
 |     o sam file with reads to compare to best read
 | Output:
 |   - Modifies:
+|     o numReadsUL to have number of reads that mapped or
+|       the error
+|       - def_memErr_edClust for memory errors
+|       - def_fileErr_edClust for file errors
+|     o lenConUI to have length of returend consensus
 |     o samSTPtr to be last read in file
 |     o samFILE to be at start
-|     o buffSTPtr to have last sam file entry
+|     o buffStrPtr to have last sam file entry
 |     o startUI and endUI in clustSetSTPtr to have start
 |       and end of the consensus
 |     o clustArySI in indexSTPtr to have hits assigned to
 |       clustSI
 |   - Returns:
-|     o number of reads shared with best read
-|     o def_memErr_edClust for memory errors
-|     o def_fileErr_edClust for file errors
+|     o conNt_tbCon array with uncollapsed consensus
 \-------------------------------------------------------*/
-signed long
+struct conNt_tbCon *
 findNumMap_edClust(
-   struct samEntry *bestSTPtr,
-   signed long bestIndexSL,
-   struct set_clustST *clustSetSTPtr,
-   struct index_clustST *indexSTPtr,
-   signed int clustSI,
-   signed char conBl,
-   struct samEntry *samSTPtr,
-   signed char *buffStr,
-   void *samFILE
+   signed long *numReadsSL,         /*num mapped reads*/
+   unsigned int *lenConUI,          /*consensus length*/
+   struct samEntry *bestSTPtr,      /*best read for map*/
+   signed long bestIndexSL,         /*best read index*/
+   struct set_clustST *clustSetSTPtr,/*cluster settings*/
+   struct set_tbCon *conSetSTPtr,   /*consensus settings*/
+   struct index_clustST *indexSTPtr,/*has read index's*/
+   struct res_edDist *resEdDistSTPtr, /*for edDist*/
+   signed int clustSI,              /*cluster working on*/
+   signed char conBl,             /*1: best is consensus*/
+   struct samEntry *samSTPtr,     /*for reading sam file*/
+   signed char *buffStr,          /*for reading sam file*/
+   void *samFILE                  /*has reads*/
 );
 
 /*-------------------------------------------------------\

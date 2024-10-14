@@ -1,0 +1,78 @@
+[reason@void-live edClustSrc]$ valgrind --tool=memcheck -s ./edClust -sam 1186.sam -prefix delete
+==17675== Memcheck, a memory error detector
+==17675== Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.
+==17675== Using Valgrind-3.23.0 and LibVEX; rerun with -h for copyright info
+==17675== Command: ./edClust -sam 1186.sam -prefix delete
+==17675==
+0006315==17675== Conditional jump or move depends on uninitialised value(s)
+==17675==    at 0x130E20: readCmpDist_edDist (edDist.c:506)
+==17675==    by 0x1214B3: findNumMap_edClust (edClust.c:663)
+==17675==    by 0x121B97: cluster_edClust (edClust.c:1077)
+==17675==    by 0x137057: main (mainEdClust.c:1927)
+==17675==
+==17675== Conditional jump or move depends on uninitialised value(s)
+==17675==    at 0x130ED8: readCmpDist_edDist (edDist.c:520)
+==17675==    by 0x1214B3: findNumMap_edClust (edClust.c:663)
+==17675==    by 0x121B97: cluster_edClust (edClust.c:1077)
+==17675==    by 0x137057: main (mainEdClust.c:1927)
+==17675==
+0005635==17675== Invalid read of size 4
+==17675==    at 0x12C59C: addRead_tbCon (tbCon.c:575)
+==17675==    by 0x121663: findNumMap_edClust (edClust.c:716)
+==17675==    by 0x121B97: cluster_edClust (edClust.c:1077)
+==17675==    by 0x137057: main (mainEdClust.c:1927)
+==17675==  Address 0x57b9fa0 is 32 bytes before an unallocated block of size 214,720 in arena "client"
+==17675==
+==17675== Invalid write of size 4
+==17675==    at 0x12C5A4: addRead_tbCon (tbCon.c:575)
+==17675==    by 0x121663: findNumMap_edClust (edClust.c:716)
+==17675==    by 0x121B97: cluster_edClust (edClust.c:1077)
+==17675==    by 0x137057: main (mainEdClust.c:1927)
+==17675==  Address 0x57b9fa0 is 32 bytes before an unallocated block of size 214,720 in arena "client"
+==17675==
+
+valgrind: m_mallocfree.c:304 (get_bszB_as_is): Assertion 'bszB_lo == bszB_hi' failed.
+valgrind: Heap block lo/hi size mismatch: lo = 214786, hi = 27021597764222979.
+This is probably caused by your program erroneously writing past the
+end of a heap block and corrupting heap metadata.  If you fix any
+invalid writes reported by Memcheck, this assertion failure will
+probably go away.  Please try that before reporting this as a bug.
+
+
+host stacktrace:
+==17675==    at 0x58057630: show_sched_status_wrk (m_libcassert.c:407)
+==17675==    by 0x58057677: report_and_quit (m_libcassert.c:478)
+==17675==    by 0x5805A383: vgPlain_assert_fail (m_libcassert.c:544)
+==17675==    by 0x580F680B: UnknownInlinedFun (m_mallocfree.c:304)
+==17675==    by 0x580F680B: UnknownInlinedFun (m_mallocfree.c:1607)
+==17675==    by 0x580F680B: vgPlain_describe_addr (m_addrinfo.c:185)
+==17675==    by 0x580F6CF3: vgMemCheck_update_Error_extra (mc_errors.c:1444)
+==17675==    by 0x580FBE13: vgPlain_maybe_record_error (m_errormgr.c:869)
+==17675==    by 0x580FDB27: vgMemCheck_record_address_error (mc_errors.c:917)
+==17675==    by 0x580FE3AB: mc_LOADVn_slow (mc_main.c:1562)
+==17675==    by 0x1002E6B99F: ???
+
+sched status:
+  running_tid=1
+
+Thread 1: status = VgTs_Runnable (lwpid 17675)
+==17675==    at 0x12C638: addRead_tbCon (tbCon.c:600)
+==17675==    by 0x121663: findNumMap_edClust (edClust.c:716)
+==17675==    by 0x121B97: cluster_edClust (edClust.c:1077)
+==17675==    by 0x137057: main (mainEdClust.c:1927)
+client stack range: [0x1FFEFFC000 0x1FFF003FFF] client SP: 0x1FFF000860
+valgrind stack range: [0x1002CC0000 0x1002DBFFFF] top usage: 13072 of 1048576
+
+
+Note: see also the FAQ in the source distribution.
+It contains workarounds to several common problems.
+In particular, if Valgrind aborted or crashed after
+identifying problems in your program, there's a good chance
+that fixing those problems will prevent Valgrind aborting or
+crashing, especially if it happened in m_mallocfree.c.
+
+If that doesn't help, please report this bug to: www.valgrind.org
+
+In the bug report, send all the above text, the valgrind
+version, and what OS and version you are using.  Thanks.
+

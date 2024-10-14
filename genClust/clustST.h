@@ -127,6 +127,7 @@
 
 typedef struct samEntry samEntry;
 typedef struct set_tbCon set_tbCon;
+typedef struct res_edDist res_edDist;
 
 
 /*error return types*/
@@ -149,7 +150,7 @@ typedef struct set_tbCon set_tbCon;
 #define def_conRebuild_clustST 1    /*rebuild con once*/
 #define def_depthProfile_clustST 0  /*do depth profiling*/
 #define def_readErrRate_clustST 0.046f
-#define def_conErrRate_clustST 0.046f
+#define def_conErrRate_clustST 0.023f
 #define def_maxVarErrRatio_clustST 50
 #define def_lenWeight_clustST 2.0f
 
@@ -164,9 +165,11 @@ typedef struct set_tbCon set_tbCon;
 #define def_indelLen_clustST 10
 #define def_minSnpQ_clustST 7
 #define def_percOverlap_clustST 0.75f
+#define def_window_clustST 500
+#define def_windowError_clustST 200
 
 /*settings: consensus filtering*/
-#define def_maxConSim_clustST 0.98f
+#define def_maxConSim_clustST 0.99f
 #define def_maxNPerc_clustST 0.05f /*10% N limit*/
 
 /*-------------------------------------------------------\
@@ -214,7 +217,9 @@ typedef struct set_clustST
 
    /*variant filtering*/
    unsigned int indelLenUI;/*min indel length*/
-   unsigned char minSnpQUC;   /*min snp q-score*/
+   unsigned char minSnpQUC;/*min snp q-score*/
+   unsigned int winSizeUI; /*window size for window scan*/
+   unsigned int winErrUI;  /*error percent for window*/
 
    /*consensus filtering*/
    float maxNPercF;        /*max % N's in consensus*/
@@ -765,10 +770,16 @@ getCon_clustST(
 |   - secConSTPtr:
 |     o pointer to con_clustST struct with second
 |       consensus to compare
+|   - noBoundCheckBl:
+|     o 1: skip bounds check (one read overlaps other)
+|     o 0: do a bounds check
 |   - indexSTPtr:
 |     o pointer to index_clustST with clusters
 |   - clustSetSTPtr:
 |     o pointer to set_clustST struct with settings
+|   - edDistResSTPtr:
+|     o pointer to edDistResSTPtr struct to hold results
+|       from edDist
 | Output:
 |   - Modifies:
 |     o clustArySI in indexSTPtr to have clusters merged
@@ -786,8 +797,10 @@ signed char
 cmpCons_clustST(
    struct con_clustST *firstConSTPtr,
    struct con_clustST *secConSTPtr,
+   signed char noBoundCheckBl, /*1: no bounds check*/
    struct index_clustST *indexSTPtr,
-   struct set_clustST *clustSetSTPtr
+   struct set_clustST *clustSetSTPtr,
+   struct res_edDist *edDistResSTPtr
 );
 
 /*-------------------------------------------------------\

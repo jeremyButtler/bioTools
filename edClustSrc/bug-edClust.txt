@@ -1,1 +1,10 @@
-r -sam $HOME/files/testing/BC33.sam -prefix delete
+b edClust.c:936
+
+# write/read errors from valgrind
+b edDist.c:506 if siRefCig >= refSTPtr->lenCigUI
+b edDist.c:520 if siRefCig >= refSTPtr->lenCigUI
+b tbCon.c:576 if uiRef >= *lenRefUI
+b tbCon.c:644 if uiRef >= *lenRefUI
+
+#r -sam SRR13951186-map-downsample.sam -prefix delete
+r -sam 1186.sam -prefix delete

@@ -146,7 +146,6 @@
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
 !   - .c  #include "../genLib/base10str.h"
-!   - .c  #include "../genLib/charCp.h"
 !   - .c  #include "../genLib/strAry.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -204,6 +203,8 @@ init_set_clustST(
    clustSetSTPtr->minAvgQUI = def_minAvgQ_clustST;
 
    clustSetSTPtr->percOverlapF = def_percOverlap_clustST;
+   clustSetSTPtr->winSizeUI = def_window_clustST;
+   clustSetSTPtr->winErrUI = def_windowError_clustST;
 
    /*consensus filtering*/
    clustSetSTPtr->maxConSimF = def_maxConSim_clustST;
@@ -1871,10 +1872,16 @@ getCon_clustST(
 |   - secConSTPtr:
 |     o pointer to con_clustST struct with second
 |       consensus to compare
+|   - noBoundCheckBl:
+|     o 1: skip bounds check (one read overlaps other)
+|     o 0: do a bounds check
 |   - indexSTPtr:
 |     o pointer to index_clustST with clusters
 |   - clustSetSTPtr:
 |     o pointer to set_clustST struct with settings
+|   - edDistResSTPtr:
+|     o pointer to edDistResSTPtr struct to hold results
+|       from edDist
 | Output:
 |   - Modifies:
 |     o clustArySI in indexSTPtr to have clusters merged
@@ -1892,8 +1899,10 @@ signed char
 cmpCons_clustST(
    struct con_clustST *firstConSTPtr,
    struct con_clustST *secConSTPtr,
+   signed char noBoundCheckBl, /*1: no bounds check*/
    struct index_clustST *indexSTPtr,
-   struct set_clustST *clustSetSTPtr
+   struct set_clustST *clustSetSTPtr,
+   struct res_edDist *edDistResSTPtr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun23: cmpCons_clustST
    '   - compares two consensus clusters to see if same
@@ -1911,9 +1920,6 @@ cmpCons_clustST(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    slong distSL = 0;
-   uint overlapUI = 0;
-   uint numIndelUI = 0;    /*ignoring*/
-   uint indelEventsUI = 0; /*ignoring*/
 
    schar retSC = 0;
 
@@ -1921,47 +1927,55 @@ cmpCons_clustST(
    sint keepClustSI = 0;
    sint changeClustSI = 0;
 
-   float firstPercF = 0;
-   float secPercF = 0;
+   float distPercF = 0;
+   uint *tmpUIPtr = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun23 Sec02:
    ^   - get edit distance and filter distance cons out
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
+   /*disable depth profiling for consensuses*/
+   tmpUIPtr = edDistResSTPtr->depthAryUI;
+   edDistResSTPtr->depthAryUI = 0;
+
+   if(! noBoundCheckBl)
+   { /*If: not doing bounds check*/
+      if(
+              firstConSTPtr->samSTPtr->refStartUI 
+            < secConSTPtr->samSTPtr->refStartUI
+         &&
+              firstConSTPtr->samSTPtr->refEndUI 
+            < secConSTPtr->samSTPtr->refEndUI
+      ) return 0; /*one consensus does not cover other*/
+
+      if(
+              firstConSTPtr->samSTPtr->refStartUI 
+            > secConSTPtr->samSTPtr->refStartUI
+         &&
+              firstConSTPtr->samSTPtr->refEndUI 
+            > secConSTPtr->samSTPtr->refEndUI
+      ) return 0; /*one consensus does not cover other*/
+   } /*If: not doing bounds check*/
+   
    distSL =
       readCmpDist_edDist(
          firstConSTPtr->samSTPtr,
          secConSTPtr->samSTPtr,
          clustSetSTPtr->indelLenUI,
          clustSetSTPtr->minSnpQUC,
-         clustSetSTPtr->percOverlapF,
+         -1,              /*will check overlaps later*/
          0,               /*not doing depth profile*/
-         0,               /*not doing depth profile*/
-         &overlapUI,
-         &numIndelUI,    /*ignoring*/
-         &indelEventsUI  /*ignoring*/
+         clustSetSTPtr->winSizeUI,
+         edDistResSTPtr
       ); /*get edit distance*/
 
-   firstPercF = (float) overlapUI;
+   edDistResSTPtr->depthAryUI = tmpUIPtr;
 
-   firstPercF /=
-     (float) firstConSTPtr->samSTPtr->alnReadLenUI;
+   distPercF = (float) distSL;
+   distPercF /= (float) edDistResSTPtr->overlapUI;
 
-   secPercF = (float) overlapUI;
-
-   secPercF /=
-      (float) secConSTPtr->samSTPtr->alnReadLenUI;
-
-   if(
-         firstPercF < clustSetSTPtr->percOverlapF
-      && secPercF < clustSetSTPtr->percOverlapF
-   ) return 0;
-
-   firstPercF = (float) distSL;
-   firstPercF /= (float) overlapUI;
-
-   if(1 - firstPercF <= clustSetSTPtr->maxConSimF)
+   if(1 - distPercF <= clustSetSTPtr->maxConSimF)
       return 0; /*to much difference*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -2006,18 +2020,6 @@ cmpCons_clustST(
    firstConSTPtr->numReadsUL += secConSTPtr->numReadsUL;
    secConSTPtr->numReadsUL = firstConSTPtr->numReadsUL;
 
-   firstConSTPtr->startUI =
-      min_genMath(
-         firstConSTPtr->startUI,
-         secConSTPtr->startUI
-      );
-
-   firstConSTPtr->endUI =
-      max_genMath(
-         firstConSTPtr->endUI,
-         secConSTPtr->endUI
-      );
-
    if(
         firstConSTPtr->samSTPtr->alnReadLenUI
       > secConSTPtr->samSTPtr->alnReadLenUI
@@ -2049,6 +2051,19 @@ cmpCons_clustST(
 
    else
       retSC = 1; /*first cluster is equal or better*/
+
+   firstConSTPtr->startUI =
+      min_genMath(
+         firstConSTPtr->startUI,
+         secConSTPtr->startUI
+      );
+
+   firstConSTPtr->endUI =
+      max_genMath(
+         firstConSTPtr->endUI,
+         secConSTPtr->endUI
+      );
+
 
    /*****************************************************\
    * Fun23 Sec03 Sub03:

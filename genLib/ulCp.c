@@ -761,8 +761,11 @@ eql_ulCp(
 
    while(! checkUL)
    { /*Loop: Copy cpStr to dupStr*/
-      if(*qryUL++ != *refUL++)
+      if(*qryUL != *refUL)
          return *(qryUL - 1) - *(refUL - 1);
+
+      ++qryUL;
+      ++refUL;
 
       checkUL = *qryUL ^ delimUL;
       checkUL -= def_one_ulCp;
@@ -774,8 +777,11 @@ eql_ulCp(
 
    while(*qryStr != delimSC)
    { /*Loop: find difference*/
-      if(*qryStr++ != *refStr++)
+      if(*qryStr != *refStr)
          break;
+
+      ++qryStr;
+      ++refStr;
    } /*Loop: find difference*/
 
    return *qryStr - *refStr;
@@ -815,8 +821,11 @@ eqlNull_ulCp(
 
    while(! checkUL)
    { /*Loop: Copy cpStr to dupStr*/
-      if(*qryUL++ != *refUL++)
+      if(*qryUL != *refUL)
          return *(qryUL - 1) - *(refUL - 1);
+
+      ++qryUL;
+      ++refUL;
 
       checkUL = *qryUL ^ def_null_ulCp;
       checkUL -= def_one_ulCp;
@@ -828,8 +837,11 @@ eqlNull_ulCp(
 
    while(*qryStr != (signed char) '\0')
    { /*Loop: find difference*/
-      if(*qryStr++ != *refStr++)
+      if(*qryStr != *refStr)
          break;
+
+      ++qryStr;
+      ++refStr;
    } /*Loop: find difference*/
 
    return *qryStr - *refStr;

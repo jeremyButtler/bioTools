@@ -48,20 +48,15 @@ The mkfileScripts directory has bash scripts to build
 # List of tools
 
 - re-inventing the wheel:
-  - seqById (fqGetIds/find-co--infections):
-    - extract sequences by read id from sam files and
-      fastq files
-    - seqkit grep nock off, without regular expressions
-      and no fasta file support
+  - alnwater (alnSeq/fluDI):
+    - waterman alignment with gap extension penalties
+    - slower than striped watermans
+    - watermans are a dime a dozen
   - filtsam (freezeTB):
     - filter sam files by flag, length, median/mean
       q-scores, and coordinates
     - also supports read soft mask removal
     - samtools view nock off, with an odd twist
-  - alnwater (alnSeq/fluDI):
-    - waterman alignment with gap extension penalties
-    - slower than striped watermans
-    - watermans are a dime a dozen
   - memwater (alnSeq/freezeTB):
     - waterman alignment with gap extension penalties
     - only returns score and alignment coordinates, but
@@ -70,6 +65,11 @@ The mkfileScripts directory has bash scripts to build
   - primFind (fluDI/freezeTB):
     - find primers in sequence(s)
     - emboss primer finder program nock off (forgot name)
+  - seqById (fqGetIds/find-co--infections):
+    - extract sequences by read id from sam files and
+      fastq files
+    - seqkit grep nock off, without regular expressions
+      and no fasta file support
   - tbCon (freezeTB):
     - reference based majority consensus that saves the
       cosensus as a sam file (convert cigar to eqx cigar
@@ -87,18 +87,16 @@ The mkfileScripts directory has bash scripts to build
     - finds mean read depth of amplicons and the genes
       they cover
     - you need to provide a coordinate file for this
+  - adjMap (fluDI/freezeTB):
+    - adjust mapping coordinates to a new reference
+      - reference and reads must be sam files
+    - needs some debugging still, but close
   - cigToEqx (freezeTB):
     - convert regular cigars to eqx cigars
-  - trimSam (find-co--infections):
-    - trims soft masking off reads in sam file
-    - filtsam can do this with `-trim` and has filtering
-      options
-  - illNano (freezeTB/fluDI dugging edClust):
-    - finds Illumina variants from tbCon tsv file and then
-      finds nanopore reads mapping Illumina profile
-  - maskPrim (freezeTB):
-    - mask primer sites by coordinates (for sam file)
-    - tsv file with coordinates is needed
+  - edClust (fluDI/freezeTB):
+    - current module working on (probably will not be
+      very good)
+    - try to cluster reads by edit distance
   - edDist (fluDI/freezeTB):
     - finds modified edit distances
       - modified means only large indels and snps with
@@ -107,19 +105,21 @@ The mkfileScripts directory has bash scripts to build
         sam file
       - can do sam file to sam file or by ref
     - not best program, but part of a bigger plan
-  - edClust (fluDI/freezeTB):
-    - current module working on (probably will not be
-      very good)
-    - try to cluster reads by edit distance
-  - adjMap (fluDI/freezeTB):
-    - adjust mapping coordinates to a new reference
-      - reference and reads must be sam files
-    - needs some debugging still, but close
+  - illNano (freezeTB/fluDI dugging edClust):
+    - finds Illumina variants from tbCon tsv file and then
+      finds nanopore reads mapping Illumina profile
+  - maskPrim (freezeTB):
+    - mask primer sites by coordinates (for sam file)
+    - tsv file with coordinates is needed
   - samToAln:
     - convert sam file to human readable alignment
     - this is how to get a viewable alignment for alnwater
     - emboss like format, except the "|"'s are replaced
       with cigar symbols "SIDX=".
+  - trimSam (find-co--infections):
+    - trims soft masking off reads in sam file
+    - filtsam can do this with `-trim` and has filtering
+      options
 
 # genLib and genAln
 
