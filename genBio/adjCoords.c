@@ -57,8 +57,6 @@
 |       coordinates for each gene
 |   - numGenesSI:
 |     o number of genes in coordsSIPtr
-|   - newRefStr:
-|     o name of the new reference adjusted to
 | Output:
 |   - Returns:
 |     o 0 for no problems
@@ -68,8 +66,7 @@ signed char
 adjCoords(
    struct samEntry *samSTPtr,
    struct geneCoord *coordsSTPtr,
-   signed int numGenesSI,
-   signed char *newRefStr
+   signed int numGenesSI
 ){
    schar errSC = 0;
    sint siIndx = 0;
@@ -114,7 +111,7 @@ adjCoords(
       (uchar)
       cpDelim_ulCp(
          samSTPtr->refIdStr,
-         newRefStr,
+         coordsSTPtr->refAryStr[siIndx],
          0,
          '\0'
       );

@@ -7,6 +7,8 @@
 '     - prints the version number for adjCoords
 '   o fun02: phelp_mainAdjCoords
 '     - prints the help message for adjCoords
+'   o fun03: input_mainAdjCoords
+'     - gets user input in argAryStr
 '   o main:
 '     - driver function to adjust coordinates with
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -59,10 +61,8 @@
 \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
 #define def_year_adjCoords 2024
-#define def_month_adjCoords 8
-#define def_day_adjCoords 4
-
-schar *def_refStr = (schar *) "NC000962.3";
+#define def_month_adjCoords 10
+#define def_day_adjCoords 16
 
 /*-------------------------------------------------------\
 | Fun01: pversion_mainAdjCoords
@@ -138,13 +138,13 @@ phelp_mainAdjCoords(
    ^ Fun02 Sec02:
    ^   - print the input entry
    ^   o fun02 sec02 sub01:
-   ^      - print input block header
+   ^     - print input block header
    ^   o fun02 sec02 sub02:
-   ^      - genome coordinates block
+   ^     - genome coordinates block
    ^   o fun02 sec02 sub03:
-   ^      - sam file block
+   ^     - sam file block
    ^   o fun02 sec02 sub04:
-   ^      - reference block
+   ^     - help and version block
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
@@ -180,7 +180,7 @@ phelp_mainAdjCoords(
 
    fprintf(
       (FILE *) outFILE,
-      "       gene\tref_ignored\tdirection\tstart\tend\n"
+      "       gene\tnew_ref_id\tdirection\tstart\tend\n"
    );
 
    fprintf(
@@ -215,22 +215,6 @@ phelp_mainAdjCoords(
 
    /*****************************************************\
    * Fun02 Sec02 Sub04:
-   *   - reference block
-   \*****************************************************/
-
-   fprintf(
-      outFILE,
-      "  -ref name: [%s]\n",
-      def_refStr
-    );
-
-   fprintf(
-      outFILE,
-      "    o name of new reference for each gene\n"
-    );
-
-   /*****************************************************\
-   * Fun02 Sec02 Sub05:
    *   - help and version block
    \*****************************************************/
 
@@ -261,7 +245,7 @@ phelp_mainAdjCoords(
 } /*phelp_mainAdjCoords*/
 
 /*-------------------------------------------------------\
-| Fun03: input_adjCoordMain
+| Fun03: input_mainAdjCoord
 |   - gets user input in argAryStr
 | Input:
 |   - argAryStr:
@@ -273,8 +257,6 @@ phelp_mainAdjCoords(
 |       coordinates file
 |   - samFileStr:
 |     o pointer to c-string to point to the sam file
-|   - refStr:
-|     o pointer to c-string to point to the reference name
 | Output:
 |   - Modifies:
 |     o tblFileStr to point to the coordinates file in
@@ -290,12 +272,11 @@ phelp_mainAdjCoords(
 |     o 2 for errors
 \-------------------------------------------------------*/
 schar
-input_adjCoordMain(
+input_mainAdjCoord(
    char *argAryStr[],
    int numArgsSI,
    signed char **tblFileStr,
-   signed char **samFileStr,
-   signed char **refStr
+   signed char **samFileStr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
    '   o fun03 sec01:
@@ -335,14 +316,12 @@ input_adjCoordMain(
    ^   o fun03 sec03 sub02:
    ^     - is sam file input
    ^   o fun03 sec03 sub03:
-   ^     - is reference input
-   ^   o fun03 sec03 sub04:
    ^     - is an help messge request
-   ^   o fun03 sec03 sub05:
+   ^   o fun03 sec03 sub04:
    ^     - is an version number request
-   ^   o fun03 sec03 sub06:
+   ^   o fun03 sec03 sub05:
    ^     - unkown input
-   ^   o fun03 sec03 sub07:
+   ^   o fun03 sec03 sub06:
    ^     - move to next input
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -382,22 +361,6 @@ input_adjCoordMain(
 
       /**************************************************\
       * Fun03 Sec03 Sub03:
-      *   - is reference input
-      \**************************************************/
-
-      else if(!
-          eql_charCp(
-             (schar *) "-ref",
-             (schar *) argAryStr[siArg],
-             (schar) '\0'
-          )
-      ){ /*Else If: the user provided an reference name*/
-         ++siArg;
-         *refStr = (schar *) argAryStr[siArg];
-      } /*Else If: the user provided an reference name*/
-
-      /**************************************************\
-      * Fun03 Sec03 Sub04:
       *   - is an help messge request
       \**************************************************/
       
@@ -457,7 +420,7 @@ input_adjCoordMain(
       } /*Else If: requested help message*/
 
       /**************************************************\
-      * Fun03 Sec03 Sub05:
+      * Fun03 Sec03 Sub04:
       *   - is an version number request
       \**************************************************/
 
@@ -517,7 +480,7 @@ input_adjCoordMain(
       } /*Else If: requested version number*/
 
       /**************************************************\
-      * Fun03 Sec03 Sub06:
+      * Fun03 Sec03 Sub05:
       *   - unkown input
       \**************************************************/
 
@@ -533,7 +496,7 @@ input_adjCoordMain(
       } /*Else: no idea what is*/
 
       /**************************************************\
-      * Fun03 Sec03 Sub07:
+      * Fun03 Sec03 Sub06:
       *   - move to next input
       \**************************************************/
 
@@ -559,7 +522,7 @@ input_adjCoordMain(
 
    ret_fun03_sec04:;
    return errSC;
-} /*input_adjCoordMain*/
+} /*input_mainAdjCoord*/
 
 /*-------------------------------------------------------\
 | Main:
@@ -598,7 +561,6 @@ main(
 
    schar *tblFileStr = 0;
    schar *samFileStr = 0;
-   schar *refStr = def_refStr;
 
    ulong errUL = 0;
 
@@ -636,12 +598,11 @@ main(
 
    errUL =
       (ulong)
-      input_adjCoordMain(
+      input_mainAdjCoord(
          argAryStr,
          numArgsSI,
          &tblFileStr,
-         &samFileStr,
-         &refStr
+         &samFileStr
       );
 
    if(errUL)
@@ -737,12 +698,12 @@ main(
       goto cleanUp_main_sec05;
    } /*If: I had an error*/
 
-   fprintf(
+   /*fprintf(
       outFILE,
       "@SQ\tSN:%s\tLN:%u\n",
       refStr,
       coordsHeapST->endAryUI[numGenesSI - 1]
-    ); /*print out the sequence and length header*/
+    );*/ /*print out the sequence and length header*/
 
    sortName_geneCoord(
       coordsHeapST,
@@ -823,9 +784,8 @@ main(
 
         fprintf(
            outFILE,
-           "-%02i\tCL:adjCoords -ref %s -coords %s -sam",
+           "-%02i\tCL:adjCoords -coords %s -sam",
            def_day_adjCoords,
-           refStr,
            tblFileStr
         );
 
@@ -859,8 +819,7 @@ main(
         adjCoords(
            &samStackST,  /*sam entry to adjust*/
            coordsHeapST, /*has genes names & coordinates*/
-           numGenesSI,   /*number genes in coordsHeapST*/
-           refStr        /*name of new reference*/
+           numGenesSI    /*number genes in coordsHeapST*/
         ); /*ajust the coordinates to the new reference*/
 
      /*check if I had coordinates for the gene*/
