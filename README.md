@@ -94,8 +94,7 @@ The mkfileScripts directory has bash scripts to build
   - cigToEqx (freezeTB):
     - convert regular cigars to eqx cigars
   - edClust (fluDI/freezeTB):
-    - current module working on (probably will not be
-      very good)
+    - needs testing, but is running
     - try to cluster reads by edit distance
   - edDist (fluDI/freezeTB):
     - finds modified edit distances
