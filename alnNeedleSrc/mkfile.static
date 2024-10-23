@@ -1,8 +1,7 @@
 LD=cc
 CC=cc
-CFLAGS= -O3 -std=c89 -static
-CFLAGS= -Wall -Wextra
-NAME=
+CFLAGS= -O3 -std=c89 -static -Wall -Wextra
+NAME=alnNeedle
 PREFIX=/usr/local/bin
 O=o.static
 
@@ -11,7 +10,7 @@ genLib=../genLib
 genBio=../genBio
 
 objFiles= \
-   $(genAln)/water.$O \
+   $(genAln)/needle.$O \
    $(genAln)/dirMatrix.$O \
    $(genAln)/alnSet.$O \
    $(genLib)/base10str.$O \
@@ -23,16 +22,16 @@ objFiles= \
    $(genBio)/seqST.$O \
    $(genLib)/charCp.$O \
    $(genBio)/kmerCnt.$O \
-   mainWater.$O
+   mainNeedle.$O
 
-all: mainWater.$O
+all: mainNeedle.$O
 	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
 
-mainWater.$O: mainWater.c $(genAln)/water.$O $(genBio)/kmerCnt.$O
-	$(CC) -o mainWater.$O -c $(CFLAGS) mainWater.c
+mainNeedle.$O: mainNeedle.c $(genAln)/needle.$O $(genBio)/kmerCnt.$O
+	$(CC) -o mainNeedle.$O -c $(CFLAGS) mainNeedle.c
 
-$(genAln)/water.$O: $(genAln)/water.c $(genAln)/dirMatrix.$O $(genLib)/genMath.h
-	$(CC) -o $(genAln)/water.$O -c $(CFLAGS) $(genAln)/water.c
+$(genAln)/needle.$O: $(genAln)/needle.c $(genAln)/dirMatrix.$O $(genLib)/genMath.h
+	$(CC) -o $(genAln)/needle.$O -c $(CFLAGS) $(genAln)/needle.c
 
 $(genAln)/dirMatrix.$O: $(genAln)/dirMatrix.c $(genAln)/alnSet.$O $(genAln)/indexToCoord.$O $(genBio)/samEntry.$O $(genBio)/seqST.$O $(genLib)/charCp.$O
 	$(CC) -o $(genAln)/dirMatrix.$O -c $(CFLAGS) $(genAln)/dirMatrix.c

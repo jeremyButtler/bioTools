@@ -38,9 +38,9 @@
 #include "codonTbl.h"
 
 /*no .c files*/
+#include "../genLib/dataTypeShortHand.h"
 #include "ntTo2Bit.h"
 #include "revNtTo2Bit.h"
-#include "dataTypeShortHand.h"
 
 /*-------------------------------------------------------\
 | Fun01: codonToAA_codonTbl

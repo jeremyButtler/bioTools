@@ -55,11 +55,10 @@
 |   - samSTPtr:
 |     o pointer to an samEntry structure with a read to
 |       add to the histogram
-|   - geneCoordSTPtr:
-|     o pointer to an array of geneCoord structures with
-|       gene coordinates for each gene of interest
-|   - numCoordsSI:
-|     o number of geneCoord structures in geneCoordSTPtr
+|   - startSeqUI:
+|     o first base in target region of reference 
+|   - endSeqUI:
+|     o last base in target region of reference
 |   - depthArySI:
 |     o histogram (int array) to add each base to
 |   - numOffTargSI:
@@ -73,28 +72,30 @@
 void
 addRead_ampDepth(
    struct samEntry *samSTPtr,
-   struct geneCoord *geneCoordSTPtr,
-   signed int numCoordsSI,
+   unsigned int startSeqUI,  /*first reference coorinate*/
+   unsigned int endSeqUI,    /*last reference coordinate*/
    signed int *depthArySI,
    signed int *numOffTargSI
 ){
    sint siBase = 0;
 
+   if(samSTPtr->refStartUI > (uint) endSeqUI)
+   { /*If: the read has an offtarget section*/
+        ++(*numOffTargSI);
+        return;
+   } /*If: the read has an offtarget section*/
+
+   if(samSTPtr->refEndUI < (uint) startSeqUI)
+   { /*If: the read has an offtarget section*/
+        ++(*numOffTargSI);
+        return;
+   } /*If: the read has an offtarget section*/
+
    for(
       siBase = (sint) samSTPtr->refStartUI;
       siBase < (sint) samSTPtr->refEndUI;
       ++siBase
-   ){ /*Loop: Fill in bases*/
-      if(
-           siBase
-         > (sint) geneCoordSTPtr->endAryUI[numCoordsSI]
-      ){ /*If: the read has an offtarget section*/
-        ++(*numOffTargSI);
-        break;
-      } /*If: the read has an offtarget section*/
-
-      ++depthArySI[siBase];
-   } /*Loop: Fill in bases*/
+   ) ++depthArySI[siBase];
 } /*addBaseToAmDepth*/
 
 /*-------------------------------------------------------\

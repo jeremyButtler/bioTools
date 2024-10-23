@@ -1024,8 +1024,8 @@ main(
 
       addRead_ampDepth(
          &samStackST,
-         genesHeapST,
-         numGenesSI,
+         (sint) genesHeapST->startAryUI[0],
+         (sint) genesHeapST->endAryUI[numGenesSI],
          readMapHeapArySI,
          &offTargSI
       ); /*Add in the coverd bases to the histogram*/

@@ -2,7 +2,7 @@ LD=cc
 CC=cc
 CFLAGS= -O3 -std=c89 -static
 CFLAGS= -Wall -Wextra
-NAME=
+NAME=tbCon
 PREFIX=/usr/local/bin
 O=o.static
 

@@ -9,7 +9,9 @@
 '     - find the depth profile for a read
 '   o fun03: findNumMap_edClust
 '     - finds number of reads mapping to best read
-'   o fun04: cluster_edClust
+'   o fun04: getDepth_edClust
+'     - gets number of reads that overlap a cluster
+'   o fun05: cluster_edClust
 '     - clusters reads
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -185,7 +187,33 @@ findNumMap_edClust(
 );
 
 /*-------------------------------------------------------\
-| Fun04: cluster_edClust
+| Fun04: getDepth_edClust
+|   - gets number of reads that overlap a cluster
+| Input:
+|   - conListSTPtr:
+|     o pointer to head of con_clustST struct list with
+|       cluster consensus to check depths for
+|   - indexSTPtr:
+|     o pointer to index_clustST struct with each reads
+|       assigned cluster, start position, and end position
+|   - minOverlapF:
+|     o mininum overlap to count read and cluster as
+|       overlapping (for total count)
+| Output:
+|   - Modifies:
+|     o maxReadsUL in each con_clustST struct in
+|       conListSTPtr to have number of possible overlaping
+|       reads
+\-------------------------------------------------------*/
+void
+getMaxDepth_edClust(
+   struct con_clustST *conListSTPtr,
+   struct index_clustST *indexSTPtr,
+   float minOverlapF
+);
+
+/*-------------------------------------------------------\
+| Fun05: cluster_edClust
 |   - clusters reads
 | Input:
 |   - indexSTPtr:

@@ -1,9 +1,9 @@
 LD=cc
 CC=cc
-CFLAGS= -O3 -std=c89 -Wall -Wextra
-NAME=alnwater
+CFLAGS= -O3 -std=c89 -static -Wall -Wextra
+NAME=alnWater
 PREFIX=/usr/local/bin
-O=o.unix
+O=o.static
 
 genAln=../genAln
 genLib=../genLib

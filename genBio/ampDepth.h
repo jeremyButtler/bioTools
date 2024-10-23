@@ -36,10 +36,10 @@ typedef struct geneCoord geneCoord;
 |   - geneCoordSTPtr:
 |     o pointer to an array of geneCoord structures with
 |       gene coordinates for each gene of interest
-|   - numCoordsSI:
-|     o number of geneCoord structures in geneCoordSTPtr
-|   - depthArySI:
-|     o histogram (int array) to add each base to
+|   - startSeqUI:
+|     o first base in target region of reference 
+|   - endSeqUI:
+|     o last base in target region of reference
 |   - numOffTargSI:
 |     o number of reads not mapping to a gene coordiante,
 |       but are mapped to the genome
@@ -51,8 +51,8 @@ typedef struct geneCoord geneCoord;
 void
 addRead_ampDepth(
    struct samEntry *samSTPtr,
-   struct geneCoord *geneCoordSTPtr,
-   signed int numCoordsSI,
+   unsigned int startSeqUI,  /*first reference coorinate*/
+   unsigned int endSeqUI,    /*last reference coordinate*/
    signed int *depthArySI,
    signed int *numOffTargSI
 );

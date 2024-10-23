@@ -2239,7 +2239,7 @@ revCmp_samEntry(
    else
    { /*Else: have sequence entry*/
       startStr = samSTPtr->seqStr;
-      endStr = startStr + samSTPtr->readLenUI;
+      endStr = startStr + samSTPtr->readLenUI - 1;
    } /*Else: have sequence entry*/
 
    if(
@@ -2253,7 +2253,7 @@ revCmp_samEntry(
    else
    { /*Else: have q-score entry*/
       qStartStr = samSTPtr->qStr;
-      qEndStr = qStartStr + samSTPtr->readLenUI;
+      qEndStr = qStartStr + samSTPtr->readLenUI - 1;
    } /*Else: have q-score entry*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -2387,12 +2387,12 @@ revCmp_samEntry(
       && samSTPtr->cigTypeStr[0] != '*'
    ){ /*If: have cigar to flip*/
       startStr = samSTPtr->cigTypeStr;
-      endStr = startStr + samSTPtr->lenCigUI;
+      endStr = startStr + samSTPtr->lenCigUI - 1;
 
       startSIPtr = samSTPtr->cigArySI;
-      endSIPtr = startSIPtr + samSTPtr->lenCigUI;
+      endSIPtr = startSIPtr + samSTPtr->lenCigUI - 1;
 
-      while(startStr > endStr)
+      while(startStr < endStr)
       { /*Loop: reverse cigar*/
          *startStr ^= *endStr;
          *endStr ^= *startStr;

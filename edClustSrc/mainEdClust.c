@@ -55,8 +55,8 @@
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 #define def_year_mainEdClust 2024
-#define def_month_mainEdClust 9
-#define def_day_mainEdClust 30
+#define def_month_mainEdClust 10
+#define def_day_mainEdClust 15
 
 /*-------------------------------------------------------\
 | Fun01: pversion_mainEdClust
@@ -158,23 +158,28 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "  -sam reads.sam: [Required]\n"
+      "  FILE IO:\n"
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o sam file with reads to cluster\n"
+      "    -sam reads.sam: [Required]\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o sam file with reads to cluster\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -prefix out: [Optional; out]\n"
+      "    -prefix out: [Optional; out]\n"
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o prefix for output file names\n"
+      "      o prefix for output file names\n"
    );
 
    /*****************************************************\
@@ -184,59 +189,105 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "  -clust-depth %i: [Optional; %i]\n",
+      "  Cluster Filtering:\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -clust-depth %i: [Optional; %i]\n",
       def_minDepth_clustST,
       def_minDepth_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o min cluster read depth to keep a cluster\n"
+      "      o min cluster read depth to keep a cluster\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -read-err %0.3f: [Optional; %0.3f]\n",
+      "    -clust-perc-depth %.04f: [Optional; %.04f]\n",
+      def_minPercDepth_clustST,
+      def_minPercDepth_clustST
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o minimum percent read depth need to keep\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "        a cluster\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -read-err %0.3f: [Optional; %0.3f]\n",
       def_readErrRate_clustST,
       def_readErrRate_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o error rate for read to read mapping\n"
+      "      o error rate for read to read mapping\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -con-err %0.3f: [Optional; %0.3f]\n",
+      "    -con-err %0.3f: [Optional; %0.3f]\n",
       def_conErrRate_clustST,
       def_conErrRate_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o error rate for consenesus to read mapping\n"
+      "      o consensus to read mapping error rate\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -con-sim %0.2f: [Optional; %0.2f]\n",
+      "    -con-sim %0.4f: [Optional; %0.4f]\n",
       def_maxConSim_clustST,
       def_maxConSim_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o maximum simularity allowed between\n"
+      "      o maximum simularity between consensuses\n"
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      consensuses before merging their clusters\n"
+      "        to not merge clusters\n"
    );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -overlap %0.2f: [Optional; %0.2f]\n",
+      def_percOverlap_clustST,
+      def_percOverlap_clustST
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o minimum percentage of overlap needed to\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "     merge clusters (start comparision)\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o used in final consensus comparison\n"
+   );
+
+
 
    /*****************************************************\
    * Fun02 Sec02 Sub04:
@@ -245,34 +296,39 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "  -len-weight %0.2f: [Optional; %0.2f]\n",
+      "  Read Scoring:\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -len-weight %0.2f: [Optional; %0.2f]\n",
       def_lenWeight_clustST,
       def_lenWeight_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o how much to increase lengths impact on\n"
+      "      o how much to increase lengths impact on\n"
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      read scoring\n"
+      "        read scoring\n"
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o log_length = floor[log10(length)]\n"
+      "      o log_length = floor[log10(length)]\n"
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o length_score = floor[weigth * log_length]\n"
+      "      o length_score= floor[weigth * log_length]\n"
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o score = length_score + floor[median Q]\n"
+      "      o score = length_score + floor[median Q]\n"
    );
 
    /*****************************************************\
@@ -282,53 +338,58 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "  -min-len %i: [Optional; %i]\n",
+      "  Read Filtering:\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -min-len %i: [Optional; %i]\n",
       def_minLen_clustST,
       def_minLen_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum length (on reference) to keep read\n"
+      "      o minimum aligned length to keep read\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -mapq %i: [Optional; %i]\n",
+      "    -mapq %i: [Optional; %i]\n",
       def_minMapq_clustST,
       def_minMapq_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum mapping quality to keep read\n"
+      "      o minimum mapping quality to keep read\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -min-med-q %i: [Optional; %i]\n",
+      "    -min-med-q %i: [Optional; %i]\n",
       def_minMedQ_clustST,
       def_minMedQ_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum median q-score to keep read\n"
+      "      o minimum median q-score to keep read\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -min-mean-q %i: [Optional; %i]\n",
+      "    -min-mean-q %i: [Optional; %i]\n",
       def_minAvgQ_clustST,
       def_minAvgQ_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum mean q-score to keep read\n"
+      "      o minimum mean q-score to keep read\n"
    );
 
    /*****************************************************\
@@ -336,111 +397,124 @@ phelp_mainEdClust(
    *   - edit distance settings
    \*****************************************************/
 
+   fprintf(
+      (FILE *) outFILE,
+      "  Edit Distance:\n"
+   );
+
    if(def_depthProfile_clustST)
       fprintf(
          (FILE *) outFILE,
-         "  -depth-prof: [Optional; Yes]\n"
+         "    -depth-prof: [Optional; Yes]\n"
       );
    else
       fprintf(
          (FILE *) outFILE,
-         "  -depth-prof: [Optional; No]\n"
+         "    -depth-prof: [Optional; No]\n"
       );
 
    fprintf(
       (FILE *) outFILE,
-      "    o -clust-depth to remove low read depth\n"
+      "      o -clust-depth to remove low read depth\n"
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      variants from edit distance\n"
+      "        variants from edit distance\n"
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o disable with \"no-depth-prof\"\n"
+      "      o disable with \"no-depth-prof\"\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -err-to-var %i: [Optional; %i]\n",
+      "    -err-to-var %i: [Optional; %i]\n",
       def_maxVarErrRatio_clustST,
       def_maxVarErrRatio_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o maximum variant to error ratio to add read\n"
+      "      o maximum variant to error ratio to add\n"
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      to a cluster (whole number required)\n"
+      "        read to a cluster (whole number)\n"
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 100 * (# variants) / (error rate * length)\n"
+      "      o 100 * (# variants)/(error rate * length)\n"
+   );
+
+
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -win-len %i: [Optional; %i]\n",
+      def_window_clustST,
+      def_window_clustST
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o size of window for window scanning\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o idea is to detect regions of high\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "        difference in very long reads\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -overlap %0.2f: [Optional; %0.2f]\n",
-      def_percOverlap_clustST,
-      def_percOverlap_clustST
+      "    -win-err %i: [Optional; %i]\n",
+      def_windowError_clustST,
+      def_windowError_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum percentage of read needs to be\n"
+      "      o maximum variant to error ratio in window\n"
    );
 
-   fprintf(
-      (FILE *) outFILE,
-      "     covered by best read to assign to cluster\n"
-   );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -indel-len %i: [Optional; %i]\n",
+      "    -indel-len %i: [Optional; %i]\n",
       def_indelLen_clustST,
       def_indelLen_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o min length to add indel to edit distance\n"
+      "      o min length to add indel to edit distance\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -q-snp %i: [Optional; %i]\n",
+      "    -clust-q-snp %i: [Optional; %i]\n",
       def_minSnpQ_clustST,
       def_minSnpQ_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum q-score for snp during clustering\n"
+      "      o minimum q-score to keep snp (edit dist)\n"
    ); /*edit distance min snp q-score*/
 
-
-   fprintf(
-      (FILE *) outFILE,
-      "  -perc-n %0.2f: [Optional; %0.2f]\n",
-      def_maxNPerc_clustST,
-      def_maxNPerc_clustST
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "    o maximum percent masked bases in consensus\n"
-   ); /*both consensus and edit distance*/
 
    /*****************************************************\
    * Fun02 Sec02 Sub07:
@@ -449,38 +523,51 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "  -con-iter %i: [Optional; %i]\n",
+      "  Consensus Filtering + Building:\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -con-iter %i: [Optional; %i]\n",
       def_conRebuild_clustST,
       def_conRebuild_clustST
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o number of times to rebuild the consenus\n"
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "    o each rebuild is clustered to reads\n"
+      "      o number of consensus rebuilds and remaps\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -con-depth %i: [Optional; %i]\n",
+      "    -perc-n %0.4f: [Optional; %0.4f]\n",
+      def_maxNPerc_clustST,
+      def_maxNPerc_clustST
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o maximum percent masked consnesus bases\n"
+   ); /*both consensus and edit distance*/
+
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -con-depth %i: [Optional; %i]\n",
       def_minDepth_tbConDefs,
       def_minDepth_tbConDefs
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum read depth to not mask a position\n"
+      "      o minimum read depth to not mask\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -con-q-snp %i: [Optional; %i]\n",
+      "    -con-q-snp %i: [Optional; %i]\n",
       def_minSnpQ_clustST,
       def_minSnpQ_clustST
    );
@@ -488,63 +575,63 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum q-score for snp in consensus\n"
+      "      o minimum q-score for snp in consensus\n"
    ); /*both consensus and edit distance*/
 
    fprintf(
       (FILE *) outFILE,
-      "  -q-ins %i: [Optional; %i]\n",
+      "    -q-ins %i: [Optional; %i]\n",
       def_minInsQ_tbConDefs,
       def_minInsQ_tbConDefs
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum q-score for ins (consensus only)\n"
+      "      o minimum q-score for ins (consensus only)\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -snp %0.2f: [Optional; %0.2f]\n",
+      "    -snp %0.2f: [Optional; %0.2f]\n",
       def_minSnpPerc_tbConDefs,
       def_minSnpPerc_tbConDefs
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum percent support to not mask a SNP\n"
+      "      o minimum percent support to keep SNP\n"
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      or a match\n"
+      "        or a match\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -ins %0.2f: [Optional; %0.2f]\n",
+      "    -ins %0.2f: [Optional; %0.2f]\n",
       def_minInsPerc_tbConDefs,
       def_minInsPerc_tbConDefs
    );
 
    fprintf(
-      (FILE *) outFILE,
-      "    o minimum percent support to keep insertion\n"
+     (FILE *) outFILE,
+     "      o minimum percent support to keep insertion\n"
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -del %0.2f: [Optional; %0.2f]\n",
+      "    -del %0.2f: [Optional; %0.2f]\n",
       def_minDelPerc_tbConDefs,
       def_minDelPerc_tbConDefs
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum percent support to keep deletion\n"
+      "      o minimum percent support to keep deletion\n"
    );
 
    /*****************************************************\
@@ -554,12 +641,17 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "  -h: print this help message and exit\n"
+      "  Misc:\n"
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -v: print version number and exit\n"
+      "    -h: print this help message and exit\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -v: print version number and exit\n"
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -649,7 +741,7 @@ input_mainEdClust(
    ^   o fun03 sec02 sub01:
    ^     - check if have input, start loop, file IO vars
    ^   o fun03 sec02 sub02:
-    ^    - clust depth, error rate, & simularity settings
+   ^     - clust depth, error rate, & simularity settings
    ^   o fun03 sec02 sub03:
    ^     - scoring setting (length weight only)
    ^   o fun03 sec02 sub04:
@@ -749,6 +841,17 @@ input_mainEdClust(
          } /*If: invalid input*/
       } /*Else If: min cluster read depth*/
 
+
+      else if(
+         ! eql_charCp(
+            (schar *) "-clust-perc-depth",
+            (schar *) argAryStr[siArg],
+            (schar) '\0'
+         )
+      ){ /*Else If: cluster min percent read depth*/
+         ++siArg;
+         setSTPtr->minPercDepthF = atof(argAryStr[siArg]);
+      } /*Else If: cluster min percent read depth*/
 
       else if(
          ! eql_charCp(
@@ -960,8 +1063,10 @@ input_mainEdClust(
       *   o fun03 sec02 sub05 cat02:
       *     - minimum overlap
       *   o fun03 sec02 sub05 cat03:
+      *     - window size
+      *   o fun03 sec02 sub05 cat05:
       *     - min indel length
-      *   o fun03 sec02 sub05 cat04:
+      *   o fun03 sec02 sub05 cat06:
       *     - min snp q-score (edDist and tbCon)
       \**************************************************/
 
@@ -1029,6 +1134,72 @@ input_mainEdClust(
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
       + Fun03 Sec02 Sub05 Cat03:
+      +   - window size
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(
+         ! eql_charCp(
+            (schar *) "-win-len",
+            (schar *) argAryStr[siArg],
+            (schar) '\0'
+         )
+      ){ /*Else If: window length for window scanning*/
+         ++siArg;
+         tmpStr = (schar *) argAryStr[siArg];
+
+         tmpStr +=
+            strToUI_base10str(
+                tmpStr,
+                &setSTPtr->winSizeUI
+            );
+
+         if(*tmpStr != '\0')
+         { /*If: invalid input*/
+            fprintf(
+               stderr,
+               "-win-len %s; non-numeric / to large\n",
+               argAryStr[siArg]
+            );
+
+            goto err_fun03_sec03;
+         } /*If: invalid input*/
+      } /*Else If: window length for window scanning*/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec02 Sub05 Cat04:
+      +   - window error to var ratio
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(
+         ! eql_charCp(
+            (schar *) "-win-err",
+            (schar *) argAryStr[siArg],
+            (schar) '\0'
+         )
+      ){ /*Else If: window error to varaint ratio*/
+         ++siArg;
+         tmpStr = (schar *) argAryStr[siArg];
+
+         tmpStr +=
+            strToUI_base10str(
+                tmpStr,
+                &setSTPtr->winErrUI
+            );
+
+         if(*tmpStr != '\0')
+         { /*If: invalid input*/
+            fprintf(
+               stderr,
+               "-win-err %s; non-numeric / to large\n",
+               argAryStr[siArg]
+            );
+
+            goto err_fun03_sec03;
+         } /*If: invalid input*/
+      } /*Else If: window error to varaint ratio*/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec02 Sub05 Cat05:
       +   - min indel length
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1061,13 +1232,46 @@ input_mainEdClust(
       } /*Else If: min indel length*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat04:
+      + Fun03 Sec02 Sub05 Cat05:
+      +   - min indel length
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(
+         ! eql_charCp(
+            (schar *) "-indel-len",
+            (schar *) argAryStr[siArg],
+            (schar) '\0'
+         )
+      ){ /*Else If: min indel length*/
+         ++siArg;
+         tmpStr = (schar *) argAryStr[siArg];
+
+         tmpStr +=
+            strToUI_base10str(
+                tmpStr,
+                &setSTPtr->indelLenUI
+            );
+
+         if(*tmpStr != '\0')
+         { /*If: invalid input*/
+            fprintf(
+               stderr,
+               "-indel-len %s; non-numeric / to large\n",
+               argAryStr[siArg]
+            );
+
+            goto err_fun03_sec03;
+         } /*If: invalid input*/
+      } /*Else If: min indel length*/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec02 Sub05 Cat06:
       +   - min snp q-score (edDist and tbCon)
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-q-snp",
+            (schar *) "-clust-q-snp",
             (schar *) argAryStr[siArg],
             (schar) '\0'
          )
@@ -1091,13 +1295,11 @@ input_mainEdClust(
 
             goto err_fun03_sec03;
          } /*If: invalid input*/
-
-         conSetSTPtr->minQSI = setSTPtr->minSnpQUC;
       } /*Else If: min snp q-score*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat05:
-      +   - min snp q-score (edDist and tbCon)
+      + Fun03 Sec02 Sub05 Cat07:
+      +   - maximum percent of consensus masked
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
       else if(

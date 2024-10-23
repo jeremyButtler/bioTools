@@ -126,3 +126,9 @@ You can compare a reference or read mapped to the same
 edDist -sam reads.sam > distances.tsv
 edDist -sam reads.sam -ref ref.sam -cmp-read > distances.tsv
 ```
+
+# Updates:
+
+- 2024-10-18:
+  - set up so non-reference comparsion does not count N's
+    as different

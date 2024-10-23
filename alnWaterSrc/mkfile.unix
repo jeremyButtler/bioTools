@@ -1,41 +1,49 @@
 LD=cc
 CC=cc
-CFLAGS= -O3 -std=c89 -static
-CFLAGS= -Wall -Wextra
-NAME=samToAln
+CFLAGS= -O3 -std=c89 -Wall -Wextra
+NAME=alnWater
 PREFIX=/usr/local/bin
-O=o.static
+O=o.unix
 
 genAln=../genAln
 genLib=../genLib
 genBio=../genBio
 
 objFiles= \
-   $(genAln)/samToAln.$O \
+   $(genAln)/water.$O \
+   $(genAln)/dirMatrix.$O \
    $(genAln)/alnSet.$O \
    $(genLib)/base10str.$O \
+   $(genAln)/indexToCoord.$O \
    $(genBio)/samEntry.$O \
    $(genLib)/strAry.$O \
    $(genLib)/ulCp.$O \
    $(genLib)/numToStr.$O \
    $(genBio)/seqST.$O \
    $(genLib)/charCp.$O \
-   mainSamToAln.$O
+   $(genBio)/kmerCnt.$O \
+   mainWater.$O
 
-all: mainSamToAln.$O
+all: mainWater.$O
 	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
 
-mainSamToAln.$O: mainSamToAln.c $(genAln)/samToAln.$O $(genLib)/charCp.$O
-	$(CC) -o mainSamToAln.$O -c $(CFLAGS) mainSamToAln.c
+mainWater.$O: mainWater.c $(genAln)/water.$O $(genBio)/kmerCnt.$O
+	$(CC) -o mainWater.$O -c $(CFLAGS) mainWater.c
 
-$(genAln)/samToAln.$O: $(genAln)/samToAln.c $(genBio)/samEntry.$O $(genBio)/seqST.$O $(genAln)/alnSet.$O
-	$(CC) -o $(genAln)/samToAln.$O -c $(CFLAGS) $(genAln)/samToAln.c
+$(genAln)/water.$O: $(genAln)/water.c $(genAln)/dirMatrix.$O $(genLib)/genMath.h
+	$(CC) -o $(genAln)/water.$O -c $(CFLAGS) $(genAln)/water.c
+
+$(genAln)/dirMatrix.$O: $(genAln)/dirMatrix.c $(genAln)/alnSet.$O $(genAln)/indexToCoord.$O $(genBio)/samEntry.$O $(genBio)/seqST.$O $(genLib)/charCp.$O
+	$(CC) -o $(genAln)/dirMatrix.$O -c $(CFLAGS) $(genAln)/dirMatrix.c
 
 $(genAln)/alnSet.$O: $(genAln)/alnSet.c $(genAln)/alnDefs.h $(genLib)/base10str.$O $(genLib)/dataTypeShortHand.h
 	$(CC) -o $(genAln)/alnSet.$O -c $(CFLAGS) $(genAln)/alnSet.c
 
 $(genLib)/base10str.$O: $(genLib)/base10str.c $(genLib)/base10str.h
 	$(CC) -o $(genLib)/base10str.$O -c $(CFLAGS) $(genLib)/base10str.c
+
+$(genAln)/indexToCoord.$O: $(genAln)/indexToCoord.c
+	$(CC) -o $(genAln)/indexToCoord.$O -c $(CFLAGS) $(genAln)/indexToCoord.c
 
 $(genBio)/samEntry.$O: $(genBio)/samEntry.c $(genBio)/samEntry.h $(genLib)/strAry.$O $(genLib)/base10str.$O $(genLib)/numToStr.$O $(genBio)/ntTo5Bit.h $(genLib)/dataTypeShortHand.h
 	$(CC) -o $(genBio)/samEntry.$O -c $(CFLAGS) $(genBio)/samEntry.c
@@ -54,6 +62,9 @@ $(genBio)/seqST.$O: $(genBio)/seqST.c $(genBio)/seqST.h $(genLib)/ulCp.$O $(genL
 
 $(genLib)/charCp.$O: $(genLib)/charCp.c $(genLib)/charCp.h
 	$(CC) -o $(genLib)/charCp.$O -c $(CFLAGS) $(genLib)/charCp.c
+
+$(genBio)/kmerCnt.$O: $(genBio)/kmerCnt.c $(genBio)/kmerCnt.h $(genBio)/seqST.$O $(genBio)/ntTo2Bit.h $(genLib)/genMath.h
+	$(CC) -o $(genBio)/kmerCnt.$O -c $(CFLAGS) $(genBio)/kmerCnt.c
 
 install:
 	cp $(NAME) $(PREFIX)

@@ -1,3 +1,4 @@
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
 ' geneCoord SOF: Start Of File
 '   - holds the geneCoord struct and its supporting
 '     functions I use to read in gene positions form a paf
@@ -7,11 +8,11 @@
 '   o .h st: geneCoord
 '     - Holds the arrays for the gene coordinates and ids 
 '       in gene table
-'   o fun01: freeStack_geneCoord
+'   o fun02: freeStack_geneCoord
 '     - Frees the arrays in a geneCoord structure
-'   o fun02: freeHeap_geneCoord
+'   o fun03: freeHeap_geneCoord
 '     - Frees the a heap alloacted geneCoord structure
-'   o fun03: init_geneCoord
+'   o fun01: init_geneCoord
 '     - Initializes a geneCoord structure
 '   o fun04: mk_geneCoord
 '     - Makes a heap allocated geneCoord structure
@@ -65,53 +66,7 @@
 #include "../genLib/genMath.h" /*only max macro (in .h)*/
 
 /*-------------------------------------------------------\
-| Fun01: freeStack_geneCoord
-|    - Frees the arrays in a geneCoord structure
-| Input:
-|   - geneCoordST:
-|     o Pointer to a geneCoord structure with arrays to
-|       free
-| Output:
-|   - Frees:
-|     o idStrAry, startAryUI, and endAryUI (and sets to 0)
-\-------------------------------------------------------*/
-void
-freeStack_geneCoord(
-   struct geneCoord *geneCoordST
-){
-   free((geneCoordST)->idStrAry);
-   (geneCoordST)->idStrAry = 0;
-   
-   free((geneCoordST)->startAryUI);
-   (geneCoordST)->startAryUI = 0;
-   
-   free((geneCoordST)->endAryUI);
-   (geneCoordST)->endAryUI = 0;
-
-   free((geneCoordST)->dirAryUC);
-   (geneCoordST)->dirAryUC = 0;
-} /*freeStack_geneCoord*/
-
-/*-------------------------------------------------------\
-| Fun02: freeHeap_geneCoord
-|    - Frees the a heap alloacted geneCoord structure
-| Input:
-|   - geneCoordST:
-|     o Pointer to a geneCoord structure to free
-| Output:
-|   - Frees:
-|     o geneCoordST
-\-------------------------------------------------------*/
-void
-freeHeap_geneCoord(
-   struct geneCoord *geneCoordST
-){
-   if(geneCoordST) freeStack_geneCoord(geneCoordST);
-   free(geneCoordST);
-} /*freeHeap_geneCoord*/
-
-/*-------------------------------------------------------\
-| Fun03: init_geneCoord
+| Fun01: init_geneCoord
 |    - Initializes a geneCoord structure
 | Input:
 |   - geneCoordST:
@@ -125,10 +80,70 @@ init_geneCoord(
    struct geneCoord *geneCoordST
 ){
    geneCoordST->idStrAry = 0;
+   geneCoordST->refAryStr = 0;
+
    geneCoordST->startAryUI = 0;
    geneCoordST->endAryUI = 0;
+
    geneCoordST->dirAryUC = 0;
 } /*init_geneCoord*/
+
+/*-------------------------------------------------------\
+| Fun02: freeStack_geneCoord
+|    - Frees the arrays in a geneCoord structure
+| Input:
+|   - geneCoordST:
+|     o Pointer to a geneCoord structure with arrays to
+|       free
+| Output:
+|   - Frees:
+|     o idStrAry, startAryUI, and endAryUI (and sets to 0)
+\-------------------------------------------------------*/
+void
+freeStack_geneCoord(
+   struct geneCoord *geneCoordST
+){
+   if(! geneCoordST)
+      return;
+
+   if(geneCoordST->idStrAry)
+      free(geneCoordST->idStrAry);
+
+   if(geneCoordST->refAryStr)
+      free(geneCoordST->refAryStr);
+   
+   if(geneCoordST->startAryUI)
+      free(geneCoordST->startAryUI);
+
+   if(geneCoordST->endAryUI)
+      free(geneCoordST->endAryUI);
+
+   if(geneCoordST->dirAryUC)
+      free(geneCoordST->dirAryUC);
+
+   init_geneCoord(geneCoordST);
+} /*freeStack_geneCoord*/
+
+/*-------------------------------------------------------\
+| Fun03: freeHeap_geneCoord
+|    - Frees the a heap alloacted geneCoord structure
+| Input:
+|   - geneCoordST:
+|     o Pointer to a geneCoord structure to free
+| Output:
+|   - Frees:
+|     o geneCoordST
+\-------------------------------------------------------*/
+void
+freeHeap_geneCoord(
+   struct geneCoord *geneCoordST
+){
+   if(! geneCoordST)
+      return;
+
+   freeStack_geneCoord(geneCoordST);
+   free(geneCoordST);
+} /*freeHeap_geneCoord*/
 
 /*-------------------------------------------------------\
 | Fun04: mk_geneCoord
@@ -160,6 +175,12 @@ mk_geneCoord(
       calloc((numGenesUI), sizeof(*retST->idStrAry));
    
    if(! retST->idStrAry)
+      goto memErr_fun04;
+
+   retST->refAryStr =
+      calloc((numGenesUI), sizeof(*retST->refAryStr));
+   
+   if(! retST->refAryStr)
       goto memErr_fun04;
 
    retST->startAryUI= malloc((numGenesUI) * sizeof(uint));
@@ -314,6 +335,25 @@ swap_geneCoord(
 
   coordST->idStrAry[oneUL][ucSwap] = '\0';
   coordST->idStrAry[secUL][ucSwap] = '\0';
+
+  while(
+        coordST->refAryStr[oneUL][ucSwap] != '\0'
+     || coordST->refAryStr[secUL][ucSwap] != '\0'
+  ){ /*Loop: copy the gene name*/
+     coordST->refAryStr[oneUL][ucSwap] ^=
+        coordST->refAryStr[secUL][ucSwap];
+
+     coordST->refAryStr[secUL][ucSwap] ^=
+        coordST->refAryStr[oneUL][ucSwap];
+
+     coordST->refAryStr[oneUL][ucSwap] ^=
+        coordST->refAryStr[secUL][ucSwap];
+
+     ++ucSwap;
+  } /*Loop: copy the gene name*/
+
+  coordST->refAryStr[oneUL][ucSwap] = '\0';
+  coordST->refAryStr[secUL][ucSwap] = '\0';
 } /*swapScoreSTs*/
 
 /*-------------------------------------------------------\
@@ -886,19 +926,29 @@ getCoords_geneCoord(
       else                      /*new line or null*/
          goto invalidEntry_fun11_sec06_sub04;
 
-      ++cpStr; /*get off the tab*/
+      while(*cpStr == '\t' || *cpStr == ' ')
+         ++cpStr; /*get off white space*/
 
       /**************************************************\
       * Fun11 Sec05 Sub02:
-      *   - Move past the refernce id
+      *   - get refernce id
       \**************************************************/
 
-      while(*cpStr++ > 32) ; /*Move past reference id*/
+      dupStr = genesHeapST->refAryStr[*numGenesSI];
 
-      if(*(cpStr - 1) == '\t') ;      /*Expected*/
-      else if(*(cpStr - 1) == ' ') ;  /*Odd, but works*/
+      /*Copy the gene name*/
+      while(*cpStr > 32)
+         *dupStr++ = *cpStr++;
+
+      *dupStr = '\0';
+
+      if(*cpStr == '\t') ;      /*Expected*/
+      else if(*cpStr == ' ') ;  /*Odd, but works*/
       else                            /*new line or null*/
          goto invalidEntry_fun11_sec06_sub04;
+
+      while(*cpStr == '\t' || *cpStr == ' ')
+         ++cpStr; /*get off white space*/
 
       /**************************************************\
       * Fun11 Sec05 Sub03:
@@ -914,6 +964,9 @@ getCoords_geneCoord(
       else if(*(cpStr - 1) == ' ') ;  /*Odd, but works*/
       else                            /*new line or null*/
          goto invalidEntry_fun11_sec06_sub04;
+
+      while(*cpStr == '\t' || *cpStr == ' ')
+         ++cpStr; /*get off white space*/
 
       /**************************************************\
       * Fun11 Sec05 Sub04:
@@ -933,7 +986,8 @@ getCoords_geneCoord(
       else                      /*new line or null*/
          goto invalidEntry_fun11_sec06_sub04;
 
-      ++cpStr; /*Get off the tab*/
+      while(*cpStr == '\t' || *cpStr == ' ')
+         ++cpStr; /*get off white space*/
 
       /**************************************************\
       * Fun11 Sec05 Sub05:

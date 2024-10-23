@@ -149,9 +149,11 @@ typedef struct res_edDist res_edDist;
 /*settings: unique to clustST*/
 #define def_conRebuild_clustST 1    /*rebuild con once*/
 #define def_depthProfile_clustST 0  /*do depth profiling*/
+
 #define def_readErrRate_clustST 0.046f
 #define def_conErrRate_clustST 0.023f
-#define def_maxVarErrRatio_clustST 50
+#define def_maxVarErrRatio_clustST 100
+
 #define def_lenWeight_clustST 2.0f
 
 /*settings: for initial read filtering*/
@@ -164,7 +166,10 @@ typedef struct res_edDist res_edDist;
 #define def_minDepth_clustST 20
 #define def_indelLen_clustST 10
 #define def_minSnpQ_clustST 7
+
+#define def_minPercDepth_clustST 0.001f
 #define def_percOverlap_clustST 0.75f
+
 #define def_window_clustST 500
 #define def_windowError_clustST 200
 
@@ -209,6 +214,7 @@ typedef struct set_clustST
    unsigned int minAvgQUI; /*min mean q to keep read*/
    unsigned int minDepthUI;/*min cluster depth to keep*/
 
+   float minPercDepthF;   /*min % read depth for cluster*/
    float percOverlapF;
        /*minimum percentage of coverage the reference
        `  must have on the query. So, longer reads then
@@ -229,8 +235,8 @@ typedef struct set_clustST
       */
 
    /*variables for holding start/end of consensus*/
-   unsigned int startUI;
-   unsigned int endUI;
+   unsigned int startUI; /*work on removing one day*/
+   unsigned int endUI;   /*work on removing one day*/
    signed int clustSI;   /*cluster on*/
 }set_clustST;
 
@@ -268,7 +274,12 @@ typedef struct con_clustST
 {
    struct samEntry *samSTPtr; /*consensus sequence*/
    signed int clustSI;        /*cluster number*/
+
    unsigned long numReadsUL;  /*number reads in clust*/
+   unsigned long maxReadsUL;
+      /*number reads covering same coordinates as
+      ` cluster (do not have to be part of cluster)
+      */
    unsigned int startUI;      /*first ref base in clust*/
    unsigned int endUI;        /*last ref base in clust*/
 
@@ -811,9 +822,10 @@ cmpCons_clustST(
 |     o pointer to con_clustST struct list with
 |       consensuses to print
 |   - headerStr:
-|     o c-string with header to print 
+|     o c-string with header to print (null = no header)
 |   - pgHeadStr:
-|     o c-string with program header to print 
+|     o c-string with program header to print (null = no
+|       header)
 |   - buffStrPtr:
 |     o to c-string to print consensuses with
 |   - lenBuffULPtr:
@@ -895,7 +907,7 @@ getClust_clustST(
 |   - indexSTPtr:
 |     o pointer to index_clustST struct with clusters
 |   - pgHeadStr:
-|     o program header to print
+|     o program header to print (null = no print)
 |   - samSTPtr:
 |     o pointer to samEntry struct for reading sam file
 |   - buffStrPtr:
@@ -912,8 +924,8 @@ getClust_clustST(
 |     o lenBuffULPtr to have buffStrPtr size (if resized)
 |   - Returns:
 |     o 0 for no errors
-|     o def_memErr for memory errors
-|     o def_fileErr for file errors
+|     o def_memErr_clustST for memory errors
+|     o def_fileErr_clustST for file errors
 \-------------------------------------------------------*/
 signed char
 pbins_clustST(

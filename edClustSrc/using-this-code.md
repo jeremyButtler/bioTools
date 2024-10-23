@@ -3,6 +3,8 @@
 Not so great (terriable) guide on how to use edClust in
   your own program.
 
+This is out of date
+
 # Introduction:
 
 edClust is a slow program designed to cluster reads by

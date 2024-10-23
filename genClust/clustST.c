@@ -202,7 +202,9 @@ init_set_clustST(
    clustSetSTPtr->minMedQUI = def_minMedQ_clustST;
    clustSetSTPtr->minAvgQUI = def_minAvgQ_clustST;
 
+   clustSetSTPtr->minPercDepthF =def_minPercDepth_clustST;
    clustSetSTPtr->percOverlapF = def_percOverlap_clustST;
+
    clustSetSTPtr->winSizeUI = def_window_clustST;
    clustSetSTPtr->winErrUI = def_windowError_clustST;
 
@@ -793,6 +795,7 @@ blank_con_clustST(
 
    conSTPtr->clustSI = 0;
    conSTPtr->numReadsUL = 0;
+   conSTPtr->maxReadsUL = 0;
    conSTPtr->numVarUI = 0;
    conSTPtr->startUI = 0;
    conSTPtr->endUI = 0;
@@ -1978,6 +1981,21 @@ cmpCons_clustST(
    if(1 - distPercF <= clustSetSTPtr->maxConSimF)
       return 0; /*to much difference*/
 
+   distSL =
+      percDist_edDist(
+        edDistResSTPtr,
+        clustSetSTPtr->winSizeUI,
+        clustSetSTPtr->conErrRateF
+      );
+
+   if(
+           edDistResSTPtr->overlapUI
+        >= clustSetSTPtr->winSizeUI
+     &&
+           edDistResSTPtr->probMaxWinUI
+        > clustSetSTPtr->winErrUI
+   ) return 0; /*window scan found difference region*/
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun23 Sec03:
    ^   - merge similar consensus
@@ -2090,9 +2108,10 @@ cmpCons_clustST(
 |     o pointer to con_clustST struct list with
 |       consensuses to print
 |   - headerStr:
-|     o c-string with header to print 
+|     o c-string with header to print (null = no header)
 |   - pgHeadStr:
-|     o c-string with program header to print 
+|     o c-string with program header to print (null = no
+|       header)
 |   - buffStrPtr:
 |     o to c-string to print consensuses with
 |   - lenBuffULPtr:
@@ -2123,16 +2142,29 @@ plist_con_clustST(
    schar *tmpStr = 0;
    struct samEntry *samSTPtr = 0;
 
-   fprintf(
-      outFILE,
-      "%s%s",
-      headerStr,
-      pgHeadStr
-   ); /*print headers for sam file*/
+   if(headerStr)
+      fprintf(
+         outFILE,
+         "%s",
+         headerStr
+      ); /*print headers for sam file*/
+
+   if(pgHeadStr)
+      fprintf(
+         outFILE,
+         "%s",
+         pgHeadStr
+      ); /*prints the program header for sam file*/
 
    while(conSTPtr)
    { /*Loop: print consensuses*/
       samSTPtr = conSTPtr->samSTPtr;
+
+      if(! samSTPtr)
+      { /*If: cluster is empty*/
+         conSTPtr = conSTPtr->nextST;
+         continue;
+      } /*If: cluster is empty*/
 
       /*most of time query id not informative*/
       tmpStr = samSTPtr->qryIdStr;
@@ -2400,7 +2432,7 @@ getClust_clustST(
 |   - indexSTPtr:
 |     o pointer to index_clustST struct with clusters
 |   - pgHeadStr:
-|     o program header to print
+|     o program header to print (null = no print)
 |   - samSTPtr:
 |     o pointer to samEntry struct for reading sam file
 |   - buffStrPtr:
@@ -2417,8 +2449,8 @@ getClust_clustST(
 |     o lenBuffULPtr to have buffStrPtr size (if resized)
 |   - Returns:
 |     o 0 for no errors
-|     o def_memErr for memory errors
-|     o def_fileErr for file errors
+|     o def_memErr_clustST for memory errors
+|     o def_fileErr_clustST for file errors
 \-------------------------------------------------------*/
 signed char
 pbins_clustST(
@@ -2499,7 +2531,7 @@ pbins_clustST(
    if(clustSI > 0)
       clustHeapAryBl =
          calloc(
-            clustSI,
+            clustSI + 1,
             sizeof(schar)
          );
    else
@@ -2673,10 +2705,16 @@ pbins_clustST(
 
           fprintf(
              outFILE,
-             "%s%s",
-             headHeapStr, /*has new line at end*/
-             pgHeadStr
+             "%s",
+             headHeapStr /*has new line at end*/
           ); /*print header for sam file*/
+
+          if(pgHeadStr)
+             fprintf(
+                outFILE,
+                "%s",
+                pgHeadStr
+             ); /*print header for sam file*/
 
           clustHeapAryBl[
              indexSTPtr->clustArySI[lineSL]
@@ -2735,40 +2773,39 @@ pbins_clustST(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    errSC = 0;
-   goto ret_fun26_sec05;
+      goto ret_fun26_sec05;
 
 
    memErr_fun26_sec05:;
-   errSC = def_memErr_clustST;
-   goto ret_fun26_sec05;
+      errSC = def_memErr_clustST;
+      goto ret_fun26_sec05;
 
 
    fileErr_fun26_sec05:;
-   errSC = def_fileErr_clustST;
-   goto ret_fun26_sec05;
+      errSC = def_fileErr_clustST;
+      goto ret_fun26_sec05;
 
 
    ret_fun26_sec05:;
+      if(outFILE)
+         fclose(outFILE);
+      outFILE = 0;
 
-   if(outFILE)
-      fclose(outFILE);
-   outFILE = 0;
+      if(headHeapStr)
+         free(headHeapStr);
+      headHeapStr = 0;
 
-   if(headHeapStr)
-      free(headHeapStr);
-   headHeapStr = 0;
+      if(clustHeapAryBl)
+         free(clustHeapAryBl);
+      clustHeapAryBl = 0;
 
-   if(clustHeapAryBl)
-      free(clustHeapAryBl);
-   clustHeapAryBl = 0;
+      fseek(
+         samFILE,
+         0,
+         SEEK_SET
+      );
 
-   fseek(
-      samFILE,
-      0,
-      SEEK_SET
-   );
-
-   return errSC;
+      return errSC;
 } /*pbins_clustST*/
 
 /*-------------------------------------------------------\

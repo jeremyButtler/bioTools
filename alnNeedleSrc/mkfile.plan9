@@ -1,6 +1,6 @@
 <$objtype/mkfile
 CFLAGS= -DPLAN9
-NAME=alnwater
+NAME=alnNeedle
 PREFIX=$home/bin
 
 genAln=../genAln
@@ -8,7 +8,7 @@ genLib=../genLib
 genBio=../genBio
 
 objFiles= \
-   $genAln/water.$O \
+   $genAln/needle.$O \
    $genAln/dirMatrix.$O \
    $genAln/alnSet.$O \
    $genLib/base10str.$O \
@@ -20,16 +20,16 @@ objFiles= \
    $genBio/seqST.$O \
    $genLib/charCp.$O \
    $genBio/kmerCnt.$O \
-   mainWater.$O
+   mainNeedle.$O
 
-all: mainWater.$O
+all: mainNeedle.$O
 	$LD -o $NAME $CFLAGS $objFiles
 
-mainWater.$O: mainWater.c $genAln/water.$O $genBio/kmerCnt.$O
-	$CC -o mainWater.$O  $CFLAGS mainWater.c
+mainNeedle.$O: mainNeedle.c $genAln/needle.$O $genBio/kmerCnt.$O
+	$CC -o mainNeedle.$O  $CFLAGS mainNeedle.c
 
-$genAln/water.$O: $genAln/water.c $genAln/dirMatrix.$O $genLib/genMath.h
-	$CC -o $genAln/water.$O  $CFLAGS $genAln/water.c
+$genAln/needle.$O: $genAln/needle.c $genAln/dirMatrix.$O $genLib/genMath.h
+	$CC -o $genAln/needle.$O  $CFLAGS $genAln/needle.c
 
 $genAln/dirMatrix.$O: $genAln/dirMatrix.c $genAln/alnSet.$O $genAln/indexToCoord.$O $genBio/samEntry.$O $genBio/seqST.$O $genLib/charCp.$O
 	$CC -o $genAln/dirMatrix.$O  $CFLAGS $genAln/dirMatrix.c

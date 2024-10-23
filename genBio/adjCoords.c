@@ -81,8 +81,13 @@ adjCoords(
    if(siIndx == -1)
       goto noGene_fun01;
 
+   /*sam files will have gene if reference orientaiton,
+   '  while the coordinates will be in reading frame
+   */
    if(coordsSTPtr->dirAryUC[siIndx])
    { /*If: this was an reverse complement gene*/
+      revCmp_samEntry(samSTPtr);
+         
       samSTPtr->refStartUI = 
            coordsSTPtr->endAryUI[siIndx]
          - samSTPtr->refStartUI

@@ -1,10 +1,13 @@
 # Use:
 
 Clusters mapped reads by a modified edit distance. This
-  is slow.
+  is slow and often only clusters a fraction of reads.
 
-Note: edit distance only compares large insertion length,
-  it does not re-align overlapping insertion regions.
+Note: for insertions; edit distance only compares the
+  insertion size (large insertion only). it does not
+  re-align overlapping insertion regions.
+
+Plenty of alternatives (ex. Hairsplitter).
 
 # License
 
@@ -147,11 +150,17 @@ The scoring formula is score = floor(floor(log10(aligned length)) * weight) + fl
 
 In the clustering step the read with the highest score
   (best read) is chosen. The edit distance to other reads
-  overlapping the "best read" by 75% is found. The edit
+  overlapping the "best read" is found. The edit
   distance is divided by the expected number of errors
   (error rate (4.6%) * overlap length) to get
   the percentage of variants to errors. Reads with
   percentages over 10% are not clustered.
+
+For reads with having at least one window (at least 500
+  bases), the maximum window error rate is used to scan
+  for regions that have a high number of differences.
+  Not very complex, just gets the number of varaints in
+  each 500 base long chunk.
 
 For clusters with to few reads, the best read is discarded
   and a new best read is found.
@@ -169,10 +178,24 @@ Consensuses with to many masked bases are discarded. This
 The consensus is then compared to past built consensuses.
   Highly similar (> 99%) consensuses are merged (including
   their reads) into a single cluster. The reads assigned
-  to the cluster are removed from the pool of reads.
+  to the cluster are removed from the pool of reads. If
+  long enough, windows are also used to see if same.
 
 A new best read is then found and the cycle repeats until
   the number of reads remaining is less then the min read
   depth.
+
+After clustering, consensuses sharing 75% overlap
+  and a similarity > 99% are merged. Window scanning is
+  also done to separate out long reads with regions with
+  large differnces.
+
+After merging, the percentage of mapped reads filtering
+  step is done. First, the number of reads mapping with
+  at least a 75% overlap to each clusters positions is
+  found. Then the percentage of depth for the cluster is
+  found (number clustered reads) / (number reads).
+  Clusters with low read depth percentages (under 0.1%)
+  are removed.
 
 As you can guess, this will take some time to run.

@@ -1,4 +1,3 @@
-b adjCoords.c:616
-b adjCoordsFun.c:93
+b mainAdjCoords.c:819
 
-r -coords ../freezeTBFiles/gene-tbl.tsv -sam ~/Downloads/tmp-gene-noAdj.sam
+r -coords /usr/local/share/freezeTBFiles/coords.tsv -sam test.sam

@@ -677,8 +677,18 @@ readCmpDist_edDist(
                +   - add base to window and edit distance
                \++++++++++++++++++++++++++++++++++++++++*/
 
+               ++resSTPtr->edDistSL;
+               ++winDistUI;
+
+               /*++++++++++++++++++++++++++++++++++++++++\
+               + Fun06 Sec05 Sub03 Cat05:
+               +   - move to next nucleotide
+               \++++++++++++++++++++++++++++++++++++++++*/
+
+               nextNt_fun06_sec05_sub03_cat05:;
+
                if(baseInWinUI >= winSizeUI)
-               { /*If: complete a window*/
+               { /*If: completed a window*/
                   ++resSTPtr->numFullWinUI;
 
                   resSTPtr->maxWinDistUI =
@@ -695,17 +705,7 @@ readCmpDist_edDist(
 
                   winDistUI = 0;
                   baseInWinUI = 0;
-               } /*If: complete a window*/
-
-               ++resSTPtr->edDistSL;
-               ++winDistUI;
-
-               /*++++++++++++++++++++++++++++++++++++++++\
-               + Fun06 Sec05 Sub03 Cat05:
-               +   - move to next nucleotide
-               \++++++++++++++++++++++++++++++++++++++++*/
-
-               nextNt_fun06_sec05_sub03_cat05:;
+               } /*If: completed a window*/
 
                ++baseInWinUI;
                ++uiQry;
@@ -1399,6 +1399,10 @@ dist_edDist(
                   if(qUC < minQUC)
                      goto nextNt_fun07_sec04_sub03_cat03;
                } /*If: have query q-score entry*/
+
+               if(qrySTPtr->seqStr[uiQry] == ('N' & ~32))
+                  goto nextNt_fun07_sec04_sub03_cat03;
+                  /*not counting masked bases*/
 
                if(baseInWinUI >= winSizeUI)
                { /*If: complete a window*/

@@ -396,12 +396,17 @@ phelp_mainFiltsam(
 
    fprintf(
       outFILE,
-      "        - First line is an header (ignored)\n"
+      "        - same format as adjCoords/ampDepth\n"
    );
 
    fprintf(
       outFILE,
-      "        - Remaing lines `ignored\tstart\tend`\n"
+      "        - first line is header (not used)\n"
+   );
+
+   fprintf(
+      outFILE,
+      "        - ignored\tignored\tignored\tstart\tend\n"
    );
 
 
@@ -521,6 +526,7 @@ readCoordsFile(
 
    sint lineSI = 0;
    sint errSI = 0;
+   uchar uiIter = 0;
 
    #define lenBuffSI 1024
    schar buffStr[lenBuffSI];
@@ -585,27 +591,37 @@ readCoordsFile(
       *   - get past the ignored entry
       \**************************************************/
 
-      while(*tmpStr++ > 32) ;
+      for(
+         uiIter = 0;
+         uiIter < 3;
+         ++uiIter
+      ){ /*Loop: move past ignored entries*/
+         while(*tmpStr++ > 32) ;
 
-      if(*tmpStr == '\0' || *tmpStr == '\n')
-      { /*If: The user input no coordiantes*/
-         errSI = (lineSI << 8) | 4;
-         goto cleanUp_fun03_sec04;
-      } /*If: The user input no coordiantes*/
-      
-      while(*tmpStr++ < 33)
-      { /*Loop: Until I am off the ignored entry*/
-         if(*tmpStr == '\0')
-            break;
-      } /*Loop: Until I am off the ignored entry*/
+         if(*tmpStr == '\0' || *tmpStr == '\n')
+         { /*If: The user input no coordiantes*/
+            errSI = (lineSI << 8) | 4;
+            goto cleanUp_fun03_sec04;
+         } /*If: The user input no coordiantes*/
+         
+         while(*tmpStr++ < 33)
+         { /*Loop: Until I am off the ignored entry*/
+            if(*tmpStr == '\0')
+               break;
+         } /*Loop: Until I am off the ignored entry*/
 
-      if(*tmpStr == '\0' || *tmpStr == '\n')
-      { /*If: The user input no coordiantes*/
-         errSI = (lineSI << 8) | 4;
-         goto cleanUp_fun03_sec04;
-      } /*If: The user input no coordiantes*/
+         if(*tmpStr == '\0' || *tmpStr == '\n')
+         { /*If: The user input no coordiantes*/
+            errSI = (lineSI << 8) | 4;
+            goto cleanUp_fun03_sec04;
+         } /*If: The user input no coordiantes*/
 
-      --tmpStr;
+         --tmpStr;
+      } /*Loop: move past ignored entries*/
+
+      /*query id, reference id, direction; idea is to keep
+      `  same format as needed for adjCoords and ampDepth
+      */
 
       /**************************************************\
       * Fun03 Sec03 Sub03:

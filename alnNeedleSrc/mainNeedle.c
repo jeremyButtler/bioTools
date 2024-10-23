@@ -1,13 +1,13 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-' mainWater SOF: Start Of File
+' mainNeedle SOF: Start Of File
 '   - does a using a waterman smith aligment
 '   o header:
 '     - included libraries
-'   o fun01: pversion_mainWater
-'     - prints version number for mainWater
-'   o fun02: phelp_mainWater
-'     - prints help message for mainWater
-'   o fun03: input_mainWater
+'   o fun01: pversion_mainNeedle
+'     - prints version number for mainNeedle
+'   o fun02: phelp_mainNeedle
+'     - prints help message for mainNeedle
+'   o fun03: input_mainNeedle
 '     - gets user input
 '   o main:
 '     - driver function to do a waterman alignment
@@ -38,7 +38,7 @@
 
 #include "../genAln/alnSet.h"
 #include "../genAln/dirMatrix.h"
-#include "../genAln/water.h"
+#include "../genAln/needle.h"
 
 /*.h files only*/
 #include "../genLib/dataTypeShortHand.h"
@@ -56,19 +56,19 @@
 !   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-#define def_year_mainWater 2024
-#define def_month_mainWater 8
-#define def_day_mainWater 24
+#define def_year_mainNeedle 2024
+#define def_month_mainNeedle 8
+#define def_day_mainNeedle 24
 
-#define def_fqFile_mainWater 0
-#define def_faFile_mainWater 1
+#define def_fqFile_mainNeedle 0
+#define def_faFile_mainNeedle 1
 
-#define def_lenKmer_mainWater 5
-#define def_kmerScan_mainWater 0 /*scan for kmers*/
+#define def_lenKmer_mainNeedle 5
+#define def_kmerScan_mainNeedle 0 /*scan for kmers*/
 
 /*-------------------------------------------------------\
-| Fun01: pversion_mainWater
-|   - prints version number for mainWater
+| Fun01: pversion_mainNeedle
+|   - prints version number for mainNeedle
 | Input:
 |   - outFILE:
 |     o file to print version number to
@@ -77,21 +77,21 @@
 |     o version number to outFILE
 \-------------------------------------------------------*/
 void
-pversion_mainWater(
+pversion_mainNeedle(
    void *outFILE
 ){
    fprintf(
       (FILE *) outFILE,
-      "mainWater version: %i-%02i-%02i\n",
-      def_year_mainWater,
-      def_month_mainWater,
-      def_day_mainWater
+      "mainNeedle version: %i-%02i-%02i\n",
+      def_year_mainNeedle,
+      def_month_mainNeedle,
+      def_day_mainNeedle
    );
-} /*pversion_mainWater*/
+} /*pversion_mainNeedle*/
 
 /*-------------------------------------------------------\
-| Fun02: phelp_mainWater
-|   - prints help message for mainWater
+| Fun02: phelp_mainNeedle
+|   - prints help message for mainNeedle
 | Input:
 |   - outFILE:
 |     o file to print help message to
@@ -100,11 +100,11 @@ pversion_mainWater(
 |     o help message to outFILE
 \-------------------------------------------------------*/
 void
-phelp_mainWater(
+phelp_mainNeedle(
    void *outFILE
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun02 TOC:
-   '   - prints help message for mainWater
+   '   - prints help message for mainNeedle
    '   o fun02 sec01:
    '     - print usage block
    '   o fun02 sec02:
@@ -120,7 +120,7 @@ phelp_mainWater(
 
    fprintf(
       (FILE *) outFILE,
-      "mainWater -qry query.fa -ref ref.fa > out.aln\n"
+      "mainNeedle -qry query.fa -ref ref.fa > out.aln\n"
    );
 
    fprintf(
@@ -241,7 +241,7 @@ phelp_mainWater(
    +   - kmer scanning
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   if(def_kmerScan_mainWater)
+   if(def_kmerScan_mainNeedle)
       fprintf(
          (FILE *) outFILE,
          "  -scan: [Optional; Yes]\n"
@@ -354,10 +354,10 @@ phelp_mainWater(
       (FILE *) outFILE,
       "  - prints alignment(s) to -out file or stdout\n"
    );
-} /*phelp_mainWater*/
+} /*phelp_mainNeedle*/
 
 /*-------------------------------------------------------\
-| Fun03: input_mainWater
+| Fun03: input_mainNeedle
 |   - gets user input
 | Input:
 |   - numArgsSI:
@@ -394,7 +394,7 @@ phelp_mainWater(
 |     o 2 for unkown input
 \-------------------------------------------------------*/
 schar
-input_mainWater(
+input_mainNeedle(
    int numArgsSI,
    char *argAryStr[],
    schar **refFileStrPtr,
@@ -436,7 +436,7 @@ input_mainWater(
 
    if(numArgsSI == 1)
    { /*If: nothing input*/
-      phelp_mainWater(stdout);
+      phelp_mainNeedle(stdout);
       goto phelp_fun03_sec04;
    } /*If: nothing input*/
 
@@ -473,7 +473,7 @@ input_mainWater(
       ){ /*If: is reference (as fasta)*/
          ++siArg;
          *refFileStrPtr = (schar *) argAryStr[siArg];
-         *refTypeSCPtr = def_faFile_mainWater;
+         *refTypeSCPtr = def_faFile_mainNeedle;
       } /*If: is reference (as fasta)*/
 
       else if(
@@ -485,7 +485,7 @@ input_mainWater(
       ){ /*Else If: is reference (as fastq)*/
          ++siArg;
          *refFileStrPtr = (schar *) argAryStr[siArg];
-         *refTypeSCPtr = def_fqFile_mainWater;
+         *refTypeSCPtr = def_fqFile_mainNeedle;
       } /*Else If: is reference (as fastq)*/
 
       else if(
@@ -497,7 +497,7 @@ input_mainWater(
       ){ /*Else If: is query (as fasta)*/
          ++siArg;
          *qryFileStrPtr = (schar *) argAryStr[siArg];
-         *qryTypeSCPtr = def_faFile_mainWater;
+         *qryTypeSCPtr = def_faFile_mainNeedle;
       } /*Else If: is query (as fasta)*/
 
       else if(
@@ -509,7 +509,7 @@ input_mainWater(
       ){ /*Else If: is query (as fastq)*/
          ++siArg;
          *qryFileStrPtr = (schar *) argAryStr[siArg];
-         *qryTypeSCPtr = def_fqFile_mainWater;
+         *qryTypeSCPtr = def_fqFile_mainNeedle;
       } /*Else If: is query (as fastq)*/
 
       else if(
@@ -743,7 +743,7 @@ input_mainWater(
             (schar) '\0'
          )
       ){ /*Else If: help message requested*/
-         phelp_mainWater(stdout);
+         phelp_mainNeedle(stdout);
          goto pversion_fun03_sec04;
       } /*Else If: help message requested*/
 
@@ -754,7 +754,7 @@ input_mainWater(
             (schar) '\0'
          )
       ){ /*Else If: help message requested*/
-         phelp_mainWater(stdout);
+         phelp_mainNeedle(stdout);
          goto pversion_fun03_sec04;
       } /*Else If: help message requested*/
 
@@ -765,7 +765,7 @@ input_mainWater(
             (schar) '\0'
          )
       ){ /*Else If: help message requested*/
-         phelp_mainWater(stdout);
+         phelp_mainNeedle(stdout);
          goto pversion_fun03_sec04;
       } /*Else If: help message requested*/
 
@@ -776,7 +776,7 @@ input_mainWater(
             (schar) '\0'
          )
       ){ /*Else If: help message requested*/
-         phelp_mainWater(stdout);
+         phelp_mainNeedle(stdout);
          goto pversion_fun03_sec04;
       } /*Else If: help message requested*/
 
@@ -787,7 +787,7 @@ input_mainWater(
             (schar) '\0'
          )
       ){ /*Else If: help message requested*/
-         phelp_mainWater(stdout);
+         phelp_mainNeedle(stdout);
          goto pversion_fun03_sec04;
       } /*Else If: help message requested*/
 
@@ -803,7 +803,7 @@ input_mainWater(
             (schar) '\0'
          )
       ){ /*Else If: version number requested*/
-         pversion_mainWater(stdout);
+         pversion_mainNeedle(stdout);
          goto pversion_fun03_sec04;
       } /*Else If: version number requested*/
 
@@ -814,7 +814,7 @@ input_mainWater(
             (schar) '\0'
          )
       ){ /*Else If: version number requested*/
-         pversion_mainWater(stdout);
+         pversion_mainNeedle(stdout);
          goto pversion_fun03_sec04;
       } /*Else If: version number requested*/
 
@@ -825,7 +825,7 @@ input_mainWater(
             (schar) '\0'
          )
       ){ /*Else If: version number requested*/
-         pversion_mainWater(stdout);
+         pversion_mainNeedle(stdout);
          goto pversion_fun03_sec04;
       } /*Else If: version number requested*/
 
@@ -836,7 +836,7 @@ input_mainWater(
             (schar) '\0'
          )
       ){ /*Else If: version number requested*/
-         pversion_mainWater(stdout);
+         pversion_mainNeedle(stdout);
          goto pversion_fun03_sec04;
       } /*Else If: version number requested*/
 
@@ -847,7 +847,7 @@ input_mainWater(
             (schar) '\0'
          )
       ){ /*Else If: version number requested*/
-         pversion_mainWater(stdout);
+         pversion_mainNeedle(stdout);
          goto pversion_fun03_sec04;
       } /*Else If: version number requested*/
 
@@ -906,7 +906,7 @@ input_mainWater(
 
    matrixFILE = 0;
    return errSC;
-} /*input_mainWater*/
+} /*input_mainNeedle*/
 
 /*-------------------------------------------------------\
 | Main:
@@ -947,14 +947,14 @@ main(
    slong seqSL = 0;   /*query sequence on*/
    uint numAnonUI = 0; /*through away*/
    schar *tmpStr = 0;
-   schar kmerScanBl = def_kmerScan_mainWater;
+   schar kmerScanBl = def_kmerScan_mainNeedle;
      /*scan for direction using kmers*/
 
    schar *qryFileStr = 0;
-   schar qryTypeSC = def_fqFile_mainWater;
+   schar qryTypeSC = def_fqFile_mainNeedle;
 
    schar *refFileStr = 0;
-   schar refTypeSC = def_fqFile_mainWater;
+   schar refTypeSC = def_fqFile_mainNeedle;
 
    schar *outFileStr = 0;
 
@@ -968,7 +968,7 @@ main(
    ulong lenBuffUL = 0;
 
    struct kmerCnt kmerStackST;
-   uchar lenKmerUC = def_lenKmer_mainWater;
+   uchar lenKmerUC = def_lenKmer_mainNeedle;
    uint maxKmerUI = 0;
    sint numKmersSI = 0;
    sint *kmerHeapArySI = 0;
@@ -1019,7 +1019,7 @@ main(
    \*****************************************************/
 
    errSC =
-      input_mainWater(
+      input_mainNeedle(
          numArgsSI,
          argAryStr,
          &refFileStr,
@@ -1086,7 +1086,7 @@ main(
 
    if(! seqFILE)
    { /*If: file error*/
-      if(refTypeSC == def_fqFile_mainWater)
+      if(refTypeSC == def_fqFile_mainNeedle)
          fprintf( stderr,
             "could not open -ref-fq %s\n",
             refFileStr
@@ -1111,7 +1111,7 @@ main(
       lenKmerUC
    );
 
-   if(refTypeSC == def_fqFile_mainWater)
+   if(refTypeSC == def_fqFile_mainNeedle)
    { /*If: reading from fastq file*/
       errSC =
          getFqSeq_seqST(
@@ -1168,7 +1168,7 @@ main(
             "file error with"
          );
 
-      if(refTypeSC == def_fqFile_mainWater)
+      if(refTypeSC == def_fqFile_mainNeedle)
          fprintf(
            stderr,
            " -ref-fq %s\n",
@@ -1222,7 +1222,7 @@ main(
 
    if(! seqFILE)
    { /*If: file error*/
-      if(qryTypeSC == def_fqFile_mainWater)
+      if(qryTypeSC == def_fqFile_mainNeedle)
          fprintf( stderr,
             "could not open -qry-fq %s\n",
             qryFileStr
@@ -1242,7 +1242,7 @@ main(
    +   - get query sequence
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   if(qryTypeSC == def_fqFile_mainWater)
+   if(qryTypeSC == def_fqFile_mainNeedle)
    { /*If: reading from fastq file*/
       errSC =
          getFqSeq_seqST(
@@ -1281,7 +1281,7 @@ main(
             "file error with"
          );
 
-      if(qryTypeSC == def_fqFile_mainWater)
+      if(qryTypeSC == def_fqFile_mainNeedle)
          fprintf(
            stderr,
            " -qry-fq %s\n",
@@ -1368,11 +1368,11 @@ main(
       fprintf(
         outFILE,
         "@PG\tID:%s\tVN:%i-%02i-%02i\t%s",
-        "mainWater",
-        def_year_mainWater,
-        def_month_mainWater,
-        def_day_mainWater,
-        "mainWater"
+        "alnNeedle",
+        def_year_mainNeedle,
+        def_month_mainNeedle,
+        def_day_mainNeedle,
+        "mainNeedle"
      ); /*print out first part of program id tag*/
 
       for(
@@ -1442,7 +1442,7 @@ main(
       seqToIndex_alnSet(qryStackST.seqStr);
 
       scoreSL =
-         water(
+         needle(
             &qryStackST,
             refSTPtr,
             &matrixStackST,
@@ -1518,7 +1518,7 @@ main(
       *   - get next query sequence
       \**************************************************/
 
-      if(qryTypeSC == def_fqFile_mainWater)
+      if(qryTypeSC == def_fqFile_mainNeedle)
       { /*If: reading from fastq file*/
          errSC =
             getFqSeq_seqST(

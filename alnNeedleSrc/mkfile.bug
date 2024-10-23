@@ -1,41 +1,49 @@
 LD=cc
 CC=cc
-CFLAGS= -O3 -std=c89 -static
-CFLAGS= -Wall -Wextra
-NAME=samToAln
+CFLAGS= -O0 -std=c89 -Wall -Wextra -Werror -ggdb -g
+NAME=alnNeedle
 PREFIX=/usr/local/bin
-O=o.static
+O=o.bug
 
 genAln=../genAln
 genLib=../genLib
 genBio=../genBio
 
 objFiles= \
-   $(genAln)/samToAln.$O \
+   $(genAln)/needle.$O \
+   $(genAln)/dirMatrix.$O \
    $(genAln)/alnSet.$O \
    $(genLib)/base10str.$O \
+   $(genAln)/indexToCoord.$O \
    $(genBio)/samEntry.$O \
    $(genLib)/strAry.$O \
    $(genLib)/ulCp.$O \
    $(genLib)/numToStr.$O \
    $(genBio)/seqST.$O \
    $(genLib)/charCp.$O \
-   mainSamToAln.$O
+   $(genBio)/kmerCnt.$O \
+   mainNeedle.$O
 
-all: mainSamToAln.$O
+all: mainNeedle.$O
 	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
 
-mainSamToAln.$O: mainSamToAln.c $(genAln)/samToAln.$O $(genLib)/charCp.$O
-	$(CC) -o mainSamToAln.$O -c $(CFLAGS) mainSamToAln.c
+mainNeedle.$O: mainNeedle.c $(genAln)/needle.$O $(genBio)/kmerCnt.$O
+	$(CC) -o mainNeedle.$O -c $(CFLAGS) mainNeedle.c
 
-$(genAln)/samToAln.$O: $(genAln)/samToAln.c $(genBio)/samEntry.$O $(genBio)/seqST.$O $(genAln)/alnSet.$O
-	$(CC) -o $(genAln)/samToAln.$O -c $(CFLAGS) $(genAln)/samToAln.c
+$(genAln)/needle.$O: $(genAln)/needle.c $(genAln)/dirMatrix.$O $(genLib)/genMath.h
+	$(CC) -o $(genAln)/needle.$O -c $(CFLAGS) $(genAln)/needle.c
+
+$(genAln)/dirMatrix.$O: $(genAln)/dirMatrix.c $(genAln)/alnSet.$O $(genAln)/indexToCoord.$O $(genBio)/samEntry.$O $(genBio)/seqST.$O $(genLib)/charCp.$O
+	$(CC) -o $(genAln)/dirMatrix.$O -c $(CFLAGS) $(genAln)/dirMatrix.c
 
 $(genAln)/alnSet.$O: $(genAln)/alnSet.c $(genAln)/alnDefs.h $(genLib)/base10str.$O $(genLib)/dataTypeShortHand.h
 	$(CC) -o $(genAln)/alnSet.$O -c $(CFLAGS) $(genAln)/alnSet.c
 
 $(genLib)/base10str.$O: $(genLib)/base10str.c $(genLib)/base10str.h
 	$(CC) -o $(genLib)/base10str.$O -c $(CFLAGS) $(genLib)/base10str.c
+
+$(genAln)/indexToCoord.$O: $(genAln)/indexToCoord.c
+	$(CC) -o $(genAln)/indexToCoord.$O -c $(CFLAGS) $(genAln)/indexToCoord.c
 
 $(genBio)/samEntry.$O: $(genBio)/samEntry.c $(genBio)/samEntry.h $(genLib)/strAry.$O $(genLib)/base10str.$O $(genLib)/numToStr.$O $(genBio)/ntTo5Bit.h $(genLib)/dataTypeShortHand.h
 	$(CC) -o $(genBio)/samEntry.$O -c $(CFLAGS) $(genBio)/samEntry.c
@@ -55,9 +63,10 @@ $(genBio)/seqST.$O: $(genBio)/seqST.c $(genBio)/seqST.h $(genLib)/ulCp.$O $(genL
 $(genLib)/charCp.$O: $(genLib)/charCp.c $(genLib)/charCp.h
 	$(CC) -o $(genLib)/charCp.$O -c $(CFLAGS) $(genLib)/charCp.c
 
-install:
-	cp $(NAME) $(PREFIX)
-	chmod a+x $(PREFIX)/$(NAME)
+$(genBio)/kmerCnt.$O: $(genBio)/kmerCnt.c $(genBio)/kmerCnt.h $(genBio)/seqST.$O $(genBio)/ntTo2Bit.h $(genLib)/genMath.h
+	$(CC) -o $(genBio)/kmerCnt.$O -c $(CFLAGS) $(genBio)/kmerCnt.c
+
+
 
 clean:
 	rm $(objFiles)

@@ -1,0 +1,5 @@
+b needle.c:1115
+
+#r -ref ref.fa -qry qry.fa
+#r -ref /home/reason/files/testing/PA-ref.fa -qry /home/reason/files/testing/PA-qry.fa
+r -ref refs.fa -qry del.fa

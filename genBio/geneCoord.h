@@ -8,11 +8,11 @@
 '   o .h st: geneCoord
 '     - Holds the arrays for the gene coordinates and ids 
 '       in an gene coordiantes table
-'   o fun01: freeStack_geneCoord
+'   o fun02: freeStack_geneCoord
 '     - Frees the arrays in a geneCoord structure
-'   o fun02: freeHeap_geneCoord
+'   o fun03: freeHeap_geneCoord
 '     - Frees the a heap alloacted geneCoord structure
-'   o fun03: init_geneCoord
+'   o fun01: init_geneCoord
 '     - Initializes a geneCoord structure
 '   o fun04: mk_geneCoord
 '     - Makes a heap allocated geneCoord structure
@@ -56,21 +56,41 @@
 #define def_lenId_geneCoord 64
 
 /*-------------------------------------------------------\
-| ST: geneCoord
+| ST01: geneCoord
 |   - Holds the arrays for the gene coordinates and ids 
 |     in an gene coordinates table
 \-------------------------------------------------------*/
 typedef struct geneCoord{
    signed char (*idStrAry)[def_lenId_geneCoord];
-   unsigned int *startAryUI;
-   unsigned int *endAryUI;
-   unsigned char *dirAryUC;
+      /*id of gene/section to change*/
+
+   signed char (*refAryStr)[def_lenId_geneCoord];
+      /*id of reference to convert coordinates to*/
+
+   unsigned int *startAryUI; /*new starting position*/
+   unsigned int *endAryUI;   /*new ending position*/
+   unsigned char *dirAryUC;  /*direction*/
 }geneCoord;
 
 /*#define getIdIndex_geneCoord(indexUI) ((indexUI) * def_lenId_geneCoord)*/
 
 /*-------------------------------------------------------\
-| Fun01: freeStack_geneCoord
+| Fun01: init_geneCoord
+|    - Initializes a geneCoord structure
+| Input:
+|   - geneCoordST:
+|     o Pointer to a geneCoord structure to initialize
+| Output:
+|   - Sets:
+|     o idStrAry, startAryUI, and endAryUI to 0
+\-------------------------------------------------------*/
+void
+init_geneCoord(
+   struct geneCoord *geneCoordST
+);
+
+/*-------------------------------------------------------\
+| Fun02: freeStack_geneCoord
 |    - Frees the arrays in a geneCoord structure
 | Input:
 |   - geneCoordST:
@@ -86,7 +106,7 @@ freeStack_geneCoord(
 );
 
 /*-------------------------------------------------------\
-| Fun02: freeHeap_geneCoord
+| Fun03: freeHeap_geneCoord
 |    - Frees the a heap alloacted geneCoord structure
 | Input:
 |   - geneCoordST:
@@ -97,21 +117,6 @@ freeStack_geneCoord(
 \-------------------------------------------------------*/
 void
 freeHeap_geneCoord(
-   struct geneCoord *geneCoordST
-);
-
-/*-------------------------------------------------------\
-| Fun03: init_geneCoord
-|    - Initializes a geneCoord structure
-| Input:
-|   - geneCoordST:
-|     o Pointer to a geneCoord structure to initialize
-| Output:
-|   - Sets:
-|     o idStrAry, startAryUI, and endAryUI to 0
-\-------------------------------------------------------*/
-void
-init_geneCoord(
    struct geneCoord *geneCoordST
 );
 
@@ -178,7 +183,7 @@ getPaf_geneCoord(
 |      starting coordinate (lowest first)
 \-------------------------------------------------------*/
 void
-sortGeneCoords(
+sort_geneCoord(
    struct geneCoord *geneCoordST,
    unsigned int startUI,
    unsigned int endUI

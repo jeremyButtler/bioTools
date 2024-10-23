@@ -48,7 +48,7 @@
 
 #define def_year_mainEdDist 2024
 #define def_month_mainEdDist 10
-#define def_day_mainEdDist 7
+#define def_day_mainEdDist 18
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
