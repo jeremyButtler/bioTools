@@ -1,0 +1,17 @@
+./edClust \
+   -no-depth-prof \
+   -len-weight 2 \
+   -clust-depth 10 \
+   -clust-perc-depth 0.005 \
+   -read-err 0.046 \
+   -con-err 0.023 \
+   -con-sim 0.99 \
+   -err-to-var 50 \
+   -overlap 0.75 \
+   -win-len 500 \
+   -win-err 200 \
+   -indel-len 10 \
+   -clust-q-snp 7 \
+   -perc-n 0.05  \
+   -sam /home/boom/Hufflepuff/Hufflepuff-map.sam \
+   -prefix /home/boom/Hufflepuff/Hufflepuff

@@ -1596,6 +1596,9 @@ cluster_edClust(
                ! conNodeST
             || ! conNodeST->nextST
          ){ /*If: finished one set of comparisons*/
+            if(! cmpNodeST->nextST)
+               break; /*finished*/
+
             cmpNodeST = cmpNodeST->nextST;
             conNodeST = cmpNodeST->nextST;
             lastNodeST = cmpNodeST;
