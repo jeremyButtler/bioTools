@@ -93,6 +93,10 @@ The mkfileScripts directory has bash scripts to build
     - needs some debugging still, but close
   - cigToEqx (freezeTB):
     - convert regular cigars to eqx cigars
+  - krakTaxaId:
+    - split up kraken reads by taxa id
+    - side project, more of idea phase right now, so
+      not working
   - edClust (fluDI/freezeTB):
     - needs testing, but is running
     - try to cluster reads by edit distance
