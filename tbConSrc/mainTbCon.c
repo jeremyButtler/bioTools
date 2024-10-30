@@ -30,9 +30,10 @@
 
 #include <stdio.h>
 
+#include "../genLib/base10str.h"
 #include "../genLib/ulCp.h"
 #include "../genLib/charCp.h"
-#include "../genLib/base10str.h"
+#include "../genLib/strAry.h"
 
 #include "../genBio/samEntry.h"
 #include "../genBio/tbCon.h"
@@ -40,12 +41,11 @@
 /*only using .h file (no .c or not using .c)*/
 #include "../genLib/dataTypeShortHand.h"
 #include "../genBio/tbConDefs.h"
+#include "../genLib/genMath.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden files
 !   - .c  #include "../genLib/numToStr.h"
-!   - .c  #include "../genLib/genMath.h"
-!   - .c  #include "../genLib/strAry.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -1297,11 +1297,6 @@ main(
    uint lenRefUI = def_refLen_tbConDefs;
       /*expected length of reference*/
 
-   schar refIdStr[256]; /*name of reference*/
-      /*i would be supprised if a reference id was longer
-      `   then 64 characters, so 256 should be safe
-      */
-
    struct set_tbCon setStackST;
 
    /*Iterators for loops*/
@@ -1318,18 +1313,16 @@ main(
    ulong ulRead = 0;
    struct samEntry samStackST;
  
-   /*Grabbing reference id from sam file*/
-   schar *tmpStr = 0;
-   ulong tabUL = mkDelim_ulCp('\t');
-   schar multiRefBl = 0; /*1: means multiple refs/exit*/
-   
    /*For building the consensus*/
-   struct conNt_tbCon *conNtHeapAryST = 0;
+   struct conNt_tbCon **conNtHeapAryST = 0;
+   struct conNt_tbCon **tmpConNtST = 0; /*for reallocs*/
+   slong indexSL = 0;
 
    /*For collapsing the consensus*/
    schar errSC = 0;
    sint numFragSI = 0;
    struct samEntry *samHeapAryST = 0;
+   struct refs_samEntry refStackST; /*for ref list*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec02:
@@ -1347,13 +1340,9 @@ main(
    *   - initialize variables
    \*****************************************************/
 
-   /*Default reference id*/
-   refIdStr[0] = 'N';
-   refIdStr[2] = 'A';
-   refIdStr[3] = '\0';
-
    init_set_tbCon(&setStackST);
    init_samEntry(&samStackST);
+   init_refs_samEntry(&refStackST);
 
    /*****************************************************\
    * Main Sec02 Sub02:
@@ -1471,134 +1460,63 @@ main(
       goto memErr_main_sec06_sub02;
    } /*If: memory error*/
 
+
    errSC =
-      get_samEntry(
-         &samStackST,
-         &buffHeapStr,
-         &lenBuffUL,
-         samFILE
-      );
-
-   /*****************************************************\
-   * Main Sec03 Sub02:
-   *   - get refernce lenths fom SQ entries
-   \*****************************************************/
-
-   while(! errSC)
-   { /*Loop: print the header*/
-       if(samStackST.extraStr[0] != '@') 
-          break; /*off of header*/
-
-       if(
-          ! eql_charCp(
-             (schar *) "@SQ\t",
-             samStackST.extraStr,
-             (schar) '\t'
-           )
-       ){ /*If: has length information*/
-          if(multiRefBl)
-          { /*If: multiple references*/
-             fprintf(
-                stderr,
-                "-sam %s has multiple references\n",
-                samFileStr
-             ); /*Let user know the problem*/
-
-             goto fileErr_main_sec06_sub03;
-          } /*If: multiple references*/
-
-          multiRefBl = 1;
-
-          /*Get past "@SQ\t"*/
-          tmpStr = samStackST.extraStr + 4; 
-
-          while(*tmpStr++ != ':')
-          { /*Loop: past next part of SQ line*/
-             if(*tmpStr < 31)
-                goto pheader_main_sec03_sub03;
-          } /*Loop: past next part of SQ line*/
-
-          tmpStr +=
-             cpDelim_ulCp(
-                refIdStr,
-                tmpStr,
-                tabUL,
-                '\t'
-             );
-
-          ++tmpStr;
-         
-          if(*tmpStr < 31 )
-             goto pheader_main_sec03_sub03;
-
-          /*Move past the LN: flag*/
-          while(*tmpStr++ !=':')
-          { /*Loop: get past LN: flag*/
-             if(*tmpStr < 31)
-                goto pheader_main_sec03_sub03;
-          } /*Loop: get past LN: flag*/
-
-          /*Get the reference length*/
-          tmpStr +=
-             strToUI_base10str(
-                tmpStr,
-                &lenRefUI
-             );
-
-          /*check if I had a conversion error*/
-          if(*tmpStr > 31)
-             lenRefUI = def_refLen_tbConDefs;
-       } /*If: has length information*/
-
-       /*************************************************\
-       * Main Sec03 Sub03:
-       *   - print heaader and get next entry
-       \*************************************************/
-
-       pheader_main_sec03_sub03:;
-
-       p_samEntry(
-          &samStackST,
-          &buffHeapStr,
-          &lenBuffUL,
-          0,          /*0 = print newline*/
-          outFILE
-       );
-
-       errSC =
-          get_samEntry(
-             &samStackST,
-             &buffHeapStr,
-             &lenBuffUL,
-             samFILE
-          );
-   } /*Loop: print the header*/
-
-   /*****************************************************\
-   * Main Sec03 Sub04:
-   *   - check for errors
-   \*****************************************************/
+      setup_refs_samEntry(
+         &refStackST,
+         128
+   );
 
    if(errSC)
-   { /*If: had error*/
-      if(errSC == def_EOF_samEntry)
-      { /*If: had no reads*/
-         fprintf(
-            stderr,
-            "-sam %s has no reads\n",
-            samFileStr
-         );
-
-         goto fileErr_main_sec06_sub03;
-      } /*If: had no reads*/
-
+   { /*If: memory error*/
       fprintf(
          stderr,
-         "memory error reading header of -sam %s\n",
-         samFileStr
+         "memory error setting up reference structure\n"
       );
 
       goto memErr_main_sec06_sub02;
+   } /*If: memory error*/
+
+   /*****************************************************\
+   * Main Sec03 Sub02:
+   *   - get refernce lenths and print header
+   \*****************************************************/
+
+   errSC =
+      getRefLen_samEntry(
+         &refStackST, /*will have refernce ids/lengths*/
+         &samStackST, /*will have first read in file*/
+         &buffHeapStr,/*buffer for reading sam file*/
+         &lenBuffUL,  /*current size of buffer*/
+         samFILE,     /*has headers to process*/
+         outFILE,     /*save all headers to this file*/
+         0,    /*do not save headers*/
+         0     /*length, only needed for keeping headers*/
+      );
+
+   if(errSC)
+   { /*If: had error*/
+      if(errSC == def_memErr_samEntry)
+      { /*If: memory error*/
+         fprintf(
+            stderr,
+            "memory error read sam file headers\n"
+         );
+
+         goto memErr_main_sec06_sub02;
+      } /*If: memory error*/
+
+      else
+      { /*Else: file error*/
+         fprintf(
+            stderr,
+            "-sam %s not in proper format\n",
+            samFileStr
+         );
+
+         goto memErr_main_sec06_sub02;
+      } /*Else: memory error*/
+
    } /*If: had error*/
 
    /*****************************************************\
@@ -1688,14 +1606,41 @@ main(
    ^ Main Sec04:
    ^   - build the consensus
    ^   o main sec04 sub01:
-   ^     - add reads to the consensus
+   ^     - allocate memory for consensus arrays
    ^   o main sec04 sub02:
+   ^     - filter reads + start loop
+   ^   o main sec04 sub03:
+   ^     - find reference and add to list (if new ref)
+   ^   o main sec04 sub04:
+   ^     - add read to its consensus
+   ^   o main sec04 sub05:
    ^     - check for errors and minor clean up
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
    * Main Sec04 Sub01:
-   *   - add reads to the consensus
+   *   - allocate memory for consensus arrays
+   \*****************************************************/
+
+   conNtHeapAryST =
+      calloc(
+         refStackST.arySizeUI,
+         sizeof(struct conNt_tbCon *)
+   );
+
+   if(! conNtHeapAryST)
+   { /*If: had memory error*/
+      fprintf(
+         stderr,
+         "memory error setting up conensus arrays\n"
+      );
+
+      goto memErr_main_sec06_sub02;
+   } /*If: had memory error*/
+
+   /*****************************************************\
+   * Main Sec04 Sub02:
+   *   - filter reads + start loop
    \*****************************************************/
 
    while(! errSC)
@@ -1712,11 +1657,92 @@ main(
        if(samStackST.mapqUC < setStackST.minMapqUC)
           goto nextEntry_main_sec04_sub01;
 
+       /*************************************************\
+       * Main Sec04 Sub03:
+       *   - find reference and add to list (if new ref)
+       \*************************************************/
+
+       indexSL =
+          findRef_refs_samEntry(
+             samStackST.refIdStr,
+             &refStackST
+          );
+
+       if(indexSL < 0)
+       { /*If: reference is not in list*/
+          if(refStackST.numRefUI == refStackST.arySizeUI)
+          { /*If: not enough room for one more reference*/
+             errSC =
+                realloc_refs_samEntry(
+                   &refStackST,
+                   refStackST.arySizeUI + 16
+                );
+
+             if(errSC)
+             { /*If: had memory error*/
+                fprintf(
+                   stderr,
+                   "memory error adding extra reference\n"
+                );
+
+                goto memErr_main_sec06_sub02;
+             } /*If: had memory error*/
+
+             tmpConNtST =
+                realloc(
+                   conNtHeapAryST, 
+                   (refStackST.arySizeUI + 16)
+                     * sizeof(struct conNt_tbCon *)
+             );
+
+             if(! tmpConNtST)
+             { /*If: memory error*/
+                fprintf(
+                   stderr,
+                   "memory error adding extra reference\n"
+                );
+
+                goto memErr_main_sec06_sub02;
+             } /*If: memory error*/
+
+             conNtHeapAryST = tmpConNtST;
+
+             /*initialize new elements*/
+             for(
+                indexSL = (slong) refStackST.arySizeUI;
+                indexSL < (slong) refStackST.arySizeUI+16;
+                ++indexSL
+             ) conNtHeapAryST[indexSL] = 0;
+ 
+             refStackST.arySizeUI += 16;
+          } /*If: not enough room for one more reference*/
+
+          indexSL = (slong) refStackST.numRefUI;
+          ++refStackST.numRefUI;
+
+          refStackST.lenAryUI[indexSL] =
+             max_genMath(
+                lenRefUI,
+                samStackST.readLenUI + 128
+             ); /*get rough id for consensus length*/
+
+          add_strAry(
+             samStackST.refIdStr,
+             refStackST.idAryStr,
+             (ulong) indexSL
+          ); /*add reference name to list*/
+       } /*If: reference is not in list*/
+
+       /*************************************************\
+       * Main Sec04 Sub04:
+       *   - add read to its consensus
+       \*************************************************/
+
        errSC =
           addRead_tbCon(
              &samStackST,
-             &conNtHeapAryST,
-             &lenRefUI, 
+             &conNtHeapAryST[indexSL],
+             &refStackST.lenAryUI[indexSL], 
              &setStackST
           ); /*Build the consensus; read by read*/
 
@@ -1783,23 +1809,60 @@ main(
 
    if(tsvFileStr)
    { /*If: the user wanted the variants*/
-      errSC =
-         pvar_tbCon(
-            conNtHeapAryST,
-            lenRefUI,
-            refIdStr,
-            &setStackST,
-            tsvFileStr
-         ); /*Print out the variants (not a vcf)*/
+      if(outFILE == stdout) ;
 
-      if(errSC)
-      { /*If: I had a file error*/
-         fprintf(
-            stderr,
-            "could not open -out-tsv %s; skipping tsv\n",
+      else if(
             tsvFileStr
-         );
-      } /*If: I had a file error*/
+         && ! eql_charCp(outFileStr, tsvFileStr, '\0')
+      ) ;
+
+      else
+      { /*Else: tsv file is unique*/
+         samFILE =
+            fopen(
+               (char *) tsvFileStr,
+               "r"
+            );
+
+         if(samFILE)
+         { /*If: tsv file already eixsts, wipe*/
+            samFILE =
+               fopen(
+                  (char *) tsvFileStr,
+                  "w"
+               );
+
+            fclose(samFILE);
+            samFILE = 0;
+         } /*If: tsv file already eixsts, wipe*/
+      } /*Else: tsv file is unique*/
+
+      for(
+         indexSL = 0;
+         indexSL <= (slong) refStackST.numRefUI;
+         ++indexSL
+      ){ /*Loop: print out variants*/
+         if(conNtHeapAryST[indexSL])
+         { /*If: had reads for varaint file*/
+            errSC =
+               pvar_tbCon(
+                  conNtHeapAryST[indexSL],
+                  refStackST.lenAryUI[indexSL],
+                  get_strAry(refStackST.idAryStr,indexSL),
+                  &setStackST,
+                  tsvFileStr
+               ); /*Print out the variants (not a vcf)*/
+
+            if(errSC)
+            { /*If: I had a file error*/
+               fprintf(
+                 stderr,
+                 "could not open -out-tsv %s; skipping\n",
+                 tsvFileStr
+               );
+            } /*If: I had a file error*/
+         } /*If: had reads for varaint file*/
+      } /*Loop: print out variants*/
    } /*If: the user wanted the variants*/
 
    /*****************************************************\
@@ -1823,57 +1886,58 @@ main(
    *   - collapse consensuses and print (minor freeing)
    \*****************************************************/
 
-   if(! conNtHeapAryST)
-   { /*If: unable to build consensus*/
-      fprintf(
-         stderr,
-         "all reads were removed during filtering\n"
-      );
-
-      goto fileErr_main_sec06_sub03;
-   } /*If: unable to build consensus*/
-
-   /*Print the consensuses*/
-   samHeapAryST =
-      collapse_tbCon(
-         conNtHeapAryST,
-         lenRefUI,
-         &numFragSI,
-         refIdStr,
-         &setStackST,
-         &errSC
-      ); /*Collapse the consensus*/
-
-   freeHeapAry_conNt_tbCon(
-      conNtHeapAryST,
-      lenRefUI
-   );
-
-   conNtHeapAryST = 0;
-   lenRefUI = 0;
-
-   /*Print the consensuses*/
    for(
-      siIter = 0;
-      siIter < numFragSI;
-      ++siIter
-   ){ /*Loop: print and free each sam entry*/
-      /*check if false entry (numFragSI is off)*/
-      if(samHeapAryST[siIter].qryIdStr[0] != '\0')
-          p_samEntry(
-             &samHeapAryST[siIter],
-             &buffHeapStr,
-             &lenBuffUL,
-             0,
-             outFILE
-          ); /*Print consensuses as sam file*/
+      indexSL = 0;
+      indexSL <= (slong) refStackST.numRefUI;
+      ++indexSL
+   ){ /*Loop: print out consensus*/
 
-      freeStack_samEntry(&samHeapAryST[siIter]);
-   } /*Loop: print and free each sam entry*/
+      if(conNtHeapAryST[indexSL])
+      { /*If: have consensus array for reference*/
+         samHeapAryST =
+            collapse_tbCon(
+               conNtHeapAryST[indexSL],
+               refStackST.lenAryUI[indexSL],
+               &numFragSI,
+               get_strAry(refStackST.idAryStr, indexSL),
+               &setStackST,
+               &errSC
+            ); /*Collapse the consensus*/
 
-   free(samHeapAryST);
-   numFragSI = 0;
-   samHeapAryST = 0;
+         freeHeapAry_conNt_tbCon(
+            conNtHeapAryST[indexSL],
+            refStackST.lenAryUI[indexSL]
+         );
+
+         conNtHeapAryST[indexSL] = 0;
+
+         /*Print the consensuses*/
+         for(
+            siIter = 0;
+            siIter < numFragSI;
+            ++siIter
+         ){ /*Loop: print and free each sam entry*/
+            /*check if false entry (numFragSI is off)*/
+            if(samHeapAryST[siIter].qryIdStr[0] != '\0')
+                p_samEntry(
+                   &samHeapAryST[siIter],
+                   &buffHeapStr,
+                   &lenBuffUL,
+                   0,
+                   outFILE
+                ); /*Print consensuses as sam file*/
+
+            freeStack_samEntry(&samHeapAryST[siIter]);
+         } /*Loop: print and free each sam entry*/
+
+         free(samHeapAryST);
+         numFragSI = 0;
+         samHeapAryST = 0;
+      } /*If: have consensus array for reference*/
+   } /*Loop: print out consensus*/
+
+   free(conNtHeapAryST);
+   conNtHeapAryST = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec06:
@@ -1921,50 +1985,65 @@ main(
 
    cleanUp_main_sec06_sub04:;
 
-   if(buffHeapStr)
-      free(buffHeapStr);
+      if(buffHeapStr)
+         free(buffHeapStr);
 
-   buffHeapStr = 0;
-   lenBuffUL = 0;
+      buffHeapStr = 0;
+      lenBuffUL = 0;
 
-   /*free consensuses*/
-   for(
-      siIter = 0;
-      siIter < numFragSI;
-      ++siIter
-   ) freeStack_samEntry(&samHeapAryST[siIter]);
+      /*free consensuses*/
+      for(
+         siIter = 0;
+         siIter < numFragSI;
+         ++siIter
+      ) freeStack_samEntry(&samHeapAryST[siIter]);
 
-   numFragSI = 0;
+      numFragSI = 0;
 
-   if(samHeapAryST)
-      free(samHeapAryST);
-   samHeapAryST = 0;
+      if(samHeapAryST)
+         free(samHeapAryST);
+      samHeapAryST = 0;
 
-   freeStack_samEntry(&samStackST);
-   freeStack_set_tbCon(&setStackST);
+      freeStack_samEntry(&samStackST);
+      freeStack_refs_samEntry(&refStackST);
+      freeStack_set_tbCon(&setStackST);
 
-   freeHeapAry_conNt_tbCon(
-      conNtHeapAryST,
-      lenRefUI
-   );
 
-   if(
-         samFILE
-      && samFILE != stdin
-      && samFILE != stdout
-   ) fclose(samFILE);
+      if(conNtHeapAryST)
+      { /*If: have consensus arrays to free*/
+         for(
+            indexSL = 0;
+            indexSL <= (slong) refStackST.numRefUI;
+            ++indexSL
+         ){ /*Loop: free all consensus arrays*/
+             freeHeapAry_conNt_tbCon(
+                conNtHeapAryST[indexSL],
+                refStackST.lenAryUI[indexSL]
+             );
+         } /*Loop: free all consensus arrays*/
 
-   samFILE = 0;
+         free(conNtHeapAryST);
+      } /*If: have consensus arrays to free*/
 
-   if(
-         outFILE
-      && outFILE != stdin
-      && outFILE != stdout
-   ) fclose(outFILE);
+      conNtHeapAryST = 0;
 
-   outFILE = 0;
+      if(
+            samFILE
+         && samFILE != stdin
+         && samFILE != stdout
+      ) fclose(samFILE);
 
-   return errSC;
+      samFILE = 0;
+
+      if(
+            outFILE
+         && outFILE != stdin
+         && outFILE != stdout
+      ) fclose(outFILE);
+
+      outFILE = 0;
+
+      return errSC;
 } /*main*/
 
 /*=======================================================\

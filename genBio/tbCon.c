@@ -2645,6 +2645,7 @@ noFragCollapse_tbCon(
 |     o c-string with referernce sequence name
 |   - outFILE:
 |     o c-string with name of file to print everything to
+|     o will append to file if already exists
 | Output:
 |   - Prints:
 |     o entries in conNtAryST to outFILE
@@ -2701,8 +2702,29 @@ pvar_tbCon(
       outFILE =
          fopen(
             (char *) outStr,
-            "w"
+            "r"
          );
+
+      if(outFILE)
+      { /*If: output file already exists*/
+         fclose(outFILE);
+         outFILE = 0;
+
+         outFILE =
+            fopen(
+               (char *) outStr,
+               "a"
+            );
+      } /*If: output file already exists*/
+
+      else
+      { /*Else: output file does not exist*/
+         outFILE =
+            fopen(
+               (char *) outStr,
+               "w"
+            );
+      } /*Else: output file does not exist*/
 
       if(! outFILE)
          goto fileErr_fun15_sec04;

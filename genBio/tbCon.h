@@ -435,6 +435,7 @@ noFragCollapse_tbCon(
 |     o c-string with referernce sequence name
 |   - outFILE:
 |     o c-string with name of file to print everything to
+|     o will append to file if already exists
 | Output:
 |   - Prints:
 |     o entries in conNtAryST to outFILE
