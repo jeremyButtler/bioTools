@@ -43,6 +43,7 @@
 /*.h files only*/
 #include "../genLib/dataTypeShortHand.h"
 #include "../genAln/alnDefs.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden files
@@ -55,10 +56,6 @@
 !   o .h  #include "../genBio/ntTo2Bit.h"
 !   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
-
-#define def_year_mainNeedle 2024
-#define def_month_mainNeedle 8
-#define def_day_mainNeedle 24
 
 #define def_fqFile_mainNeedle 0
 #define def_faFile_mainNeedle 1
@@ -82,10 +79,10 @@ pversion_mainNeedle(
 ){
    fprintf(
       (FILE *) outFILE,
-      "mainNeedle version: %i-%02i-%02i\n",
-      def_year_mainNeedle,
-      def_month_mainNeedle,
-      def_day_mainNeedle
+      "alnNeedle from bioTools version: %i-%02i-%02i\n",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 } /*pversion_mainNeedle*/
 
@@ -1367,12 +1364,12 @@ main(
 
       fprintf(
         outFILE,
-        "@PG\tID:%s\tVN:%i-%02i-%02i\t%s",
+        "@PG\tID:%s\tVN:bioTools_%i-%02i-%02i\t%s",
         "alnNeedle",
-        def_year_mainNeedle,
-        def_month_mainNeedle,
-        def_day_mainNeedle,
-        "mainNeedle"
+        def_year_bioTools,
+        def_month_bioTools,
+        def_day_bioTools,
+        "alnNeedle"
      ); /*print out first part of program id tag*/
 
       for(

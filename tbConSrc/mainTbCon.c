@@ -42,6 +42,7 @@
 #include "../genLib/dataTypeShortHand.h"
 #include "../genBio/tbConDefs.h"
 #include "../genLib/genMath.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden files
@@ -65,10 +66,10 @@ pversion_mainTbCon(
 ){
    fprintf(
        (FILE *) outFILE,
-       "tbCon Version: %i-%02i-%02i\n",
-       def_year_tbConDefs,
-       def_month_tbConDefs,
-       def_day_tbConDefs
+       "tbCon from bioTools Version: %i-%02i-%02i\n",
+       def_year_bioTools,
+       def_month_bioTools,
+       def_day_bioTools
    ); /*Version of tbCon*/
 } /*pversion_mainTbCon*/
 
@@ -1531,10 +1532,10 @@ main(
 
    fprintf(
       outFILE,
-      "\tVN:%i-%02i-%02i\tCL:tbCon",
-      def_year_tbConDefs,
-      def_month_tbConDefs,
-      def_day_tbConDefs
+      "\tVN:bioTools_%i-%02i-%02i\tCL:tbCon",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 
    /*Check if getting sam file from stdin*/

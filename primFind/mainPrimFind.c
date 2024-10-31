@@ -34,6 +34,7 @@
 
 /*.h files only*/
 #include "../genLib/dataTypeShortHand.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
@@ -44,10 +45,6 @@
 !   - .c  #include "../genAln/memwater.h"
 !   - .h  #include "../genLib/genMath.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
-
-#define def_year_mainPrimFind 2024
-#define def_month_mainPrimFind 8
-#define def_day_mainPrimFind 29
 
 #define def_faPrimFile_mainPrimFind 1
 #define def_tsvPrimFile_mainPrimFind 2
@@ -73,10 +70,10 @@ pversion_mainPrimFind(
 ){
    fprintf(
       (FILE *) outFILE,
-      "mainPrimFind verssion: %i-%02i-%02i\n",
-       def_year_mainPrimFind,
-       def_month_mainPrimFind,
-       def_day_mainPrimFind
+      "primFind from bioTools verssion: %i-%02i-%02i\n",
+       def_year_bioTools,
+       def_month_bioTools,
+       def_day_bioTools
    );
 } /*pverson_mainPrimFind*/
 

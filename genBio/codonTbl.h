@@ -280,11 +280,11 @@ G | GTC  V . | GCC  A . | GAC  D . | GGC  G . | C
    6    06  00000110 ACK    Acknowledge
    7    07  00000111 BEL    Bell, Alert
    8    08  00001000 BS     Backspace
-   9    09  00001001 HT     Horizontal Tab
-   10   0A  00001010 LF     Line Feed
+   9    09  00001001 HT     Horizontal Tab '\t'
+   10   0A  00001010 LF     Line Feed      '\n'
    11   0B  00001011 VT     Vertical Tabulation
    12   0C  00001100 FF     Form Feed
-   13   0D  00001101 CR     Carriage Return
+   13   0D  00001101 CR     Carriage Return '\r'
    14   0E  00001110 SO     Shift Out
    15   0F  00001111 SI     Shift In
    16   10  00010000 DLE    Data Link Escape

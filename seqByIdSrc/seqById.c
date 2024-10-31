@@ -50,6 +50,7 @@
 
 /*.h files only*/
 #include "../genLib/dataTypeShortHand.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
@@ -62,10 +63,6 @@
 ^ Header Sec02:
 ^   - defined variables
 \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-#define def_year_seqById 2024
-#define def_month_seqById 10
-#define def_day_seqById 13
 
 #define def_ignoreIds_seqById 0
     /*1: extract sequences not matching read ids*/
@@ -91,10 +88,10 @@ pversion_seqById(
 ){
    fprintf(
       (FILE *) outFILE,
-      "seqById version: %i-%02i-%02i\n",
-      def_year_seqById,
-      def_month_seqById,
-      def_day_seqById
+      "seqById from bioTools version: %i-%02i-%02i\n",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 } /*pversion_seqById*/
 
@@ -1020,12 +1017,13 @@ main(
       tmpSI +=
          cpDelim_ulCp(
             &headerStr[tmpSI],
-            (schar *) "@PG\tID:seqById\tPN:seqById\tVN:",
+            (schar *)
+              "@PG\tID:seqById\tPN:seqById\tVN:bioTools_",
             0,
             '\0'
          );
 
-      errSL = def_year_seqById;
+      errSL = def_year_bioTools;
       
       headerStr[tmpSI++] = (errSL / 1000) + 48;
       errSL %= 1000;
@@ -1037,30 +1035,30 @@ main(
 
       headerStr[tmpSI++] = '-';
 
-      if(def_month_seqById > 9)
+      if(def_month_bioTools > 9)
       { /*If: month has two digits*/
-         headerStr[tmpSI++] = (def_month_seqById / 10)+48;
-         headerStr[tmpSI++] = (def_month_seqById % 10)+48;
+        headerStr[tmpSI++] = (def_month_bioTools / 10)+48;
+        headerStr[tmpSI++] = (def_month_bioTools % 10)+48;
       } /*If: month has two digits*/
 
       else
       { /*Else: month needs a add zero in front*/
          headerStr[tmpSI++] = '0';
-         headerStr[tmpSI++] = def_month_seqById + 48;
+         headerStr[tmpSI++] = def_month_bioTools + 48;
       } /*Else: month needs a add zero in front*/
 
       headerStr[tmpSI++] = '-';
 
-      if(def_day_seqById > 9)
+      if(def_day_bioTools > 9)
       { /*If: day has two digits*/
-         headerStr[tmpSI++] = (def_day_seqById / 10) + 48;
-         headerStr[tmpSI++] = (def_day_seqById % 10) + 48;
+        headerStr[tmpSI++] = (def_day_bioTools / 10) + 48;
+        headerStr[tmpSI++] = (def_day_bioTools % 10) + 48;
       } /*If: day has two digits*/
 
       else
       { /*Else: day needs a add zero in front*/
          headerStr[tmpSI++] = '0';
-         headerStr[tmpSI++] = def_day_seqById + 48;
+         headerStr[tmpSI++] = def_day_bioTools + 48;
       } /*Else: day needs a add zero in front*/
 
       /**************************************************\

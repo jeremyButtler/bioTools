@@ -41,6 +41,9 @@ Each make file (mkfile) is prefixed by the OS type
     - mkfile.unix.avx512: unix with AVX512 support
   - mkfile.win: for windows, no SIMD support
     - you could get SIMD support, just have to add it in
+      just be warned that SIMD only looks for '\n', so it
+      will not count carriage returns. This will include
+      '\r's at end
 
 # General unix
 

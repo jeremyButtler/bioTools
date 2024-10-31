@@ -43,6 +43,7 @@
 /*.h files only*/
 #include "../genLib/dataTypeShortHand.h"
 #include "../genAln/alnDefs.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden files
@@ -55,10 +56,6 @@
 !   o .h  #include "../genBio/ntTo2Bit.h"
 !   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
-
-#define def_year_mainWater 2024
-#define def_month_mainWater 8
-#define def_day_mainWater 24
 
 #define def_fqFile_mainWater 0
 #define def_faFile_mainWater 1
@@ -82,10 +79,10 @@ pversion_mainWater(
 ){
    fprintf(
       (FILE *) outFILE,
-      "mainWater version: %i-%02i-%02i\n",
-      def_year_mainWater,
-      def_month_mainWater,
-      def_day_mainWater
+      "alnWater from bioTools version: %i-%02i-%02i\n",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 } /*pversion_mainWater*/
 
@@ -1367,11 +1364,11 @@ main(
 
       fprintf(
         outFILE,
-        "@PG\tID:%s\tVN:%i-%02i-%02i\t%s",
+        "@PG\tID:%s\tVN:bioTools_%i-%02i-%02i\t%s",
         "alnWater",
-        def_year_mainWater,
-        def_month_mainWater,
-        def_day_mainWater,
+        def_year_bioTools,
+        def_month_bioTools,
+        def_day_bioTools,
         "mainWater"
      ); /*print out first part of program id tag*/
 

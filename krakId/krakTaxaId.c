@@ -2,22 +2,22 @@
 ' krakTaxaId SOF: Start Of File
 '   - has functions and structs to get read ids by kraken
 '     organisms
-'   o st01: taxaList_krakTaxaId
+'   o st01: taxa_krakTaxaId
 '     - has taxa names and ids to extract by
-'   o fun01: blank_taxaList_krakTaxaId
-'     - blanks a taxaList_krakTaxaId structure
-'   o fun02: init_taxaList_krakTaxaId
-'     - initializes a taxaList_krakTaxaId structure
-'   o fun04: freeHeap_taxaList_krakTaxaId
-'     - frees a taxaList_krakTaxaId structure
-'   o fun05: setup_taxaList_krakTaxaId
-'     - allocates memory for a taxaList_krakTaxaId struc
-'   o fun06: realloc_taxaList_krakTaxaId
-'     - reallocates memory for a taxaList_krakTaxaId struc
-'   o fun07: sortCodes_taxaList_krakTaxaId
+'   o fun01: blank_taxa_krakTaxaId
+'     - blanks a taxa_krakTaxaId structure
+'   o fun02: init_taxa_krakTaxaId
+'     - initializes a taxa_krakTaxaId structure
+'   o fun04: freeHeap_taxa_krakTaxaId
+'     - frees a taxa_krakTaxaId structure
+'   o fun05: setup_taxa_krakTaxaId
+'     - allocates memory for a taxa_krakTaxaId struc
+'   o fun06: realloc_taxa_krakTaxaId
+'     - reallocates memory for a taxa_krakTaxaId struc
+'   o fun07: sortCodes_taxa_krakTaxaId
 '     - sorts the sortCodeArySL array while keeping the
-'       indexArySL in sync a taxaList_krakTaxaId
-'   o fun08: findCode_taxaList_krakTaxaId
+'       indexArySL in sync a taxa_krakTaxaId
+'   o fun08: findCode_taxa_krakTaxaId
 '     - returns index of taxa code, searches sorted list
 '       and returns unsorted list index
 '   o fun09: getLevel_krakTaxaId
@@ -26,6 +26,7 @@
 '     - gets list of organism codes
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+#include "../genLib/strAry.h"
 /*
 ` Kraken works by character for level in tree, and
 `   a number if a sublevel is present. The first
@@ -46,310 +47,310 @@
 */
 
 /*-------------------------------------------------------\
-| Fun01: blank_taxaList_krakTaxaId
-|   - blanks a taxaList_krakTaxaId structure
+| Fun01: blank_taxa_krakTaxaId
+|   - blanks a taxa_krakTaxaId structure
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId struct to blank
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId struct to blank
 | Output:
 |   - Modifies:
-|     o numTaxaUL in taxaListSTPtr to be 0
+|     o numTaxaUL in taxaSTPtr to be 0
 \-------------------------------------------------------*/
 void
-blank_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr
+blank_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr
 ){
-   taxaListSTPtr->numTaxaUL = 0;
-} /*blank_taxaList_krakTaxaId*/
+   taxaSTPtr->numTaxaUL = 0;
+} /*blank_taxa_krakTaxaId*/
 
 /*-------------------------------------------------------\
-| Fun02: init_taxaList_krakTaxaId
-|   - initializes a taxaList_krakTaxaId structure
+| Fun02: init_taxa_krakTaxaId
+|   - initializes a taxa_krakTaxaId structure
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId to initiazlize
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId to initiazlize
 | Output:
 |   - Modifies:
-|     o sets everything in taxaListSTPtr to 0
+|     o sets everything in taxaSTPtr to 0
 \-------------------------------------------------------*/
 void
-init_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr
+init_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr
 ){
-   taxaListSTPtr->codeArySL = 0;
-   taxaListSTPtr->nameAryStr = 0;
-   taxaListSTPtr->mergeArySL = 0;
-   taxaListSTPtr->levelAryUS = 0;
-   taxaListSTPtr->sortCodeArySL = 0;
-   taxaListSTPtr->sizeTaxaUL = 0;
+   taxaSTPtr->codeArySL = 0;
+   taxaSTPtr->nameAryStr = 0;
+   taxaSTPtr->mergeArySL = 0;
+   taxaSTPtr->levelAryUS = 0;
+   taxaSTPtr->sortCodeArySL = 0;
+   taxaSTPtr->sizeTaxaUL = 0;
 
-   blank_taxaList_krakTaxaId(taxaListSTPtr);
-} /*init_taxaList_krakTaxaId*/
+   blank_taxa_krakTaxaId(taxaSTPtr);
+} /*init_taxa_krakTaxaId*/
 
 /*-------------------------------------------------------\
-| Fun03: freeStack_taxaList_krakTaxaId
-|   - frees variables in a taxaList_krakTaxaId structure
+| Fun03: freeStack_taxa_krakTaxaId
+|   - frees variables in a taxa_krakTaxaId structure
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId with vars to free
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId with vars to free
 | Output:
 |   - Frees:
-|     o all variables in taxaListSTPtr (sets vars to 0)
+|     o all variables in taxaSTPtr (sets vars to 0)
 \-------------------------------------------------------*/
 void
-freeStack_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr
+freeStack_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr
 ){
-   if(! taxaListSTPtr)
+   if(! taxaSTPtr)
       return;
 
-   if(taxaListSTPtr->codeArySL)
-     free(taxaListSTPtr->codeArySL);
+   if(taxaSTPtr->codeArySL)
+     free(taxaSTPtr->codeArySL);
 
-   if(taxaListSTPtr->nameAryStr)
-     free(taxaListSTPtr->nameAryStr);
+   if(taxaSTPtr->nameAryStr)
+     free(taxaSTPtr->nameAryStr);
 
-   if(taxaListSTPtr->mergeArySL)
-     free(taxaListSTPtr->mergeArySL);
+   if(taxaSTPtr->mergeArySL)
+     free(taxaSTPtr->mergeArySL);
 
-   if(taxaListSTPtr->levelAryUS)
-     free(taxaListSTPtr->levelAryUS);
+   if(taxaSTPtr->levelAryUS)
+     free(taxaSTPtr->levelAryUS);
 
-   if(taxaListSTPtr->sortCodeArySL)
-     free(taxaListSTPtr->sortCodeArySL);
+   if(taxaSTPtr->sortCodeArySL)
+     free(taxaSTPtr->sortCodeArySL);
 
-   if(taxaListSTPtr->indexArySL)
-     free(taxaListSTPtr->indexArySL);
+   if(taxaSTPtr->indexArySL)
+     free(taxaSTPtr->indexArySL);
 
-   init_taxaList_krakTaxaId(taxaListSTPtr);
-} /*freeStack_taxaList_krakTaxaId*/
+   init_taxa_krakTaxaId(taxaSTPtr);
+} /*freeStack_taxa_krakTaxaId*/
 
 /*-------------------------------------------------------\
-| Fun04: freeHeap_taxaList_krakTaxaId
-|   - frees a taxaList_krakTaxaId structure
+| Fun04: freeHeap_taxa_krakTaxaId
+|   - frees a taxa_krakTaxaId structure
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId to free
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId to free
 | Output:
 |   - Frees:
-|     o taxaListSTPtr (you must set to null (0))
+|     o taxaSTPtr (you must set to null (0))
 \-------------------------------------------------------*/
 void
-freeHeap_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr
+freeHeap_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr
 ){
-   if(! taxaListSTPtr)
+   if(! taxaSTPtr)
       return;
 
-   freeStack_taxaList_krakTaxaId(taxaListSTPtr);
-   free(taxaListSTPtr);
-} /*freeHeap_taxaList_krakTaxaId*/
+   freeStack_taxa_krakTaxaId(taxaSTPtr);
+   free(taxaSTPtr);
+} /*freeHeap_taxa_krakTaxaId*/
 
 /*-------------------------------------------------------\
-| Fun05: setup_taxaList_krakTaxaId
-|   - allocates memory for a taxaList_krakTaxaId struc
+| Fun05: setup_taxa_krakTaxaId
+|   - allocates memory for a taxa_krakTaxaId struc
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId to setup memory
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId to setup memory
 |   - numElmUL:
 |     o number of elements to allocate memory for
 | Output:
 |   - Modifies:
-|     o all arrays in taxaListSTPtr to have memory
+|     o all arrays in taxaSTPtr to have memory
 |   - Returns:
 |     o 0 for no errors
 |     o def_memErr_krakTaxaId for memory errors
 \-------------------------------------------------------*/
 signed char
-setup_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr,
+setup_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr,
    unsigned long numElmUL
 ){
    /*make sure all memory is freeded first*/
-   freeStack_taxaList_krakTaxaId(taxaListSTPtr);
+   freeStack_taxa_krakTaxaId(taxaSTPtr);
 
-   taxaListSTPtr->codeArySL =
+   taxaSTPtr->codeArySL =
       calloc(
          numElmUL,
          sizeof(slong)
       );
 
-   if(! taxaListSTPtr->codeArySL)
+   if(! taxaSTPtr->codeArySL)
       goto memErr_fun05;
 
 
-   taxaListSTPtr->nameAryStr = mk_strAry(numElmUL);
+   taxaSTPtr->nameAryStr = mk_strAry(numElmUL);
 
-   if(! taxaListSTPtr->nameAryStr)
+   if(! taxaSTPtr->nameAryStr)
       goto memErr_fun05;
 
 
-   taxaListSTPtr->mergeArySL =
+   taxaSTPtr->mergeArySL =
       calloc(
          numElmUL,
          sizeof(slong)
       );
 
-   if(! taxaListSTPtr->mergeArySL)
+   if(! taxaSTPtr->mergeArySL)
       goto memErr_fun05;
 
 
-   taxaListSTPtr->levelAryUS =
+   taxaSTPtr->levelAryUS =
       calloc(
          numElmUL,
          sizeof(ushort)
       );
 
-   if(! taxaListSTPtr->levelAryUS)
+   if(! taxaSTPtr->levelAryUS)
       goto memErr_fun05;
 
 
-   taxaListSTPtr->sortCodeArySL =
+   taxaSTPtr->sortCodeArySL =
       calloc(
          numElmUL,
          sizeof(ushort)
       );
 
-   if(! taxaListSTPtr->sortCodeArySL)
+   if(! taxaSTPtr->sortCodeArySL)
       goto memErr_fun05;
 
 
-   taxaListSTPtr->idnexArySL =
+   taxaSTPtr->idnexArySL =
       calloc(
          numElmUL,
          sizeof(ushort)
       );
 
-   if(! taxaListSTPtr->idnexArySL)
+   if(! taxaSTPtr->idnexArySL)
       goto memErr_fun05;
 
 
-   taxaListSTPtr = numElmUL;
-   blank_taxaList_krakTaxaId(taxaListSTPtr);
+   taxaSTPtr = numElmUL;
+   blank_taxa_krakTaxaId(taxaSTPtr);
 
    return 0;
 
    memErr_fun05:;
-      freeStack_taxaList_krakTaxaId(taxaListSTPtr);
+      freeStack_taxa_krakTaxaId(taxaSTPtr);
       return def_memErr_krakTaxaId;
-} /*setup_taxaList_krakTaxaId*/
+} /*setup_taxa_krakTaxaId*/
 
 
 /*-------------------------------------------------------\
-| Fun06: realloc_taxaList_krakTaxaId
-|   - reallocates memory for a taxaList_krakTaxaId struc
+| Fun06: realloc_taxa_krakTaxaId
+|   - reallocates memory for a taxa_krakTaxaId struc
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId to resize
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId to resize
 |   - numElmUL:
 |     o number of elements to resize to
 | Output:
 |   - Modifies:
-|     o all arrays in taxaListSTPtr to be realloced
+|     o all arrays in taxaSTPtr to be realloced
 |   - Returns:
 |     o 0 for no errors
 |     o def_memErr_krakTaxaId for memory errors
 \-------------------------------------------------------*/
 signed char
-realloc_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr,
+realloc_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr,
    unsigned long numElmUL
 ){
    slong *slPtr = 0;
 
 
-   if(numElmUL == taxaListSTPtr->numTaxaUL)
+   if(numElmUL == taxaSTPtr->numTaxaUL)
       return 0; /*nothing to do*/
 
    slPtr =
       realloc(
-         taxaListSTPtr->codeArySL,
+         taxaSTPtr->codeArySL,
          numElmUL * sizeof(slong)
       );
 
    if(! slPtr)
       goto memErr_fun05;
 
-   taxaListSTPtr->codeArySL = slPtr;
+   taxaSTPtr->codeArySL = slPtr;
 
 
     slPtr =
       (slong *)
       realloc_strAry_strAry(
-         taxaListSTPtr->nameAryStr,
+         taxaSTPtr->nameAryStr,
          numElmUL
       );
 
    if(! slPtr)
       goto memErr_fun05;
 
-   taxaListSTPtr->nameAryStr = (schar *) slPtr;
+   taxaSTPtr->nameAryStr = (schar *) slPtr;
 
 
    slPtr =
       realloc(
-         taxaListSTPtr->mergeArySL,
+         taxaSTPtr->mergeArySL,
          numElmUL * sizeof(slong)
       );
 
    if(! slPtr)
       goto memErr_fun05;
 
-   taxaListSTPtr->mergeArySL = slPtr;
+   taxaSTPtr->mergeArySL = slPtr;
 
 
    slPtr =
       (slong *)
       realloc(
-         taxaListSTPtr->levelAryUS,
+         taxaSTPtr->levelAryUS,
          numElmUL * sizeof(ushort)
       );
 
    if(! slPtr)
       goto memErr_fun05;
 
-   taxaListSTPtr->levelAryUS = (ushort *) slPtr;
+   taxaSTPtr->levelAryUS = (ushort *) slPtr;
 
 
    slPtr =
       realloc(
-         taxaListSTPtr->sortCodeArySL,
+         taxaSTPtr->sortCodeArySL,
          numElmUL * sizeof(slong)
       );
 
    if(! slPtr)
       goto memErr_fun05;
 
-   taxaListSTPtr->sortCodeArySL = slPtr;
+   taxaSTPtr->sortCodeArySL = slPtr;
 
 
    slPtr =
       realloc(
-         taxaListSTPtr->indexArySL,
+         taxaSTPtr->indexArySL,
          numElmUL * sizeof(slong)
       );
 
    if(! slPtr)
       goto memErr_fun05;
 
-   taxaListSTPtr->indexArySL = slPtr;
+   taxaSTPtr->indexArySL = slPtr;
 
 
-   taxaListSTPtr = numElmUL;
+   taxaSTPtr = numElmUL;
 
    return 0;
 
    memErr_fun05:;
       return def_memErr_krakTaxaId;
-} /*realloc_taxaList_krakTaxaI*/
+} /*realloc_taxa_krakTaxaI*/
 
 /*-------------------------------------------------------\
-| Fun07: sortCodes_taxaList_krakTaxaId
+| Fun07: sortCodes_taxa_krakTaxaId
 |   - sorts the sortCodeArySL array while keeping the
-|     indexArySL in sync a taxaList_krakTaxaId
+|     indexArySL in sync a taxa_krakTaxaId
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId to sort
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId to sort
 | Output:
 |   - Modifies:
 |     o sortCodeArySL to be sorted lowest to greatest
@@ -357,11 +358,11 @@ realloc_taxaList_krakTaxaId(
 |       - idea: index is index to unsorted arrays
 \-------------------------------------------------------*/
 void
-sortCodes_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr
+sortCodes_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr
 ){
    /*Number of elements to sort (index 1)*/
-   unsigned long numElmUL = taxaListSTPtr->numTaxaUL;
+   unsigned long numElmUL = taxaSTPtr->numTaxaUL;
 
    /*Number of sorting rounds*/
    unsigned long subUL = 0;
@@ -409,22 +410,22 @@ sortCodes_taxaList_krakTaxaId(
             nextUL = ulElm + subUL;
 
             if(
-                 taxaListSTPtr->sortCodeArySL[ulElm]
-               > taxaListSTPtr->sortCodeArySL[nextUL]
+                 taxaSTPtr->sortCodeArySL[ulElm]
+               > taxaSTPtr->sortCodeArySL[nextUL]
             { /*If I need to swap an element*/
-               taxaListSTPtr->sortCodeArySL[ulElm] ^=
-                  taxaListSTPtr->sortCodeArySL[nextUL];
-               taxaListSTPtr->sortCodeArySL[nextUL] ^=
-                  taxaListSTPtr->sortCodeArySL[ulElm];
-               taxaListSTPtr->sortCodeArySL[ulElm] ^=
-                  taxaListSTPtr->sortCodeArySL[nextUL];
+               taxaSTPtr->sortCodeArySL[ulElm] ^=
+                  taxaSTPtr->sortCodeArySL[nextUL];
+               taxaSTPtr->sortCodeArySL[nextUL] ^=
+                  taxaSTPtr->sortCodeArySL[ulElm];
+               taxaSTPtr->sortCodeArySL[ulElm] ^=
+                  taxaSTPtr->sortCodeArySL[nextUL];
 
-               taxaListSTPtr->indexArySL[ulElm] ^=
-                  taxaListSTPtr->indexArySL[nextUL];
-               taxaListSTPtr->indexArySL[nextUL] ^=
-                  taxaListSTPtr->indexArySL[ulElm];
-               taxaListSTPtr->indexArySL[ulElm] ^=
-                  taxaListSTPtr->indexArySL[nextUL];
+               taxaSTPtr->indexArySL[ulElm] ^=
+                  taxaSTPtr->indexArySL[nextUL];
+               taxaSTPtr->indexArySL[nextUL] ^=
+                  taxaSTPtr->indexArySL[ulElm];
+               taxaSTPtr->indexArySL[ulElm] ^=
+                  taxaSTPtr->indexArySL[nextUL];
 
                lastUL = ulElm;
                onUL = ulElm;
@@ -434,23 +435,23 @@ sortCodes_taxaList_krakTaxaId(
                   lastUL -= subUL;
 
                   if(
-                      taxaListSTPtr->sortCodeArySL[onUL]
-                    > taxaListSTPtr->sortCodeArySL[lastUL]
+                      taxaSTPtr->sortCodeArySL[onUL]
+                    > taxaSTPtr->sortCodeArySL[lastUL]
                   ) break; /*position element*/
 
-                  taxaListSTPtr->sortCodeArySL[onUL] ^=
-                     taxaListSTPtr->sortCodeArySL[lastUL];
-                  taxaListSTPtr->sortCodeArySL[lastUL] ^=
-                     taxaListSTPtr->sortCodeArySL[onUL];
-                  taxaListSTPtr->sortCodeArySL[onUL] ^=
-                     taxaListSTPtr->sortCodeArySL[lastUL];
+                  taxaSTPtr->sortCodeArySL[onUL] ^=
+                     taxaSTPtr->sortCodeArySL[lastUL];
+                  taxaSTPtr->sortCodeArySL[lastUL] ^=
+                     taxaSTPtr->sortCodeArySL[onUL];
+                  taxaSTPtr->sortCodeArySL[onUL] ^=
+                     taxaSTPtr->sortCodeArySL[lastUL];
 
-                  taxaListSTPtr->indexArySL[onUL] ^=
-                     taxaListSTPtr->indexArySL[lastUL];
-                  taxaListSTPtr->indexArySL[lastUL] ^=
-                     taxaListSTPtr->indexArySL[onUL];
-                  taxaListSTPtr->indexArySL[onUL] ^=
-                     taxaListSTPtr->indexArySL[lastUL];
+                  taxaSTPtr->indexArySL[onUL] ^=
+                     taxaSTPtr->indexArySL[lastUL];
+                  taxaSTPtr->indexArySL[lastUL] ^=
+                     taxaSTPtr->indexArySL[onUL];
+                  taxaSTPtr->indexArySL[onUL] ^=
+                     taxaSTPtr->indexArySL[lastUL];
 
                   onUL = lastUL;
                } /*Loop: move swapped element back*/
@@ -460,31 +461,31 @@ sortCodes_taxaList_krakTaxaId(
 
       subUL = (subUL - 1) / 3; /*Move to next round*/
    } /*Loop: all rounds*/
-} /*sortCodes_taxaList_krakTaxaId*/
+} /*sortCodes_taxa_krakTaxaId*/
 
 /*-------------------------------------------------------\
-| Fun08: findCode_taxaList_krakTaxaId
+| Fun08: findCode_taxa_krakTaxaId
 |  - returns index of taxa code, searches sorted list
 |    and returns unsorted list index
 | Input:
 |   - codeSL:
 |     o taxa code to search for
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId to search for code
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId to search for code
 | Output:
 |  - Returns:
 |    o index of taxa code
-|    o -1 if taxa code not in taxaListSTPtr
+|    o -1 if taxa code not in taxaSTPtr
 \-------------------------------------------------------*/
 signed long
-findCode_taxaList_krakTaxaId(
+findCode_taxa_krakTaxaId(
    signed long codeSL,
-   struct *taxaList_krakTaxaId taxaListSTPtr
+   struct *taxa_krakTaxaId taxaSTPtr
 ){
    signed long midSL = 0;
 
    signed long rightSL =
-      (slong) taxaListSTPtr->numTaxaUL - 1;
+      (slong) taxaSTPtr->numTaxaUL - 1;
 
    signed long leftSL = 0;
 
@@ -492,14 +493,14 @@ findCode_taxaList_krakTaxaId(
    { /*Loop: Search for the querys index*/
       midSL = (leftSL + rightSL) >> 1;
 
-     if(codeSL > taxaListSTPtr->sortCodeArySL[midSL])
+     if(codeSL > taxaSTPtr->sortCodeArySL[midSL])
          leftSL = midSL + 1;
 
-     else if(codeSL < taxaListSTPtr->sortCodeArySL[midSL])
+     else if(codeSL < taxaSTPtr->sortCodeArySL[midSL])
          rightSL = midSL - 1;
 
      else
-        return taxaListSTPtr->indexArySL[midSL];
+        return taxaSTPtr->indexArySL[midSL];
    } /*Loop: Search for the querys index*/
 
    return -1; /*taxa code not found*/
@@ -600,7 +601,7 @@ getLevel_krakTaxaId(
 |   - pStrictBl:
 |     o 1: only keep ids mapping to its level
 |     o 0: merge lower tree (root) levels with their
-|       upper (tip) levels
+|          upper (tip) levels
 |   - errSCPtr:
 |     o pointer to signed char to have errors
 |   - inFILE:
@@ -614,21 +615,21 @@ getLevel_krakTaxaId(
 |       - def_fileErr_krakId for file errors
 |       - def_noIds_krakId if no id's in file
 |   - Returns:
-|     o taxaList_krakId with list of taxon ids and names
+|     o taxa_krakId with list of taxon ids and names
 |       to extract
 |       - negative numbers in codeArySL denote merged
 |         tips (! pScrictBl) or for pScrictBl, taxa to
 |         ignore
 |     o 0 for no ids or error
 \-------------------------------------------------------*/
-struct taxaList_krakTaxaId *
+struct taxa_krakTaxaId *
 readReport_krakTaxaId(
    unsigned short startLevUS,   /*lowest level to print*/
    unsigned short endLevUS,     /*highest level to print*/
    unsigned long minDepthUL,    /*min depth to keep id*/
    signed char pStrictBl,       /*1: do not merge levels*/
    signed char *errSCPtr,
-   FILE *inFILE,                /*kraken2 report*/
+   void *inFILE                 /*kraken2 report*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun10 TOC:
    '   - gets codes of organisims to read ids out for
@@ -652,11 +653,13 @@ readReport_krakTaxaId(
    schar buffStr[def_lenBuff_fun10 + 1];
    schar *tmpStr = 0;
 
-   struct taxaList_krakTaxaId *retTaxaHeapST;
+   struct taxa_krakTaxaId *retTaxaHeapST;
 
    ulong histUL[def_maxDepth_krakTaxaId];
    ulong histLevUS[def_maxDepth_krakTaxaId];
       /*keeps track of were at in tree*/
+
+   ulong readDepthUL = 0;
 
    uint depthUI = 0;     /*current depth in tree*/
    uint tmpUI = 1;
@@ -731,8 +734,8 @@ readReport_krakTaxaId(
    while(
       fgets(
          buffStr,
-         inFILE,
-         def_lenBuff_fun10
+         def_lenBuff_fun10,
+         (FILE *) inFILE
       )
    ){ /*Loop: process file*/
       tmpStr = buffStr;
@@ -772,14 +775,34 @@ readReport_krakTaxaId(
       *   - move past reads only assigned to this organim
       \**************************************************/
 
-      /*get past unique read count*/
-      while(*tmpStr++ > 32) ;
+      /*in some cases (viruses) kraken will assign tab
+          for a lower taxonmic level ("root" and "Viruses"
+          for virus database)
+      */
 
-      while(*tmpStr++ < 33)
-      { /*Loop: move to level*/
-         if(*tmpStr == '/0')
-            goto fileErr_fun10_sec04;
-      } /*Loop: move to level*/
+      tmpStr +=
+         strToUL_base10str(
+            tmpStr,
+            &readDepthUL
+         );
+
+      if(*tmpStr > 32)
+         goto fileErr_fun10_sec04;
+         /*incomplete conversion*/
+
+      if(*tmpStr == '/0')
+         goto fileErr_fun10_sec04;
+
+      if(readDepthUL < minDepthUL)
+         continue; /*not enough read depth*/
+
+      ++tmpStr;
+
+      if(*tmpStr == '/0')
+         goto fileErr_fun10_sec04;
+
+      if(*tmpStr < 32)
+         continue; /*unkown taxanomic level*/
 
       /**************************************************\
       * Fun10 Sec03 Sub04:
@@ -840,7 +863,7 @@ readReport_krakTaxaId(
             sizeIdUL += def_lenId_fun10;
 
             if(
-               realloc_taxaList_krakTaxaId(
+               realloc_taxa_krakTaxaId(
                   retTaxaHeapST,
                   sizeIdUL
                )
@@ -854,9 +877,9 @@ readReport_krakTaxaId(
          \++++++++++++++++++++++++++++++++++++++++++++++*/
 
          tmpStr +=
-            strToUL_base10str(
+            strToSL_base10str(
                tmpStr,
-               &retTaxaHeapST->codeAryUL[
+               &retTaxaHeapST->codeArySL[
                   retTaxaHeapST->numTaxaUL
                ]
             );
@@ -864,6 +887,18 @@ readReport_krakTaxaId(
          if(*tmpStr > 32)
             goto fileErr_fun10_sec04;
             /*not white space*/
+
+         /*array to sort ids in*/
+         retTaxaHeapST->sortCodeArySL[
+            retTaxaHeapST->numTaxaUL
+         ] =
+            retTaxaHeapST->codeArySL[
+               retTaxaHeapST->numTaxaUL
+            ];
+
+         /*unsorted index*/
+         retTaxaHeapST->indexArySL =
+            retTaxaHeapST->numTaxaUL;
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
          + Fun10 Sec03 Sub06 Cat03:
@@ -881,6 +916,24 @@ readReport_krakTaxaId(
             retTaxaHeapST->nameAryStr,
             retTaxaHeapST->numTaxaUL
          ); /*add orgainism name to id array*/
+
+         tmpStr =
+            get_strAry(
+              retTaxaHeapST->namAryStr,
+              retTaxaHeapST->numTaxaUL
+            );
+
+         while(*tmpStr != '\0')
+         { /*Loop: remove spaces*/
+            if(*tmpStr == ' ')
+               *tmpStr = '_';
+
+            else if(*tmpStr < 32)
+            { /*Else If: at end of c-string*/
+               *tmpStr = '\0';
+               break;
+            } /*Else If: at end of c-string*/
+         } /*Loop: remove spaces*/
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
          + Fun10 Sec03 Sub06 Cat04:
@@ -943,6 +996,9 @@ readReport_krakTaxaId(
    ^   - clean up and return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
+   /*sort sorted code array for quick look ups later*/
+   sortCodes_taxa_krakTaxaId(retTaxaHeapST);
+
    *errSCPtr = 0;
    goto cleanErr_fun10_sec04;
 
@@ -964,3 +1020,118 @@ readReport_krakTaxaId(
    ret_fun10_sec04:;
       return retHeapST;
 } /*readReport_krakTaxaId*/
+
+/*-------------------------------------------------------\
+| Fun11: pIds_krakTaxaId
+|   - prints out read ids by taxa for kraken2
+| Input:
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId struct with taxa codes
+|       to extract/merge
+|   - prefixStr:
+|     o c-string with prefix to name files with
+|   - pStrictBl:
+|     o 1: only keep ids mapping to its level
+|     o 0: merge lower tree (root) levels with their
+|          upper (tip) levels
+|   - inFILE:
+|     o FILE pointer to kraken2 tsv output with read ids
+|       and their taxnomic assignments
+| Output:
+|   - Prints:
+|     o reads to files named "prefixStr-code-taxa.ids"
+|       were code is taxa code of file and taxa is taxa
+|       name for code
+|   - Returns:
+|     o 0 for no errors
+|     o def_memErr_krakTaxaId for memory errors
+|     o def_fileErr_krakTaxaId for file errors
+\-------------------------------------------------------*/
+signed char
+pIds_krakTaxaId(
+   struct taxa_krakTaxaId *taxaSTPtr,
+   signed char *prefixStr,
+   signed char pStrictBl,
+   void *inFILE
+){
+   signed long taxaSL = 0;
+   signed long indexSL = 0;
+   signed long mergeSL = 0;
+
+   #define idLen_fun11_krakTaxaId 128
+   signed char idStr[idLen_fun11_krakTaxaId];
+
+   #define lenBuff_fun11_krakTaxaId 1 << 15
+   signed char buffStr[buffLen_fun11_krakTaxaId];
+
+   while(
+      fgets(
+         buffStr,
+         buffLen_fun11_krakTaxaId,
+         (FILE *) inFILE
+       )
+   ){ /*Loop: get read ids*/
+      if(buffStr[0] == 'U')
+         continue; /*unclassified*/
+
+      while(*tmpStr++ < 33)
+      { /*Loop: move to read id*/
+         if(*tmpStr == '/0')
+            goto fileErr_fun10_sec04;
+      } /*Loop: move to read id*/
+
+      tmpStr +=
+         cpDelim_ulCp(
+            idStr,
+            tmpStr,
+            def_tab_ulCp,
+            (schar) '\t'
+         ); /*get the read id*/
+
+      while(*tmpStr++ < 33)
+      { /*Loop: move to taxa id*/
+         if(*tmpStr == '/0')
+            goto fileErr_fun10_sec04;
+      } /*Loop: move to taxa id*/
+
+      tmpStr +=
+         strToSL_base10str(
+            tmpStr,
+            &taxaSL
+         ); /*get taxa code*/
+
+      indexSL =
+         findCode_taxa_krakTaxaId(
+            taxaSL,
+            taxaSTPtr
+         );
+
+      if(indexSL < 0)
+         continue; /*not printing this taxa*/
+
+      if(
+            ! pStrictBl
+         && taxaSTPtr->mergeArySL[indexSL] < 0
+      ){ /*If: merging this with a lower taxa*/
+         mergeSL = 
+      } /*If: merging this with a lower taxa*/
+
+      else
+      { /*Else: not merging*/
+         tmpStr = buffStr;
+
+         tmpStr +=
+            cpDelim_ulCp(
+               tmpStr,
+               prefixStr,
+               def_tab_ulCp,
+               '\t'
+            ); /*copy read
+
+         *tmpStr++ += '-';
+
+         tmpStr +=
+            
+      } /*Else: not merging*/
+   } /*Loop: get read ids*/
+} /*pIds_krakTaxaId*/

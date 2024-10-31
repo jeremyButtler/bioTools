@@ -37,6 +37,7 @@
 
 /*.h files only*/
 #include "../genLib/dataTypeShortHand.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries
@@ -44,10 +45,6 @@
 !   o .c   #include "../genLib/strAry.h"
 !   o .h   #include "ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
-
-#define def_year_mainIllNano 2024
-#define def_month_mainIllNano 10
-#define def_day_mainIllNano 10
 
 #define def_minDepth_mainIllNano 10
 #define def_minPercDepth_mainIllNano 0.001f
@@ -75,10 +72,10 @@ pversion_mainIllNano(
 ){
    fprintf(
       (FILE *) outFILE,
-      "illNano version: %i-%02i-%02i\n",
-      def_year_mainIllNano,
-      def_month_mainIllNano,
-      def_day_mainIllNano
+      "illNano from bioTools version: %i-%02i-%02i\n",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 } /*pversion_mainIllNano*/
 

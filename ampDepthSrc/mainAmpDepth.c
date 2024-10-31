@@ -42,6 +42,7 @@
 /*No .c files*/
 #include "../genLib/dataTypeShortHand.h"
 #include "ampDepthDefs.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
@@ -69,10 +70,10 @@ void pversion_mainAmpDepth(
 
    fprintf(
       (FILE *) outFILE,
-      "ampDepth version: %i-%02i-%02i\n",
-      def_year_ampDepthDefs,
-      def_month_ampDepthDefs,
-      def_day_ampDepthDefs
+      "ampDepth from bioTools version: %i-%02i-%02i\n",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 } /*pversion_mainAmpDepth*/
 

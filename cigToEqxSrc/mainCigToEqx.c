@@ -39,6 +39,7 @@
 
 /*.h files only*/
 #include "../genLib/dataTypeShortHand.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
@@ -49,10 +50,6 @@
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 #define def_nAsSnp 0 /*1: treat anoymous bases as snps*/
-
-#define def_year_mainCigToEqx 2024
-#define def_month_mainCigToEqx 5
-#define def_day_mainCigToEqx 14
 
 /*-------------------------------------------------------\
 | Fun01: pversion_mainCigToEqx
@@ -70,10 +67,10 @@ pversion_mainCigToEqx(
 ){
    fprintf(
       outFILE,
-      "%i-%02i-%02i\n",
-      def_year_mainCigToEqx,
-      def_month_mainCigToEqx,
-      def_day_mainCigToEqx
+      "cigToEqx from bioTools version %i-%02i-%02i\n",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 } /*pversion_mainCigToEqx*/
 
@@ -763,10 +760,15 @@ main(
 
          fprintf(
             outFILE,
-            "\tVN:%i-%02i-%02i\tCL:cigToEqx -ref %s",
-            def_year_mainCigToEqx,
-            def_month_mainCigToEqx,
-            def_day_mainCigToEqx,
+            "\tVN:bioTools_%i-%02i-%02i\tCL:cigToEqx",
+            def_year_bioTools,
+            def_month_bioTools,
+            def_day_bioTools
+         );
+
+         fprintf(
+            outFILE,
+            " -ref %s",
             refFileStr
          );
 

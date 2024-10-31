@@ -33,6 +33,7 @@
 /*.h files only*/
 #include "../genLib/dataTypeShortHand.h"
 #include "../genLib/genMath.h"
+#include "../bioTools.h"
 
 #define def_readRate_mainEdDist 0
 #define def_minIndelLen_mainEdDist 10
@@ -45,10 +46,6 @@
 
 #define def_minDepth_mainEdDist 10 /*for depth profile*/
 #define def_depthProf_mainEdDist 0 /*run depth profile*/
-
-#define def_year_mainEdDist 2024
-#define def_month_mainEdDist 10
-#define def_day_mainEdDist 18
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
@@ -76,10 +73,10 @@ pversion_mainEdDist(
 ){
    fprintf(
       (FILE *) outFILE,
-      "edDist version: %i-%02i-%02i\n",
-      def_year_mainEdDist,
-      def_month_mainEdDist,
-      def_day_mainEdDist
+      "edDist from bioTools version: %i-%02i-%02i\n",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 } /*pversion_mainEdDist*/
 

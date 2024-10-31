@@ -41,6 +41,7 @@
 /*.h files only*/
 #include "../genLib/dataTypeShortHand.h"
 #include "../genAln/alnDefs.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden files
@@ -52,10 +53,6 @@
 !   o .h  #include "../genBio/ntTo2Bit.h"
 !   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
-
-#define def_year_mainMemwater 2024
-#define def_month_mainMemwater 8
-#define def_day_mainMemwater 25
 
 #define def_fqFile_mainMemwater 0
 #define def_faFile_mainMemwater 1
@@ -81,10 +78,10 @@ pversion_mainMemwater(
 ){
    fprintf(
       (FILE *) outFILE,
-      "mainMemwater version: %i-02%i-02%i\n",
-      def_year_mainMemwater,
-      def_month_mainMemwater,
-      def_day_mainMemwater
+      "memwater from bioTools version: %i-02%i-02%i\n",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 } /*pversion_mainMemwater*/
 

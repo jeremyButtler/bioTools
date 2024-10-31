@@ -41,7 +41,7 @@
 
 /*No .c files (only .h)*/
 #include "../genLib/dataTypeShortHand.h"
-#include "maskPrimVersion.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries
@@ -198,10 +198,10 @@ pversion_mainMaskPrim(
 ){
    fprintf(
       (FILE *) outFILE,
-      "maskPrim version: %i-%02i-%02i\n",
-      def_year_maskPrimVersion,
-      def_month_maskPrimVersion,
-      def_day_maskPrimVersion
+      "maskPrim from bioTools version: %i-%02i-%02i\n",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 } /*pversion_mainMaskPrim*/
 
@@ -1044,10 +1044,10 @@ main(
 
    fprintf(
       outFILE,
-      "\tVN:%i-%02i-%02i\tCL:maskPrim -mask %c",
-      def_year_maskPrimVersion,
-      def_month_maskPrimVersion,
-      def_day_maskPrimVersion,
+      "\tVN:bioTools_%i-%02i-%02i\tCL:maskPrim -mask %c",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools,
       maskSC
    );
 

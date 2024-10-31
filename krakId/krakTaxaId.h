@@ -23,10 +23,10 @@
 #define def_species_krakTaxaId 1 << 9 /*512*/
 
 /*-------------------------------------------------------\
-| ST01: taxaList_krakTaxaId
+| ST01: taxa_krakTaxaId
 |   - has taxa names and ids to extract by
 \-------------------------------------------------------*/
-typedef struct taxaList_krakTaxaId
+typedef struct taxa_krakTaxaId
 {
    signed long *codeArySL;    /*taxa codes for oragnisms*/
    signed char *nameAryStr;/*string name with taxa names*/
@@ -39,117 +39,117 @@ typedef struct taxaList_krakTaxaId
 
    unsigned long numTaxaUL;  /*number detected taxa*/
    unsigned long sizeTaxaUL; /*size of all arrays*/
-}taxaList_krakTaxaId;
+}taxa_krakTaxaId;
 
 /*-------------------------------------------------------\
-| Fun01: blank_taxaList_krakTaxaId
-|   - blanks a taxaList_krakTaxaId structure
+| Fun01: blank_taxa_krakTaxaId
+|   - blanks a taxa_krakTaxaId structure
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId struct to blank
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId struct to blank
 | Output:
 |   - Modifies:
 |     o nothing; just here for future poofing
 \-------------------------------------------------------*/
 void
-blank_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr
+blank_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr
 );
 
 /*-------------------------------------------------------\
-| Fun02: init_taxaList_krakTaxaId
-|   - initializes a taxaList_krakTaxaId structure
+| Fun02: init_taxa_krakTaxaId
+|   - initializes a taxa_krakTaxaId structure
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId to initiazlize
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId to initiazlize
 | Output:
 |   - Modifies:
-|     o sets everything in taxaListSTPtr to 0
+|     o sets everything in taxaSTPtr to 0
 \-------------------------------------------------------*/
 void
-init_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr
+init_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr
 );
 
 /*-------------------------------------------------------\
-| Fun03: freeStack_taxaList_krakTaxaId
-|   - frees variables in a taxaList_krakTaxaId structure
+| Fun03: freeStack_taxa_krakTaxaId
+|   - frees variables in a taxa_krakTaxaId structure
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId with vars to free
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId with vars to free
 | Output:
 |   - Frees:
-|     o all variables in taxaListSTPtr (sets vars to 0)
+|     o all variables in taxaSTPtr (sets vars to 0)
 \-------------------------------------------------------*/
 void
-freeStack_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr
+freeStack_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr
 );
 
 /*-------------------------------------------------------\
-| Fun04: freeHeap_taxaList_krakTaxaId
-|   - frees a taxaList_krakTaxaId structure
+| Fun04: freeHeap_taxa_krakTaxaId
+|   - frees a taxa_krakTaxaId structure
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId to free
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId to free
 | Output:
 |   - Frees:
-|     o taxaListSTPtr (you must set to null (0))
+|     o taxaSTPtr (you must set to null (0))
 \-------------------------------------------------------*/
 void
-freeHeap_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr
+freeHeap_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr
 );
 
 /*-------------------------------------------------------\
-| Fun05: setup_taxaList_krakTaxaId
-|   - allocates memory for a taxaList_krakTaxaId struc
+| Fun05: setup_taxa_krakTaxaId
+|   - allocates memory for a taxa_krakTaxaId struc
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId to setup memory
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId to setup memory
 |   - numElmUL:
 |     o number of elements to allocate memory for
 | Output:
 |   - Modifies:
-|     o all arrays in taxaListSTPtr to have memory
+|     o all arrays in taxaSTPtr to have memory
 |   - Returns:
 |     o 0 for no errors
 |     o def_memErr_krakTaxaId for memory errors
 \-------------------------------------------------------*/
 signed char
-setup_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr,
+setup_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr,
    unsigned long numElmUL
 );
 
 /*-------------------------------------------------------\
-| Fun06: realloc_taxaList_krakTaxaId
-|   - reallocates memory for a taxaList_krakTaxaId struc
+| Fun06: realloc_taxa_krakTaxaId
+|   - reallocates memory for a taxa_krakTaxaId struc
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId to resize
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId to resize
 |   - numElmUL:
 |     o number of elements to resize to
 | Output:
 |   - Modifies:
-|     o all arrays in taxaListSTPtr to be realloced
+|     o all arrays in taxaSTPtr to be realloced
 |   - Returns:
 |     o 0 for no errors
 |     o def_memErr_krakTaxaId for memory errors
 \-------------------------------------------------------*/
 signed char
-realloc_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr,
+realloc_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr,
    unsigned long numElmUL
 );
 
 /*-------------------------------------------------------\
-| Fun07: sortCodes_taxaList_krakTaxaId
+| Fun07: sortCodes_taxa_krakTaxaId
 |   - sorts the sortCodeArySL array while keeping the
-|     indexArySL in sync a taxaList_krakTaxaId
+|     indexArySL in sync a taxa_krakTaxaId
 | Input:
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId to sort
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId to sort
 | Output:
 |   - Modifies:
 |     o sortCodeArySL to be sorted lowest to greatest
@@ -157,26 +157,96 @@ realloc_taxaList_krakTaxaId(
 |       - idea: index is index to unsorted arrays
 \-------------------------------------------------------*/
 void
-sortCodes_taxaList_krakTaxaId(
-   struct *taxaList_krakTaxaId taxaListSTPtr
+sortCodes_taxa_krakTaxaId(
+   struct *taxa_krakTaxaId taxaSTPtr
 );
 
 /*-------------------------------------------------------\
-| Fun08: findCode_taxaList_krakTaxaId
+| Fun08: findCode_taxa_krakTaxaId
 |  - returns index of taxa code, searches sorted list
 |    and returns unsorted list index
 | Input:
 |   - codeSL:
 |     o taxa code to search for
-|   - taxaListSTPtr:
-|     o pointer to taxaList_krakTaxaId to search for code
+|   - taxaSTPtr:
+|     o pointer to taxa_krakTaxaId to search for code
 | Output:
 |  - Returns:
 |    o index of taxa code
-|    o -1 if taxa code not in taxaListSTPtr
+|    o -1 if taxa code not in taxaSTPtr
 \-------------------------------------------------------*/
 signed long
-findCode_taxaList_krakTaxaId(
+findCode_taxa_krakTaxaId(
    signed long codeSL,
-   struct *taxaList_krakTaxaId taxaListSTPtr
+   struct *taxa_krakTaxaId taxaSTPtr
+);
+
+/*-------------------------------------------------------\
+| Fun09: getLevel_krakTaxaId
+|   - get the level in heirchyy of a kraken entry (col 4)
+| Input:
+|   - taxaStr:
+|     o string with taxa assignment to get number for
+| Output:
+|   - Returns:
+|     - taxa numuber + sub-taxa level (ex: for D1; D + 1)
+|       o unclassified def_unclassifed_krakTaxaId; no level
+|       o root def_root_krakTaxaId + level
+|       o domain def_domain_krakTaxaId + level
+|       o phylum def_phylum_krakTaxaId + level
+|       o class def_class_krakTaxaId + level
+|       o order def_order_krakTaxaId + level
+|       o family def_family_krakTaxaId + level
+|       o genus def_genus_krakTaxaId + level
+|       o species def_species_krakTaxaId + level
+\-------------------------------------------------------*/
+unsigned short
+getLevel_krakTaxaId(
+   signed char *taxaStr
+);
+
+/*-------------------------------------------------------\
+| Fun10: readReport_krakTaxaId
+|   - gets codes of organisims for read ids print otu
+| Input:
+|   - startLevUS:
+|     o lowest level (nearest root) to start printing for
+|     o use getLevel_krakTaxaId to get this
+|   - endLevUS:
+|     o highest level (nearest tip) to start printing for
+|     o use getLevel_krakTaxaId to get this
+|   - minDepthUL:
+|     o min read depth to keep an id
+|   - pStrictBl:
+|     o 1: only keep ids mapping to its level
+|     o 0: merge lower tree (root) levels with their
+|          upper (tip) levels
+|   - errSCPtr:
+|     o pointer to signed char to have errors
+|   - inFILE:
+|     o FILE pointer to kraken2 tsv report with taxons
+|       to extract
+| Output:
+|   - Modifies:
+|     o errSCPtr:
+|       - 0 for no errors
+|       - def_memErr_krakId for memory errors
+|       - def_fileErr_krakId for file errors
+|       - def_noIds_krakId if no id's in file
+|   - Returns:
+|     o taxa_krakId with list of taxon ids and names
+|       to extract
+|       - negative numbers in codeArySL denote merged
+|         tips (! pScrictBl) or for pScrictBl, taxa to
+|         ignore
+|     o 0 for no ids or error
+\-------------------------------------------------------*/
+struct taxa_krakTaxaId *
+readReport_krakTaxaId(
+   unsigned short startLevUS,   /*lowest level to print*/
+   unsigned short endLevUS,     /*highest level to print*/
+   unsigned long minDepthUL,    /*min depth to keep id*/
+   signed char pStrictBl,       /*1: do not merge levels*/
+   signed char *errSCPtr,
+   FILE *inFILE                 /*kraken2 report*/
 );

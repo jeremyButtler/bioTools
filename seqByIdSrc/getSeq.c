@@ -143,7 +143,7 @@ ulfq_getSeq(
    '  o fun02 sec03:
    '    - move past header
    '  o fun02 sec04:
-   '    - find number of lines in sequence entry
+   '    - find number of bases in sequence entry
    '  o fun02 sec05:
    '     - move past spacer entry
    '  o fun02 Sec06:
@@ -232,7 +232,7 @@ ulfq_getSeq(
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun02 Sec04:
-    ^   - find number of lines in sequence entry
+    ^   - find number of bases in sequence entry
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
     lenSeqSL = (signed long) (*posUL - 1) * -1;

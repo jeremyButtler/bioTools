@@ -148,7 +148,8 @@ cnvtIdToHexAry_searchST(
    ^   - convert the read id
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   idStr += (*idStr == '\n');
+   idStr += (*idStr == '\r'); /*windows end of line*/
+   idStr += (*idStr == '\n'); /*windows/unix end of line*/
    idStr += ( (*idStr == '@') | (*idStr == '>') );
 
    idAryUL[sumPosUL] = 0; /*blank total limb*/
@@ -1258,8 +1259,10 @@ getReadIds_searchST(
 
       ulId += endLine_ulCp(&buffStr[ulId]);
 
-      while(buffStr[ulId] != '\n')
-      { /*Loop: till on the next id (next line)*/
+      while(
+            buffStr[ulId] != '\n'  /*always end of line*/
+         && buffStr[ulId] != '\r'  /*for windows*/
+      ){ /*Loop: till on the next id (next line)*/
          newBytesUL =
             fread(
                (char *) buffStr,

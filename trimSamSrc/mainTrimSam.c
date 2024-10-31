@@ -31,7 +31,7 @@
 
 /*no .c files*/
 #include "../genLib/dataTypeShortHand.h"
-#include "trimSamVer.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
@@ -61,10 +61,10 @@ pversion_mainTrimSam(
 ){
    fprintf(
       (FILE *) outFILE,
-      "trimSam version: %i-%02i-%02i\n",
-      def_year_trimSamVer,
-      def_month_trimSamVer,
-      def_day_trimSamVer
+      "trimSam from bioTools version: %i-%02i-%02i\n",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 } /*pversion_mainTrimSam*/
 
@@ -669,15 +669,15 @@ main(
 
     fprintf( 
        (FILE *) outFILE,
-       "@PG\tID:trimSam\tPN:trimSam\tVN:%i-%02i-%02i",
-       def_year_trimSamVer,
-       def_month_trimSamVer,
-       def_day_trimSamVer
+       "@PG\tID:trimSam\tPN:trimSam"
     );
 
     fprintf(
        (FILE *) outFILE,
-       "\tCL:trimSam"
+       "\tVN:bioTools_%i-%02i-%02i\tCL:trimSam",
+       def_year_bioTools,
+       def_month_bioTools,
+       def_day_bioTools
     );
 
     if(keepNoMapBl)

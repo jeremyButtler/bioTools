@@ -44,6 +44,7 @@
 /*.h files only (no .c files)*/
 #include "../genLib/dataTypeShortHand.h"
 #include "../genBio/tbConDefs.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
@@ -53,10 +54,6 @@
 !   - .h  #include "../genLib/genMath.h" .h min macro only
 !   - .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
-
-#define def_year_mainEdClust 2024
-#define def_month_mainEdClust 10
-#define def_day_mainEdClust 15
 
 /*-------------------------------------------------------\
 | Fun01: pversion_mainEdClust
@@ -74,10 +71,10 @@ pversion_mainEdClust(
 ){
    fprintf(
       (FILE *) outFILE,
-      "edClust version: %i-%02i-%02i\n",
-      def_year_mainEdClust,
-      def_month_mainEdClust,
-      def_day_mainEdClust
+      "edClust from bioTools version: %i-%02i-%02i\n",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 } /*pversion_mainEdClust*/
 
@@ -1699,7 +1696,8 @@ pgHead_mainEdClust(
    tmpStr +=
       cpDelim_ulCp(
          tmpStr,
-         (schar *) "@PG\tID:edClust\tPN:edClust\tVN:",
+         (schar *)
+            "@PG\tID:edClust\tPN:edClust\tVN:bioTools_",
          0,
          0
       );
@@ -1712,35 +1710,35 @@ pgHead_mainEdClust(
    tmpStr +=
       numToStr(
          tmpStr,
-         def_year_mainEdClust
+         def_year_bioTools
       );
 
    *tmpStr++ = '-';
 
-   if(def_month_mainEdClust > 9)
+   if(def_month_bioTools > 9)
    { /*If: month has two digits*/
-      *tmpStr++ = 48 + (def_month_mainEdClust / 10);
-      *tmpStr++ = 48 + (def_month_mainEdClust % 10);
+      *tmpStr++ = 48 + (def_month_bioTools / 10);
+      *tmpStr++ = 48 + (def_month_bioTools % 10);
    } /*If: month has two digits*/
 
    else
    { /*Else: month has one digit*/
       *tmpStr++ = '0';
-      *tmpStr++ = 48 + def_month_mainEdClust;
+      *tmpStr++ = 48 + def_month_bioTools;
    } /*Else: month has one digit*/
 
    *tmpStr++ = '-';
 
-   if(def_day_mainEdClust > 9)
+   if(def_day_bioTools > 9)
    { /*If: day has two digits*/
-      *tmpStr++ = 48 + (def_day_mainEdClust / 10);
-      *tmpStr++ = 48 + (def_day_mainEdClust % 10);
+      *tmpStr++ = 48 + (def_day_bioTools / 10);
+      *tmpStr++ = 48 + (def_day_bioTools % 10);
    } /*If: day has two digits*/
 
    else
    { /*Else: day has one digit*/
       *tmpStr++ = '0';
-      *tmpStr++ = 48 + def_day_mainEdClust;
+      *tmpStr++ = 48 + def_day_bioTools;
    } /*Else: day has one digit*/
 
    *tmpStr++ = '\t';

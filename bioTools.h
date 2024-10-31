@@ -1,16 +1,10 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-' maskPrimVersion SOF: Start Of File
-'   - has version number and print function for maskPrim
+' Has verision numbers for bio tools
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-#ifndef PRIMER_MASK_VERSION_H
-#define PRIMER_MASK_VERSION_H
-
-#define def_year_maskPrimVersion 2024
-#define def_month_maskPrimVersion 8
-#define def_day_maskPrimVersion 6
-
-#endif
+#define def_year_bioTools 2024
+#define def_month_bioTools 10
+#define def_day_bioTools 31
 
 /*=======================================================\
 : License:
@@ -19,8 +13,8 @@
 :   However, for cases were the public domain is not
 :   suitable, such as countries that do not respect the
 :   public domain or were working with the public domain
-:   is inconveint / not possible, this code is under the
-:   MIT license
+:   is inconvient / not possible, this code is under the
+:   MIT license.
 : 
 : Public domain:
 : 

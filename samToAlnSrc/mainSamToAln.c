@@ -43,6 +43,7 @@
 
 /*no .c files*/
 #include "../genLib/dataTypeShortHand.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden dependices
@@ -51,10 +52,6 @@
 !   - .h  #include "../genBio/ntTo5Bit.h"
 !   - .h  #include "../genAln/alnDefs.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
-
-#define def_year_samToAlnMain 2024
-#define def_month_samToAlnMain 9
-#define def_day_samToAlnMain 5
 
 #define def_pmask_samToAlnMain 0    /*print masked bases*/
 #define def_ppos_samToAlnMain 1     /*print positions*/
@@ -76,10 +73,10 @@ pversion_samToAlnMain(
 ){
    fprintf(
       (FILE *) outFILE,
-      "samToAln version: %i-%02i-%02i\n",
-      def_year_samToAlnMain,
-      def_month_samToAlnMain,
-      def_day_samToAlnMain
+      "samToAln from bioTools version: %i-%02i-%02i\n",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 } /*pversion_samToAlnMain*/
 
@@ -990,14 +987,14 @@ main(
    \*****************************************************/
 
    fprintf(
-      (FILE *) outFILE,
-      "#PG\tID:%s\tPN:%s\tVN:%i-%02i-%02i\tCL:%s",
-      "samToAln",
-      "samToAln",
-      def_year_samToAlnMain,
-      def_month_samToAlnMain,
-      def_day_samToAlnMain,
-      "samToAln"
+     (FILE *) outFILE,
+     "#PG\tID:%s\tPN:%s\tVN:bioTools_%i-%02i-%02i\tCL:%s",
+     "samToAln",
+     "samToAln",
+     def_year_bioTools,
+     def_month_bioTools,
+     def_day_bioTools,
+     "samToAln"
    ); /*print command without user arguments*/
 
    for(

@@ -87,12 +87,15 @@ The mkfileScripts directory has bash scripts to build
     - finds mean read depth of amplicons and the genes
       they cover
     - you need to provide a coordinate file for this
+    - convert regular cigars to eqx cigars (only one
+      reference is supported)
   - adjMap (fluDI/freezeTB):
     - adjust mapping coordinates to a new reference
       - reference and reads must be sam files
     - needs some debugging still, but close
   - cigToEqx (freezeTB):
-    - convert regular cigars to eqx cigars
+    - convert regular cigars to eqx cigars (only one
+      reference is supported [TODO: fix])
   - krakTaxaId:
     - split up kraken reads by taxa id
     - side project, more of idea phase right now, so
@@ -116,6 +119,7 @@ The mkfileScripts directory has bash scripts to build
     - tsv file with coordinates is needed
   - samToAln:
     - convert sam file to human readable alignment
+    - uses first reference from file [TODO: fix])
     - this is how to get a viewable alignment for alnwater
     - emboss like format, except the "|"'s are replaced
       with cigar symbols "SIDX=".
@@ -135,13 +139,20 @@ My general libraries.
   or primer scanning (biology)
 - genClust is for clustering our grouping tasks (biology)
 
+# Updates:
+
+- 2024-10-31:
+  - replaced program specific version numbers with a
+    general "bioTools" version (less mantinace)
+  - added in detection of carraige returns for samEntry
+    and other programs (more windows freindly)
+    - vector (scalar does) seqById does not recongize
+      carriage returns, but this should not affect
+      performace, so not worth changing.
+
 # TODO:
 
-1. mixed infection detection (what focused on)
-   - main project (fluDI/freezeTB) and why edDist exists
-   - profClust was one attempt that never took off, likley
-     will be abandoned
-2. make replacement for make (different repo/side project)
+1. make replacement for make (different repo/side project)
    - make is getting to clunky, need to take some time to
      make a OS portable replacement that is more geared to
      projects like bioTools (many programs referencing
@@ -149,26 +160,27 @@ My general libraries.
 2. finish debugging ajdMap (side project)
    - not quite working, some reads get a few extra cigar
      entries (think due to softmasked end)
-3. make alnneedle (personal project)
-   - copy alnwater and set up for needle.c in genAln
-4. add in hirschberg/myers miller (personal project)
+3. add in hirschberg/myers miller (personal project)
    - need to modify hirsch from alnSeq for new style
      and OS portablility. So, conversion project, with a
      bith of thought.
-6. add using_this_code guides (using in C code) for
+4. add using_this_code guides (using in C code) for
    programs and libraries
    - less likely to happen, lot of work for shoddy guides
-8. convert graphAmpDepth.r to base R (remove ggplot)
-9. give samBin some attention (never conveted)
+5. work on bugs in graphAmpDepth.r
+6. give samBin some attention (never conveted)
+7. add in multi-reference support for samToAln and
+   cigToEqx
+8. get krakTaxaId working (current side project)
 
 # Thanks
 
 - Eric and Tara Ness, Bryce Inman, and the rest of the
   Bort's lab for providing a place to develop code
   - Also, some of this code was developed for or to
-    debug freezeTB 
-- Devin Drown for his mentor ship. seqById was an improved
-  version of fqGetIds, a program I wrote for
+    debug freezeTB or fluDI
+- Devin Drown for his mentor ship. seqById and hopefully
+  edClust are improved version programs written for
   find-co--infections
 - My dad for being there and supportive and a person to
   bounce ids off or talk to

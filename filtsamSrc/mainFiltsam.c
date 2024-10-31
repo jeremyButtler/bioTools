@@ -87,11 +87,6 @@
 /*print out anonymous counts when doing an stats print*/
 #define def_nPrint_mainFiltsam 1 /*1: yes, 0 is no*/
 
-/*Version number*/
-#define def_year_mainFiltsam 2024
-#define def_month_mainFiltsam 5
-#define def_day_mainFiltsam 14
-
 /*-------------------------------------------------------\
 | Fun01: pversion_mainFiltsam
 |   - prints out the version number for mainFiltsam
@@ -109,10 +104,10 @@ pversion_mainFiltsam(
 
    fprintf(
       (FILE *) outFILE,
-      "mainFiltsam version: %i-%02i-%02i\n",
-      def_year_mainFiltsam,
-      def_month_mainFiltsam,
-      def_day_mainFiltsam
+      "mainFiltsam from bioTools version: %i-%02i-%02i\n",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
    );
 } /*pversion_mainFiltsam*/
 
