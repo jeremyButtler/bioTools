@@ -139,6 +139,8 @@ My general libraries.
 
 # Updates:
 
+- 2024-11-13:
+  - added k2TaxaId program
 - 2024-10-31:
   - replaced program specific version numbers with a
     general "bioTools" version (less mantinace)
@@ -165,11 +167,9 @@ My general libraries.
 4. add using_this_code guides (using in C code) for
    programs and libraries
    - less likely to happen, lot of work for shoddy guides
-5. work on bugs in graphAmpDepth.r
 6. give samBin some attention (never conveted)
 7. add in multi-reference support for samToAln and
    cigToEqx
-8. get krakTaxaId working (current side project)
 
 # Thanks
 
