@@ -8,7 +8,7 @@ O=o.win
 genLib=..\genLib
 
 objFiles= \
-   ..\k2TaxaId\k2TaxaId.$O \
+   k2TaxaId.$O \
    $(genLib)\strAry.$O \
    $(genLib)\ulCp.$O \
    $(genLib)\base10str.$O \
@@ -19,11 +19,11 @@ objFiles= \
 all: mainK2TaxaId.$O
 	$(LD) /out:$(NAME) $(objFiles)
 
-mainK2TaxaId.$O: mainK2TaxaId.c ..\k2TaxaId\k2TaxaId.$O
+mainK2TaxaId.$O: mainK2TaxaId.c k2TaxaId.$O
 	$(CC) /Fo:mainK2TaxaId.$O /c $(CFLAGS) mainK2TaxaId.c
 
-..\k2TaxaId\k2TaxaId.$O: ..\k2TaxaId\k2TaxaId.c ..\k2TaxaId\k2TaxaId.h $(genLib)\strAry.$O $(genLib)\numToStr.$O $(genLib)\base10str.$O $(genLib)\genMath.$O
-	$(CC) /Fo:..\k2TaxaId\k2TaxaId.$O /c $(CFLAGS) ..\k2TaxaId\k2TaxaId.c
+k2TaxaId.$O: k2TaxaId.c k2TaxaId.h $(genLib)\strAry.$O $(genLib)\numToStr.$O $(genLib)\base10str.$O $(genLib)\genMath.$O
+	$(CC) /Fo:k2TaxaId.$O /c $(CFLAGS) k2TaxaId.c
 
 $(genLib)\strAry.$O: $(genLib)\strAry.c $(genLib)\strAry.h $(genLib)\ulCp.$O
 	$(CC) /Fo:$(genLib)\strAry.$O /c $(CFLAGS) $(genLib)\strAry.c
