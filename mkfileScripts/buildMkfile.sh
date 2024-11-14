@@ -362,6 +362,9 @@ fi # check makefile type
 #     - genAln libraries
 #   o sec03 sub05:
 #     - genClust libraries
+#   o sec03 sub06:
+#     - non-general libraries
+#     - not general enough to be a general library
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 #*********************************************************
@@ -825,6 +828,27 @@ edClustObj=""$genClustStr"edClust.\$O";
 edClustDep=("clustST" ${clustSTDep[*]});
 lenEdClustDep=$((1 + lenClustSTDep));
 
+#*********************************************************
+# Sec03 Sub06:
+#   - non-general libraries
+#   - not general enough to be a general library
+#   o sec03 sub06 cat01:
+#     - k2TaxaId
+#*********************************************************
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub06 Cat01:
+#   - k2TaxaId
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+tmpStr=".."$slashSC"k2TaxaId"$slashSC"k2TaxaId";
+k2TaxaIdStr="$tmpStr.\$O: $tmpStr.c $tmpStr.h "$genLibStr"strAry.\$O "$genLibStr"numToStr.\$O "$genLibStr"base10str.\$O "$genLibStr"genMath.\$O
+	$ccStr $dashOStr$tmpStr.\$O "$dashCStr" $cflagsStr $tmpStr.c";
+
+k2TaxaIdObj="$tmpStr.\$O";
+k2TaxaIdDep=("strAry" ${strAryDep[*]} "base10str" ${base10strDep[*]} "numToStr" ${numToStrDep[*]} "genMath" ${genMathDep[*]});
+lenK2TaxaIdDep=$((1 + lenStrAryDep + lenBase10strDep + lenNumToStrDep + lenGenMathDep));
+
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # Sec04:
 #   - build make file command
@@ -839,6 +863,8 @@ lenEdClustDep=$((1 + lenClustSTDep));
 #   o sec04 sub05:
 #     - genClust libraries
 #   o sec04 sub06:
+#     - non-general library files
+#   o sec04 sub07:
 #     - move to next library or dependency
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -1783,10 +1809,41 @@ while [[ $# -gt 0 || "$depSI" -lt "$lenDep" ]]; do
       fi
    # Else If: edClust library
 
+   #******************************************************
+   # Sec04 Sub06:
+   #   - non-general library files
+   #   o sec04 sub06 cat01:
+   #     - k2TaxaId
+   #******************************************************
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub06 Cat01:
+   #   - k2TaxaId
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [[ "$libStr" == "k2TaxaId" ]]; then
+   # Else If: k2TaxaId program
+      if [[ "$k2TaxaIdBl" == "" ]]; then
+         cmdStr="$cmdStr$newLineStr$k2TaxaIdStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr=""$objFilesStr""$k2TaxaIdObj"";
+
+         if [[ "$mainLibBl" == "" ]]; then
+            mainCmdStr="$mainCmdStr $k2TaxaIdObj";
+         fi
+
+         k2TaxaIdBl=1;
+
+         depAry+=(${k2TaxaIdDep[*]});
+         lenDep=$((lenDep + lenK2TaxaIdDep));
+      fi
+   # Else If: k2TaxaId program
+
+
    fi # check librarys called
 
    #******************************************************
-   # Sec04 Sub06:
+   # Sec04 Sub07:
    #   - move to next library or dependency
    #******************************************************
 

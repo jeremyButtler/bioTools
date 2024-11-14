@@ -1,0 +1,16 @@
+b mainK2TaxaId.c:888
+
+r -id test.id -report test.tsv -prefix delete
+#r -id viral.id -report viral-rep.tsv -prefix delete -end S1
+
+define pTaxa
+   set $siCnt = 0
+
+   while($siCnt < taxaHeapST->numTaxaSL)
+      printf "%s", &taxaHeapST->idAryStr[64 * $siCnt]
+      printf "\t%li", taxaHeapST->codeArySL[$siCnt]
+      printf "\t%li", taxaHeapST->backTrackArySL[$siCnt]
+      printf "\t%i\n", taxaHeapST->mergeAryBl[$siCnt]
+      set $siCnt = $siCnt + 1
+   end
+end

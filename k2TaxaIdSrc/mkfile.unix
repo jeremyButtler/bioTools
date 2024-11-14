@@ -1,0 +1,48 @@
+LD=cc
+CC=cc
+CFLAGS= -O3 -std=c89 -Wall -Wextra
+NAME=k2TaxaId
+PREFIX=/usr/local/bin
+O=o.unix
+
+genLib=../genLib
+
+objFiles= \
+   ../k2TaxaId/k2TaxaId.$O \
+   $(genLib)/strAry.$O \
+   $(genLib)/ulCp.$O \
+   $(genLib)/base10str.$O \
+   $(genLib)/numToStr.$O \
+   $(genLib)/genMath.$O \
+   mainK2TaxaId.$O
+
+all: mainK2TaxaId.$O
+	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
+
+mainK2TaxaId.$O: mainK2TaxaId.c ../k2TaxaId/k2TaxaId.$O
+	$(CC) -o mainK2TaxaId.$O -c $(CFLAGS) mainK2TaxaId.c
+
+../k2TaxaId/k2TaxaId.$O: ../k2TaxaId/k2TaxaId.c ../k2TaxaId/k2TaxaId.h $(genLib)/strAry.$O $(genLib)/numToStr.$O $(genLib)/base10str.$O $(genLib)/genMath.$O
+	$(CC) -o ../k2TaxaId/k2TaxaId.$O -c $(CFLAGS) ../k2TaxaId/k2TaxaId.c
+
+$(genLib)/strAry.$O: $(genLib)/strAry.c $(genLib)/strAry.h $(genLib)/ulCp.$O
+	$(CC) -o $(genLib)/strAry.$O -c $(CFLAGS) $(genLib)/strAry.c
+
+$(genLib)/ulCp.$O: $(genLib)/ulCp.c $(genLib)/ulCp.h
+	$(CC) -o $(genLib)/ulCp.$O -c $(CFLAGS) $(genLib)/ulCp.c
+
+$(genLib)/base10str.$O: $(genLib)/base10str.c $(genLib)/base10str.h
+	$(CC) -o $(genLib)/base10str.$O -c $(CFLAGS) $(genLib)/base10str.c
+
+$(genLib)/numToStr.$O: $(genLib)/numToStr.c $(genLib)/numToStr.h
+	$(CC) -o $(genLib)/numToStr.$O -c $(CFLAGS) $(genLib)/numToStr.c
+
+$(genLib)/genMath.$O: $(genLib)/genMath.c $(genLib)/genMath.h
+	$(CC) -o $(genLib)/genMath.$O -c $(CFLAGS) $(genLib)/genMath.c
+
+install:
+	cp $(NAME) $(PREFIX)
+	chmod a+x $(PREFIX)/$(NAME)
+
+clean:
+	rm $(objFiles)
