@@ -640,7 +640,7 @@ swapDelim_ulCp(
       { /*Loop: copy first string*/
          *firstStr ^= *secStr;
          *secStr ^= *firstStr;
-         *firstStr ^= *secStr;
+         *firstStr++ ^= *secStr++;
       } /*Loop: copy first string*/
 
       *firstStr++ = *secStr;
@@ -683,7 +683,7 @@ swapDelim_ulCp(
       { /*Loop: copy first string*/
          *firstStr ^= *secStr;
          *secStr ^= *firstStr;
-         *firstStr ^= *secStr;
+         *firstStr++ ^= *secStr++;
       } /*Loop: copy first string*/
 
       *secStr++ = *firstStr;

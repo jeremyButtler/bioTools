@@ -77,6 +77,13 @@ The mkfileScripts directory has bash scripts to build
     - nock of of Ivar and who knows what other programs
     - positions of low confidence are replaced with a 'N',
       (no other anoymous bases are used)
+  - k2TaxaId:
+    - split up kraken reads by taxa id
+    - found out their is a similar tool to extract
+      sequences instead of read ids (probably better) at
+      [https://github.com/jenniferlu717/KrakenTools](
+       https://github.com/jenniferlu717/KrakenTools
+     )
 - niche or odd programs
   - adjCoords (freezeTB):
     - adjust mapping coordinates from genes to entire
@@ -96,8 +103,6 @@ The mkfileScripts directory has bash scripts to build
   - cigToEqx (freezeTB):
     - convert regular cigars to eqx cigars (only one
       reference is supported [TODO: fix])
-  - k2TaxaId:
-    - split up kraken reads by taxa id
   - edClust (fluDI/freezeTB):
     - needs testing, but is running
     - try to cluster reads by edit distance
