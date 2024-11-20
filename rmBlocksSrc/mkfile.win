@@ -1,0 +1,28 @@
+LD=link
+CC=cl
+CFLAGS= /O2 /Ot /Za /Tc
+EXTRA_FLAGS=""
+NAME=rmBlocks.exe
+PREFIX=%%HOME%%\appData
+O=o.win
+
+genLib=..\genLib
+
+objFiles= \
+   $(genLib)\rmBlocks.$O \
+   mainRmBlocks.$O
+
+all: mainRmBlocks.$O
+	$(LD) /out:$(NAME) $(objFiles)
+
+mainRmBlocks.$O: mainRmBlocks.c $(genLib)\rmBlocks.$O
+	$(CC) /Fo:mainRmBlocks.$O /c $(EXTRA_FLAGS) $(CFLAGS) mainRmBlocks.c
+
+$(genLib)\rmBlocks.$O: $(genLib)\rmBlocks.c $(genLib)\rmBlocks.h
+	$(CC) /Fo:$(genLib)\rmBlocks.$O /c $(EXTRA_FLAGS) $(CFLAGS) $(genLib)\rmBlocks.c
+
+install:
+	copy $(NAME) $(PREFIX)
+
+clean:
+	del $(objFiles)

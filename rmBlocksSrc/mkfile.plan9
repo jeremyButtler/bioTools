@@ -1,0 +1,27 @@
+<$objtype/mkfile
+CFLAGS= -DPLAN9
+EXTRA_FLAGS=-DBUG
+NAME=rmBlocks
+PREFIX=$home/bin
+
+genLib=../genLib
+
+objFiles= \
+   $genLib/rmBlocks.$O \
+   mainRmBlocks.$O
+
+all: mainRmBlocks.$O
+	$LD -o $NAME $CFLAGS $objFiles
+
+mainRmBlocks.$O: mainRmBlocks.c $genLib/rmBlocks.$O
+	$CC -o mainRmBlocks.$O $EXTRA_FLAGS $CFLAGS mainRmBlocks.c
+
+$genLib/rmBlocks.$O: $genLib/rmBlocks.c $genLib/rmBlocks.h
+	$CC -o $genLib/rmBlocks.$O $EXTRA_FLAGS $CFLAGS $genLib/rmBlocks.c
+
+install:
+	cp $(NAME) $(PREFIX)
+	chmod a+x $(PREFIX)/$(NAME)
+
+clean:
+	rm $(objFiles)

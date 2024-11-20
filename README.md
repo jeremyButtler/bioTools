@@ -130,6 +130,13 @@ The mkfileScripts directory has bash scripts to build
     - trims soft masking off reads in sam file
     - filtsam can do this with `-trim` and has filtering
       options
+- programs with no good reason:
+  - rmBlocks (freezeTB):
+    - is a pre-processor to merge block entries and then
+      remove the block markers
+    - here because I wanted line breaks in tcltk commands
+      and then just I decided to quickly make a main
+      function for it
 
 # genLib and genAln
 
@@ -144,6 +151,8 @@ My general libraries.
 
 # Updates:
 
+- 2024-11-19:
+  - added rmBlocks (pretty much useless)
 - 2024-11-13:
   - added k2TaxaId program
 - 2024-10-31:
