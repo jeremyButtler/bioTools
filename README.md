@@ -137,6 +137,11 @@ The mkfileScripts directory has bash scripts to build
     - here because I wanted line breaks in tcltk commands
       and then just I decided to quickly make a main
       function for it
+  - addLineEnd (freezeTB in rmBlocksSrc):
+    - escapes strings (`"` to `\"`), padds file lines to
+      55 characters, and adds a `\n\` to the end of each
+      line
+    - again here becuase of embeding tcltk script in C
 
 # genLib and genAln
 

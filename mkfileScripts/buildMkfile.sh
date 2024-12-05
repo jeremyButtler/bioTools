@@ -314,8 +314,8 @@ then # Else If: windows make file
 
 elif [[ "$osStr" == "plan9" ]];
 then # Else If: plan9 make file
-   headStr="<\$objtype/mkfile";
-   headStr="$headStr\nCFLAGS= -DPLAN9";
+   headStr="</\$objtype/mkfile";
+   headStr="$headStr\nCFLAGS=-DPLAN9";
    headStr="$headStr\nNAME=$nameStr";
    headStr="$headStr\nPREFIX=\$home/bin";
 
@@ -390,7 +390,11 @@ mainCmdStr="$mainFileStr.\$O: $mainFileStr.c"
 #   o sec03 sub02 cat06:
 #     - shellSort
 #   o sec03 sub02 cat07:
+#     - rmBlocks
+#   o sec03 sub02 cat08:
 #     - strAry
+#   o sec03 sub02 cat09:
+#     - ptrAry
 #*********************************************************
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -468,6 +472,18 @@ lenShellSortDep=1;
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub02 Cat07:
+#   - rmBlocks
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+rmBlocksStr=""$genLibStr"rmBlocks.\$O: "$genLibStr"rmBlocks.c "$genLibStr"rmBlocks.h
+	$ccStr "$dashOStr""$genLibStr"rmBlocks.\$O "$dashCStr" $cflagsStr "$genLibStr"rmBlocks.c"
+
+rmBlocksObj=""$genLibStr"rmBlocks.\$O";
+rmBlocksDep=("");
+lenRmBlocksDep=1;
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub02 Cat08:
 #   - strAry
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -478,6 +494,19 @@ strAryStr=""$genLibStr"strAry.\$O: "$genLibStr"strAry.c "$genLibStr"strAry.h "$g
 strAryObj=""$genLibStr"strAry.\$O";
 strAryDep=("ulCp" ${ulCpDep[0]});
 lenStrAryDep=$((1 + lenUlCpDep));
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub02 Cat09:
+#   - ptrAry
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ptrAryStr=""$genLibStr"ptrAry.\$O: "$genLibStr"ptrAry.c "$genLibStr"ptrAry.h "$genLibStr"ulCp.\$O
+	$ccStr "$dashOStr""$genLibStr"ptrAry.\$O "$dashCStr" $cflagsStr "$genLibStr"ptrAry.c";
+
+
+ptrAryObj=""$genLibStr"ptrAry.\$O";
+ptrAryDep=("ulCp" ${ulCpDep[0]});
+lenPtrAryDep=$((1 + lenUlCpDep));
 
 #*********************************************************
 # Sec03 Sub03:
@@ -841,13 +870,13 @@ lenEdClustDep=$((1 + lenClustSTDep));
 #   - k2TaxaId
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-tmpStr=".."$slashSC"k2TaxaId"$slashSC"k2TaxaId";
-k2TaxaIdStr="$tmpStr.\$O: $tmpStr.c $tmpStr.h "$genLibStr"strAry.\$O "$genLibStr"numToStr.\$O "$genLibStr"base10str.\$O "$genLibStr"genMath.\$O
+tmpStr=".."$slashSC"k2TaxaIdSrc"$slashSC"k2TaxaId";
+k2TaxaIdStr="$tmpStr.\$O: $tmpStr.c $tmpStr.h "$genLibStr"ptrAry.\$O "$genLibStr"shellSort.\$O "$genLibStr"numToStr.\$O "$genLibStr"base10str.\$O "$genLibStr"genMath.\$O
 	$ccStr $dashOStr$tmpStr.\$O "$dashCStr" $cflagsStr $tmpStr.c";
 
 k2TaxaIdObj="$tmpStr.\$O";
-k2TaxaIdDep=("strAry" ${strAryDep[*]} "base10str" ${base10strDep[*]} "numToStr" ${numToStrDep[*]} "genMath" ${genMathDep[*]});
-lenK2TaxaIdDep=$((1 + lenStrAryDep + lenBase10strDep + lenNumToStrDep + lenGenMathDep));
+k2TaxaIdDep=("ptrAry" ${ptrAryDep[*]} "base10str" ${base10strDep[*]} "numToStr" ${numToStrDep[*]} "genMath" ${genMathDep[*]} "shellSort" ${shellSortDep[*]} );
+lenK2TaxaIdDep=$((1 + lenPtrAryDep + lenBase10strDep + lenNumToStrDep + lenGenMathDep + lenShellShortDep));
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # Sec04:
@@ -909,7 +938,11 @@ while [[ $# -gt 0 || "$depSI" -lt "$lenDep" ]]; do
    #   o sec04 sub02 cat06:
    #     - shellSort
    #   o sec04 sub02 cat07:
+   #     - rmBlocks
+   #   o sec04 sub02 cat08:
    #     - strAry
+   #   o sec04 sub02 cat09:
+   #     - ptrAry
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1082,6 +1115,34 @@ while [[ $# -gt 0 || "$depSI" -lt "$lenDep" ]]; do
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
    # Sec04 Sub02 Cat07:
+   #   - rmBlocks
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [[ "$libStr" == "rmBlocks" ]]; then
+   # Else If: rmBlocks library
+      if [[ "$rmBlocksBl" == "" ]]; then
+         cmdStr="$cmdStr$newLineStr$rmBlocksStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr=""$objFilesStr""$rmBlocksObj"";
+
+         if [[ "$mainLibBl" == "" ]]; then
+            mainCmdStr="$mainCmdStr $rmBlocksObj";
+         fi
+
+         rmBlocksBl=1;
+
+         depAry+=(${rmBlocksDep[*]});
+         lenDep=$((lenDep + lenRmBlocksDep));
+      fi
+
+      if [[ "$genLibBl" -lt 1 ]]; then
+         genLibBl=1;
+         libPathStr="$libPathStr\ngenLib=.."$slashSC"genLib";
+      fi
+   # Else If: rmBlocks library
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub02 Cat08:
    #   - strAry
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1107,6 +1168,34 @@ while [[ $# -gt 0 || "$depSI" -lt "$lenDep" ]]; do
          libPathStr="$libPathStr\ngenLib=.."$slashSC"genLib";
       fi
    # Else If: strAry library
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub02 Cat09:
+   #   - ptrAry
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [[ "$libStr" == "ptrAry" ]]; then
+   # Else If: ptrAry library
+      if [[ "$ptrAryBl" == "" ]]; then
+         cmdStr="$cmdStr$newLineStr$ptrAryStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr=""$objFilesStr""$ptrAryObj"";
+
+         if [[ "$mainLibBl" == "" ]]; then
+            mainCmdStr="$mainCmdStr $ptrAryObj";
+         fi
+
+         ptrAryBl=1;
+
+         depAry+=(${ptrAryDep[*]});
+         lenDep=$((lenDep + lenPtrAryDep));
+      fi
+
+      if [[ "$genLibBl" -lt 1 ]]; then
+         genLibBl=1;
+         libPathStr="$libPathStr\ngenLib=.."$slashSC"genLib";
+      fi
+   # Else If: ptrAry library
 
    #******************************************************
    # Sec04 Sub03:
