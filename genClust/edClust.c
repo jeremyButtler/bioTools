@@ -963,7 +963,7 @@ getMaxDepth_edClust(
 |     o list of con_clustST structs with consensus
 |       clusters
 \-------------------------------------------------------*/
-con_clustST *
+struct con_clustST *
 cluster_edClust(
    struct index_clustST **indexSTPtr,
    struct set_clustST *clustSetSTPtr,

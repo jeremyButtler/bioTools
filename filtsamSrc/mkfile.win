@@ -19,7 +19,7 @@ objFiles= \
    mainFiltsam.$O
 
 all: mainFiltsam.$O
-	$(LD) /out:$(NAME).exe $(objFiles)
+	$(LD) /out:$(NAME) $(objFiles)
 
 mainFiltsam.$O: mainFiltsam.c $(genBio)\trimSam.$O $(genLib)\charCp.$O
 	$(CC) /Fo:mainFiltsam.$O /c $(CFLAGS) mainFiltsam.c
@@ -46,7 +46,7 @@ $(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
 	$(CC) /Fo:$(genLib)\charCp.$O /c $(CFLAGS) $(genLib)\charCp.c
 
 install:
-	copy $(NAME).exe $(PREFIX)
+	copy $(NAME) $(PREFIX)
 
 clean:
 	del $(objFiles)

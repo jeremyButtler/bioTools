@@ -42,7 +42,7 @@
 #ifndef KRAKEN_2_GET_TAXA_IDS_H
 #define KRAKEN_2_GET_TAXA_IDS_H
 
-typedef struct str_ptrAry str_ptrAry;
+struct str_ptrAry;
 
 #define def_maxLevels_k2TaxaId 64 /*deepest level*/
 #define def_maxDepth_k2TaxaId 32 /*maximum tree depth*/

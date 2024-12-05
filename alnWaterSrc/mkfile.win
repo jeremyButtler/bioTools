@@ -25,7 +25,7 @@ objFiles= \
    mainWater.$O
 
 all: mainWater.$O
-	$(LD) /out:$(NAME).exe $(objFiles)
+	$(LD) /out:$(NAME) $(objFiles)
 
 mainWater.$O: mainWater.c $(genAln)\water.$O $(genBio)\kmerCnt.$O
 	$(CC) /Fo:mainWater.$O /c $(CFLAGS) mainWater.c
@@ -67,7 +67,7 @@ $(genBio)\kmerCnt.$O: $(genBio)\kmerCnt.c $(genBio)\kmerCnt.h $(genBio)\seqST.$O
 	$(CC) /Fo:$(genBio)\kmerCnt.$O /c $(CFLAGS) $(genBio)\kmerCnt.c
 
 install:
-	copy $(NAME).exe $(PREFIX)
+	copy $(NAME) $(PREFIX)
 
 clean:
 	del $(objFiles)

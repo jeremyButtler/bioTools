@@ -27,7 +27,7 @@ all: mainSamToAln.$O
 mainSamToAln.$O: mainSamToAln.c $(genAln)/samToAln.$O $(genLib)/charCp.$O
 	$(CC) -o mainSamToAln.$O -c $(CFLAGS) mainSamToAln.c
 
-$(genAln)/samToAln.$O: $(genAln)/samToAln.c $(genBio)/samEntry.$O $(genBio)/seqST.$O $(genAln)/alnSet.$O
+$(genAln)/samToAln.$O: $(genAln)/samToAln.c $(genAln)/samToAln.h $(genBio)/samEntry.$O $(genBio)/seqST.$O $(genAln)/alnSet.$O
 	$(CC) -o $(genAln)/samToAln.$O -c $(CFLAGS) $(genAln)/samToAln.c
 
 $(genAln)/alnSet.$O: $(genAln)/alnSet.c $(genAln)/alnDefs.h $(genLib)/base10str.$O $(genLib)/dataTypeShortHand.h

@@ -20,7 +20,7 @@ objFiles= \
    mainAdjCoords.$O
 
 all: mainAdjCoords.$O
-	$(LD) /out:$(NAME).exe $(objFiles)
+	$(LD) /out:$(NAME) $(objFiles)
 
 mainAdjCoords.$O: mainAdjCoords.c $(genBio)\adjCoords.$O
 	$(CC) /Fo:mainAdjCoords.$O /c $(CFLAGS) mainAdjCoords.c
@@ -50,7 +50,7 @@ $(genLib)\numToStr.$O: $(genLib)\numToStr.c $(genLib)\numToStr.h
 	$(CC) /Fo:$(genLib)\numToStr.$O /c $(CFLAGS) $(genLib)\numToStr.c
 
 install:
-	copy $(NAME).exe $(PREFIX)
+	copy $(NAME) $(PREFIX)
 
 clean:
 	del $(objFiles)

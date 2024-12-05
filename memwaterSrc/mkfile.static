@@ -1,7 +1,6 @@
 LD=cc
 CC=cc
-CFLAGS= -O3 -std=c89 -static
-CFLAGS= -Wall -Wextra
+CFLAGS= -O3 -std=c89 -static -Wall -Wextra
 NAME=memwater
 PREFIX=/usr/local/bin
 O=o.static
@@ -17,14 +16,14 @@ objFiles= \
    $(genAln)/indexToCoord.$O \
    $(genBio)/seqST.$O \
    $(genLib)/ulCp.$O \
-   $(genBio)/kmerCnt.$O \
    $(genLib)/charCp.$O \
+   $(genBio)/kmerCnt.$O \
    mainMemwater.$O
 
 all: mainMemwater.$O
 	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
 
-mainMemwater.$O: mainMemwater.c $(genAln)/memwater.$O $(genBio)/kmerCnt.$O $(genLib)/charCp.$O
+mainMemwater.$O: mainMemwater.c $(genAln)/memwater.$O $(genLib)/charCp.$O $(genBio)/kmerCnt.$O
 	$(CC) -o mainMemwater.$O -c $(CFLAGS) mainMemwater.c
 
 $(genAln)/memwater.$O: $(genAln)/memwater.c $(genAln)/alnSet.$O $(genAln)/indexToCoord.$O $(genBio)/seqST.$O $(genLib)/genMath.h
@@ -45,11 +44,11 @@ $(genBio)/seqST.$O: $(genBio)/seqST.c $(genBio)/seqST.h $(genLib)/ulCp.$O $(genL
 $(genLib)/ulCp.$O: $(genLib)/ulCp.c $(genLib)/ulCp.h
 	$(CC) -o $(genLib)/ulCp.$O -c $(CFLAGS) $(genLib)/ulCp.c
 
-$(genBio)/kmerCnt.$O: $(genBio)/kmerCnt.c $(genBio)/kmerCnt.h $(genBio)/seqST.$O $(genBio)/ntTo2Bit.h $(genLib)/genMath.h
-	$(CC) -o $(genBio)/kmerCnt.$O -c $(CFLAGS) $(genBio)/kmerCnt.c
-
 $(genLib)/charCp.$O: $(genLib)/charCp.c $(genLib)/charCp.h
 	$(CC) -o $(genLib)/charCp.$O -c $(CFLAGS) $(genLib)/charCp.c
+
+$(genBio)/kmerCnt.$O: $(genBio)/kmerCnt.c $(genBio)/kmerCnt.h $(genBio)/seqST.$O $(genBio)/ntTo2Bit.h $(genLib)/genMath.h
+	$(CC) -o $(genBio)/kmerCnt.$O -c $(CFLAGS) $(genBio)/kmerCnt.c
 
 install:
 	cp $(NAME) $(PREFIX)

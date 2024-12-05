@@ -21,7 +21,7 @@ objFiles= \
    mainAmpDepth.$O
 
 all: mainAmpDepth.$O
-	$(LD) /out:$(NAME).exe $(objFiles)
+	$(LD) /out:$(NAME) $(objFiles)
 
 mainAmpDepth.$O: mainAmpDepth.c $(genBio)\ampDepth.$O $(genBio)\trimSam.$O
 	$(CC) /Fo:mainAmpDepth.$O /c $(CFLAGS) mainAmpDepth.c
@@ -54,7 +54,7 @@ $(genBio)\trimSam.$O: $(genBio)\trimSam.c $(genBio)\trimSam.h $(genBio)\samEntry
 	$(CC) /Fo:$(genBio)\trimSam.$O /c $(CFLAGS) $(genBio)\trimSam.c
 
 install:
-	copy $(NAME).exe $(PREFIX)
+	copy $(NAME) $(PREFIX)
 
 clean:
 	del $(objFiles)

@@ -16,12 +16,13 @@ objFiles= \
    $(genLib)\ulCp.$O \
    $(genLib)\numToStr.$O \
    $(genLib)\base10str.$O \
+   $(genLib)\charCp.$O \
    mainIllNano.$O
 
 all: mainIllNano.$O
 	$(LD) /out:$(NAME) $(objFiles)
 
-mainIllNano.$O: mainIllNano.c $(genClust)\illNano.$O
+mainIllNano.$O: mainIllNano.c $(genClust)\illNano.$O $(genLib)\charCp.$O
 	$(CC) /Fo:mainIllNano.$O /c $(CFLAGS) mainIllNano.c
 
 $(genClust)\illNano.$O: $(genClust)\illNano.c $(genClust)\illNano.h $(genBio)\samEntry.$O
@@ -41,6 +42,9 @@ $(genLib)\numToStr.$O: $(genLib)\numToStr.c $(genLib)\numToStr.h
 
 $(genLib)\base10str.$O: $(genLib)\base10str.c $(genLib)\base10str.h
 	$(CC) /Fo:$(genLib)\base10str.$O /c $(CFLAGS) $(genLib)\base10str.c
+
+$(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
+	$(CC) /Fo:$(genLib)\charCp.$O /c $(CFLAGS) $(genLib)\charCp.c
 
 install:
 	copy $(NAME) $(PREFIX)

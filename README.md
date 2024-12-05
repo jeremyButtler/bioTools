@@ -48,15 +48,21 @@ The mkfileScripts directory has bash scripts to build
 # List of tools
 
 - re-inventing the wheel:
-  - alnwater (alnSeq/fluDI):
-    - waterman alignment with gap extension penalties
-    - slower than striped watermans
-    - watermans are a dime a dozen
   - filtsam (freezeTB):
     - filter sam files by flag, length, median/mean
       q-scores, and coordinates
     - also supports read soft mask removal
     - samtools view nock off, with an odd twist
+  - alnNeelde (find-co--infections/alnSeq/fluDI):
+    - needleman alignment with gap extension penalties
+    - needlemans are a dime a dozen. This one rivals
+      biopythons pairwise alignmer for memory and might
+      even be faster (the alnSeq needleman python lib
+      was).
+  - alnWater (find-co--infecitons/alnSeq/fluDI):
+    - waterman alignment with gap extension penalties
+    - slower than striped watermans
+    - watermans are a dime a dozen
   - memwater (alnSeq/freezeTB):
     - waterman alignment with gap extension penalties
     - only returns score and alignment coordinates, but
@@ -77,8 +83,9 @@ The mkfileScripts directory has bash scripts to build
     - nock of of Ivar and who knows what other programs
     - positions of low confidence are replaced with a 'N',
       (no other anoymous bases are used)
-  - k2TaxaId:
-    - split up kraken reads by taxa id
+  - k2TaxaId (just wanted it):
+    - split up kraken reads by taxa id using the kraken
+      report
     - found out their is a similar tool to extract
       sequences instead of read ids (probably better) at
       [https://github.com/jenniferlu717/KrakenTools](
@@ -96,10 +103,6 @@ The mkfileScripts directory has bash scripts to build
     - you need to provide a coordinate file for this
     - convert regular cigars to eqx cigars (only one
       reference is supported)
-  - adjMap (fluDI/freezeTB):
-    - adjust mapping coordinates to a new reference
-      - reference and reads must be sam files
-    - needs some debugging still, but close
   - cigToEqx (freezeTB):
     - convert regular cigars to eqx cigars (only one
       reference is supported [TODO: fix])
@@ -114,13 +117,13 @@ The mkfileScripts directory has bash scripts to build
         sam file
       - can do sam file to sam file or by ref
     - not best program, but part of a bigger plan
-  - illNano (freezeTB/fluDI dugging edClust):
+  - illNano (freezeTB/fluDI; dugging edClust):
     - finds Illumina variants from tbCon tsv file and then
       finds nanopore reads mapping Illumina profile
   - maskPrim (freezeTB):
     - mask primer sites by coordinates (for sam file)
     - tsv file with coordinates is needed
-  - samToAln:
+  - samToAln (freezeTB/fluDI; dugging alingers):
     - convert sam file to human readable alignment
     - uses first reference from file [TODO: fix])
     - this is how to get a viewable alignment for alnwater
@@ -130,18 +133,6 @@ The mkfileScripts directory has bash scripts to build
     - trims soft masking off reads in sam file
     - filtsam can do this with `-trim` and has filtering
       options
-- programs with no good reason:
-  - rmBlocks (freezeTB):
-    - is a pre-processor to merge block entries and then
-      remove the block markers
-    - here because I wanted line breaks in tcltk commands
-      and then just I decided to quickly make a main
-      function for it
-  - addLineEnd (freezeTB in rmBlocksSrc):
-    - escapes strings (`"` to `\"`), padds file lines to
-      55 characters, and adds a `\n\` to the end of each
-      line
-    - again here becuase of embeding tcltk script in C
 
 # genLib and genAln
 
@@ -156,6 +147,16 @@ My general libraries.
 
 # Updates:
 
+- 2024-12-05:
+  - removed rmBlocks (added to different repository called
+    build, will make public when farther along)
+  - moved adjMap and samBin oldCode since they are
+    incomplete and no longer being worked on any more
+  - updated make files
+  - converted my forward delcarations
+    from (`typedef struct name name;`) to 'struct name;`
+    - got warnings from Mac's clang that tye old form
+      was not c89 complement. The new form is.
 - 2024-11-19:
   - added rmBlocks (pretty much useless)
 - 2024-11-13:
@@ -176,18 +177,14 @@ My general libraries.
      make a OS portable replacement that is more geared to
      projects like bioTools (many programs referencing
      same set of libraries)
-2. finish debugging ajdMap (side project)
-   - not quite working, some reads get a few extra cigar
-     entries (think due to softmasked end)
-3. add in hirschberg/myers miller (personal project)
+2. add in hirschberg/myers miller (personal project)
    - need to modify hirsch from alnSeq for new style
      and OS portablility. So, conversion project, with a
      bith of thought.
-4. add using_this_code guides (using in C code) for
+3. add using_this_code guides (using in C code) for
    programs and libraries
    - less likely to happen, lot of work for shoddy guides
-6. give samBin some attention (never conveted)
-7. add in multi-reference support for samToAln and
+4. add in multi-reference support for samToAln and
    cigToEqx
 
 # Thanks
@@ -198,6 +195,7 @@ My general libraries.
     debug freezeTB or fluDI
 - Devin Drown for his mentor ship. seqById and hopefully
   edClust are improved version programs written for
-  find-co--infections
+  find-co--infections, which I worked on while under his
+  mentorship.
 - My dad for being there and supportive and a person to
   bounce ids off or talk to

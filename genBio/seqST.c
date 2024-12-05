@@ -282,7 +282,6 @@ getFqSeq_seqST(
             (FILE *) fqFILE     /*fq file with header*/
     ); /*get the header (will resize as needed)*/
 
-
     if(errUC)
        return errUC; /*EOF or memory allocation error*/
 

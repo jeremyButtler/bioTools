@@ -19,7 +19,7 @@ objFiles= \
    mainTrimSam.$O
 
 all: mainTrimSam.$O
-	$(LD) /out:$(NAME).exe $(objFiles)
+	$(LD) /out:$(NAME) $(objFiles)
 
 mainTrimSam.$O: mainTrimSam.c $(genBio)\trimSam.$O $(genLib)\charCp.$O
 	$(CC) /Fo:mainTrimSam.$O /c $(CFLAGS) mainTrimSam.c
@@ -46,7 +46,7 @@ $(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
 	$(CC) /Fo:$(genLib)\charCp.$O /c $(CFLAGS) $(genLib)\charCp.c
 
 install:
-	copy $(NAME).exe $(PREFIX)
+	copy $(NAME) $(PREFIX)
 
 clean:
 	del $(objFiles)

@@ -20,7 +20,7 @@ objFiles= \
    mainMaskPrim.$O
 
 all: mainMaskPrim.$O
-	$(LD) /out:$(NAME).exe $(objFiles)
+	$(LD) /out:$(NAME) $(objFiles)
 
 mainMaskPrim.$O: mainMaskPrim.c $(genBio)\maskPrim.$O $(genLib)\charCp.$O
 	$(CC) /Fo:mainMaskPrim.$O /c $(CFLAGS) mainMaskPrim.c
@@ -50,7 +50,7 @@ $(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
 	$(CC) /Fo:$(genLib)\charCp.$O /c $(CFLAGS) $(genLib)\charCp.c
 
 install:
-	copy $(NAME).exe $(PREFIX)
+	copy $(NAME) $(PREFIX)
 
 clean:
 	del $(objFiles)

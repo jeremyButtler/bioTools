@@ -50,6 +50,7 @@
 
 /*These do not have .c files*/
 #include "../genLib/dataTypeShortHand.h"
+#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden dependencies
@@ -1751,9 +1752,9 @@ int main(
       fprintf(
         outFILE,
         "\tVN:%i-%02i-%02i\tCL:mainFiltsam",
-        def_year_mainFiltsam,
-        def_month_mainFiltsam,
-        def_day_mainFiltsam
+        def_year_bioTools,
+        def_month_bioTools,
+        def_day_bioTools
       );
 
       for(

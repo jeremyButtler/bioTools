@@ -19,7 +19,7 @@ objFiles= \
    mainTbCon.$O
 
 all: mainTbCon.$O
-	$(LD) /out:$(NAME).exe $(objFiles)
+	$(LD) /out:$(NAME) $(objFiles)
 
 mainTbCon.$O: mainTbCon.c $(genBio)\tbCon.$O $(genLib)\charCp.$O
 	$(CC) /Fo:mainTbCon.$O /c $(CFLAGS) mainTbCon.c
@@ -46,7 +46,7 @@ $(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
 	$(CC) /Fo:$(genLib)\charCp.$O /c $(CFLAGS) $(genLib)\charCp.c
 
 install:
-	copy $(NAME).exe $(PREFIX)
+	copy $(NAME) $(PREFIX)
 
 clean:
 	del $(objFiles)

@@ -22,7 +22,7 @@ objFiles= \
    mainPrimFind.$O
 
 all: mainPrimFind.$O
-	$(LD) /out:$(NAME).exe $(objFiles)
+	$(LD) /out:$(NAME) $(objFiles)
 
 mainPrimFind.$O: mainPrimFind.c $(genAln)\kmerFind.$O $(genLib)\charCp.$O
 	$(CC) /Fo:mainPrimFind.$O /c $(CFLAGS) mainPrimFind.c
@@ -55,7 +55,7 @@ $(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
 	$(CC) /Fo:$(genLib)\charCp.$O /c $(CFLAGS) $(genLib)\charCp.c
 
 install:
-	copy $(NAME).exe $(PREFIX)
+	copy $(NAME) $(PREFIX)
 
 clean:
 	del $(objFiles)

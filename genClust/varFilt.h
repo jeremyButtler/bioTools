@@ -11,10 +11,10 @@
 #ifndef VARIANT_FITER_H
 #define VARIANT_FITER_H
 
-typedef struct samEntry samEntry;
-typedef struct set_tbCon set_tbCon;
-typedef struct conNt_tbCon conNt_tbCon;
-typedef struct index_clustST index_clustST;
+struct samEntry;
+struct set_tbCon;
+struct conNt_tbCon;
+struct index_clustST;
 
 #define def_memErr_varFilt 1
 #define def_fileErr_varFilt 2

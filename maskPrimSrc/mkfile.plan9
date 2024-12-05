@@ -1,5 +1,5 @@
-<$objtype/mkfile
-CFLAGS= -DPLAN9
+</$objtype/mkfile
+CFLAGS=-DPLAN9
 NAME=maskPrim
 PREFIX=$home/bin
 

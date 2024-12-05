@@ -1,30 +1,37 @@
 </$objtype/mkfile
 CFLAGS=-DPLAN9
-NAME=cigToEqx
+NAME=edClust
 PREFIX=$home/bin
 
+genClust=../genClust
 genBio=../genBio
 genLib=../genLib
 
 objFiles= \
-   $genBio/cigToEqx.$O \
+   $genClust/edClust.$O \
+   $genClust/clustST.$O \
    $genBio/samEntry.$O \
    $genLib/strAry.$O \
    $genLib/ulCp.$O \
    $genLib/numToStr.$O \
    $genLib/base10str.$O \
+   $genBio/tbCon.$O \
+   $genBio/edDist.$O \
    $genBio/seqST.$O \
    $genLib/charCp.$O \
-   mainCigToEqx.$O
+   mainEdClust.$O
 
-all: mainCigToEqx.$O
+all: mainEdClust.$O
 	$LD -o $NAME $CFLAGS $objFiles
 
-mainCigToEqx.$O: mainCigToEqx.c $genBio/cigToEqx.$O $genBio/seqST.$O $genLib/charCp.$O
-	$CC -o mainCigToEqx.$O  $CFLAGS mainCigToEqx.c
+mainEdClust.$O: mainEdClust.c $genClust/edClust.$O $genLib/charCp.$O
+	$CC -o mainEdClust.$O  $CFLAGS mainEdClust.c
 
-$genBio/cigToEqx.$O: $genBio/cigToEqx.c $genBio/cigToEqx.h $genBio/samEntry.$O
-	$CC -o $genBio/cigToEqx.$O  $CFLAGS $genBio/cigToEqx.c
+$genClust/edClust.$O: $genClust/edClust.c $genClust/edClust.h $genClust/clustST.$O
+	$CC -o $genClust/edClust.$O  $CFLAGS $genClust/edClust.c
+
+$genClust/clustST.$O: $genClust/clustST.c $genClust/clustST.h $genBio/samEntry.$O $genBio/tbCon.$O $genBio/edDist.$O $genLib/genMath.h
+	$CC -o $genClust/clustST.$O  $CFLAGS $genClust/clustST.c
 
 $genBio/samEntry.$O: $genBio/samEntry.c $genBio/samEntry.h $genLib/strAry.$O $genLib/base10str.$O $genLib/numToStr.$O $genBio/ntTo5Bit.h $genLib/dataTypeShortHand.h
 	$CC -o $genBio/samEntry.$O  $CFLAGS $genBio/samEntry.c
@@ -40,6 +47,12 @@ $genLib/numToStr.$O: $genLib/numToStr.c $genLib/numToStr.h
 
 $genLib/base10str.$O: $genLib/base10str.c $genLib/base10str.h
 	$CC -o $genLib/base10str.$O  $CFLAGS $genLib/base10str.c
+
+$genBio/tbCon.$O: $genBio/tbCon.c $genBio/tbCon.h $genBio/samEntry.$O $genBio/tbConDefs.h $genLib/genMath.h
+	$CC -o $genBio/tbCon.$O  $CFLAGS $genBio/tbCon.c
+
+$genBio/edDist.$O: $genBio/edDist.c $genBio/edDist.h $genBio/samEntry.$O $genBio/seqST.$O $genLib/genMath.h
+	$CC -o $genBio/edDist.$O  $CFLAGS $genBio/edDist.c
 
 $genBio/seqST.$O: $genBio/seqST.c $genBio/seqST.h $genLib/ulCp.$O $genLib/dataTypeShortHand.h
 	$CC -o $genBio/seqST.$O  $CFLAGS $genBio/seqST.c

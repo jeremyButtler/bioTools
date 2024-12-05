@@ -1,7 +1,7 @@
 LD=cc
 CC=cc
 CFLAGS= -O3 -std=c89 -Wall -Wextra
-NAME=illNano
+NAME=edClust
 PREFIX=/usr/local/bin
 O=o.unix
 
@@ -10,23 +10,30 @@ genBio=../genBio
 genLib=../genLib
 
 objFiles= \
-   $(genClust)/illNano.$O \
+   $(genClust)/edClust.$O \
+   $(genClust)/clustST.$O \
    $(genBio)/samEntry.$O \
    $(genLib)/strAry.$O \
    $(genLib)/ulCp.$O \
    $(genLib)/numToStr.$O \
    $(genLib)/base10str.$O \
+   $(genBio)/tbCon.$O \
+   $(genBio)/edDist.$O \
+   $(genBio)/seqST.$O \
    $(genLib)/charCp.$O \
-   mainIllNano.$O
+   mainEdClust.$O
 
-all: mainIllNano.$O
+all: mainEdClust.$O
 	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
 
-mainIllNano.$O: mainIllNano.c $(genClust)/illNano.$O $(genLib)/charCp.$O
-	$(CC) -o mainIllNano.$O -c $(CFLAGS) mainIllNano.c
+mainEdClust.$O: mainEdClust.c $(genClust)/edClust.$O $(genLib)/charCp.$O
+	$(CC) -o mainEdClust.$O -c $(CFLAGS) mainEdClust.c
 
-$(genClust)/illNano.$O: $(genClust)/illNano.c $(genClust)/illNano.h $(genBio)/samEntry.$O
-	$(CC) -o $(genClust)/illNano.$O -c $(CFLAGS) $(genClust)/illNano.c
+$(genClust)/edClust.$O: $(genClust)/edClust.c $(genClust)/edClust.h $(genClust)/clustST.$O
+	$(CC) -o $(genClust)/edClust.$O -c $(CFLAGS) $(genClust)/edClust.c
+
+$(genClust)/clustST.$O: $(genClust)/clustST.c $(genClust)/clustST.h $(genBio)/samEntry.$O $(genBio)/tbCon.$O $(genBio)/edDist.$O $(genLib)/genMath.h
+	$(CC) -o $(genClust)/clustST.$O -c $(CFLAGS) $(genClust)/clustST.c
 
 $(genBio)/samEntry.$O: $(genBio)/samEntry.c $(genBio)/samEntry.h $(genLib)/strAry.$O $(genLib)/base10str.$O $(genLib)/numToStr.$O $(genBio)/ntTo5Bit.h $(genLib)/dataTypeShortHand.h
 	$(CC) -o $(genBio)/samEntry.$O -c $(CFLAGS) $(genBio)/samEntry.c
@@ -42,6 +49,15 @@ $(genLib)/numToStr.$O: $(genLib)/numToStr.c $(genLib)/numToStr.h
 
 $(genLib)/base10str.$O: $(genLib)/base10str.c $(genLib)/base10str.h
 	$(CC) -o $(genLib)/base10str.$O -c $(CFLAGS) $(genLib)/base10str.c
+
+$(genBio)/tbCon.$O: $(genBio)/tbCon.c $(genBio)/tbCon.h $(genBio)/samEntry.$O $(genBio)/tbConDefs.h $(genLib)/genMath.h
+	$(CC) -o $(genBio)/tbCon.$O -c $(CFLAGS) $(genBio)/tbCon.c
+
+$(genBio)/edDist.$O: $(genBio)/edDist.c $(genBio)/edDist.h $(genBio)/samEntry.$O $(genBio)/seqST.$O $(genLib)/genMath.h
+	$(CC) -o $(genBio)/edDist.$O -c $(CFLAGS) $(genBio)/edDist.c
+
+$(genBio)/seqST.$O: $(genBio)/seqST.c $(genBio)/seqST.h $(genLib)/ulCp.$O $(genLib)/dataTypeShortHand.h
+	$(CC) -o $(genBio)/seqST.$O -c $(CFLAGS) $(genBio)/seqST.c
 
 $(genLib)/charCp.$O: $(genLib)/charCp.c $(genLib)/charCp.h
 	$(CC) -o $(genLib)/charCp.$O -c $(CFLAGS) $(genLib)/charCp.c

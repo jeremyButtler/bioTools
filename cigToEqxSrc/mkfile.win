@@ -20,7 +20,7 @@ objFiles= \
    mainCigToEqx.$O
 
 all: mainCigToEqx.$O
-	$(LD) /out:$(NAME).exe $(objFiles)
+	$(LD) /out:$(NAME) $(objFiles)
 
 mainCigToEqx.$O: mainCigToEqx.c $(genBio)\cigToEqx.$O $(genBio)\seqST.$O $(genLib)\charCp.$O
 	$(CC) /Fo:mainCigToEqx.$O /c $(CFLAGS) mainCigToEqx.c
@@ -50,7 +50,7 @@ $(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
 	$(CC) /Fo:$(genLib)\charCp.$O /c $(CFLAGS) $(genLib)\charCp.c
 
 install:
-	copy $(NAME).exe $(PREFIX)
+	copy $(NAME) $(PREFIX)
 
 clean:
 	del $(objFiles)

@@ -22,12 +22,12 @@ objFiles= \
    mainSamToAln.$O
 
 all: mainSamToAln.$O
-	$(LD) /out:$(NAME).exe $(objFiles)
+	$(LD) /out:$(NAME) $(objFiles)
 
 mainSamToAln.$O: mainSamToAln.c $(genAln)\samToAln.$O $(genLib)\charCp.$O
 	$(CC) /Fo:mainSamToAln.$O /c $(CFLAGS) mainSamToAln.c
 
-$(genAln)\samToAln.$O: $(genAln)\samToAln.c $(genBio)\samEntry.$O $(genBio)\seqST.$O $(genAln)\alnSet.$O
+$(genAln)\samToAln.$O: $(genAln)\samToAln.c $(genAln)\samToAln.h $(genBio)\samEntry.$O $(genBio)\seqST.$O $(genAln)\alnSet.$O
 	$(CC) /Fo:$(genAln)\samToAln.$O /c $(CFLAGS) $(genAln)\samToAln.c
 
 $(genAln)\alnSet.$O: $(genAln)\alnSet.c $(genAln)\alnDefs.h $(genLib)\base10str.$O $(genLib)\dataTypeShortHand.h
@@ -55,7 +55,7 @@ $(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
 	$(CC) /Fo:$(genLib)\charCp.$O /c $(CFLAGS) $(genLib)\charCp.c
 
 install:
-	copy $(NAME).exe $(PREFIX)
+	copy $(NAME) $(PREFIX)
 
 clean:
 	del $(objFiles)

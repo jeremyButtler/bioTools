@@ -1,8 +1,7 @@
 LD=cc
 CC=cc
-CFLAGS= -O3 -std=c89 -static
-CFLAGS= -Wall -Wextra
-NAME=
+CFLAGS= -O3 -std=c89 -static -Wall -Wextra
+NAME=maskPrim
 PREFIX=/usr/local/bin
 O=o.static
 

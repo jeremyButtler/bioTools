@@ -68,6 +68,8 @@
 '     - reallocates memory for a refs_samEntry struct
 '   o fun26: getRefLen_samEntry
 '     - gets reference ids & length from a sam file header
+'   o fun27: findRef_refs_samEntry
+'     - finds a reference id in a refs_samEntry struct
 '   o .h note01:
 '      - Notes about the sam file format from the sam file
 '        pdf
@@ -3093,6 +3095,32 @@ getRefLen_samEntry(
    ret_fun26_sec04:;
    return errSC;
 } /*getRefLen_samEntry*/
+
+/*-------------------------------------------------------\
+| Fun27: findRef_refs_samEntry
+|   - finds a reference id in a refs_samEntry struct
+| Input:
+|   - idStr:
+|     o c-string with reference id to find
+|   - refSTPtr:
+|     o pointer to refs_samEntry struct with references
+| Output:
+|   - Returns:
+|     o index of reference id if found
+|     o < 0 if reference id not in list
+\-------------------------------------------------------*/
+signed long
+findRef_refs_samEntry(
+   signed char *idStr,            /*id to find*/
+   struct refs_samEntry *refSTPtr /*holds ref lengths*/
+){
+   return
+      find_strAry(
+         refSTPtr->idAryStr,
+         idStr,
+         refSTPtr->numRefUI
+      );
+} /*findRef_refs_samEntry*/
 
 /*=======================================================\
 : License:
