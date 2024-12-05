@@ -26,7 +26,9 @@
 '     - get the level in tree of a kraken entry; col 4
 '   o fun10: readReport_k2TaxaId
 '     - gets list of organism codes
-'   o fun11: pIds_k2TaxaId
+'   o .c fun11: mkTaxaIdFile_k2TaxaIds
+'     - prints a single taxa id (here to avoid clutter)
+'   o fun12: pIds_k2TaxaId
 '     - prints out read ids by taxa for kraken2
 '   o license:
 '     - licensing for this code (public domain / mit)
@@ -52,7 +54,8 @@
 #include "../genLib/numToStr.h"
 #include "../genLib/ulCp.h"
 #include "../genLib/genMath.h"
-#include "../genLib/strAry.h"
+#include "../genLib/shellSort.h"
+#include "../genLib/ptrAry.h"
 
 /*no .c files*/
 #include "../genLib/dataTypeShortHand.h"
@@ -91,6 +94,9 @@ blank_taxa_k2TaxaId(
    struct taxa_k2TaxaId *taxaSTPtr
 ){
    taxaSTPtr->numTaxaSL = 0;
+
+   if(taxaSTPtr->idAryST)
+      blank_str_ptrAry(taxaSTPtr->idAryST);
 } /*blank_taxa_k2TaxaId*/
 
 /*-------------------------------------------------------\
@@ -108,7 +114,7 @@ init_taxa_k2TaxaId(
    struct taxa_k2TaxaId *taxaSTPtr
 ){
    taxaSTPtr->codeArySL = 0;
-   taxaSTPtr->idAryStr = 0;
+   taxaSTPtr->idAryST = 0;
    taxaSTPtr->backTrackArySL = 0;
    taxaSTPtr->mergeAryBl = 0;
    taxaSTPtr->indexArySL = 0;
@@ -138,9 +144,6 @@ freeStack_taxa_k2TaxaId(
    if(taxaSTPtr->codeArySL)
      free(taxaSTPtr->codeArySL);
 
-   if(taxaSTPtr->idAryStr)
-     free(taxaSTPtr->idAryStr);
-
    if(taxaSTPtr->backTrackArySL)
      free(taxaSTPtr->backTrackArySL);
 
@@ -152,6 +155,9 @@ freeStack_taxa_k2TaxaId(
 
    if(taxaSTPtr->indexArySL)
      free(taxaSTPtr->indexArySL);
+
+   if(taxaSTPtr->idAryST)
+     freeHeap_str_ptrAry(taxaSTPtr->idAryST);
 
    init_taxa_k2TaxaId(taxaSTPtr);
 } /*freeStack_taxa_k2TaxaId*/
@@ -200,6 +206,11 @@ setup_taxa_k2TaxaId(
    /*make sure all memory is freeded first*/
    freeStack_taxa_k2TaxaId(taxaSTPtr);
 
+   taxaSTPtr->idAryST = mk_str_ptrAry(numElmSL);
+
+   if(! taxaSTPtr->idAryST)
+      goto memErr_fun05;
+
    taxaSTPtr->codeArySL =
       calloc(
          numElmSL,
@@ -207,12 +218,6 @@ setup_taxa_k2TaxaId(
       );
 
    if(! taxaSTPtr->codeArySL)
-      goto memErr_fun05;
-
-
-   taxaSTPtr->idAryStr = mk_strAry(numElmSL);
-
-   if(! taxaSTPtr->idAryStr)
       goto memErr_fun05;
 
 
@@ -250,7 +255,7 @@ setup_taxa_k2TaxaId(
    taxaSTPtr->indexArySL =
       calloc(
          numElmSL,
-         sizeof(ushort)
+         sizeof(slong)
       );
 
    if(! taxaSTPtr->indexArySL)
@@ -306,17 +311,12 @@ realloc_taxa_k2TaxaId(
    taxaSTPtr->codeArySL = slPtr;
 
 
-    slPtr =
-      (slong *)
-      realloc_strAry(
-         taxaSTPtr->idAryStr,
-         numElmSL
-      );
-
-   if(! slPtr)
-      goto memErr_fun05;
-
-   taxaSTPtr->idAryStr = (schar *) slPtr;
+    if(
+       resize_str_ptrAry(
+          taxaSTPtr->idAryST,
+          numElmSL
+       )
+    ) goto memErr_fun05;
 
 
    slPtr =
@@ -370,7 +370,6 @@ realloc_taxa_k2TaxaId(
 
 
    taxaSTPtr->sizeTaxaSL = numElmSL;
-
    return 0;
 
    memErr_fun05:;
@@ -395,7 +394,6 @@ sortCodes_taxa_k2TaxaId(
    struct taxa_k2TaxaId *taxaSTPtr
 ){
    /*Number of elements to sort (index 1)*/
-   slong numElmSL = taxaSTPtr->numTaxaSL;
    slong endSL = taxaSTPtr->numTaxaSL - 1;
 
    /*for convience*/
@@ -417,13 +415,13 @@ sortCodes_taxa_k2TaxaId(
    ^   - find the max search value (number rounds to sort)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   if(! numElmSL)
+   if(endSL < 0)
       return; /*nothing to sort*/
 
-   /*Recursion formsla: h[0] = 1, h[n] = 3 * h[n - 1] +1*/
+   /*Recursion formula: h[0] = 1, h[n] = 3 * h[n - 1] +1*/
    subSL = 1; /*Initialzie first array*/
 
-   while(subSL < numElmSL - 1)
+   while(subSL < endSL)
       subSL = (3 * subSL) + 1;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -631,6 +629,9 @@ getLevel_k2TaxaId(
 |     o min read depth to keep an id (taxa)
 |   - minPercDepthF:
 |     o min percent read depth (0 to 100) to keep an id
+|   - miniRepBl:
+|     o 1: report is kraken2 minizer report (unique)
+|     o 0: report is normal kraken2  report
 |   - mergeRootBl:
 |     o 1: merge lower tree (root) levels with their
 |          upper (tip) levels
@@ -665,7 +666,8 @@ readReport_k2TaxaId(
    signed short endLevSS,       /*highest level to print*/
    unsigned long minDepthUL,    /*min depth to keep id*/
    float minPercDepthF,         /*min % depth to keep id*/
-   signed char mergeRootBl,       /*1: do not merge levels*/
+   signed char miniRepBl,       /*1: k2 minimizer report*/
+   signed char mergeRootBl,     /*1: do not merge levels*/
    signed char mergeTipBl,      /*1: merge lower reads*/
    signed char *errSCPtr,
    void *inFILE                 /*kraken2 report*/
@@ -703,6 +705,7 @@ readReport_k2TaxaId(
    sint tmpSI = 1;
    sint posSI = 1;
    sshort levelSS = 0;  /*depth of current entry in tree*/
+   sshort lastLevelSS = 0;
 
    #define def_expand_fun10 1028
    struct taxa_k2TaxaId *retTaxaHeapST;
@@ -829,10 +832,52 @@ readReport_k2TaxaId(
 
       /**************************************************\
       * Fun10 Sec03 Sub04:
+      *   - skip kraken2 minimizer report columns
+      \**************************************************/
+
+      if(miniRepBl)
+      { /*If: need to move past kraken2 unique minimizer*/
+         /*get past number taxon minimizers column*/
+         while(*tmpStr > 32)
+            ++tmpStr;
+
+         if(*tmpStr == '\0')
+            goto fileErr_fun10_sec04;
+ 
+         ++tmpStr;
+
+         /*get past taxon unique minimizer estimate*/
+         while(*tmpStr > 32)
+            ++tmpStr;
+
+         if(*tmpStr == '\0')
+            goto fileErr_fun10_sec04;
+ 
+         ++tmpStr;
+      } /*If: need to move past kraken2 unique minimizer*/
+    
+      /**************************************************\
+      * Fun10 Sec03 Sub04:
       *   - get level of organism in tree & move to name
       \**************************************************/
 
       levelSS = getLevel_k2TaxaId(tmpStr);
+
+      /*make sure not shifting from genus to domain or
+      `   some other crazy shift
+      */
+      if(retTaxaHeapST->numTaxaSL > 0)
+      { /*If: not first round*/
+         if(lastLevelSS > levelSS)
+         { /*If: last level needs to be reset*/
+             retTaxaHeapST->mergeAryBl[
+                  retTaxaHeapST->numTaxaSL - 1
+               ] &= (~def_mergeUpBl_k2TaxaId);
+         } /*If: last level needs to be reset*/
+      } /*If: not first round*/
+
+
+      lastLevelSS = levelSS;
 
       /*get past level entry*/
       while(*tmpStr++ > 32) ;
@@ -893,8 +938,9 @@ readReport_k2TaxaId(
          else
             histArySL[depthSI] = -1; /*no history yet*/
 
-         if(readDepthUL < 1)
-            continue; /*no reads for taxa id*/
+         /*not safe for merging*/
+         /*if(readDepthUL < 1)
+            continue;*/ /*no reads for taxa id*/
 
          if(
                ! mergeTipBl
@@ -975,17 +1021,16 @@ readReport_k2TaxaId(
                goto fileErr_fun10_sec04;
          } /*Loop: move to level*/
 
-         add_strAry(
+         add_str_ptrAry(
             tmpStr,
-            retTaxaHeapST->idAryStr,
+            retTaxaHeapST->idAryST,
             retTaxaHeapST->numTaxaSL
          ); /*add orgainism name to id array*/
 
          tmpStr =
-            get_strAry(
-              retTaxaHeapST->idAryStr,
-              retTaxaHeapST->numTaxaSL
-            );
+            retTaxaHeapST->idAryST->strAry[
+               retTaxaHeapST->numTaxaSL
+            ];
 
          while(*tmpStr != '\0')
          { /*Loop: remove spaces*/
@@ -1003,32 +1048,54 @@ readReport_k2TaxaId(
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
          + Fun10 Sec03 Sub06 Cat04:
-         +   - merge taxa levels if merging (mergeRootBl)
+         +   - merge tip taxa into root checks
          \++++++++++++++++++++++++++++++++++++++++++++++*/
 
-         if(
-               mergeRootBl
-            || mergeTipBl
-         ){ /*If: merging ids*/
+          if(mergeTipBl)
+          { /*If: merging tip into the root*/
+             if(levelSS > endLevSS)
+             { /*If: to near tip*/
+                 retTaxaHeapST->mergeAryBl[
+                      retTaxaHeapST->numTaxaSL
+                   ] |= def_mergeDownBl_k2TaxaId;
+
+                  ++retTaxaHeapST->numTaxaSL;
+                  continue;
+             } /*If: to near tip*/
+
+             else if(
+                   readDepthUL < minDepthUL
+                || percDepthF < minPercDepthF
+             ){ /*Else If: to little read depth*/
+                 retTaxaHeapST->mergeAryBl[
+                      retTaxaHeapST->numTaxaSL
+                   ] |= def_mergeDownBl_k2TaxaId;
+
+                if(! mergeRootBl)
+                { /*If: not merging towards root*/
+                   ++retTaxaHeapST->numTaxaSL;
+                   continue;
+                } /*If: not merging towards root*/
+             } /*Else If: to little read depth*/
+          } /*If: merging tip into the root*/
+
+         /*++++++++++++++++++++++++++++++++++++++++++++++\
+         + Fun10 Sec03 Sub06 Cat05:
+         +   - merge root taxa into tip checks
+         \++++++++++++++++++++++++++++++++++++++++++++++*/
+
+         if(mergeRootBl)
+         { /*If: merging root into a tip*/
             histArySL[depthSI] = retTaxaHeapST->numTaxaSL;
 
-            retTaxaHeapST->backTrackArySL[
-               retTaxaHeapST->numTaxaSL
-            ] = histArySL[depthSI - 1];
+            if(! retTaxaHeapST->numTaxaSL)
+               retTaxaHeapST->backTrackArySL[0] = -1;
+            else
+               retTaxaHeapST->backTrackArySL[
+                  retTaxaHeapST->numTaxaSL
+               ] = histArySL[depthSI - 1];
 
-            if(
-                  levelSS > endLevSS
-               && mergeTipBl
-            ){ /*If: to near tip*/
-                retTaxaHeapST->mergeAryBl[
-                     retTaxaHeapST->numTaxaSL
-                  ] = def_mergeDownBl_k2TaxaId;/*merging*/
-
-                 ++retTaxaHeapST->numTaxaSL;
-                 continue;
-            } /*If: to near tip*/
-
-            else if(levelSS > endLevSS)
+            if(levelSS > endLevSS)
             { /*Else If: near tip, but not merging tips*/
                 retTaxaHeapST->mergeAryBl[
                      retTaxaHeapST->numTaxaSL
@@ -1038,13 +1105,23 @@ readReport_k2TaxaId(
                  continue;
             } /*Else If: near tip, but not merging tips*/
 
+            else if(! mergeRootBl)
+            { /*Else If: merging tip only*/
+               retTaxaHeapST->mergeAryBl[
+                    retTaxaHeapST->numTaxaSL
+                 ] = def_skip_k2TaxaId;/*merging*/
+
+               ++retTaxaHeapST->numTaxaSL;
+               continue; /*not merging tip into root*/
+            } /*Else If: merging tip only*/
+
             else if(
                   readDepthUL < minDepthUL
                || percDepthF < minPercDepthF
             ){ /*If: to little read depth (merge only*/
                 retTaxaHeapST->mergeAryBl[
                      retTaxaHeapST->numTaxaSL
-                  ] = def_mergeUpBl_k2TaxaId; /*merging*/
+                  ] |= def_mergeUpBl_k2TaxaId; /*merging*/
 
                   ++retTaxaHeapST->numTaxaSL;
                   continue;
@@ -1052,7 +1129,6 @@ readReport_k2TaxaId(
 
             tmpSI = depthSI - 1;
             posSI = (sint) retTaxaHeapST->numTaxaSL - 1;
-            ++retTaxaHeapST->numTaxaSL;
 
             while(tmpSI >= 0)
             { /*Loop: update past depths*/
@@ -1077,13 +1153,16 @@ readReport_k2TaxaId(
                   continue; /*already marked as merge*/
                } /*If: is already marked as merged*/
 
-               retTaxaHeapST->mergeAryBl[posSI] =
+               retTaxaHeapST->mergeAryBl[posSI] |=
                   def_mergeUpBl_k2TaxaId;
 
                --tmpSI;
                --posSI;
             } /*Loop: update past depths*/
-         } /*If: merging ids*/
+
+            ++retTaxaHeapST->numTaxaSL;
+            continue;
+         } /*If: merging root into a tip*/
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
          + Fun10 Sec03 Sub06 Cat05:
@@ -1129,7 +1208,98 @@ readReport_k2TaxaId(
 } /*readReport_k2TaxaId*/
 
 /*-------------------------------------------------------\
-| Fun11: pIds_k2TaxaId
+| Fun11: mkTaxaIdFile_k2TaxaIds
+|   - prints a single taxa id (here to avoid clutter)
+| Input:
+|   - idStr:
+|     o c-string with read id to print
+|   - buffStr:
+|     o c-string buffer to hold file name
+|   - prefixStr:
+|     o c-string with file prefix
+|   - fileTaxaSL:
+|     o file taxa code assigning taxon to
+|   - fileTaxaStr:
+|     o c-string with file taxa name assigning taxon to
+|   - taxaSL:
+|     o taxa code (number) of id's taxon
+|   - taxaStr:
+|     o c-string with the name of read ids taxon
+| Output:
+|   - Modifies:
+|     o buffStr to have output file name
+|   - Prints:
+|     o read id to taxon id file
+|   - Returns:
+|     o 0 for no errors
+|     o def_fileErr_k2TaxaIds for file errors
+\-------------------------------------------------------*/
+signed char
+pTaxaId_k2TaxaIds(
+   signed char *idStr,     /*read id to print*/
+   signed char *buffStr,   /*buffer to store file name*/
+   signed char *prefixStr, /*prefix for file name*/
+   signed long fileTaxaSL, /*taxa code file printing to*/
+   signed char *fileTaxaStr,/*taxa name file printing to*/
+   signed long taxaSL,     /*taxa id*/
+   signed char *taxaStr    /*string with taxa name*/
+){
+   signed char *tmpStr = buffStr;
+   FILE *outFILE = 0;
+  
+   tmpStr +=
+      cpLine_ulCp(
+         tmpStr,
+         prefixStr
+      ); /*copy file name*/
+  
+   *tmpStr++ = '-';
+  
+   tmpStr +=
+      numToStr(
+        tmpStr,
+        fileTaxaSL
+      ); /*copy taxa code*/
+      
+   *tmpStr++ = '-';
+  
+   tmpStr +=
+      cpLine_ulCp(
+         tmpStr,
+         fileTaxaStr
+      ); /*copy taxa name*/
+  
+   *tmpStr++ = '.';
+   *tmpStr++ = 'i';
+   *tmpStr++ = 'd';
+   *tmpStr++ = 's';
+   *tmpStr = '\0';
+  
+   outFILE =
+      fopen(
+         (char *) buffStr,
+         "a"
+      );
+  
+   if(! outFILE)
+      return def_fileErr_k2TaxaId;
+  
+   fprintf(
+      (FILE *) outFILE,
+      "%s\t%li\t%s\n",
+      idStr,
+      taxaSL,
+      taxaStr
+   );
+  
+   fclose(outFILE);
+   outFILE = 0;
+
+   return 0;
+} /*pTaxaId_k2TaxaIds*/
+
+/*-------------------------------------------------------\
+| Fun12: pIds_k2TaxaId
 |   - prints out read ids by taxa for kraken2
 | Input:
 |   - taxaSTPtr:
@@ -1159,20 +1329,20 @@ pIds_k2TaxaId(
    signed char pUnclassBl,
    void *inFILE
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun11 TOC:
+   ' Fun12 TOC:
    '   - prints out read ids by taxa for kraken2
-   '   o fun11 sec01:
+   '   o fun12 sec01:
    '     - variable declarations
-   '   o fun11 sec02:
+   '   o fun12 sec02:
    '     - set up unclassifed file (if printing)
-   '   o fun11 sec03:
+   '   o fun12 sec03:
    '     - get read ids
-   '   o fun11 sec04:
+   '   o fun12 sec04:
    '     - return and clean up
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec01:
+   ^ Fun12 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1180,30 +1350,31 @@ pIds_k2TaxaId(
 
    slong taxaSL = 0;
    slong indexSL = 0;
-   slong backSL = 0;
+   slong oldSL = 0;
 
    sshort levelSS = 0; /*level taxa is at*/
 
-   #define maxHist_fun11_k2TaxaId 32
+   #define maxHist_fun12_k2TaxaId 32
    sint histPosSI = 0;
-   slong histArySL[maxHist_fun11_k2TaxaId]; 
+   sint histIndexSI = 0;
+   slong histArySL[maxHist_fun12_k2TaxaId]; 
       /*history of taxa merging*/
 
-   #define idLen_fun11_k2TaxaId 256
-   signed char idStr[idLen_fun11_k2TaxaId];
+   #define idLen_fun12_k2TaxaId 256
+   signed char idStr[idLen_fun12_k2TaxaId];
 
-   signed char noClassStr[idLen_fun11_k2TaxaId];
+   signed char noClassStr[idLen_fun12_k2TaxaId];
+   signed char fileStr[4096]; /*file name for ids*/
    schar *tmpStr = 0;
 
 
-   #define lenBuff_fun11_k2TaxaId 1 << 15
-   signed char buffStr[lenBuff_fun11_k2TaxaId];
+   #define def_sizeBuff_fun12 (1 << 13)
+   signed char buffStr[def_sizeBuff_fun12 + 9];
 
    FILE *unclassFILE = 0;
-   FILE *outFILE = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec02:
+   ^ Fun12 Sec02:
    ^   - set up unclassifed file (if printing to)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1232,48 +1403,49 @@ pIds_k2TaxaId(
          );
 
       if(! unclassFILE)
-         goto fileErr_fun11_sec04;
+         goto fileErr_fun12_sec04;
    } /*If: printing unclassified reads*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec03:
+   ^ Fun12 Sec03:
    ^   - get read ids
-   ^   o fun11 sec03 sub01:
+   ^   o fun12 sec03 sub01:
    ^     - deal with unclassified ids + start loop
-   ^   o fun11 sec03 sub02:
+   ^   o fun12 sec03 sub02:
    ^     - get read id
-   ^   o fun11 sec03 sub03:
+   ^   o fun12 sec03 sub03:
    ^     - merge taxa down (towards root)
-   ^   o fun11 sec03 sub04:
+   ^   o fun12 sec03 sub04:
    ^     - handel taxa merging cases
-   ^   o fun11 sec03 sub05:
+   ^   o fun12 sec03 sub05:
    ^     - merge taxa up (towards tip)
-   ^   o fun11 sec03 sub06:
+   ^   o fun12 sec03 sub06:
    ^     - handel not merging taxa cases
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun11 Sec03 Sub01:
+   * Fun12 Sec03 Sub01:
    *   - deal with unclassified ids + start loop
    \*****************************************************/
 
    while(
       fgets(
          (char *) buffStr,
-         lenBuff_fun11_k2TaxaId,
+         def_sizeBuff_fun12,
          (FILE *) inFILE
        )
    ){ /*Loop: get read ids*/
+
       if(buffStr[0] == 'U')
       { /*If: unclassified read*/
          if(! pUnclassBl)
-            continue; /*unclassified; ignoring*/
+            goto nextLine_fun12_sec03_sub07;
 
          while(*tmpStr < 33)
          { /*Loop: move to read id*/
             ++tmpStr;
             if(*tmpStr == '\0')
-               goto fileErr_fun11_sec04;
+               goto fileErr_fun12_sec04;
          } /*Loop: move to read id*/
 
          tmpStr +=
@@ -1287,10 +1459,12 @@ pIds_k2TaxaId(
             "%s\tunclassified\n",
             idStr
          );
+
+         goto nextLine_fun12_sec03_sub07;
       } /*If: unclassified read*/
 
       /**************************************************\
-      * Fun11 Sec03 Sub02:
+      * Fun12 Sec03 Sub02:
       *   - get read id
       \**************************************************/
 
@@ -1303,7 +1477,7 @@ pIds_k2TaxaId(
       { /*Loop: move to read id*/
          ++tmpStr;
          if(*tmpStr == '\0')
-            goto fileErr_fun11_sec04;
+            goto fileErr_fun12_sec04;
       } /*Loop: move to read id*/
 
       tmpStr +=
@@ -1316,11 +1490,11 @@ pIds_k2TaxaId(
       { /*Loop: move to taxa id*/
          ++tmpStr;
          if(*tmpStr == '\0')
-            goto fileErr_fun11_sec04;
+            goto fileErr_fun12_sec04;
       } /*Loop: move to taxa id*/
 
       /**************************************************\
-      * Fun11 Sec03 Sub03:
+      * Fun12 Sec03 Sub03:
       *   - get taxa code and see if printing
       \**************************************************/
 
@@ -1337,131 +1511,118 @@ pIds_k2TaxaId(
          );
 
       if(indexSL < 0)
-         continue; /*not printing this taxa*/
+         goto nextLine_fun12_sec03_sub07;
 
       /**************************************************\
-      * Fun11 Sec03 Sub04:
+      * Fun12 Sec03 Sub04:
       *   - merge taxa down (towards root)
-      *   o fun11 sec03 sub04 cat01:
+      *   o fun12 sec03 sub04 cat01:
       *     - find taxa to merge into
-      *   o fun11 sec03 sub04 cat02:
+      *   o fun12 sec03 sub04 cat02:
       *     - print taxa id to file
       \**************************************************/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun11 Sec03 Sub04 Cat01:
+      + Fun12 Sec03 Sub04 Cat01:
       +   - find taxa to merge into
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
       if(
-            taxaSTPtr->mergeAryBl[indexSL]
-         == def_skip_k2TaxaId
-      ) continue; /*not merging*/
+        taxaSTPtr->mergeAryBl[indexSL] & def_skip_k2TaxaId
+      ) goto nextLine_fun12_sec03_sub07;
 
       else if(
             taxaSTPtr->mergeAryBl[indexSL]
-         == def_mergeDownBl_k2TaxaId
+          & def_mergeDownBl_k2TaxaId
       ){ /*Else If: merging tip into deeper taxa*/
-         levelSS = taxaSTPtr->levelArySS[indexSL];
+         oldSL = indexSL; /*save for later*/
+         indexSL = taxaSTPtr->backTrackArySL[indexSL];
 
-         while(
-               taxaSTPtr->backTrackArySL[indexSL] >= 0
-            && 
-                  taxaSTPtr->mergeAryBl[indexSL]
-               == def_mergeDownBl_k2TaxaId
-         ){ /*Loop: find taxa to merge into*/
-           if(levelSS > taxaSTPtr->levelArySS[indexSL])
-              break; /*no longer on same taxa group*/
+         if(indexSL < 0)
+         { /*If: nothing to backtrack to*/
+            indexSL = oldSL;
+            levelSS = taxaSTPtr->mergeAryBl[indexSL];
 
-           levelSS = taxaSTPtr->levelArySS[indexSL];
-           --indexSL;
+            if( levelSS & def_mergeUpBl_k2TaxaId )
+               goto mergeUp_fun12_sec03_sub05_cat01;
+            else
+               goto nextLine_fun12_sec03_sub07;
+         } /*If: nothing to backtrack to*/
+
+         while(indexSL >= 0)
+         { /*Loop: find taxa to merge into*/
+            levelSS = taxaSTPtr->mergeAryBl[indexSL];
+
+            if(! levelSS )
+               break; /*found taxa to merge into*/
+
+            if(taxaSTPtr->backTrackArySL[indexSL] < 0)
+            { /*If: nothing to backtrack to*/
+               indexSL = oldSL;
+
+               if( levelSS & def_mergeUpBl_k2TaxaId )
+                  goto mergeUp_fun12_sec03_sub05_cat01;
+               else
+                  goto nextLine_fun12_sec03_sub07;
+            } /*If: nothing to backtrack to*/
+
+            indexSL = taxaSTPtr->backTrackArySL[indexSL];
          } /*Loop: find taxa to merge into*/
 
-         if(taxaSTPtr->backTrackArySL[indexSL] < 0)
-            continue;
-         if(taxaSTPtr->mergeAryBl[indexSL] != 0)
-            continue;
-         if(levelSS <= taxaSTPtr->levelArySS[indexSL])
-            continue;
-
          /*++++++++++++++++++++++++++++++++++++++++++++++\
-         + Fun11 Sec03 Sub04 Cat02:
+         + Fun12 Sec03 Sub04 Cat02:
          +   - print taxa id to file
          \++++++++++++++++++++++++++++++++++++++++++++++*/
 
-         tmpStr = buffStr;
-  
-         tmpStr +=
-            cpLine_ulCp(
-               tmpStr,
-               prefixStr
-            ); /*copy file name*/
-  
-         *tmpStr++ = '-';
-  
-         tmpStr +=
-            numToStr(
-              tmpStr,
-              taxaSTPtr->codeArySL[indexSL]
-            ); /*copy taxa code*/
-            
-         *tmpStr++ = '-';
-  
-         tmpStr +=
-            cpLine_ulCp(
-               tmpStr,
-               get_strAry(
-                  taxaSTPtr->idAryStr,
-                  (ulong) indexSL
-               )
-            ); /*copy taxa name*/
-  
-         *tmpStr++ = '.';
-         *tmpStr++ = 'i';
-         *tmpStr++ = 'd';
-         *tmpStr++ = 's';
-         *tmpStr = '\0';
-  
-         outFILE =
-            fopen(
-               (char *) buffStr,
-               "a"
+         errSC =
+            pTaxaId_k2TaxaIds(
+               idStr,         /*read id to print*/
+               fileStr,       /*buffer for file name*/
+               prefixStr,     /*prefix for file name*/
+               taxaSTPtr->codeArySL[indexSL],
+               taxaSTPtr->idAryST->strAry[indexSL],
+               taxaSL,        /*acutal taxa code*/
+               taxaSTPtr->idAryST->strAry[oldSL]
+                  /*actual taxon name*/
             );
-  
-         if(! outFILE)
-            goto fileErr_fun11_sec04;
-  
-         fprintf(
-            (FILE *) outFILE,
-            "%s\t%li\n",
-            idStr,
-            taxaSL
-         );
-  
-         fclose(outFILE);
-            outFILE = 0;
+
+         if(errSC)
+            goto fileErr_fun12_sec04;
+
+         if(
+              taxaSTPtr->mergeAryBl[indexSL]
+            & def_mergeUpBl_k2TaxaId
+         ){ /*If: also can merge towards tip*/
+            indexSL = oldSL;
+            goto mergeUp_fun12_sec03_sub05_cat01;
+         } /*If: also can merge towards tip*/
+
       } /*Else If: merging tip into deeper taxa*/
 
       /**************************************************\
-      * Fun11 Sec03 Sub05:
+      * Fun12 Sec03 Sub05:
       *   - merge taxa up (towards tip)
-      *   o fun11 sec03 sub05 cat01:
+      *   o fun12 sec03 sub05 cat01:
       *     - set up for loop + start loop
-      *   o fun11 sec03 sub05 cat02:
+      *   o fun12 sec03 sub05 cat02:
       *     - check if printing id to a taxa
-      *   o fun11 sec03 sub05 cat03:
+      *   o fun12 sec03 sub05 cat03:
       *     - passed checks; print id
       \**************************************************/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun11 Sec03 Sub05 Cat01:
+      + Fun12 Sec03 Sub05 Cat01:
       +   - set up for loop + start loop
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
       else if(
-            taxaSTPtr->mergeAryBl[indexSL]
-         == def_mergeUpBl_k2TaxaId
+           taxaSTPtr->mergeAryBl[indexSL]
+         & def_mergeUpBl_k2TaxaId
       ){ /*Else If: merging into a tip or higher taxa*/
+         mergeUp_fun12_sec03_sub05_cat01:;
+
+         oldSL = indexSL;
+
          levelSS = taxaSTPtr->levelArySS[indexSL];
 
          histArySL[0] = indexSL;
@@ -1473,7 +1634,7 @@ pIds_k2TaxaId(
          { /*Loop: find ids merging*/
 
             /*+++++++++++++++++++++++++++++++++++++++++++\
-            + Fun11 Sec03 Sub05 Cat02:
+            + Fun12 Sec03 Sub05 Cat02:
             +   - check if printing id to a taxa
             \+++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1483,189 +1644,120 @@ pIds_k2TaxaId(
             if(levelSS >= taxaSTPtr->levelArySS[indexSL])
                break; /*at same level (end of merge)*/
 
+            if(taxaSTPtr->mergeAryBl[indexSL] < 0)
+               histPosSI = 0; /*If no trace back*/
+               /*at end of trace*/
 
-            if(taxaSTPtr->mergeAryBl[indexSL] != 0)
-            { /*If: another merge level*/
-               ++histPosSI;
-
-               histArySL[histPosSI] = 
-
-               taxaSTPtr->backTrackArySL[indexSL];
-               ++indexSL; /*move up to next level*/
-               continue;
-            } /*If: another merge level*/
-
-
-            if(
-                  histArySL[histPosSI]
-               != taxaSTPtr->backTrackArySL[indexSL]
-            ){ /*If: need to backtrack*/
-               backSL=taxaSTPtr->backTrackArySL[indexSL];
-
-               if(backSL < 0)
-                  break; /*no backtracking here*/
-
-               while(
-                       taxaSTPtr->backTrackArySL[backSL]
-                    != histArySL[histPosSI]
-               ){ /*If: not merging ids, check 1 id up*/
-                  --histPosSI;
-
-                  if(histPosSI < 0)
-                     break;
-               } /*If: not merging ids, check 1 id up*/
-
-               if(histPosSI < 0)
-                  break; /*finished*/
-            } /*If: need to backtrack*/
+            histIndexSI =
+               slSearch_shellSort(
+                  histArySL,
+                  taxaSTPtr->backTrackArySL[indexSL],
+                  histPosSI + 1
+               ); /*find actual index*/
 
             ++histPosSI;
 
             histArySL[histPosSI] = 
                taxaSTPtr->backTrackArySL[indexSL];
 
+            if(histIndexSI < 0) ;
+
+            else 
+               histPosSI = histIndexSI;
+               /*last time saw this taxa level*/
+
+            if(taxaSTPtr->mergeAryBl[indexSL] != 0)
+            { /*If: merging this level*/
+               ++indexSL; /*move up to next level*/
+               continue;
+            } /*If: merging this level*/
+
            /*++++++++++++++++++++++++++++++++++++++++++++\
-           + Fun11 Sec03 Sub05 Cat03:
+           + Fun12 Sec03 Sub05 Cat03:
            +   - passed checks; print id
            \++++++++++++++++++++++++++++++++++++++++++++*/
   
-           tmpStr = buffStr;
-  
-           tmpStr +=
-              cpLine_ulCp(
-                 tmpStr,
-                 prefixStr
-              ); /*copy file name*/
-  
-           *tmpStr++ = '-';
-  
-           tmpStr +=
-              numToStr(
-                tmpStr,
-                taxaSTPtr->codeArySL[indexSL]
-              ); /*copy taxa code*/
-              
-           *tmpStr++ = '-';
-  
-           tmpStr +=
-              cpLine_ulCp(
-                 tmpStr,
-                 get_strAry(
-                    taxaSTPtr->idAryStr,
-                    (ulong) indexSL
-                 )
-              ); /*copy taxa name*/
-  
-           *tmpStr++ = '.';
-           *tmpStr++ = 'i';
-           *tmpStr++ = 'd';
-           *tmpStr++ = 's';
-           *tmpStr = '\0';
-  
-           outFILE =
-              fopen(
-                 (char *) buffStr,
-                 "a"
+           errSC =
+              pTaxaId_k2TaxaIds(
+                 idStr,     /*read id to print*/
+                 fileStr,   /*no longer care about*/
+                 prefixStr, /*prefix for file name*/
+                 taxaSTPtr->codeArySL[indexSL],
+                 taxaSTPtr->idAryST->strAry[indexSL],
+                 taxaSL,        /*acutal taxa code*/
+                 taxaSTPtr->idAryST->strAry[oldSL]
+                 /*actual taxon name*/
               );
-  
-           if(! outFILE)
-              goto fileErr_fun11_sec04;
-  
-           fprintf(
-              (FILE *) outFILE,
-              "%s\t%li\n",
-              idStr,
-              taxaSL
-           );
-  
-           fclose(outFILE);
-           outFILE = 0;
+
+           if(errSC)
+              goto fileErr_fun12_sec04;
   
            ++indexSL;
         } /*Loop: while merging taxa*/
       } /*Else If: merging into a tip or higher taxa*/
 
       /**************************************************\
-      * Fun11 Sec03 Sub06:
+      * Fun12 Sec03 Sub06:
       *   - handel not merging taxa cases
       \**************************************************/
 
       else
       { /*Else: not merging*/
-         tmpStr = buffStr;
-
-         tmpStr +=
-            cpLine_ulCp(
-               tmpStr,
-               prefixStr
-            ); /*copy file name*/
-
-         *tmpStr++ = '-';
-
-         tmpStr +=
-            numToStr(
-              tmpStr,
-              taxaSTPtr->codeArySL[indexSL]
-            ); /*copy taxa code*/
-            
-         *tmpStr++ = '-';
-
-         tmpStr +=
-            cpLine_ulCp(
-               tmpStr,
-               get_strAry(
-                  taxaSTPtr->idAryStr,
-                  (ulong) indexSL
-               )
-            ); /*copy taxa name*/
-
-         *tmpStr++ = '.';
-         *tmpStr++ = 'i';
-         *tmpStr++ = 'd';
-         *tmpStr++ = 's';
-         *tmpStr = '\0';
-
-         outFILE =
-            fopen(
-               (char *) buffStr,
-               "a"
+         errSC =
+            pTaxaId_k2TaxaIds(
+               idStr,     /*read id to print*/
+               fileStr,   /*buffer for file name*/
+               prefixStr, /*prefix for file name*/
+               taxaSTPtr->codeArySL[indexSL],
+               taxaSTPtr->idAryST->strAry[indexSL],
+               taxaSL,        /*acutal taxa code*/
+               taxaSTPtr->idAryST->strAry[indexSL]
+               /*actual taxon name*/
             );
 
-         if(! outFILE)
-            goto fileErr_fun11_sec04;
-
-         fprintf(
-            (FILE *) outFILE,
-            "%s\t%li\n",
-            idStr,
-            taxaSL
-         );
-
-         fclose(outFILE);
-         outFILE = 0;
+           if(errSC)
+              goto fileErr_fun12_sec04;
       } /*Else: not merging*/
+
+      /**************************************************\
+      * Fun12 Sec03 Sub07:
+      *   - move to next line
+      \**************************************************/
+
+      nextLine_fun12_sec03_sub07:;
+
+      tmpStr = buffStr;
+      tmpStr += endLine_ulCp(tmpStr);
+
+      while(*tmpStr == '\0')
+      { /*Loop: move past line*/
+         fgets(
+            (char *) buffStr,
+            def_sizeBuff_fun12,
+            (FILE *) inFILE
+          );
+
+          tmpStr = buffStr;
+          tmpStr += endLine_ulCp(tmpStr);
+      } /*Loop: move past line*/
    } /*Loop: get read ids*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec04:
+   ^ Fun12 Sec04:
    ^   - return and clean up
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    errSC = 0;
-   goto cleanUp_fun11_sec04;
+   goto cleanUp_fun12_sec04;
 
-   fileErr_fun11_sec04:;
+   fileErr_fun12_sec04:;
       errSC = def_fileErr_k2TaxaId;
-      goto cleanUp_fun11_sec04;
+      goto cleanUp_fun12_sec04;
 
-   cleanUp_fun11_sec04:;
+   cleanUp_fun12_sec04:;
       if(unclassFILE)
          fclose(unclassFILE);
       unclassFILE = 0;
-
-      if(outFILE)
-         fclose(outFILE);
-      outFILE = 0;
 
       return errSC;
 } /*pIds_k2TaxaId*/

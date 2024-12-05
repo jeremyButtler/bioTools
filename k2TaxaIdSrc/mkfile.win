@@ -8,25 +8,26 @@ O=o.win
 genLib=..\genLib
 
 objFiles= \
-   k2TaxaId.$O \
-   $(genLib)\strAry.$O \
+   ..\k2TaxaIdSrc\k2TaxaId.$O \
+   $(genLib)\ptrAry.$O \
    $(genLib)\ulCp.$O \
    $(genLib)\base10str.$O \
    $(genLib)\numToStr.$O \
    $(genLib)\genMath.$O \
+   $(genLib)\shellSort.$O \
    mainK2TaxaId.$O
 
 all: mainK2TaxaId.$O
 	$(LD) /out:$(NAME) $(objFiles)
 
-mainK2TaxaId.$O: mainK2TaxaId.c k2TaxaId.$O
+mainK2TaxaId.$O: mainK2TaxaId.c ..\k2TaxaIdSrc\k2TaxaId.$O
 	$(CC) /Fo:mainK2TaxaId.$O /c $(CFLAGS) mainK2TaxaId.c
 
-k2TaxaId.$O: k2TaxaId.c k2TaxaId.h $(genLib)\strAry.$O $(genLib)\numToStr.$O $(genLib)\base10str.$O $(genLib)\genMath.$O
-	$(CC) /Fo:k2TaxaId.$O /c $(CFLAGS) k2TaxaId.c
+..\k2TaxaIdSrc\k2TaxaId.$O: ..\k2TaxaIdSrc\k2TaxaId.c ..\k2TaxaIdSrc\k2TaxaId.h $(genLib)\ptrAry.$O $(genLib)\shellSort.$O $(genLib)\numToStr.$O $(genLib)\base10str.$O $(genLib)\genMath.$O
+	$(CC) /Fo:..\k2TaxaIdSrc\k2TaxaId.$O /c $(CFLAGS) ..\k2TaxaIdSrc\k2TaxaId.c
 
-$(genLib)\strAry.$O: $(genLib)\strAry.c $(genLib)\strAry.h $(genLib)\ulCp.$O
-	$(CC) /Fo:$(genLib)\strAry.$O /c $(CFLAGS) $(genLib)\strAry.c
+$(genLib)\ptrAry.$O: $(genLib)\ptrAry.c $(genLib)\ptrAry.h $(genLib)\ulCp.$O
+	$(CC) /Fo:$(genLib)\ptrAry.$O /c $(CFLAGS) $(genLib)\ptrAry.c
 
 $(genLib)\ulCp.$O: $(genLib)\ulCp.c $(genLib)\ulCp.h
 	$(CC) /Fo:$(genLib)\ulCp.$O /c $(CFLAGS) $(genLib)\ulCp.c
@@ -39,6 +40,9 @@ $(genLib)\numToStr.$O: $(genLib)\numToStr.c $(genLib)\numToStr.h
 
 $(genLib)\genMath.$O: $(genLib)\genMath.c $(genLib)\genMath.h
 	$(CC) /Fo:$(genLib)\genMath.$O /c $(CFLAGS) $(genLib)\genMath.c
+
+$(genLib)\shellSort.$O: $(genLib)\shellSort.c $(genLib)\shellSort.h
+	$(CC) /Fo:$(genLib)\shellSort.$O /c $(CFLAGS) $(genLib)\shellSort.c
 
 install:
 	copy $(NAME) $(PREFIX)

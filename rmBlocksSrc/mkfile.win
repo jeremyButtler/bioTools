@@ -14,6 +14,7 @@ objFiles= \
 
 all: mainRmBlocks.$O
 	$(LD) /out:$(NAME) $(objFiles)
+	$LD /out:addLineEnd addLineEnd.$O
 
 mainRmBlocks.$O: mainRmBlocks.c $(genLib)\rmBlocks.$O
 	$(CC) /Fo:mainRmBlocks.$O /c $(EXTRA_FLAGS) $(CFLAGS) mainRmBlocks.c
@@ -21,8 +22,12 @@ mainRmBlocks.$O: mainRmBlocks.c $(genLib)\rmBlocks.$O
 $(genLib)\rmBlocks.$O: $(genLib)\rmBlocks.c $(genLib)\rmBlocks.h
 	$(CC) /Fo:$(genLib)\rmBlocks.$O /c $(EXTRA_FLAGS) $(CFLAGS) $(genLib)\rmBlocks.c
 
+addLineEnd.$O: addLineEnd.c
+	$(CC) /Fo:addLineEnd.$O /c $(CFLAGS) addLineEnd.c
+
 install:
 	copy $(NAME) $(PREFIX)
+	copy addLineEnd $(PREFIX)
 
 clean:
-	del $(objFiles)
+	del $(objFiles) addLineEnd.$O

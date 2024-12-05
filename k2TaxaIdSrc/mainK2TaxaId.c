@@ -42,15 +42,17 @@
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
 !   o .c  #include "../genLib/genMath.h"
-!   o .c  #include "../genLib/strAry.h"
+!   o .c  #include "../genLib/ptrAry.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 signed char *glob_prefStr = (schar *) "Hagrid";
 signed char *glob_startLevStr = (schar *) "G";
-signed char *glob_endLevStr = (schar *) "S";
+signed char *glob_endLevStr = (schar *) "S15";
 
 #define def_minDepth_mainK2TaxaId 10 /*at least 10 reads*/
 #define def_minPercDepth_mainK2TaxaId 0.0f
+#define def_minimizeRep_mainK2TaxaId 0
+   /*1: report includes both minimzer columns*/
 
 #define def_unclassifed_mainK2TaxaId 0
    /*1: print unclassified reads*/
@@ -168,6 +170,39 @@ phelp_mainK2TaxaId(
       (FILE *) outFILE,
       "      o tsv report made by kraken2\n"
    );
+
+   fprintf(
+     (FILE *) outFILE,
+     "      o \"kraken2 --report k2-report.tsv ...\"\n"
+   );
+
+
+   if(def_minimizeRep_mainK2TaxaId)
+      fprintf(
+         (FILE *) outFILE,
+         "    -minimize: [Optional; Yes]\n"
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "    -minimize: [Optional; No]\n"
+      );
+
+   fprintf(
+     (FILE *) outFILE,
+     "      o report from -report has minimizer columns\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "        (krakenUnique; --report-minimizer-data)\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o disable with -no-minimize\n"
+   );
+
 
    fprintf(
      (FILE *) outFILE,
@@ -308,14 +343,8 @@ phelp_mainK2TaxaId(
 
    fprintf(
       (FILE *) outFILE,
-      "      o is a letter and (optional) a number\n"
+      "      o letter (R,D,P,O,F,G,S) + number (0-15)\n"
    );
-
-   fprintf(
-     (FILE *) outFILE,
-     "      o D(0-7),P(0-7),C(0-7),F(0-7),G(0-7),S(0-7)\n"
-   );
-
 
    fprintf(
       (FILE *) outFILE,
@@ -419,6 +448,10 @@ phelp_mainK2TaxaId(
 |     o pointer to signed char to be set to
 |       - 1: if printing unclassified reads
 |       - 0: if not printing unclassified reads
+|   - miniRepBlPtr:
+|     o pointer to signed char to be set to
+|       - 1: if inputing kraken2 minimizer report
+|       - 0: if normal kraken2 report
 |   - mergeRootBlPtr:
 |     o pointer to signed char to be set to
 |       - 1: if not merging taxa
@@ -452,6 +485,7 @@ input_mainK2TaxaId(
    unsigned long *depthULPtr,
    float *percDepthFPtr,
    signed char *pUnclassBlPtr,
+   signed char *miniRepBlPtr,
    signed char *mergeRootBlPtr,
    signed char *mergeTipBlPtr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
@@ -523,6 +557,20 @@ input_mainK2TaxaId(
          ++siArg;
          *reportFileStrPtr = (schar *) argAryStr[siArg];
       } /*If: kraken report input*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (schar *) "-minimize",
+            (schar *) argAryStr[siArg]
+         )
+      ) *miniRepBlPtr = 1;
+
+      else if(
+         ! eqlNull_ulCp(
+            (schar *) "-no-minimize",
+            (schar *) argAryStr[siArg]
+         )
+      ) *miniRepBlPtr = 0;
 
       else if(
          ! eqlNull_ulCp(
@@ -896,6 +944,7 @@ main(
    float percDepthF = def_minPercDepth_mainK2TaxaId;
 
    schar pUnclassBl = def_unclassifed_mainK2TaxaId;
+   schar miniRepBl = def_minimizeRep_mainK2TaxaId;
    schar mergeRootBl = def_mergeRoot_mainK2TaxaId;
    schar mergeTipBl = def_tip_maink2TaxaId;
 
@@ -932,6 +981,7 @@ main(
          &depthUL,
          &percDepthF,
          &pUnclassBl,
+         &miniRepBl,
          &mergeRootBl,
          &mergeTipBl
       ); /*get user input*/
@@ -1049,6 +1099,7 @@ main(
          endLevSS,    /*last taxonomic level to print*/
          depthUL,     /*min read depth*/
          percDepthF,  /*min percent read depth*/
+         miniRepBl,
          mergeRootBl, /*merging root taxa into tip*/
          mergeTipBl,  /*merge tip taxa out of range*/
          &errSC,      /*get errors*/

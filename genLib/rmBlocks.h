@@ -33,6 +33,9 @@
 |     o pointer to unsigned long with new string length
 |     o can set equal to lenUL
 |     o if length not waned, use null
+|   - keepCommentBl:
+|     o 1: keep all non-block comments
+|     o 0: remove all comments
 | Output:
 |   - Modifies:
 |     o retLenULPtr to have length of modified string
@@ -49,7 +52,8 @@ signed char *
 str_rmBlocks(
    signed char *textStr,
    unsigned long lenUL,
-   unsigned long *retLenULPtr
+   unsigned long *retLenULPtr,
+   signed char keepCommentBl
 );
 
 #endif

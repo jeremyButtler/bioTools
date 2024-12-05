@@ -1,5 +1,3 @@
-#!/use/bin/env wish
-
 variable glob_fqIn "" ;
 variable glob_dirOut "" ;
 variable glob_prefix "Hufflepuff" ;
@@ -9,28 +7,7 @@ tk::frame .main -borderwidth 2 ;
 pack .main -side left ;
 
 
-
-
-
-
-proc tcl_isInt_test { value min max } {
-   set charIn [string index $value "end"] ;
-
-   if { $value eq "" } {
-      return true ;              
-   } elseif { [string is integer $charIn] } {
-      if { $value > $max } {
-         return false ;          
-      } elseif { $value < $min } {
-         return false ;          
-      }
-      return true ;              
-   } else {
-     return false ;              
-   }
-
-   return true ;                 
-} ; 
+proc tcl_isInt_test { value index min max } { if { $index < 0 } {  set charIn [string index $value "end"] ; }  else {  set charIn [string index $value $index] ; } ;  if { $value eq "" } {  return true ;  }  elseif { [string is integer $charIn] } {  if { $value > $max } { return false ; }  elseif { $value < $min } { return false ; }  else { return true ; }  }  else { return false ; } ;  return true ; } ; 
 
 
 
@@ -93,6 +70,6 @@ tk::frame .main.filt.mapq
 pack .main.filt.mapq -anchor w -side top
 
 tk::label .main.filt.mapq.lab -text "min mapq (0-93)"
-tk::entry .main.filt.mapq.entry -textvariable glob_mapq -validate key  -vcmd { tcl_isInt_test %P 0 93 } ; 
+tk::entry .main.filt.mapq.entry -textvariable glob_mapq -validate key  -vcmd { tcl_isInt_test %P %i 0 93 } ; 
 
-pack .main.filt.mapq.lab .main.filt.mapq.entry -anchor w -side left
+pack .main.filt.mapq.lab .main.filt.mapq.entry -anchor w -side left ;

@@ -1,5 +1,3 @@
-#!/use/bin/env wish
-
 variable glob_fqIn "" ;
 variable glob_dirOut "" ;
 variable glob_prefix "Hufflepuff" ;
@@ -8,45 +6,58 @@ variable glob_mapq 15 ;
 tk::frame .main -borderwidth 2 ;
 pack .main -side left ;
 
-# I am breaking the dashes so rmBlocks knows this is a
-# block otherwise it would skip it (expects extactly three
-# dashes)
+#------------------------------------------------------
+# Tcl01: glob_tcl_isInt_test
+#   - checks if input key is numeric and if string is
+#     between max and min
+# Input:
+#   - value:
+#     o value (%P) in entery box to check
+#   - index:
+#     o index of character to check (-1 for end)
+#   - min:
+#     o minimum value for value to be a match
+#   - max:
+#     o maximum value for value to be a match
+# Output:
+#   - Returns:
+#     o true if last character in value is numeric and
+#       is between min and max
+#     o false if non-numeric or not in min/max range
+#----------------------------------------------------#
+---proc tcl_isInt_test { value index min max } {
+   if { $index < 0 }
+   { # If: a negative index input
+      set charIn [string index $value "end"] ;
+   } # If: a negative index input
 
-#--- -----------------------------------------------------
-| Tcl01: glob_tcl_isInt_test
-|   - checks if input key is numeric and if string is
-|     between max and min
-| Input:
-|   - value:
-|     o value (%P) in entery box to check
-|   - min:
-|     o minimum value for value to be a match
-|   - max:
-|     o maximum value for value to be a match
-| Output:
-|   - Returns:
-|     o true if last character in value is numeric and is
-|       between min and max
-|     o false if non-numeric or not in min/max range
-\---------------------------------------------------- ---#
-proc tcl_isInt_test { value min max } {
-   set charIn [string index $value \"end\"] ;
+   else
+   { # Else: index of character input
+      set charIn [string index $value $index] ;
+   } ; # Else: index of character input
 
-   if { $value eq "" } {
+   if { $value eq "" }
+   { # If: nothing in string
       return true ;              # empty string
-   } elseif { [string is integer $charIn] } {
-      if { $value > $max } {
-         return false ;          # outside of range
-      } elseif { $value < $min } {
-         return false ;          # outside of range
-      }
-      return true ;              # valid number
-   } else {
-     return false ;              # non-numeric
-   }
+   } # If: nothing in string
 
-   return true ;                 # empty case
-} ; # isInt
+   elseif { [string is integer $charIn] }
+   { # Else If: new character is integer
+      if { $value > $max }
+         { return false ; }        # outside max range
+
+      elseif { $value < $min }
+         { return false ; }        # outside min range
+
+      else
+         { return true ; }         # valid number
+   } # Else If: new character is integer
+
+   else
+      { return false ; } ;         # non-numeric
+
+   return true ;                   # empty case
+}--- ; # isInt
 
 #---~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ' Gui02 TOC:
@@ -77,7 +88,7 @@ pack .main.reqIn.fq -anchor w -side top ;
 ^   - set up the fastq label/button
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<---#
 
-tk::label .main.reqIn.fq.lab -text \"\" ;
+tk::label .main.reqIn.fq.lab -text "" ;
 
 set fq_types {
    { {fastq}    {.fastq}    }
@@ -88,9 +99,9 @@ set fq_types {
 
 --- tk::button
     .main.reqIn.fq.but
-    -text \"fastq files\"
+    -text "fastq files"
     -command {
-        set fqTitle \"select fastq files\" ;
+        set fqTitle "select fastq files" ;
 
         set fqFiles [
               tk_getOpenFile
@@ -100,7 +111,7 @@ set fq_types {
 
         ] ;
 
-        if {$fqFiles eq \"\"} {}
+        if {$fqFiles eq ""} {}
 
         elseif {[llength $fqFiles] == 1}
         {
@@ -136,17 +147,17 @@ set fq_types {
 tk::frame .main.reqIn.out -borderwidth 2 ;
 pack .main.reqIn.out -anchor w -side top ;
 
-tk::label .main.reqIn.out.lab -text \"\" ;
+tk::label .main.reqIn.out.lab -text "" ;
 
 ---tk::button
       .main.reqIn.out.but
-      -text \"out dir\"
+      -text "out dir"
       -command {
          set outDir [
             tk_chooseDirectory
-               -title \"select output directory\"
+               -title "select output directory"
          ] ;
-         if {$outDir ne \"\"}
+         if {$outDir ne ""}
          { # If: have output directory
             set $::glob_dirOut $outDir ;
 
@@ -204,7 +215,7 @@ pack .main.menu -anchor w -side top ;
 
 ---tk::button
    .main.menu.reqBut
-   -text \"required\"
+   -text "required"
    -command {
       pack forget .main.reqIn ;
       pack forget .main.filt ;
@@ -223,7 +234,7 @@ pack .main.menu.reqBut -anchor w -side left
 
 ---tk::button
    .main.menu.filtBut
-   -text \"filtering\"
+   -text "filtering"
    -command {
       pack forget .main.reqIn ;
       pack forget .main.filt ;
@@ -262,19 +273,19 @@ pack .main.filt.mapq -anchor w -side top
 
 ---tk::label
    .main.filt.mapq.lab
-   -text \"min mapq (0-93)\"
+   -text "min mapq (0-93)"
 ---
 
 ---tk::entry
    .main.filt.mapq.entry
    -textvariable glob_mapq
    -validate key        # validate on key press
-   -vcmd { tcl_isInt_test %P 0 93 }
+   -vcmd { tcl_isInt_test %P %i 0 93 }
 --- ; # get mapqping quality
 
 ---pack
    .main.filt.mapq.lab
    .main.filt.mapq.entry
    -anchor w
-   -side left
+   -side left ;
 ---

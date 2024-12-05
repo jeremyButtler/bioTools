@@ -3,7 +3,7 @@
 '   - has functions and structs to get read ids by kraken
 '     organisms
 '   o header:
-'     - defined variables and gaurds
+'     - included libraries
 '   o .h st01: taxa_k2TaxaId
 '     - has taxa names and ids to extract by
 '   o fun01: blank_taxa_k2TaxaId
@@ -26,7 +26,9 @@
 '     - get the level in tree of a kraken entry; col 4
 '   o fun10: readReport_k2TaxaId
 '     - gets list of organism codes
-'   o fun11: pIds_k2TaxaId
+'   o .c fun11: mkTaxaIdFile_k2TaxaIds
+'     - prints a single taxa id (here to avoid clutter)
+'   o fun12: pIds_k2TaxaId
 '     - prints out read ids by taxa for kraken2
 '   o license:
 '     - licensing for this code (public domain / mit)
@@ -40,28 +42,34 @@
 #ifndef KRAKEN_2_GET_TAXA_IDS_H
 #define KRAKEN_2_GET_TAXA_IDS_H
 
+typedef struct str_ptrAry str_ptrAry;
+
 #define def_maxLevels_k2TaxaId 64 /*deepest level*/
 #define def_maxDepth_k2TaxaId 32 /*maximum tree depth*/
 
 #define def_unkown_k2TaxaId ((signed short) -1)
-#define def_unclassifed_k2TaxaId (1 << 3) /*8*/
-#define def_root_k2TaxaId    (1 << 4)     /*16*/
-#define def_domain_k2TaxaId  (1 << 5)     /*32*/
-#define def_phylum_k2TaxaId  (1 << 6)     /*64*/
 
-#define def_class_k2TaxaId   (1 << 7)     /*128*/
-#define def_order_k2TaxaId   (1 << 8)     /*256*/
-#define def_family_k2TaxaId  (1 << 9)     /*512*/
-#define def_genus_k2TaxaId   (1 << 10)    /*1024*/
-#define def_species_k2TaxaId (1 << 11)    /*2048*/
+/*the unclassified bit deterimines the max number of
+` levels one id can have. 16 means that I can have S1-S15
+*/
+#define def_unclassifed_k2TaxaId (1 << 4) /*16*/
+#define def_root_k2TaxaId    (1 << 5)     /*32*/
+#define def_domain_k2TaxaId  (1 << 6)     /*64*/
+#define def_phylum_k2TaxaId  (1 << 7)     /*128*/
+
+#define def_class_k2TaxaId   (1 << 8)     /*256*/
+#define def_order_k2TaxaId   (1 << 9)     /*512*/
+#define def_family_k2TaxaId  (1 << 10)    /*1024*/
+#define def_genus_k2TaxaId   (1 << 11)    /*2048*/
+#define def_species_k2TaxaId (1 << 12)    /*4096*/
 
 #define def_memErr_k2TaxaId 1
 #define def_fileErr_k2TaxaId 2
 #define def_noIds_k2TaxaId 4
 
 #define def_mergeUpBl_k2TaxaId ((schar) 1)
-#define def_skip_k2TaxaId ((schar) 2)
-#define def_mergeDownBl_k2TaxaId ((schar) -1)
+#define def_mergeDownBl_k2TaxaId ((schar) 2)
+#define def_skip_k2TaxaId ((schar) 4)
 
 /*-------------------------------------------------------\
 | ST01: taxa_k2TaxaId
@@ -70,7 +78,7 @@
 typedef struct taxa_k2TaxaId
 {
    signed long *codeArySL;    /*taxa codes for oragnisms*/
-   signed char *idAryStr;  /*string name with taxa names*/
+   struct str_ptrAry *idAryST; /*has taxa names*/
 
    signed long *backTrackArySL;
       /*has previous taxanomic rank for backtracking*/
@@ -263,6 +271,9 @@ getLevel_k2TaxaId(
 |     o min read depth to keep an id (taxa)
 |   - minPercDepthF:
 |     o min percent read depth (0 to 100) to keep an id
+|   - miniRepBl:
+|     o 1: report is kraken2 minizer report (unique)
+|     o 0: report is normal kraken2  report
 |   - mergeRootBl:
 |     o 1: merge lower tree (root) levels with their
 |          upper (tip) levels
@@ -297,14 +308,15 @@ readReport_k2TaxaId(
    signed short endLevSS,       /*highest level to print*/
    unsigned long minDepthUL,    /*min depth to keep id*/
    float minPercDepthF,         /*min % depth to keep id*/
-   signed char mergeRootBl,       /*1: do not merge levels*/
+   signed char miniRepBl,       /*1: k2 minimizer report*/
+   signed char mergeRootBl,     /*1: do not merge levels*/
    signed char mergeTipBl,      /*1: merge lower reads*/
    signed char *errSCPtr,
    void *inFILE                 /*kraken2 report*/
 );
 
 /*-------------------------------------------------------\
-| Fun11: pIds_k2TaxaId
+| Fun12: pIds_k2TaxaId
 |   - prints out read ids by taxa for kraken2
 | Input:
 |   - taxaSTPtr:

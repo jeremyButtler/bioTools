@@ -44,6 +44,7 @@ main(
    unsigned long tmpUL = 0;
    unsigned long emptyUL = 0;
 
+   signed char keepBl = 0;
    signed char *fileHeapStr = 0;
    signed char *tmpStr = 0;
    FILE *inFILE = stdin;
@@ -51,6 +52,14 @@ main(
 
    if(numArgsSI > 1)
    { /*If: priting help message*/
+      if(
+            argAryStr[1][0] == '-'
+         && argAryStr[1][1] == 'k'
+      ){ /*If: user wanted to keep comments*/
+          keepBl = 1; /*keeping comments*/
+          goto getFile_main;
+      } /*If: user wanted to keep comments*/
+
       fprintf(
          stdout,
          "cat in.txt | rmBlocks > out.txt\n"
@@ -73,6 +82,11 @@ main(
 
       fprintf(
          stdout,
+         "    o use `-k` to keep comments not in blocks\n"
+      );
+
+      fprintf(
+         stdout,
          "  - bioTools version: %i-%02i-%02i\n",
          def_year_bioTools,
          def_month_bioTools,
@@ -83,6 +97,8 @@ main(
       goto cleanUp_main;
    } /*If: priting help message*/
   
+   getFile_main:;
+
    fileHeapStr =
       malloc((sizeFileUL + 1) * sizeof(signed char));
 
@@ -136,7 +152,8 @@ main(
    str_rmBlocks(
       fileHeapStr,
       0,           /*overwriting file*/
-      &lenFileUL
+      &lenFileUL,
+      keepBl
    );
 
    fwrite(

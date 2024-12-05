@@ -41,10 +41,13 @@ copy k2TaxaId.exe to your install location
 
 # Run:
 
-You will need the default report (`--report file.tsv`,
-  **DO NOT** use `--report-minimizer-data`) from kraken2.
-  You will also need the output file `--output file.tsv`
-  with the ids.
+It is best to use the default report (`--report file.tsv`,
+  however, you can use the report
+  from `--report-minimizer-data` by using -minimize.  You
+  will also need the output file `--output file.tsv` with
+  the ids. Output will be saved to the name supplied 
+  by `-prefix name`. Output files are
+  named `prefix-taxaId-orginismName.ids`.
 
 Example workflow:
 
@@ -61,6 +64,25 @@ k2TaxaId \
     -preifix goodName;
 ```
 
+```
+kraken2 \
+   --db ~/files/k2-db/k2_20240904_pluspf_08Gb \
+   --output ids.tsv \
+   --report report.tsv \
+   --report-minimizer-data \
+   reads.fastq;
+
+k2TaxaId \
+    -report report.tsv \
+    -minimize \
+    -id ids.tsv \
+    -preifix goodName;
+```
+
+Currently reads are appended to files, so old data is
+  appended to instead of being overwriten. Need to change
+  this at some point.
+
 You can view the help message with `k2TaxaId -h`.
 
 You can controll the range of taxa printed by using
@@ -76,8 +98,14 @@ Also by default k2TaxaId merges reads after `-end` into
   the first printable root taxa. You can disable this
   with -no-merge-tip`.
 
-At some point I should set this up so that low read depth
-  tips are merged into roots, but I have not set that up
-  yet. Probably never will.
-
 # Updates:
+
+- 2024-12-04:
+  - fixed issues with missing ids from levels or ids
+    assigned to wrong taxa
+  - fixed issues with incorrect output and removed name
+    limits (previosly was 64 characters, but some names
+    are longer).
+  - added low read depth or out of range tip merging
+  - added ability to process kraken2 minimizer reports
+    (krakenUnique) (`kraken2 --report-minimizer-data ...`)

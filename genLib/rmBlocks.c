@@ -37,6 +37,9 @@
 |     o pointer to unsigned long with new string length
 |     o can set equal to lenUL
 |     o if length not waned, use null
+|   - keepCommentBl:
+|     o 1: keep all non-block comments
+|     o 0: remove all comments
 | Output:
 |   - Modifies:
 |     o retLenULPtr to have length of modified string
@@ -53,7 +56,8 @@ signed char *
 str_rmBlocks(
    signed char *textStr,
    unsigned long lenUL,
-   unsigned long *retLenULPtr
+   unsigned long *retLenULPtr,
+   signed char keepCommentBl
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun01 TOC:
    '   - converts blocks (#--- ---) to single lines
@@ -159,7 +163,6 @@ str_rmBlocks(
    while(*tmpStr != '\0')
    { /*Loop: scan for blocks*/
       if(tmpStr[0] == '\\')
-
       { /*If: have escaped value*/
          ++tmpStr;
 
@@ -302,10 +305,26 @@ str_rmBlocks(
 
          else
          { /*Else: line comment (single line)*/
+            if(
+                  keepCommentBl
+               && ! blockBl
+            ) --tmpStr; /*get back onto comment*/
+
             while(*tmpStr != '\n')
             { /*Loop: find end of comment*/
                if(*tmpStr == '\0') 
                   break;
+
+               if(
+                     keepCommentBl
+                  && ! blockBl
+               ){ /*If: keeping non-block comments*/
+                  *dupStr++ = *tmpStr;
+                  ++(*retLenULPtr);
+
+                  if(*retLenULPtr == lenUL)
+                     break;
+               } /*If: keeping non-block comments*/
 
                ++tmpStr;
             } /*Loop: find end of comment*/
@@ -388,6 +407,8 @@ str_rmBlocks(
          { /*If: at end of block*/
             blockEnd_rmSpace_fun01_sec03_sub05:;
 
+            scanStr = tmpStr;
+
             while(*tmpStr < 33)
             { /*Loop: remove extra white space*/
                if(*tmpStr == '\0')
@@ -398,6 +419,9 @@ str_rmBlocks(
 
                ++tmpStr;
             } /*Loop: remove extra white space*/
+
+            if(scanStr == tmpStr)
+               continue; /*no white space at end*/
 
             scanStr = tmpStr;
             --tmpStr;
