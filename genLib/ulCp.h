@@ -27,23 +27,27 @@
 '     - finds the end of a c-string (all OS's; looks for
 '       '\0', '\n', and '\r')
 '     - ingores unused ascii characters (> 32, not '\t')
-'   o fun08: cpLine_ulCp
+'   o fun08: endStr_ulCp
+'     - finds the end of a c-string ('\0')
+'   o fun09: cpLine_ulCp
 '     - copies string until end of line (\0, \r, \n)
 '     - ingores unused ascii characters (> 32, not '\t')
-'   o fun09: cpWhite_ulCp
+'   o fun10: cpWhite_ulCp
 '     - copies string until white space
-'   o fun10: rmWhite_ulCp
+'   o fun11: rmWhite_ulCp
 '     - removes white space from c-string
-'   o fun11: swapDelim_ulCp
+'   o fun12: swapDelim_ulCp
 '     - swaps two strings until deliminator is found
-'   o fun12: cmpDelim_ulCp
+'   o fun13: cmpDelim_ulCp
 '     - compares two strings until deliminator is found
-'   o fun13: eqlNull_ulCp
+'   o fun14: eqlNull_ulCp
 '     - compares two strings until null is found
-'   o fun14: endLineUnix_ulCp
+'   o fun15: eqlWhite_ulCp
+'     - compares two strings until white space is found
+'   o fun16: endLineUnix_ulCp
 '     - finds the end of a c-string. This assumes that the
 '       line ends in an '\0' or an '\n'
-'   o fun15: cpLineUnix_ulCp
+'   o fun17: cpLineUnix_ulCp
 '     - copies string until end of line (\0, \n)
 '   o license:
 '     - licensing for this code (public domain / mit)
@@ -284,7 +288,22 @@ endLine_ulCp(
 );
 
 /*-------------------------------------------------------\
-| Fun08: cpLine_ulCp
+| Fun08: endStr_ulCp
+|   - finds the end of a c-string ('\0')
+| Input:
+|   - inStr:
+|     o c-string or string to look for end in
+| Output:
+|   - Returns:
+|     o number of characters in the string
+\-------------------------------------------------------*/
+unsigned int
+endStr_ulCp(
+   signed char *inStr
+);
+
+/*-------------------------------------------------------\
+| Fun09: cpLine_ulCp
 |   - copies string until end of line
 | Input:
 |   - dupStr:
@@ -305,7 +324,7 @@ cpLine_ulCp(
 );
 
 /*-------------------------------------------------------\
-| Fun09: cpWhite_ulCp
+| Fun10: cpWhite_ulCp
 |   - copies string until white space
 | Input:
 |   - dupStr:
@@ -326,7 +345,7 @@ cpWhite_ulCp(
 );
 
 /*-------------------------------------------------------\
-| Fun10: rmWhite_ulCp
+| Fun11: rmWhite_ulCp
 |   - removes white space from c-string
 | Input:
 |   - inStr:
@@ -343,7 +362,7 @@ rmWhite_ulCp(
 );
 
 /*-------------------------------------------------------\
-| Fun11: swapDelim_ulCp
+| Fun12: swapDelim_ulCp
 |   - swaps two strings until deliminator is found
 | Input:
 |   - firstStr:
@@ -372,7 +391,7 @@ swapDelim_ulCp(
 );
 
 /*-------------------------------------------------------\
-| Fun12: cmpDelim_ulCp
+| Fun13: cmpDelim_ulCp
 |   - compares two strings until deliminator is found
 | Input:
 |   - qryStr:
@@ -402,7 +421,7 @@ eql_ulCp(
 );
 
 /*-------------------------------------------------------\
-| Fun13: eqlNull_ulCp
+| Fun14: eqlNull_ulCp
 |   - compares two strings until null is found
 | Input:
 |   - qryStr:
@@ -425,7 +444,30 @@ eqlNull_ulCp(
 );
 
 /*-------------------------------------------------------\
-| Fun14: endLineUnix_ulCp
+| Fun15: eqlWhite_ulCp
+|   - compares two strings until white space is found
+| Input:
+|   - qryStr:
+|     o Pointer to query string
+|   - refStr:
+|     o Pointer to reference strin
+| Output:
+|   - Returns:
+|     o 0 if strings are equal
+|     o > 0 if query > reference
+|     o < 0 if query < reference
+| Note:
+|   - this will likely not be very good at comparing
+|     short strings.
+\-------------------------------------------------------*/
+signed long
+eqlWhite_ulCp(
+   signed char *qryStr,
+   signed char *refStr
+);
+
+/*-------------------------------------------------------\
+| Fun16: endLineUnix_ulCp
 |   - finds the end of a c-string. This assumes that the
 |     line ends in an '\0' or an '\n'
 | Input:
@@ -441,7 +483,7 @@ endLineUnix_ulCp(
 );
 
 /*-------------------------------------------------------\
-| Fun15: cpLineUnix_ulCp
+| Fun17: cpLineUnix_ulCp
 |   - copies string until end of line
 | Input:
 |   - dupStr:

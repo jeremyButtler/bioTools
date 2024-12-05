@@ -68,8 +68,6 @@
 '     - reallocates memory for a refs_samEntry struct
 '   o fun26: getRefLen_samEntry
 '     - gets reference ids & length from a sam file header
-'   o fun27: findRef_refs_samEntry
-'     - find index of a reference id in a refs_samEntry
 '   o .h note01:
 '      - Notes about the sam file format from the sam file
 '        pdf
@@ -2790,7 +2788,6 @@ realloc_refs_samEntry(
 |     o FILE pointer to print all headers to (0 no print)
 |   - headStrPtr:
 |     o pointer to c-string to hold non-reference headers
-|     o use null (0) to not save headers
 |   - lenHeadULPtr:
 |     o unsigned long with headStrPtr length
 | Output:
@@ -2849,17 +2846,15 @@ getRefLen_samEntry(
 
    blank_refs_samEntry(refSTPtr);
 
-   if(
-         headStrPtr    /*check if user input*/
-      && ! *headStrPtr
-   ){ /*If: need memory to save header*/
+   if(! *headStrPtr)
+   { /*If: need memory*/
       *headStrPtr = malloc(4096 * sizeof(schar));
 
       if(! *headStrPtr)
          goto memErr_fun26_sec04;
 
       *lenHeadULPtr = 4069;
-   } /*If: need memory to save header*/
+   } /*If: need memory*/
 
    if(! *buffStrPtr)
    { /*If: need memory*/
@@ -3001,8 +2996,8 @@ getRefLen_samEntry(
        *   - copy no reference header
        \*************************************************/
 
-       else if(headStrPtr)
-       { /*Else If: is non-reference header and saving*/
+       else
+       { /*Else: is non-reference header*/
           if(
                 headBytesUL + samSTPtr->lenExtraUI + 1
              >= *lenHeadULPtr
@@ -3019,7 +3014,7 @@ getRefLen_samEntry(
                 goto memErr_fun26_sec04;
 
             *headStrPtr = tmpStr;
-            tmpStr = '\0';
+            *tmpStr = '\0';
             *lenHeadULPtr <<= 1;
           } /*If: need to resize*/
 
@@ -3036,7 +3031,7 @@ getRefLen_samEntry(
           *cpStr = '\0';
 
           headBytesUL += samSTPtr->lenExtraUI + 1;
-       } /*Else If: is non-reference header and saving*/
+       } /*Else: is non-reference header*/
 
        /*************************************************\
        * Fun26 Sec03 Sub06:
@@ -3088,42 +3083,16 @@ getRefLen_samEntry(
    goto ret_fun26_sec04;
 
    memErr_fun26_sec04:;
-      errSC = def_memErr_samEntry;
-      goto ret_fun26_sec04;
+   errSC = def_memErr_samEntry;
+   goto ret_fun26_sec04;
 
    fileErr_fun26_sec04:;
-      errSC = def_fileErr_samEntry;
-      goto ret_fun26_sec04;
+   errSC = def_fileErr_samEntry;
+   goto ret_fun26_sec04;
 
    ret_fun26_sec04:;
-      return errSC;
+   return errSC;
 } /*getRefLen_samEntry*/
-
-/*-------------------------------------------------------\
-| Fun27: findRef_refs_samEntry
-|   - find index of a reference id in a refs_samEntry
-| Input:
-|   - refStr:
-|     o c-string with reference name to search for
-|   - refSTPtr:
-|     o pointer to refs_samEntry array with references
-| Output:
-|   - Returns:
-|     o index of reference in refSTPtr arrays
-|     o < 0 if could not find reference
-\-------------------------------------------------------*/
-signed long
-findRef_refs_samEntry(
-   signed char *refStr,
-   struct refs_samEntry *refSTPtr
-){
-   return
-      find_strAry(
-         refSTPtr->idAryStr,
-         refStr,
-         refSTPtr->numRefUI
-      );
-} /*findRef_refs_samEntry*/
 
 /*=======================================================\
 : License:

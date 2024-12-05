@@ -190,10 +190,8 @@ addLine_seqST(
             tmpStr = *buffStr + *curBuffUL;
         } /*If: need to resize buffer*/
 
-        if(
-              *tmpStr == '\n'
-           || *tmpStr == '\r'
-        ){ /*If: found end of line*/
+        if (*tmpStr == '\n')
+        { /*If: found end of line*/
             ++(*filePosUL);
             return 0; /*finshed with line*/
         } /*If: found end of line*/

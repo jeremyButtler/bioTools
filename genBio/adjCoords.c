@@ -8,7 +8,7 @@
 '     - adjust coordinates in sam file to reflect the 
 '       actual reference position
 '   o license:
-'     - licensing for this code (public domain / mit)
+'     - Licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*-------------------------------------------------------\

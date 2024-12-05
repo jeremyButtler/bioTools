@@ -19,6 +19,9 @@
 #ifndef NUMBER_TO_CSTRING
 #define NUMBER_TO_CSTRING
 
+#define max_dblDecimal_numToStr 17
+   /*maximum percsion of double*/
+
 /*-------------------------------------------------------\
 | Fun01: numToStr
 |   - converts a number to a c-string
@@ -58,6 +61,30 @@ unsigned int
 backwards_numToStr(
    signed char *cstr,
    unsigned long numUL
+);
+
+/*-------------------------------------------------------\
+| Fun03: double_numToStr
+|   - converts a double to a c-string
+| Input:
+|   - cstr:
+|     o c-string to hold the converted number
+|   - numDbl:
+|     o number to convert
+|   - decUC:
+|     o number decimal digits to keep
+|       (max_dblDecimal_numToStr)
+| Output:
+|   - Modifies:
+|     o cstr to have the number (adds a '\0' at the end)
+|   - Returns:
+|     o number of characters copied to cstr
+\-------------------------------------------------------*/
+unsigned int
+double_numToStr(
+   signed char *cstr,
+   double numDbl,
+   unsigned char decUC
 );
 
 #endif

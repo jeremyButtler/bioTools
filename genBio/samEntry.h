@@ -743,7 +743,6 @@ realloc_refs_samEntry(
 |     o FILE pointer to print all headers to (0 no print)
 |   - headStrPtr:
 |     o pointer to c-string to hold non-reference headers
-|     o use null (0) to not save headers
 |   - lenHeadULPtr:
 |     o unsigned long with headStrPtr length
 | Output:
@@ -754,7 +753,7 @@ realloc_refs_samEntry(
 |     o lenBuffULPtr to have buffStrPtr size (if changed)
 |     o samFILE to point to first read after header
 |     o outFILE to have header (or not use if 0)
-|     o headStrPtr to have non-reference headers (if != 0)
+|     o headStrPtr to have non-reference headers
 |     o lenHeadULPtr have new headStrPtr size (if resized)
 |   - Returns:
 |     o 0 for no errors
@@ -771,25 +770,6 @@ getRefLen_samEntry(
    void *outFILE,                /*print headers to*/
    signed char **headStrPtr,     /*holds non-ref header*/
    unsigned long *lenHeadULPtr   /*length of headStrPtr*/
-);
-
-/*-------------------------------------------------------\
-| Fun27: findRef_refs_samEntry
-|   - find index of a reference id in a refs_samEntry
-| Input:
-|   - refStr:
-|     o c-string with reference name to search for
-|   - refSTPtr:
-|     o pointer to refs_samEntry array with references
-| Output:
-|   - Returns:
-|     o index of reference in refSTPtr arrays
-|     o < 0 if could not find reference
-\-------------------------------------------------------*/
-signed long
-findRef_refs_samEntry(
-   signed char *refStr,
-   struct refs_samEntry *refSTPtr
 );
 
 #endif

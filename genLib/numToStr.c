@@ -7,6 +7,8 @@
 '     - converts a number to a c-string
 '   o fun02: backNumToStr
 '     - converts a number to a c-string backwards
+'   o fun03: double_numToStr
+'     - converts a double to a c-string
 '   o license:
 '     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -98,6 +100,121 @@ backwards_numToStr(
    cstr[retUI] = '\0';
    return retUI;
 } /*backNumToStr*/
+
+/*-------------------------------------------------------\
+| Fun03: double_numToStr
+|   - converts a double to a c-string
+| Input:
+|   - cstr:
+|     o c-string to hold the converted number
+|   - numDbl:
+|     o number to convert
+|   - decUC:
+|     o number decimal digits to keep
+|       (max_dblDecimal_numToStr)
+| Output:
+|   - Modifies:
+|     o cstr to have the number (adds a '\0' at the end)
+|   - Returns:
+|     o number of characters copied to cstr
+\-------------------------------------------------------*/
+unsigned int
+double_numToStr(
+   signed char *cstr,
+   double numDbl,
+   unsigned char decUC
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun03 TOC:
+   '   - converts a double to a c-string
+   '   o fun03 sec01:
+   '     - variable declarations
+   '   o fun03 sec02:
+   '     - convert non-decimal part to c-string
+   '   o fun03 sec03:
+   '     - convert decimal part to number
+   '   o fun03 sec04:
+   '     - add null and return
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec01:
+   ^   - variable declarations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   unsigned int retUI = 0;
+   signed char *startStr = 0;
+   signed char *endStr = 0;
+   signed long numSL = 0;   /*has non-decimal number*/
+   double decDbl = 0;       /*has decimal fraction*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec02:
+   ^   - convert non-decimal part to c-string
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(numDbl < 0)
+   { /*If: negative number*/
+      numDbl *= -1;
+      cstr[retUI++] = '-'; /*negative number*/
+   } /*If: negative number*/
+
+   numSL = (signed long) numDbl;
+   decDbl = numDbl - numSL;
+
+   do{
+      if(cstr[retUI] == '.')
+         break; /*finished*/
+
+      cstr[retUI++] = (numSL % 10) + 48;
+      numSL /= 10;
+   } while(numSL);
+
+   endStr = &cstr[retUI - 1];
+   startStr = cstr;
+
+   while(startStr < endStr)
+   { /*Loop: Reverse array (is bacwards)*/
+      *endStr ^= *startStr;
+      *startStr ^= *endStr;
+      *endStr-- ^= *startStr++;
+   } /*Loop: Reverse array (is backwards)*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec03:
+   ^   - convert decimal part to number
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(decUC > max_dblDecimal_numToStr)
+      decUC = max_dblDecimal_numToStr;
+      /*make sure not out of percision range*/
+
+   if(decDbl != 0)
+   { /*If: have decimal part*/
+      cstr[retUI++] = '\0';
+
+      while(decDbl != 0)
+      { /*Loop: add in decimals*/
+         if(! decUC)
+            break;
+
+         decDbl *= 10; /*convert decimal to whole number*/
+         cstr[retUI++] = ((signed char) decDbl) + 48;
+
+         decDbl -= ((signed char) decDbl);
+            /*remove decimal*/
+
+         --decUC;
+      } /*Loop: add in decimals*/
+   } /*If: have decimal part*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec04:
+   ^   - add null and return
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+   
+   cstr[retUI] = '\0';
+   return retUI;
+} /*double_numToStr*/
 
 /*=======================================================\
 : License:

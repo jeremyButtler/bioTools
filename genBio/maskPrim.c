@@ -919,9 +919,6 @@ getCoords_maskPrim(
       if(*tmpStr == '\n')
          goto fileErr_fun11_sec05_sub03;
 
-      if(*tmpStr == '\r')
-         goto fileErr_fun11_sec05_sub03;
-
       if(*tmpStr == '\0')
          goto fileErr_fun11_sec05_sub03;
 
@@ -942,9 +939,6 @@ getCoords_maskPrim(
         ++tmpStr; /*Move past the primer name*/
 
       if(*tmpStr == '\n')
-         goto fileErr_fun11_sec05_sub03;
-
-      if(*tmpStr == '\r')
          goto fileErr_fun11_sec05_sub03;
 
       if(*tmpStr == '\0')
@@ -985,9 +979,6 @@ getCoords_maskPrim(
       if(*tmpStr == '\n')
          goto fileErr_fun11_sec05_sub03;
 
-      if(*tmpStr == '\r')
-         goto fileErr_fun11_sec05_sub03;
-
       if(*tmpStr == '\0')
          goto fileErr_fun11_sec05_sub03;
 
@@ -1022,10 +1013,7 @@ getCoords_maskPrim(
          if(*tmpStr == '\n')
             goto fileErr_fun11_sec05_sub03;
 
-         if(*tmpStr == '\r')
-            goto fileErr_fun11_sec05_sub03;
-
-         if(*tmpStr == '\0')
+         if(*tmpStr == '\n')
             goto fileErr_fun11_sec05_sub03;
 
          while(*tmpStr < 33)
