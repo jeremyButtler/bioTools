@@ -5,11 +5,14 @@
 '   o fun01: pId_getSeq
 '     - prints or adds ouput to buffer
 '   o fun02 ulfq_getSeq:
-'     - gets next fastq entry and prints out old fastq
-'       entry if file provided (using longs)
+'     - gets next fastq entry and adds current to buffer
 '   o fun03 ulsam_getSeq:
+'     - gets next sam entry and adds current to out buffer
+'   o fun04 ulfqNoBuff_getSeq:
+'     - gets next fastq entry and prints to output file
+'   o fun05 ulsamNoBuff_getSeq:
 '     - gets next sam entry and prints out old sam entry
-'       if file provided using bytes
+'       if file provided
 '   o license:
 '     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -92,16 +95,23 @@ pId_getSeq(
    *startPosUL = 0;
 } /*pId_getSeq*/
 
-/*--------------------------------------------------------\
+/*-------------------------------------------------------\
 | Fun02 ulfq_getSeq:
-|   - gets next fastq entry and prints out old fastq
-|     entry if file provided using bytes
+|   - gets next fastq entry and adds current to buffer
 | Input:
 |   - buffStr:
 |     o c-string with fastq file buffer to find next entry
 |       in or update
+|   - posUL:
+|     o unsigned long pointer to position at in buffer
+|   - outBuffStr:
+|     o c-string with sequences to print out
+|   - outPosUL:
+|     o unsigned long pointer to position at in output
+|       buffer
 |   - lenBuffUI:
-|     o length of buffStr
+|     o length of input (buffStr) & output (outBuffStr)
+|       buffers
 |   - bytesUL:
 |     o pointer to a unsigned long with the number of
 |       bytes in buffer (updated as needed)
@@ -114,12 +124,21 @@ pId_getSeq(
 |    o Reads to outFILE if outFILE points to a file
 |  - Modifies:
 |    o buffStr to have the next buffer if empty
-|    o incurments pointInBufferCStr to start of next read
+|    o posUL to have position of next sequence in buffer
+|    o bytesUL to have new number of bytes if need to
+|      read in more from fastq file
+|    o outBuffStr to have current sequence if outFILE
+|      is input
+|    o outposUL to have new position at in output buffer
+|    o fqFILE to be at next point in file if more
+|      file read into buffer
+|    o outFILE to have contents of outBuffStr if
+|      outBuffStr is full
 |  - Returns:
 |   o 0 if nothing went wrong
 |   o 1 If the end of the file
 |   o 4 If ran out of file
-\--------------------------------------------------------*/
+\-------------------------------------------------------*/
 unsigned char
 ulfq_getSeq(
     signed char *buffStr,   /*buffer with input to scan*/
@@ -429,19 +448,26 @@ ulfq_getSeq(
 
 /*--------------------------------------------------------\
 | Fun03 ulsam_getSeq:
-|   - gets next sam entry and prints out old sam entry if
-|     file provided using bytes
+|   - gets next sam entry and adds current to out buffer
 | Input:
 |   - buffStr:
 |     o c-string with fastq file buffer to find next entry
 |       in or update
+|   - posUL:
+|     o unsigned long pointer to position at in buffer
+|   - outBuffStr:
+|     o c-string with sequences to print out
+|   - outPosUL:
+|     o unsigned long pointer to position at in output
+|       buffer
 |   - lenBuffUI:
-|     o length of buffStr
+|     o length of input (buffStr) & output (outBuffStr)
+|       buffers
 |   - bytesUL:
 |     o pointer to a unsigned long with the number of
 |       bytes in buffer (updated as needed)
-|   - samFILE:
-|     o sam FILE with reads to extract
+|   - fqFILE:
+|     o fastq FILE with reads to extract
 |   - outFILE:
 |     o FILE to print fastq entry to
 | Output:
@@ -449,7 +475,16 @@ ulfq_getSeq(
 |    o Reads to outFILE if outFILE points to a file
 |  - Modifies:
 |    o buffStr to have the next buffer if empty
-|    o incurments pointInBufferCStr to start of next read
+|    o posUL to have position of next sequence in buffer
+|    o bytesUL to have new number of bytes if need to
+|      read in more from fastq file
+|    o outBuffStr to have current sequence if outFILE
+|      is input
+|    o outposUL to have new position at in output buffer
+|    o fqFILE to be at next point in file if more
+|      file read into buffer
+|    o outFILE to have contents of outBuffStr if
+|      outBuffStr is full
 |  - Returns:
 |   o 0 if nothing went wrong
 |   o 1 If the end of the file
@@ -615,6 +650,525 @@ ulsam_getSeq(
 
     return 0;
 } /*ulsam_getSeq*/
+
+
+/*-------------------------------------------------------\
+| Fun04 ulfqNoBuff_getSeq:
+|   - gets next fastq entry and prints to output file
+| Input:
+|   - buffStr:
+|     o c-string with fastq file buffer to find next entry
+|       in or update
+|   - posUL:
+|     o unsigned long pointer to position at in buffer
+|   - lenBuffUI:
+|     o length of input (buffStr) & output (outBuffStr)
+|       buffers
+|   - bytesUL:
+|     o pointer to a unsigned long with the number of
+|       bytes in buffer (updated as needed)
+|   - fqFILE:
+|     o fastq FILE with reads to extract
+|   - outFILE:
+|     o FILE to print fastq entry to (null to not print)
+| Output:
+|  - Prints:
+|    o Reads to outFILE if outFILE points to a file
+|  - Modifies:
+|    o buffStr to have the next buffer if empty
+|    o posUL to have position of next sequence in buffer
+|    o bytesUL to have new number of bytes if need to
+|      read in more from fastq file
+|    o fqFILE to be at next point in file if more
+|      file read into buffer
+|    o outFILE to have new sequence (if provided)
+|  - Returns:
+|   o 0 if nothing went wrong
+|   o 1 If the end of the file
+|   o 4 If ran out of file
+\-------------------------------------------------------*/
+unsigned char
+ulfqNoBuff_getSeq(
+    signed char *buffStr,   /*buffer with input to scan*/
+    unsigned long *posUL,   /*Position in buffer*/
+    unsigned int lenBuffUI, /*Size of buffer*/
+    unsigned long *bytesUL, /*Number chars in buffStr*/
+    FILE *fqFILE,           /*Fastq file with input*/
+    FILE *outFILE           /*file to output reads to*/
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun04 TOC:
+   '  - Moves the the next fastq entry and prints to
+   '    output file if an output file was provided.
+   '  o fun04 sec01:
+   '    -  Variable declerations
+   '  o fun04 sec02:
+   '    - check if need to get more buffer
+   '  o fun04 sec03:
+   '    - move past header
+   '  o fun04 sec04:
+   '    - find number of bases in sequence entry
+   '  o fun04 sec05:
+   '     - move past spacer entry
+   '  o fun04 Sec06:
+   '    - move past q-score entry
+   '  o fun04 Sec07:
+   '    - adjust position for the next read
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+    ^ Fun04 Sec01:
+    ^   - variable declerations
+    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+    schar tmpSC = 0;
+    ulong startPosUL = *posUL;
+    slong lenSeqSL = 0;
+
+    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+    ^ Fun04 Sec02:
+    ^   - check if need to get more buffer
+    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+    if(buffStr[*posUL] == '\0')
+    { /*If need to get more input*/
+      if(*bytesUL < lenBuffUI)
+         return 1; /*EOF*/
+
+      *bytesUL =
+        fread(
+           (char *) buffStr,
+           sizeof(char),
+           lenBuffUI - 1,
+           fqFILE
+        ); /*Read in more of the file*/
+
+      if(! *bytesUL)
+         return 1; /*EOF*/
+
+      *posUL = 0;
+      buffStr[*bytesUL] = '\0';
+    } /*If need to get more input*/
+
+    if(*posUL == 0)
+       startPosUL = 0;
+
+    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+    ^ Fun04 Sec03:
+    ^   - move past header
+    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+    *posUL += endLine_vectScan(&buffStr[*posUL]);
+
+    while(buffStr[*posUL] == '\0')
+    { /*Loop: move past header*/
+
+       if(*bytesUL == 0)
+           return 4;      /*fastq has only header*/
+
+       if(outFILE)
+       { /*If: I am writing output to a file*/
+          fprintf(
+             (FILE *) outFILE,
+             "%s",
+             &buffStr[startPosUL]
+          );
+       } /*If: I am writing output to a file*/
+
+       *bytesUL =
+         fread(
+            (char *) buffStr,
+            sizeof(char),
+            lenBuffUI - 1,
+            fqFILE
+         ); /*Read in more of the file*/
+
+       *posUL = 0;
+       buffStr[*bytesUL] = '\0';
+
+       *posUL += endLine_vectScan(&buffStr[*posUL]);
+    } /*Loop: move past header*/
+
+    ++(*posUL); /*Get off new line*/
+
+    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+    ^ Fun04 Sec04:
+    ^   - find number of bases in sequence entry
+    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+    lenSeqSL = (signed long) (*posUL - 1) * -1;
+
+    while(buffStr[*posUL] != '+')
+    { /*Loop: get past sequence entry*/
+        *posUL += endLine_vectScan(&buffStr[*posUL]);
+
+        if(buffStr[*posUL] == '\0')
+        { /*If I need to read in more input*/
+           lenSeqSL += *posUL;
+
+           if(*bytesUL == 0)
+               return 4;      /*fastq has only header*/
+
+           if(outFILE)
+           { /*If: I am writing output to a file*/
+              fprintf(
+                 (FILE *) outFILE,
+                 "%s",
+                 &buffStr[startPosUL]
+              );
+           } /*If: I am writing output to a file*/
+
+            *bytesUL =
+              fread(
+                 (char *) buffStr,
+                 sizeof(char),
+                 lenBuffUI - 1,
+                 fqFILE
+              );
+
+            *posUL = 0;
+            buffStr[*bytesUL] = '\0';
+
+            continue;
+        } /*If: I need to read in more input*/
+
+        ++(*posUL); /*is new line*/
+    } /*Loop: get past sequence entry*/
+
+    lenSeqSL += (*posUL) - 1;
+    ++(*posUL); /*Get off '+'*/
+
+    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+    ^ Fun04 Sec05:
+    ^  - move past spacer entry
+    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+    *posUL += endLine_vectScan(&buffStr[*posUL]);
+
+    while(buffStr[*posUL] == '\0')
+    { /*Loop: get past spacer entry*/
+
+       if(*bytesUL == 0)
+           return 4;         /*no Q-score entry*/
+
+       if(outFILE)
+       { /*If: I am writing output to a file*/
+          fprintf(
+             (FILE *) outFILE,
+             "%s",
+             &buffStr[startPosUL]
+          );
+       } /*If: I am writing output to a file*/
+
+       *bytesUL =
+         fread(
+            (char *) buffStr,
+            sizeof(char),
+            lenBuffUI - 1,
+            fqFILE
+         );
+
+       *posUL = 0;
+       buffStr[*bytesUL] = '\0';
+
+       *posUL += endLine_vectScan(&buffStr[*posUL]);
+    } /*Loop: get past spacer entry*/
+
+    ++(*posUL); /*Get off new line*/
+
+    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+    ^ Fun04 Sec06:
+    ^  - move past q-score entry
+    ^  - qscore entry has same number of lines as sequence
+    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+    while(lenSeqSL + *posUL >= *bytesUL)
+    { /*Loop: read in rest of q-score entry*/
+       lenSeqSL -= (*bytesUL - *posUL);
+
+       if(outFILE)
+       { /*If: I am writing output to a file*/
+          fprintf(
+             (FILE *) outFILE,
+             "%s",
+             &buffStr[startPosUL]
+          );
+       } /*If: I am writing output to a file*/
+
+       if(*bytesUL == 0)
+       { /*If: at end of file*/
+           if(lenSeqSL <= 0)
+              return 1;
+           else
+              return 4;  /*incomplete q-score entry*/
+       } /*If: at end of file*/
+
+       *bytesUL =
+         fread(
+            (char *) buffStr,
+            sizeof(char),
+            lenBuffUI - 1,
+            fqFILE
+         );
+
+       *posUL = 0;
+       buffStr[*bytesUL] = '\0';
+    } /*Loop: read in rest of q-score entry*/
+
+    *posUL += lenSeqSL; /*end of q-score entry*/
+    /*new line is included*/
+
+    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+    ^ Fun04 Sec07:
+    ^   - adjust position for next read
+    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+    if(outFILE)
+    { /*If: I am writing output to a file*/
+       tmpSC = buffStr[*posUL];
+       buffStr[*posUL] = '\0'; 
+
+       fprintf(
+          (FILE *) outFILE,
+          "%s",
+          &buffStr[startPosUL]
+       );
+
+       buffStr[*posUL] = tmpSC;
+    } /*If: I am writing output to a file*/
+
+    /*This comparision is needed for extracting future
+    `  values. Oddly enough it also makes it faster
+    `  then the buffStr[*posUL] == '\0'. I am guessing
+    `  the 255 makes it faster becuase it makes the other
+    `  ifs less likely. Again branch prediction penalty
+    */
+    if(*bytesUL - *posUL < 255)
+    { /*If: I need to get more input*/
+      if(! *bytesUL && buffStr[*posUL] == '\0')
+         return 1;
+
+      cpLen_ulCp(
+         buffStr,
+         &buffStr[*posUL],
+         *bytesUL - *posUL
+      );
+
+      *posUL = *bytesUL - *posUL;
+
+      /*Read in more of the file*/
+      *bytesUL =
+        fread(
+           &buffStr[*posUL],
+           sizeof(char),
+           lenBuffUI - *posUL,
+           fqFILE
+        );
+
+      *bytesUL += *posUL;
+
+      buffStr[*bytesUL] = '\0';
+      *posUL = 0;
+
+       if(! *bytesUL)
+          return 1;
+    } /*If: I need to get more input*/
+
+    return 0;
+} /*ulfqNoBuff_getSeq*/
+
+/*--------------------------------------------------------\
+| Fun05 ulsamNoBuff_getSeq:
+|   - gets next sam entry and prints out old sam entry if
+|     file provided
+| Input:
+|   - buffStr:
+|     o c-string with fastq file buffer to find next entry
+|       in or update
+|   - posUL:
+|     o unsigned long pointer to position at in buffer
+|   - lenBuffUI:
+|     o length of input (buffStr) & output (outBuffStr)
+|       buffers
+|   - bytesUL:
+|     o pointer to a unsigned long with the number of
+|       bytes in buffer (updated as needed)
+|   - fqFILE:
+|     o fastq FILE with reads to extract
+|   - outFILE:
+|     o FILE to print fastq entry to
+| Output:
+|  - Prints:
+|    o Reads to outFILE if outFILE points to a file
+|  - Modifies:
+|    o buffStr to have the next buffer if empty
+|    o posUL to have position of next sequence in buffer
+|    o bytesUL to have new number of bytes if need to
+|      read in more from fastq file
+|    o fqFILE to be at next point in file if more
+|      file read into buffer
+|    o outFILE to have contents of outBuffStr if
+|      outBuffStr is full
+|  - Returns:
+|   o 0 if nothing went wrong
+|   o 1 If the end of the file
+|   o 4 If ran out of file
+\--------------------------------------------------------*/
+unsigned char
+ulsamNoBuff_getSeq(
+    signed char *buffStr,   /*buffer with input to scan*/
+    unsigned long *posUL,   /*Position in buffer*/
+    unsigned int lenBuffUI, /*Size of buffer*/
+    unsigned long *bytesUL, /*Number chars in buffStr*/
+    FILE *samFILE,           /*Fastq file with input*/
+    FILE *outFILE           /*file to output reads to*/
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun05b TOC:
+   '  - Moves the the next sam entry and prints to the
+   '    output file if an output file was provided.
+   '  - This is the vector free version of
+   '    fq_getSeq
+   '  o fun05 sec01:
+   '    -  Variable declerations
+   '  o fun05 sec02:
+   '    - check if need to get more buffer
+   '  o fun05 sec03:
+   '    - move past sam entry
+   '  o fun05 Sec04:
+   '    - adjust positoin for the next read
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+    ^ Fun05 Sec01:
+    ^   - variable declerations
+    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+    schar tmpSC = 0;
+    ulong startPosUL = *posUL;
+
+    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+    ^ Fun05 Sec02:
+    ^   - check if need to get more buffer
+    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+    if(buffStr[*posUL] == '\0')
+    { /*If need to get more input*/
+      if(*bytesUL < lenBuffUI)
+         return 1; /*EOF*/
+
+      *bytesUL =
+        fread(
+           (char *) buffStr,
+           sizeof(char),
+           lenBuffUI - 1,
+           samFILE
+        ); /*Read in more of the file*/
+
+      if(! *bytesUL)
+         return 1; /*EOF*/
+
+      *posUL = 0;
+      buffStr[*bytesUL] = '\0';
+    } /*If need to get more input*/
+
+    if(*posUL == 0)
+       startPosUL = 0;
+
+    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+    ^ Fun05 Sec03:
+    ^   - move past sam entry
+    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+    *posUL += endLine_vectScan(&buffStr[*posUL]);
+
+    while(buffStr[*posUL] == '\0')
+    { /*Loop: move past header*/
+
+       if(*bytesUL == 0)
+           return 4;      /*fastq has only header*/
+
+       if(outFILE)
+       { /*If: I am writing output to a file*/
+          fprintf(
+             (FILE *) outFILE,
+             "%s",
+             &buffStr[startPosUL]
+          );
+       } /*If: I am writing output to a file*/
+
+       *bytesUL =
+         fread(
+            (char *) buffStr,
+            sizeof(char),
+            lenBuffUI - 1,
+            samFILE
+         ); /*Read in more of the file*/
+
+       *posUL = 0;
+       buffStr[*bytesUL] = '\0';
+
+       *posUL += endLine_vectScan(&buffStr[*posUL]);
+    } /*Loop: move past header*/
+
+    ++(*posUL); /*Get off new line*/
+
+    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+    ^ Fun05 Sec04:
+    ^   - adjust position for next read
+    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+    if(outFILE)
+    { /*If: I am writing output to a file*/
+       tmpSC = buffStr[*posUL];
+       buffStr[*posUL] = '\0'; 
+
+       fprintf(
+          (FILE *) outFILE,
+          "%s",
+          &buffStr[startPosUL]
+       );
+
+       buffStr[*posUL] = tmpSC;
+    } /*If: I am writing output to a file*/
+
+    /*This comparision is needed for extracting future
+    `  values. Oddly enough it also makes it faster
+    `  then the buffStr[*posUL] == '\0'. I am guessing
+    `  the 255 makes it faster becuase it makes the other
+    `  ifs less likely. Again branch prediction penalty
+    */
+    if(*bytesUL - *posUL < 255)
+    { /*If: I need to get more input*/
+      if(! *bytesUL && buffStr[*posUL] == '\0')
+         return 1;
+
+      cpLen_ulCp(
+         buffStr,
+         &buffStr[*posUL],
+         *bytesUL - *posUL
+      );
+
+      *posUL = *bytesUL - *posUL;
+
+      /*Read in more of the file*/
+      *bytesUL =
+        fread(
+           &buffStr[*posUL],
+           sizeof(char),
+           lenBuffUI - *posUL,
+           samFILE
+        );
+
+      *bytesUL += *posUL;
+
+      buffStr[*bytesUL] = '\0';
+      *posUL = 0;
+
+       if(! *bytesUL)
+          return 1;
+    } /*If: I need to get more input*/
+
+    return 0;
+} /*ulSamNoBuff_getSeq*/
 
 /*=======================================================\
 : License:

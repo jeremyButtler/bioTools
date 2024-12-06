@@ -5,11 +5,14 @@
 '   o fun01: pId_getSeq
 '     - prints or adds ouput to buffer
 '   o fun02 ulfq_getSeq:
-'     - gets next fastq entry and prints out old fastq
-'       entry if file provided (using longs)
+'     - gets next fastq entry and adds current to buffer
 '   o fun03 ulsam_getSeq:
+'     - gets next sam entry and adds current to out buffer
+'   o fun04 ulfqNoBuff_getSeq:
+'     - gets next fastq entry and prints to output file
+'   o fun05 ulsamNoBuff_getSeq:
 '     - gets next sam entry and prints out old sam entry
-'       if file provided using bytes
+'       if file provided
 '   o license:
 '     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -55,16 +58,23 @@ pId_getSeq(
    void *outFILE
 );
 
-/*--------------------------------------------------------\
+/*-------------------------------------------------------\
 | Fun02 ulfq_getSeq:
-|   - gets next fastq entry and prints out old fastq
-|     entry if file provided using bytes
+|   - gets next fastq entry and adds current to buffer
 | Input:
 |   - buffStr:
 |     o c-string with fastq file buffer to find next entry
 |       in or update
+|   - posUL:
+|     o unsigned long pointer to position at in buffer
+|   - outBuffStr:
+|     o c-string with sequences to print out
+|   - outPosUL:
+|     o unsigned long pointer to position at in output
+|       buffer
 |   - lenBuffUI:
-|     o length of buffStr
+|     o length of input (buffStr) & output (outBuffStr)
+|       buffers
 |   - bytesUL:
 |     o pointer to a unsigned long with the number of
 |       bytes in buffer (updated as needed)
@@ -77,12 +87,21 @@ pId_getSeq(
 |    o Reads to outFILE if outFILE points to a file
 |  - Modifies:
 |    o buffStr to have the next buffer if empty
-|    o incurments pointInBufferCStr to start of next read
+|    o posUL to have position of next sequence in buffer
+|    o bytesUL to have new number of bytes if need to
+|      read in more from fastq file
+|    o outBuffStr to have current sequence if outFILE
+|      is input
+|    o outposUL to have new position at in output buffer
+|    o fqFILE to be at next point in file if more
+|      file read into buffer
+|    o outFILE to have contents of outBuffStr if
+|      outBuffStr is full
 |  - Returns:
 |   o 0 if nothing went wrong
 |   o 1 If the end of the file
 |   o 4 If ran out of file
-\--------------------------------------------------------*/
+\-------------------------------------------------------*/
 unsigned char
 ulfq_getSeq(
     signed char *buffStr,   /*buffer with input to scan*/
@@ -97,19 +116,26 @@ ulfq_getSeq(
 
 /*--------------------------------------------------------\
 | Fun03 ulsam_getSeq:
-|   - gets next sam entry and prints out old sam entry if
-|     file provided using bytes
+|   - gets next sam entry and adds current to out buffer
 | Input:
 |   - buffStr:
 |     o c-string with fastq file buffer to find next entry
 |       in or update
+|   - posUL:
+|     o unsigned long pointer to position at in buffer
+|   - outBuffStr:
+|     o c-string with sequences to print out
+|   - outPosUL:
+|     o unsigned long pointer to position at in output
+|       buffer
 |   - lenBuffUI:
-|     o length of buffStr
+|     o length of input (buffStr) & output (outBuffStr)
+|       buffers
 |   - bytesUL:
 |     o pointer to a unsigned long with the number of
 |       bytes in buffer (updated as needed)
-|   - samFILE:
-|     o sam FILE with reads to extract
+|   - fqFILE:
+|     o fastq FILE with reads to extract
 |   - outFILE:
 |     o FILE to print fastq entry to
 | Output:
@@ -117,7 +143,16 @@ ulfq_getSeq(
 |    o Reads to outFILE if outFILE points to a file
 |  - Modifies:
 |    o buffStr to have the next buffer if empty
-|    o incurments pointInBufferCStr to start of next read
+|    o posUL to have position of next sequence in buffer
+|    o bytesUL to have new number of bytes if need to
+|      read in more from fastq file
+|    o outBuffStr to have current sequence if outFILE
+|      is input
+|    o outposUL to have new position at in output buffer
+|    o fqFILE to be at next point in file if more
+|      file read into buffer
+|    o outFILE to have contents of outBuffStr if
+|      outBuffStr is full
 |  - Returns:
 |   o 0 if nothing went wrong
 |   o 1 If the end of the file
@@ -129,6 +164,98 @@ ulsam_getSeq(
     unsigned long *posUL,   /*Position in buffer*/
     signed char *outBuffStr,/*holds reads to print*/
     unsigned long *outPosUL,/*position at in outBuffStr*/
+    unsigned int lenBuffUI, /*Size of buffer*/
+    unsigned long *bytesUL, /*Number chars in buffStr*/
+    FILE *samFILE,           /*Fastq file with input*/
+    FILE *outFILE           /*file to output reads to*/
+);
+
+/*-------------------------------------------------------\
+| Fun04 ulfqNoBuff_getSeq:
+|   - gets next fastq entry and prints to output file
+| Input:
+|   - buffStr:
+|     o c-string with fastq file buffer to find next entry
+|       in or update
+|   - posUL:
+|     o unsigned long pointer to position at in buffer
+|   - lenBuffUI:
+|     o length of input (buffStr) & output (outBuffStr)
+|       buffers
+|   - bytesUL:
+|     o pointer to a unsigned long with the number of
+|       bytes in buffer (updated as needed)
+|   - fqFILE:
+|     o fastq FILE with reads to extract
+|   - outFILE:
+|     o FILE to print fastq entry to (null to not print)
+| Output:
+|  - Prints:
+|    o Reads to outFILE if outFILE points to a file
+|  - Modifies:
+|    o buffStr to have the next buffer if empty
+|    o posUL to have position of next sequence in buffer
+|    o bytesUL to have new number of bytes if need to
+|      read in more from fastq file
+|    o fqFILE to be at next point in file if more
+|      file read into buffer
+|    o outFILE to have new sequence (if provided)
+|  - Returns:
+|   o 0 if nothing went wrong
+|   o 1 If the end of the file
+|   o 4 If ran out of file
+\-------------------------------------------------------*/
+unsigned char
+ulfqNoBuff_getSeq(
+    signed char *buffStr,   /*buffer with input to scan*/
+    unsigned long *posUL,   /*Position in buffer*/
+    unsigned int lenBuffUI, /*Size of buffer*/
+    unsigned long *bytesUL, /*Number chars in buffStr*/
+    FILE *fqFILE,           /*Fastq file with input*/
+    FILE *outFILE           /*file to output reads to*/
+);
+
+/*--------------------------------------------------------\
+| Fun05 ulsamNoBuff_getSeq:
+|   - gets next sam entry and prints out old sam entry if
+|     file provided
+| Input:
+|   - buffStr:
+|     o c-string with fastq file buffer to find next entry
+|       in or update
+|   - posUL:
+|     o unsigned long pointer to position at in buffer
+|   - lenBuffUI:
+|     o length of input (buffStr) & output (outBuffStr)
+|       buffers
+|   - bytesUL:
+|     o pointer to a unsigned long with the number of
+|       bytes in buffer (updated as needed)
+|   - fqFILE:
+|     o fastq FILE with reads to extract
+|   - outFILE:
+|     o FILE to print fastq entry to
+| Output:
+|  - Prints:
+|    o Reads to outFILE if outFILE points to a file
+|  - Modifies:
+|    o buffStr to have the next buffer if empty
+|    o posUL to have position of next sequence in buffer
+|    o bytesUL to have new number of bytes if need to
+|      read in more from fastq file
+|    o fqFILE to be at next point in file if more
+|      file read into buffer
+|    o outFILE to have contents of outBuffStr if
+|      outBuffStr is full
+|  - Returns:
+|   o 0 if nothing went wrong
+|   o 1 If the end of the file
+|   o 4 If ran out of file
+\--------------------------------------------------------*/
+unsigned char
+ulsamNoBuff_getSeq(
+    signed char *buffStr,   /*buffer with input to scan*/
+    unsigned long *posUL,   /*Position in buffer*/
     unsigned int lenBuffUI, /*Size of buffer*/
     unsigned long *bytesUL, /*Number chars in buffStr*/
     FILE *samFILE,           /*Fastq file with input*/

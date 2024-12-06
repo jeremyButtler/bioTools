@@ -584,7 +584,10 @@ unsigned long
 endLine_vectScan(
    signed char *buffStr
 ){
-   return endLine_ulCp(buffStr);
+   return endLineUnix_ulCp(buffStr);
+   /*cacluations on this are bases on '\n', so need to
+   `  move past carriage returns
+   */
 } /*endLine_vectScan*/
 
 #endif /*NEON or scalr check*/

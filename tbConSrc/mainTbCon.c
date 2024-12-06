@@ -31,7 +31,6 @@
 #include <stdio.h>
 
 #include "../genLib/base10str.h"
-#include "../genLib/ulCp.h"
 #include "../genLib/charCp.h"
 #include "../genLib/strAry.h"
 
@@ -46,6 +45,7 @@
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden files
+!   - .c  #include "../genLib/ulCp.h"
 !   - .c  #include "../genLib/numToStr.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/

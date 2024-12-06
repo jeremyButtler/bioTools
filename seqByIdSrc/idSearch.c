@@ -103,7 +103,7 @@ getFqSeq_idSearch(
 
    ulong startUL = 0; /*start of read id*/
    ulong endUL = 0;   /*end of read id*/
-   ulong idAryUL[17]; /*maximum libs allowed*/
+   ulong_searchST idAryUL[17]; /*maximum libs allowed*/
 
    slong indexSL = -1; /*array index of found read id*/
 
@@ -288,7 +288,7 @@ getSamSeq_idSearch(
 
    ulong startUL = 0; /*start of read id*/
    ulong endUL = 0;   /*end of read id*/
-   ulong idAryUL[17]; /*maximum libs allowed*/
+   ulong_searchST idAryUL[17]; /*maximum libs allowed*/
 
    slong indexSL = -1; /*array index of found read id*/
 

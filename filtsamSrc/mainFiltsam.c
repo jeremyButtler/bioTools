@@ -41,7 +41,6 @@
 
 #include <stdio.h>
 
-#include "../genLib/ulCp.h"
 #include "../genLib/charCp.h"
 #include "../genLib/base10str.h"
 
@@ -55,6 +54,7 @@
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden dependencies
 !   o .c  #include "../genLib/numToStr.h"
+!   o .c  #include "../genLib/ulCp.h"
 !   o .c  #include "../genLib/strAry.h"
 !   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/

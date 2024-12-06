@@ -530,7 +530,7 @@ findQScores_samEntry(
     uint uiQScore = 0;
     uint uiChar = 0;
     
-    ulong qAdjustUL =
+    ulong_ulCp qAdjustUL =
        mkDelim_ulCp((schar) def_adjQ_samEntry);
 
     /*Find the number of q-score characters in buffer*/
@@ -629,7 +629,10 @@ cpQEntry_samEntry(
   uchar *tmpStr = 0;
   uint uiQ = 0;
   uint uiChar = 0;
-  ulong qAdjustUL=mkDelim_ulCp((schar) def_adjQ_samEntry);
+
+  ulong_ulCp qAdjustUL =
+     mkDelim_ulCp((schar) def_adjQ_samEntry);
+
   ulong *cpPtrUL = (ulong *) (cpQStr);
   ulong *dupPtrUL = (ulong *) samSTPtr->qStr;
   ulong qScoreUL = 0;
@@ -788,7 +791,8 @@ getLine_samEntry(
    ^   - make sure hav entire line
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   oldLenUL += endLine_ulCp(tmpStr);
+   oldLenUL += endLineUnix_ulCp(tmpStr);
+      /*just want line end, so can ignore '\r'*/
    tmpStr = *buffStr + oldLenUL;
 
    while(*tmpStr != '\n')
@@ -825,7 +829,7 @@ getLine_samEntry(
 
       checkEOL_fun10_sec03_samEntry:;
 
-      oldLenUL += endLine_ulCp(tmpStr);
+      oldLenUL += endLineUnix_ulCp(tmpStr);
       tmpStr = *buffStr + oldLenUL;
    } /*Loop: Find the length of  the line*/
    
@@ -906,7 +910,6 @@ lineTo_samEntry(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   ulong tabUL = mkDelim_ulCp((schar) '\t');
    signed char *tmpStr = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -927,7 +930,7 @@ lineTo_samEntry(
       cpDelim_ulCp(
          samSTPtr->qryIdStr,
          buffStr,
-         tabUL,
+         def_tab_ulCp,
          '\t'
       ); /*Copy the reference id/name*/
 
@@ -957,7 +960,7 @@ lineTo_samEntry(
       cpDelim_ulCp(
          samSTPtr->refIdStr,
          buffStr,
-         tabUL,
+         def_tab_ulCp,
          '\t'
       ); /*Copy the reference id/name*/
    
@@ -1169,7 +1172,7 @@ lineTo_samEntry(
       cpDelim_ulCp(
          samSTPtr->rNextStr,
          buffStr,
-         tabUL,
+         def_tab_ulCp,
          '\t'
       ); /*Copy the query id/name*/
 
@@ -1210,7 +1213,8 @@ lineTo_samEntry(
 
    if(samSTPtr->readLenUI == 0 && buffStr[0] != '*')
       samSTPtr->readLenUI =
-         lenStr_ulCp(buffStr, tabUL, '\t');
+         (uint)
+         lenStr_ulCp(buffStr, def_tab_ulCp, '\t');
 
    else if(buffStr[0] == '*')
    { /*Else If: There  is no sequence entry*/
@@ -1307,7 +1311,8 @@ lineTo_samEntry(
    else
    { /*Else: have extra entry*/
       /*not sure if char or ul copy better here*/
-      samSTPtr->lenExtraUI = endLine_ulCp(buffStr);
+      samSTPtr->lenExtraUI = endLineUnix_ulCp(buffStr);
+         /*this will save '\r' on windows*/
 
       if(samSTPtr->lenExtraUI > samSTPtr->lenExtraBuffUI)
       { /*If: I need to resize the buffer*/

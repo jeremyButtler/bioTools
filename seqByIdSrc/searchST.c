@@ -117,8 +117,8 @@
 unsigned char
 cnvtIdToHexAry_searchST(
    signed char *idStr,
-   unsigned long *idAryUL,
-   unsigned long *posInUL
+   ulong_searchST *idAryUL,
+   ulong_searchST *posInUL
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03: cnvtIdToHexAry_searchST
    '   o fun03 sec01:
@@ -134,11 +134,14 @@ cnvtIdToHexAry_searchST(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   ulong endLimbUL = *posInUL + def_maxLimbs_idLkTbl;
-   ulong sumPosUL = *posInUL + 1; /*sum limb*/
-   ulong indexPosUL = *posInUL; /*limb with the index*/
-   uchar numLimbUC = 0;
+   ulong_searchST
+      endLimbUL = *posInUL + def_maxLimbs_idLkTbl;
 
+   ulong_searchST sumPosUL = *posInUL + 1; /*sum limb*/
+   ulong_searchST indexPosUL = *posInUL;
+      /*limb with index*/
+
+   uchar numLimbUC = 0;
    uchar lenIdUC = 0;
    uchar endLenIdUC = 0;
    uchar hexUC = 0;
@@ -201,7 +204,7 @@ cnvtIdToHexAry_searchST(
    /*add the number of limbs used. this will be removed
    `  later when I get the final limb count
    */
-   idAryUL[indexPosUL] = (ulong) numLimbUC + 2;
+   idAryUL[indexPosUL] = (ulong_searchST) numLimbUC + 2;
        /*+2 accounts for index and total (sum) limbs*/
 
    ++(*posInUL); /*move to next empty long in array*/
@@ -267,8 +270,8 @@ swapIds_searchST(
 signed long
 cmpIds_searchST(
    struct searchST *hashSTPtr,
-   unsigned long *refIdAryUL,
-   unsigned long *qryIdAryUL
+   ulong_searchST *refIdAryUL,
+   ulong_searchST *qryIdAryUL
 ){
    unsigned char ucLimb = 0;
 
@@ -344,18 +347,18 @@ sortIds_searchST(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*Number of elements to sort*/
-   ulong numElmUL =
+   ulong_searchST numElmUL =
        hashSTPtr->numIdsUL * hashSTPtr->maxLimbsUC;
 
    /*Number of sorting rounds*/
-   ulong subUL = 0;
-   ulong nextElmUL = 0;
-   ulong lastElmUL = 0;
-   ulong elmOnUL = 0;
+   ulong_searchST subUL = 0;
+   ulong_searchST nextElmUL = 0;
+   ulong_searchST lastElmUL = 0;
+   ulong_searchST elmOnUL = 0;
 
    /*Variables to incurment loops*/
-   ulong ulIndex = 0;
-   ulong ulElm = 0;
+   ulong_searchST ulIndex = 0;
+   ulong_searchST ulElm = 0;
 
    slong idEqlSL = 0;
 
@@ -511,18 +514,18 @@ hashSortIds_searchST(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*Number of elements to sort*/
-   ulong numElmUL =
+   ulong_searchST numElmUL =
        (hashSTPtr->numIdsUL - 1) * hashSTPtr->maxLimbsUC;
 
    /*Number of sorting rounds*/
-   ulong subUL = 0;
-   ulong nextElmUL = 0;
-   ulong lastElmUL = 0;
-   ulong elmOnUL = 0;
+   ulong_searchST subUL = 0;
+   ulong_searchST nextElmUL = 0;
+   ulong_searchST lastElmUL = 0;
+   ulong_searchST elmOnUL = 0;
 
    /*Variables to incurment loops*/
-   ulong ulIndex = 0;
-   ulong ulElm = 0;
+   ulong_searchST ulIndex = 0;
+   ulong_searchST ulElm = 0;
 
    slong hashIdSL = 0;
 
@@ -713,13 +716,13 @@ evenLimbs_searchST(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   ulong numLimbsUL = 0;
-   ulong endAryUL = 0; /*list long in the id array*/
-   ulong cpPosUL = 0;
-   ulong dupPosUL = 0;
-   ulong ulId = 0;
+   ulong_searchST numLimbsUL = 0;
+   ulong_searchST endAryUL = 0; /*list long in id array*/
+   ulong_searchST cpPosUL = 0;
+   ulong_searchST dupPosUL = 0;
+   ulong_searchST ulId = 0;
 
-   ulong ulLimb = 0;   /*copy index for shifting*/
+   ulong_searchST ulLimb = 0;  /*copy index for shifting*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun09 Sec02:
@@ -854,11 +857,11 @@ mkSkip_searchST(
 |   - Returns:
 |     o the majic number
 \-------------------------------------------------------*/
-unsigned long
+ulong_searchST
 majicNum_searchST(
 ){
    unsigned char ucDig = 0;
-   unsigned long majicNumUL = 0;
+   ulong_searchST majicNumUL = 0;
    unsigned char goldNumStr[]="618033988749894848204";
       /*First 21 digits of the golden ratio/number*/
 
@@ -927,13 +930,14 @@ mkhash_searchST(
    '       table
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-   ulong posUL = 0;
-   ulong hashUL = 0;          /*hash value of current id*/
+   ulong_searchST posUL = 0;
+   ulong_searchST hashUL = 0; /*hash value of current id*/
 
-   ulong lastHashUL = 0;      /*hash value looking at*/
-   ulong oldPosUL = 0;        /*index of lastHashUL*/
+   ulong_searchST lastHashUL = 0;/*hash value looking at*/
+   ulong_searchST oldPosUL = 0;  /*index of lastHashUL*/
 
-   ulong *tmpULPtr = 0; /*for reallocs or iterating*/
+   ulong_searchST *tmpULPtr = 0;
+      /*for reallocs or iterating*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun12 Sec01:
@@ -973,7 +977,7 @@ mkhash_searchST(
       tmpULPtr =
          realloc(
             searchSTPtr->idAryUL,
-            posUL * sizeof(ulong)
+            posUL * sizeof(ulong_searchST)
          );
 
       if(! tmpULPtr)
@@ -1086,17 +1090,17 @@ getReadIds_searchST(
 
    #define lenBuffUS 4096  /*maximum size of buffer*/
    schar buffStr[lenBuffUS]; /*buffer for file input*/
-   ulong ulId = 0;
+   ulong_searchST ulId = 0;
 
-   ulong newBytesUL = 0;     /*bytes read by fread*/
-   ulong bytesUL = 0;        /*number bytes in buffer*/
-   ulong posUL = 0;     /*position in id array*/
-   ulong oldPosUL = 0;     /*old position in id array*/
+   ulong_searchST newBytesUL = 0;/*bytes read by fread*/
+   ulong_searchST bytesUL = 0;   /*number bytes in buffer*/
+   ulong_searchST posUL = 0;     /*position in id array*/
+   ulong_searchST oldPosUL = 0;  /*old id array position*/
 
-   ulong idLenUL = 0;
-   ulong lastIdLenUL = 0;
+   ulong_searchST idLenUL = 0;
+   ulong_searchST lastIdLenUL = 0;
 
-   ulong *tmpULPtr;          /*for reallocs*/
+   ulong_searchST *tmpULPtr;          /*for reallocs*/
    struct searchST *hashHeapST = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -1113,7 +1117,8 @@ getReadIds_searchST(
      /*will allocate some memroy for read id array*/
 
    /*add memory to the id array*/
-   hashHeapST->idAryUL = malloc(1024 * 5 * sizeof(ulong));
+   hashHeapST->idAryUL =
+      malloc(1024 * 5 * sizeof(ulong_searchST));
 
    if(! hashHeapST->idAryUL)
       goto memErr_fun13_sec05_sub02;
@@ -1179,7 +1184,8 @@ getReadIds_searchST(
          tmpULPtr =
             realloc(
                hashHeapST->idAryUL,
-               hashHeapST->lenIdAryUL * sizeof(ulong)
+                 hashHeapST->lenIdAryUL
+               * sizeof(ulong_searchST)
             );
 
          if(! tmpULPtr)
@@ -1257,12 +1263,11 @@ getReadIds_searchST(
       *   - find end of read id line
       \**************************************************/
 
-      ulId += endLine_ulCp(&buffStr[ulId]);
+      /*do not want carraige returns here*/
+      ulId += endLineUnix_ulCp(&buffStr[ulId]);
 
-      while(
-            buffStr[ulId] != '\n'  /*always end of line*/
-         && buffStr[ulId] != '\r'  /*for windows*/
-      ){ /*Loop: till on the next id (next line)*/
+      while( buffStr[ulId] == '\0')
+      { /*Loop: till on the next id (next line)*/
          newBytesUL =
             fread(
                (char *) buffStr,
@@ -1278,7 +1283,7 @@ getReadIds_searchST(
          if(newBytesUL == 0)
             break;
 
-         ulId += endLine_ulCp(&buffStr[ulId]);
+         ulId += endLineUnix_ulCp(&buffStr[ulId]);
       } /*Loop: till on the next id (next line)*/
    } /*Loop: read in each read id*/
 
@@ -1568,10 +1573,10 @@ freeHeap_searchST(
 unsigned char
 idToHexAry_maxLimb_searchST(
    signed char *idStr,
-   unsigned long *idAryUL,
+   ulong_searchST *idAryUL,
    unsigned char maxLimbsUC
 ){
-   ulong ulPos = 0;     /*first limb to add char to*/
+   ulong_searchST ulPos = 0; /*first limb to add char to*/
    uchar lenIdUC = 0;
 
    lenIdUC = 

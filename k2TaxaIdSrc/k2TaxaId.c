@@ -1727,7 +1727,8 @@ pIds_k2TaxaId(
       nextLine_fun12_sec03_sub07:;
 
       tmpStr = buffStr;
-      tmpStr += endLine_ulCp(tmpStr);
+      tmpStr += endLineUnix_ulCp(tmpStr);
+        /*do not want '\r', only '\n'*/
 
       while(*tmpStr == '\0')
       { /*Loop: move past line*/
@@ -1738,7 +1739,7 @@ pIds_k2TaxaId(
           );
 
           tmpStr = buffStr;
-          tmpStr += endLine_ulCp(tmpStr);
+          tmpStr += endLineUnix_ulCp(tmpStr);
       } /*Loop: move past line*/
    } /*Loop: get read ids*/
 

@@ -30,7 +30,6 @@
 
 #include <stdio.h>
 
-#include "../genLib/ulCp.h"
 #include "../genLib/charCp.h"
 #include "../genLib/base10str.h"
 
@@ -47,6 +46,7 @@
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
 !   - .c  #include "../genLib/numToStr.h"
+!   - .c  #include "../genLib/ulCp.h"
 !   - .c  #include "../genLib/strAry.h"
 !   - .h  #include "../genLib/genMath.h" using macros
 !   - .h  #include "../genBio/ntTo5Bit.h"

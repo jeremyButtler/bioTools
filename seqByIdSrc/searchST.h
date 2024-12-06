@@ -70,14 +70,24 @@
 #ifndef SEARCH_STRUCTURE_H
 #define SEARCH_STRUCTURE_H
 
-#define def_ulBits_searchST (sizeof(unsigned long) << 3)
+/*this is here to avoid longs being treated as 32 bit
+`   in plan9 (yes it actually happens)
+*/
+#ifdef PLAN9_64
+   typedef unsigned long long ulong_searchST;   
+#else
+   typedef unsigned long ulong_searchST;   
+#endif
 
-#define def_negULBit_searchST ( (signed long) ((unsigned long) 1 << (def_ulBits_searchST - 1)) )
+
+#define def_ulBits_searchST (sizeof(ulong_searchST) << 3)
+
+#define def_negULBit_searchST ( (signed long) ((ulong_searchST) 1 << (def_ulBits_searchST - 1)) )
 
 #define def_fileErr_searchST 2
 #define def_memErr_searchST 4
 
-/*The frist limb in the unsigned long hex id array holds
+/*The frist limb in the ulong_searchST hex id array holds
 '   the sum, number of characters in the id, and the
 `   number of limbs used.
 ` These varaibles help add, clear, or get the number of
@@ -94,12 +104,12 @@
 #define def_getIdLen_searchST 0xff
    /*being in first 8 bits alllows a better hash*/
 
-#define def_getNumLimb_searchST (((unsigned long) 0xff) << def_adjLimbCnt_searchST)
+#define def_getNumLimb_searchST (((ulong_searchST) 0xff) << def_adjLimbCnt_searchST)
 
 #define def_adjIdLen_searchST 0xff /*nothing to do*/
 #define def_adjLimbCnt_searchST def_ulBits_searchST - 8
 
-#define def_clearNumLimb_searchST (((unsigned long) -1) >> 8)
+#define def_clearNumLimb_searchST (((ulong_searchST) -1) >> 8)
 
 #define def_clearLenId_searchST 0xff
 
@@ -109,16 +119,16 @@
 \-------------------------------------------------------*/
 typedef struct searchST
 {
-   unsigned long *idAryUL;   /*array of read ids*/
-   unsigned long numIdsUL;   /*number read ids in hash*/
-   unsigned long numLimbsUL; /*number limbs in id array*/
-   unsigned long lenIdAryUL; /*length of id array*/
+   ulong_searchST *idAryUL;   /*array of read ids*/
+   ulong_searchST numIdsUL;   /*number read ids in hash*/
+   ulong_searchST numLimbsUL; /*number limbs in id array*/
+   ulong_searchST lenIdAryUL; /*length of id array*/
    unsigned char maxLimbsUC; /*max limbs in an id*/
 
-   unsigned long *hashTblUL; /*hash table to search*/
-   unsigned long hashSizeUL; /*size of hash table*/
+   ulong_searchST *hashTblUL; /*hash table to search*/
+   ulong_searchST hashSizeUL; /*size of hash table*/
    unsigned char hashPowUC;  /*2^hashPowUC = hashSizeUL*/
-   unsigned long majicUL;    /*majic for kunths hash*/
+   ulong_searchST majicUL;    /*majic for kunths hash*/
 }searchST;
 
 /*-------------------------------------------------------\
@@ -131,7 +141,7 @@ typedef struct searchST
 |   - Returns
 |     o upper half of the long (number)
 \-------------------------------------------------------*/
-#define upperUL_searchST(number) ( (number) >> (sizeof(unsigned long) << 2) )
+#define upperUL_searchST(number) ( (number) >> (sizeof(ulong_searchST) << 2) )
    /*Logic: convets upper half of long to 1/2 of data type
    `   - shiftBy: sizeof((unsigned long)) << 2):
    `     o number of bits to shift by to remove 1/2 of
@@ -150,7 +160,7 @@ typedef struct searchST
 |   - Returns
 |     o lower half of the long (number)
 \-------------------------------------------------------*/
-#define lowerUL_searchST(number) ( (number) & ((unsigned long) -1 >> (sizeof(unsigned long) << 2)) )
+#define lowerUL_searchST(number) ( (number) & ((ulong_searchST) -1 >> (sizeof(ulong_searchST) << 2)) )
    /*Logic: removes upper half (converts to 1/2 datatype
    `   - shiftBy: sizeof((unsigned long)) << 2):
    `     o number of bits to shift by to remove 1/2 of
@@ -190,8 +200,8 @@ typedef struct searchST
 unsigned char
 cnvtIdToHexAry_searchST(
    signed char *idStr,
-   unsigned long *idAryUL,
-   unsigned long *posInUL
+   ulong_searchST *idAryUL,
+   ulong_searchST *posInUL
 );
 
 /*-------------------------------------------------------\
@@ -232,8 +242,8 @@ cnvtIdToHexAry_searchST(
 signed long
 cmpIds_searchST(
    struct searchST *hashSTPtr,
-   unsigned long *refIdAryUL,
-   unsigned long *qryIdAryUL
+   ulong_searchST *refIdAryUL,
+   ulong_searchST *qryIdAryUL
 );
 
 /*-------------------------------------------------------\
@@ -331,7 +341,7 @@ mkSkip_searchST(
 |   - Returns:
 |     o the majic number
 \-------------------------------------------------------*/
-unsigned long
+ulong_searchST
 majicNum_searchST(
 );
 
@@ -517,7 +527,7 @@ freeHeap_searchST(
 unsigned char
 idToHexAry_maxLimb_searchST(
    signed char *idStr,
-   unsigned long *idAryUL,
+   ulong_searchST *idAryUL,
    unsigned char maxLimbsUC
 );
 

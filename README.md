@@ -180,6 +180,10 @@ My general libraries.
     from (`typedef struct name name;`) to 'struct name;`
     - got warnings from Mac's clang that tye old form
       was not c89 complement. The new form is.
+  - using code guide for genLib. Not great, but their.
+  - added in special datatype for seqById and ulCp to
+    allow 64 bit to be set on plan9 [need compiler flag]
+    (plan9 likes to assign longs to 32 bit)
 - 2024-11-19:
   - added rmBlocks (pretty much useless)
 - 2024-11-13:

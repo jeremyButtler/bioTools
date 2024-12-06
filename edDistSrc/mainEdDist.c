@@ -49,7 +49,6 @@
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
-!   o .c  #include "../genLib/ulCp.h"
 !   o .c  #include "../genLib/base10str.h"
 !   o .c  #include "../genLib/numToStr.h"
 !   o .c  #include "../genLib/strAry.h"
