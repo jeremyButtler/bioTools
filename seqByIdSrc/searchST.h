@@ -297,6 +297,45 @@ evenLimbs_searchST(
 );
 
 /*-------------------------------------------------------\
+| Fun10: mkSkip_searchST
+|   - converts a sorted list of read ids to a skip list
+| Input:
+|   - idAryUL:
+|     - read id array to convert to a skip list
+|   - nuIdsUL:
+|     - number of ids (index 0) in idAryUL
+|   - limbsUC:
+|     - number of limbs per read id
+|   - firstSkipSC:
+|     - always put 1 (for recursive calls)
+| Output:
+|   - Modifies:
+|     o first long for every id in idAryUL to have the
+|       number of ids to jump forward or back by
+|       - first id is always a negative number
+\-------------------------------------------------------*/
+void
+mkSkip_searchST(
+   unsigned long *idAryUL,   /*read id array*/
+   signed long firstIdSL,    /*index of first id*/
+   signed long numIdsSL,     /*index of last id*/
+   unsigned char limbsUC     /*# of limbs in 1 id*/
+);
+
+/*-------------------------------------------------------\
+| Fun11: majicNum_searchST
+|   - finds the majic number for an hash table
+|   - this is system independent
+| Input:
+| Output:
+|   - Returns:
+|     o the majic number
+\-------------------------------------------------------*/
+unsigned long
+majicNum_searchST(
+);
+
+/*-------------------------------------------------------\
 | Fun12: mkhash_searchST
 |   - takes in a searchST structure with ids and makes a
 |     hash table for it

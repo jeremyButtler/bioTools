@@ -21,7 +21,7 @@
 |   - included libraries and defined/global variables
 \-------------------------------------------------------*/
 
-#ifdef plan9
+#ifdef PLAN9
    #include <u.h>
    #include <libc.h>
 #else

@@ -616,11 +616,7 @@ input_mainCigToEqx(
 |   - prints:
 |     o sam file with eqx cigar entries to stdout
 \-------------------------------------------------------*/
-#ifdef PLAN9
-void
-#else
 int
-#endif
 main(
   signed int numArgsSI,
   char *argsAryStr[]

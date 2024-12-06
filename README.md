@@ -45,6 +45,12 @@ The mkfileScripts directory has bash scripts to build
   - Here is the example for tbCon
     - `bash allOSMkfiles.sh tbCon mainTbCon samEntry charCp tbCon charCp`
 
+# testing:
+
+The programs are built and debugged on Linux and then
+  lightly tested on other OSs. It may invovle one or
+  two light cases or just making sure it complies.
+
 # List of tools
 
 - re-inventing the wheel:
@@ -53,29 +59,35 @@ The mkfileScripts directory has bash scripts to build
       q-scores, and coordinates
     - also supports read soft mask removal
     - samtools view nock off, with an odd twist
+    - works on linux and plan9
   - alnNeelde (find-co--infections/alnSeq/fluDI):
     - needleman alignment with gap extension penalties
     - needlemans are a dime a dozen. This one rivals
       biopythons pairwise alignmer for memory and might
       even be faster (the alnSeq needleman python lib
       was).
+    - works on linux and plan9
   - alnWater (find-co--infecitons/alnSeq/fluDI):
     - waterman alignment with gap extension penalties
     - slower than striped watermans
     - watermans are a dime a dozen
+    - works on linux and plan9
   - memwater (alnSeq/freezeTB):
     - waterman alignment with gap extension penalties
     - only returns score and alignment coordinates, but
       also uses less memory
     - watermans are a dime a dozen
+    - works on linux and plan9
   - primFind (fluDI/freezeTB):
     - find primers in sequence(s)
     - emboss primer finder program nock off (forgot name)
+    - works on linux and plan9
   - seqById (fqGetIds/find-co--infections):
     - extract sequences by read id from sam files and
       fastq files
     - seqkit grep nock off, without regular expressions
       and no fasta file support
+    - works on linux and plan9
   - tbCon (freezeTB):
     - reference based majority consensus that saves the
       cosensus as a sam file (convert cigar to eqx cigar
@@ -83,6 +95,7 @@ The mkfileScripts directory has bash scripts to build
     - nock of of Ivar and who knows what other programs
     - positions of low confidence are replaced with a 'N',
       (no other anoymous bases are used)
+    - works on linux, but errors out on plan9
   - k2TaxaId (just wanted it):
     - split up kraken reads by taxa id using the kraken
       report
@@ -91,24 +104,29 @@ The mkfileScripts directory has bash scripts to build
       [https://github.com/jenniferlu717/KrakenTools](
        https://github.com/jenniferlu717/KrakenTools
      )
+    - works on linux complies on plan9
 - niche or odd programs
   - adjCoords (freezeTB):
     - adjust mapping coordinates from genes to entire
       genome
     - you need to provide a tsv file with gene names and
       coordinates
+    - works on linux and plan9
   - ampDepth (freezeTB):
     - finds mean read depth of amplicons and the genes
       they cover
     - you need to provide a coordinate file for this
     - convert regular cigars to eqx cigars (only one
       reference is supported)
+    - works on linux and plan9
   - cigToEqx (freezeTB):
     - convert regular cigars to eqx cigars (only one
       reference is supported [TODO: fix])
+    - works on linux and plan9
   - edClust (fluDI/freezeTB):
     - needs testing, but is running
     - try to cluster reads by edit distance
+    - works on linux
   - edDist (fluDI/freezeTB):
     - finds modified edit distances
       - modified means only large indels and snps with
@@ -117,22 +135,27 @@ The mkfileScripts directory has bash scripts to build
         sam file
       - can do sam file to sam file or by ref
     - not best program, but part of a bigger plan
+    - works on linux and plan9
   - illNano (freezeTB/fluDI; dugging edClust):
     - finds Illumina variants from tbCon tsv file and then
       finds nanopore reads mapping Illumina profile
+    - works on linux and complies plan9 (not tested)
   - maskPrim (freezeTB):
     - mask primer sites by coordinates (for sam file)
     - tsv file with coordinates is needed
+    - works on linux and plan9
   - samToAln (freezeTB/fluDI; dugging alingers):
     - convert sam file to human readable alignment
     - uses first reference from file [TODO: fix])
     - this is how to get a viewable alignment for alnwater
     - emboss like format, except the "|"'s are replaced
       with cigar symbols "SIDX=".
+    - works on linux and plan9
   - trimSam (find-co--infections):
     - trims soft masking off reads in sam file
     - filtsam can do this with `-trim` and has filtering
       options
+    - works on linux and plan9
 
 # genLib and genAln
 

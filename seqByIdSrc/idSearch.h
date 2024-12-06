@@ -19,7 +19,7 @@
 #ifndef ID_SEARCH_H
 #define ID_SEARCH_H
 
-typedef struct searchST searchST;
+struct searchST;
 
 /*-------------------------------------------------------\
 | Fun01: getFqSeq_idSearch
