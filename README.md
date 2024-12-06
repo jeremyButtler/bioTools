@@ -95,7 +95,7 @@ The programs are built and debugged on Linux and then
     - nock of of Ivar and who knows what other programs
     - positions of low confidence are replaced with a 'N',
       (no other anoymous bases are used)
-    - works on linux, but errors out on plan9
+    - works on linux, **but errors out on plan9**
   - k2TaxaId (just wanted it):
     - split up kraken reads by taxa id using the kraken
       report
