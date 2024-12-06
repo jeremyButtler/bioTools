@@ -213,6 +213,7 @@ My general libraries.
    - less likely to happen, lot of work for shoddy guides
 4. add in multi-reference support for samToAln and
    cigToEqx
+5. fix tbCon crash on plan9
 
 # Thanks
 
