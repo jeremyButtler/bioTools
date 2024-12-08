@@ -74,6 +74,12 @@ make -f mkfile.unix
 make -f mkfile.unix install PREFIX="$HOME/local/bin"
 ```
 
+To enable status reporting during clustering
+   replace `make -f mkfile.unix`
+   with `make -f mkfile.unix EXTRA_FLAGS=-DP_STATUS`. This
+   is not enabled by default becaus it is a bit buggy
+   on non-unix (plan9, maybe windows) systems.
+
 ## global install
 
 Everyone has access, but you need to install as root.
@@ -93,6 +99,12 @@ sudo make -f mkfile.unix install
 ```
 
 You will be prompted for your user password.
+
+To enable status reporting during clustering
+   replace `make -f mkfile.unix`
+   with `make -f mkfile.unix EXTRA_FLAGS=-DP_STATUS`. This
+   is not enabled by default becaus it is a bit buggy
+   on non-unix (plan9, maybe windows) systems.
 
 # Windows
 

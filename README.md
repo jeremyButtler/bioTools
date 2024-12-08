@@ -48,7 +48,8 @@ The mkfileScripts directory has bash scripts to build
 # testing:
 
 The programs are built and debugged on Linux and then
-  lightly tested on other OSs. It may invovle one or
+  lightly tested on other OSs. So, not all features may
+  tested on every OS. In this case may invovle one or
   two light cases or just making sure it complies.
 
 # List of tools
@@ -95,7 +96,7 @@ The programs are built and debugged on Linux and then
     - nock of of Ivar and who knows what other programs
     - positions of low confidence are replaced with a 'N',
       (no other anoymous bases are used)
-    - works on linux, **but errors out on plan9**
+    - works on linux and plan9
   - k2TaxaId (just wanted it):
     - split up kraken reads by taxa id using the kraken
       report
@@ -126,7 +127,7 @@ The programs are built and debugged on Linux and then
   - edClust (fluDI/freezeTB):
     - needs testing, but is running
     - try to cluster reads by edit distance
-    - works on linux
+    - works on linux and plan9
   - edDist (fluDI/freezeTB):
     - finds modified edit distances
       - modified means only large indels and snps with
@@ -170,6 +171,10 @@ My general libraries.
 
 # Updates:
 
+- 2024-12-08:
+  - fixed bug in samEntry that cause tbCon to crash
+  - fixed divide by 0 error in tbCon (found thanks to
+    edClust crashing in plan9 (unix ignored))
 - 2024-12-05:
   - removed rmBlocks (added to different repository called
     build, will make public when farther along)
@@ -213,7 +218,6 @@ My general libraries.
    - less likely to happen, lot of work for shoddy guides
 4. add in multi-reference support for samToAln and
    cigToEqx
-5. fix tbCon crash on plan9
 
 # Thanks
 

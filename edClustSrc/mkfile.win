@@ -1,9 +1,15 @@
 LD=link
 CC=cl
 CFLAGS= /O2 /Ot /Za /Tc
+EXTRA_FLAGS =
+   # options:
+   #   - P_STATUS for status printing
+   #   - PLAN9_64 for 64bit plan9
 NAME=edClust.exe
 PREFIX=%%HOME%%\appData
 O=o.win
+
+CFLAGS = $(EXTRA_FLAGS) $(CFLAGS)
 
 genClust=..\genClust
 genBio=..\genBio

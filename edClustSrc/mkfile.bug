@@ -1,9 +1,15 @@
 LD=cc
 CC=cc
-CFLAGS= -O0 -std=c89 -Wall -Wextra -Werror -ggdb -g
+C_FLAGS= -O0 -std=c89 -Wall -Wextra -Werror -ggdb -g
+EXTRA_FLAGS = -DBLANK
+   # options:
+   #   - P_STATUS for status printing
+   #   - PLAN9_64 for 64bit plan9
 NAME=edClust
 PREFIX=/usr/local/bin
 O=o.bug
+
+CFLAGS = $(EXTRA_FLAGS) $(C_FLAGS)
 
 genClust=../genClust
 genBio=../genBio
