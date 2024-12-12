@@ -4,10 +4,10 @@
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #define def_year_ampDepthDefs 2024
-#define def_month_ampDepthDefs 8
-#define def_day_ampDepthDefs 4
+#define def_month_ampDepthDefs 12
+#define def_day_ampDepthDefs 11
 
-#define def_minDepth_ampDepthDefs 20
+#define def_minDepth_ampDepthDefs 10
 
 /*=======================================================\
 : License:

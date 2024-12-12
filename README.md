@@ -171,6 +171,12 @@ My general libraries.
 
 # Updates:
 
+- 2024-12-12:
+  - added awk gene coordianteds extraction script for
+    exracting coordiantes from genbank genes fasta file
+    - sed script had error
+  - fixed bug in graphAmpDepth
+  - fixed minor bugs in ulCp
 - 2024-12-08:
   - fixed bug in samEntry that cause tbCon to crash
   - fixed divide by 0 error in tbCon (found thanks to

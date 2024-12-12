@@ -199,8 +199,8 @@ phelp_graphAmpDepth = function(){
 #---------------------------------------------------------
 save_graphAmpDepth = function(nameStr, extStr = "png"){
    extStr = tolower(extStr); # ignore case
-   heightInt = 1000;
-   widthInt = 1000;
+   heightInt = 700;
+   widthInt = 700;
 
    nameStr =
       paste(
@@ -296,7 +296,7 @@ colPalAry =
 
 inputStr = commandArgs(); # Holds the user input
 prefixStr = "Hufflepuff";   # name of output file
-amrFileStr = findFile_graphAmpDepth("amrDb.tsv");
+amrFileStr = NULL;
 errBl = FALSE;
 
 dataDF = NULL;
@@ -453,7 +453,7 @@ while(iArg <= lenInputI)
       iArg = iArg + 1;
       minLenSI = as.numeric(inputStr[iArg]);
    } else{
-      phelp_graphAmpDepth("-h");
+      phelp_graphAmpDepth();
       print(paste(inputStr[iArg], "is not recongnzied"));
       errBl = TRUE;
       break;
@@ -493,7 +493,8 @@ if(! is.null(amrFileStr)){
          sep = "\t",
          header = TRUE
       );
-} # If: I have a who catalog with amr positions ot map
+} else {amrDF = NULL;}
+
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # Part02 Sec03:

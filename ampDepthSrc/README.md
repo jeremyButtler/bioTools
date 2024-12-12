@@ -60,7 +60,7 @@ You will need a list of genes and their coordinates on the
 
 You can build a gene table for ampDepth from a list of
   genes list downloaded from nuccore (Genbank)
-  using `sed -n -f genesFormat.sed sequence.txt > tbl.tsv`
+  using `awk -f genesFormat.awk sequence.txt > tbl.tsv`
 
 # example output
 
