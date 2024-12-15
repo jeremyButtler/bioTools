@@ -167,8 +167,6 @@ phelp_graphAmpDepth = function(){
    print("    o Prefix to add to output file names");
    print("  -min-len: [50]");
    print("    o minimum length to keep amplicon");
-   print("  -min-depth: [10]");
-   print("    o minimum mean depth to keep amplicon");
    print("  -ext: [tiff]");
    print("    o File extension to save graphs as");
    print(paste("  -who: [", amrFileStr, "]", sep=""));
@@ -329,7 +327,6 @@ legendLabelsAry = NULL; # what to rename legends to
 lenDataSI = 0; # length of dataframe
 lenAmrSI = 0;  # length of AMR datafare
 numFlagsUI = 0; # number of flags (catagories)
-minDepthSI = 10; # minimum read depth
 
 siAmr = 0;  # loop iterator for finding hit AMRs
 siData = 0; # loop iterator for finding hit AMRs
@@ -357,7 +354,7 @@ dataFlagAryStr = NULL;
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 #*********************************************************
-# Part02 Sec02 Sub01:
+# Part02 Sec03 Sub01:
 #   - get user input
 #*********************************************************
 
@@ -455,9 +452,6 @@ while(iArg <= lenInputI)
    } else if(inputStr[iArg] == "-min-len"){
       iArg = iArg + 1;
       minLenSI = as.numeric(inputStr[iArg]);
-   } else if(inputStr[iArg] == "-min-depth"){
-      iArg = iArg + 1;
-      minDepthSI = as.numeric(inputStr[iArg]);
    } else{
       phelp_graphAmpDepth();
       print(paste(inputStr[iArg], "is not recongnzied"));
@@ -474,7 +468,7 @@ if(errBl == TRUE){
 } else{ # have valid input
 
 #*********************************************************
-# Part02 Sec02 Sub02:
+# Part02 Sec03 Sub02:
 #   - open user input
 #*********************************************************
 
@@ -512,7 +506,9 @@ if(! is.null(amrFileStr)){
 #  o part02 sec03 sub03:
 #    - assign colors to flags (+ get number bars)
 #  o part02 sec03 sub04:
-#    - remove short amplicons and low read depths
+#    - set up legends column
+#  o part02 sec03 sub05:
+#    - remove short amplicons
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 #*********************************************************
@@ -598,17 +594,6 @@ colAryStr =
 # assign an index to each flag so I can assign color
 dataDF$indexUI = as.numeric(factor(dataDF$flag));
 dataDF$color = colAryStr[dataDF$indexUI];
-
-#*********************************************************
-# Part02 Sec03 Sub04:
-#  - remove short amplicons and low read depth positions
-#*********************************************************
-
-# remove low read depth positions
-dataDF = dataDF[dataDF$avgDepth >= minDepthSI ,];
-
-# remove short amplicons
-dataDF = dataDF[dataDF$avgDepth >= minLenSI ,];
 
 #---------------------------------------------------------
 # Part03:
