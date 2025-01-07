@@ -58,6 +58,8 @@
 '     - converts an read id to a series of hex numbers and
 '       does not go past a max limb count
 '     - this is here for idSearch
+'   o fun21: swap_searchST
+'     - swaps valus in two searchST structures
 '   o license:
 '     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1450,7 +1452,7 @@ searchHash_searchST(
 } /*searchHash_searchST*/
 
 /*-------------------------------------------------------\
-| Fun15: blank_searchST
+| Fun16: blank_searchST
 |   - here in case need in future. Currently does nothing
 | Input:
 |   - searchSTPtr:
@@ -1467,7 +1469,7 @@ blank_searchST(
 } /*blank_searchST*/
    
 /*-------------------------------------------------------\
-| Fun15: init_searchST
+| Fun17: init_searchST
 |   - initializes a searchST structure
 | Input:
 |   - searchSTPtr:
@@ -1591,6 +1593,63 @@ idToHexAry_maxLimb_searchST(
 
    return lenIdUC;
 } /*idToHexAry_maxLimb_searchST*/
+
+/*-------------------------------------------------------\
+| Fun21: swap_searchST
+|   - swaps valus in two searchST structures
+| Input:
+|   - firstST:
+|     o pointer to frist searchST struct to swap values in
+|   - secST:
+|     o pointer to second searchST struct to swap values
+| Output:
+|   - Modifies:
+|     o firstST to have secST values
+|     o secST to have firstST values
+\-------------------------------------------------------*/
+swap_searchST(
+   struct searchST *firstST,
+   struct searchST *secST
+){
+   ulong_searchST *swapUL;
+
+   swapUL = firstST->idAryUL;
+   firstST->idAryUL = secST->idAryUL;
+   secST->idAryUL = swapUL;
+   
+   firstST->numIdsUL ^= secST->numIdsUL;
+   secST->numIdsUL ^= firstST->numIdsUL;
+   firstST->numIdsUL ^= secST->numIdsUL;
+
+   firstST->numLimbsUL ^= secST->numLimbsUL;
+   secST->numLimbsUL ^= firstST->numLimbsUL;
+   firstST->numLimbsUL ^= secST->numLimbsUL;
+
+   firstST->lenIdAryUL ^= secST->lenIdAryUL;
+   secST->lenIdAryUL ^= firstST->lenIdAryUL;
+   firstST->lenIdAryUL ^= secST->lenIdAryUL;
+
+   firstST->maxLimbsUC ^= secST->maxLimbsUC;
+   secST->maxLimbsUC ^= firstST->maxLimbsUC;
+   firstST->maxLimbsUC ^= secST->maxLimbsUC;
+
+
+   swapUL = firstST->hashTblUL;
+   firstST->hashTblUL = secST->hashTblUL;
+   secST->hashTblUL = swapUL;
+
+   firstST->hashSizeUL ^= secST->hashSizeUL;
+   secST->hashSizeUL ^= firstST->hashSizeUL;
+   firstST->hashSizeUL ^= secST->hashSizeUL;
+
+   firstST->hashPowUC ^= secST->hashPowUC;
+   secST->hashPowUC ^= firstST->hashPowUC;
+   firstST->hashPowUC ^= secST->hashPowUC;
+
+   firstST->majicUL ^= secST->majicUL;
+   secST->majicUL ^= firstST->majicUL;
+   firstST->majicUL ^= secST->majicUL;
+} /*swap_searchST*/
 
 /*=======================================================\
 : License:

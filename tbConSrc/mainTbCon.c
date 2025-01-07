@@ -1671,28 +1671,22 @@ main(
 
        if(indexSL < 0)
        { /*If: reference is not in list*/
-          if(refStackST.numRefUI == refStackST.arySizeUI)
-          { /*If: not enough room for one more reference*/
-             errSC =
-                realloc_refs_samEntry(
-                   &refStackST,
-                   refStackST.arySizeUI + 16
-                );
+          indexSL =
+             (signed long)
+             addRef_samEntry(
+                samStackST.refIdStr,
+                samStackST.readLenUI + 128,
+                &refStackST,
+                &errSC
+             ); /*add reference name to list*/
+                /*function keeps list sorted*/
 
-             if(errSC)
-             { /*If: had memory error*/
-                fprintf(
-                   stderr,
-                   "memory error adding extra reference\n"
-                );
-
-                goto memErr_main_sec06_sub02;
-             } /*If: had memory error*/
-
+          if(errSC == def_expand_samEntry)
+          { /*If: need to resize reference array*/
              tmpConNtST =
                 realloc(
                    conNtHeapAryST, 
-                   (refStackST.arySizeUI + 16)
+                   refStackST.arySizeUI
                      * sizeof(struct conNt_tbCon *)
              );
 
@@ -1700,7 +1694,7 @@ main(
              { /*If: memory error*/
                 fprintf(
                    stderr,
-                   "memory error adding extra reference\n"
+                   "memory error adding ref map array\n"
                 );
 
                 goto memErr_main_sec06_sub02;
@@ -1710,28 +1704,21 @@ main(
 
              /*initialize new elements*/
              for(
-                indexSL = (slong) refStackST.arySizeUI;
-                indexSL < (slong) refStackST.arySizeUI+16;
+                indexSL = (slong) refStackST.numRefUI - 1;
+                indexSL < (slong) refStackST.arySizeUI;
                 ++indexSL
              ) conNtHeapAryST[indexSL] = 0;
- 
-             refStackST.arySizeUI += 16;
-          } /*If: not enough room for one more reference*/
+          } /*If: need to resize reference array*/
 
-          indexSL = (slong) refStackST.numRefUI;
-          ++refStackST.numRefUI;
+          else if(errSC)
+          { /*If: had memory error*/
+             fprintf(
+                stderr,
+                "memory error adding extra reference\n"
+             );
 
-          refStackST.lenAryUI[indexSL] =
-             max_genMath(
-                lenRefUI,
-                samStackST.readLenUI + 128
-             ); /*get rough id for consensus length*/
-
-          add_strAry(
-             samStackST.refIdStr,
-             refStackST.idAryStr,
-             (ulong) indexSL
-          ); /*add reference name to list*/
+             goto memErr_main_sec06_sub02;
+          } /*If: had memory error*/
        } /*If: reference is not in list*/
 
        /*************************************************\

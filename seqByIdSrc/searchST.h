@@ -58,6 +58,8 @@
 '     - converts an read id to a series of hex numbers and
 '       does not go past a max limb count
 '     - this is here for idSearch
+'   o fun21: swap_searchST
+'     - swaps valus in two searchST structures
 '   o license:
 '     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -529,6 +531,24 @@ idToHexAry_maxLimb_searchST(
    signed char *idStr,
    ulong_searchST *idAryUL,
    unsigned char maxLimbsUC
+);
+
+/*-------------------------------------------------------\
+| Fun21: swap_searchST
+|   - swaps valus in two searchST structures
+| Input:
+|   - firstST:
+|     o pointer to frist searchST struct to swap values in
+|   - secST:
+|     o pointer to second searchST struct to swap values
+| Output:
+|   - Modifies:
+|     o firstST to have secST values
+|     o secST to have firstST values
+\-------------------------------------------------------*/
+swap_searchST(
+   struct searchST *firstST,
+   struct searchST *secST
 );
 
 #endif

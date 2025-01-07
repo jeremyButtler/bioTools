@@ -7,7 +7,7 @@ b mainK2TaxaId.c:1047
 
 #r -id barcode12.kraken2.assignments.tsv -report barcode12.kraken2.report.txt -prefix delete/delete
 #r -id barcode11.kraken2.assignments.tsv -report barcode11.kraken2.report.txt -prefix delete/delete
-r -start R -id barcode11.kraken2.assignments.tsv -report barcode11.kraken2.report.txt -prefix delete/delete
+r -start P -end G7 -id testId.tsv -report testRep.tsv -prefix delete/delete
 
 define pTaxa
    set $siCnt = 0
