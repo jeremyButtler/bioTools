@@ -3,15 +3,15 @@
 '   - driver function to convert sam file to aln
 '   o header:
 '     - included libraries and defined variables
-'   o fun01: pversion_samToAlnMain
+'   o fun01: pversion_mainSamToAln
 '     - prints versoin number for samToAln
-'   o fun02: phelp_samToAlnMain
+'   o fun02: phelp_mainSamToAln
 '     - prints help message for samToAln
-'   o fun03: checkIfHelp_samToAlnMain
+'   o fun03: checkIfHelp_mainSamToAln
 '     - checks if input was the help message
-'   o fun04: checkIfVersion_samToAlnMain
+'   o fun04: checkIfVersion_mainSamToAln
 '     - checks if input was the version number request
-'   o fun05: input_samToAlnMain
+'   o fun05: input_mainSamToAln
 '     - gets user input
 '   o license:
 '     - Licensing for this code (public domain / mit)
@@ -53,12 +53,12 @@
 !   - .h  #include "../genAln/alnDefs.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-#define def_pmask_samToAlnMain 0    /*print masked bases*/
-#define def_ppos_samToAlnMain 1     /*print positions*/
-#define def_lineWrap_samToAlnMain 58 /*line wrap*/
+#define def_pmask_mainSamToAln 0    /*print masked bases*/
+#define def_ppos_mainSamToAln 1     /*print positions*/
+#define def_lineWrap_mainSamToAln 58 /*line wrap*/
 
 /*-------------------------------------------------------\
-| Fun01: pversion_samToAlnMain
+| Fun01: pversion_mainSamToAln
 |   - prints versoin number for samToAln
 | Input:
 |   - outFILE:
@@ -68,7 +68,7 @@
 |     o version number to outFILE
 \-------------------------------------------------------*/
 void
-pversion_samToAlnMain(
+pversion_mainSamToAln(
    void *outFILE
 ){
    fprintf(
@@ -78,10 +78,10 @@ pversion_samToAlnMain(
       def_month_bioTools,
       def_day_bioTools
    );
-} /*pversion_samToAlnMain*/
+} /*pversion_mainSamToAln*/
 
 /*-------------------------------------------------------\
-| Fun02: phelp_samToAlnMain
+| Fun02: phelp_mainSamToAln
 |   - prints help message for samToAln
 | Input:
 |   - outFILE:
@@ -91,7 +91,7 @@ pversion_samToAlnMain(
 |     o help message to outFILE
 \-------------------------------------------------------*/
 void
-phelp_samToAlnMain(
+phelp_mainSamToAln(
    void *outFILE
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun02 TOC:
@@ -199,7 +199,7 @@ phelp_samToAlnMain(
    fprintf(
       (FILE *) outFILE,
       "  -wrap %i: [Optional]\n",
-      def_lineWrap_samToAlnMain
+      def_lineWrap_mainSamToAln
    );
 
    fprintf(
@@ -209,7 +209,7 @@ phelp_samToAlnMain(
 
 
    /*keep/remove masking*/
-   if(def_pmask_samToAlnMain)
+   if(def_pmask_mainSamToAln)
       fprintf(
          (FILE *) outFILE,
          "  -mask: [Optional; Yes]\n"
@@ -231,7 +231,7 @@ phelp_samToAlnMain(
    );
 
    /*print sequence positions*/
-   if(def_ppos_samToAlnMain)
+   if(def_ppos_mainSamToAln)
       fprintf(
          (FILE *) outFILE,
          "  -pos: [Optional; Yes]\n"
@@ -308,10 +308,10 @@ phelp_samToAlnMain(
       (FILE *) outFILE,
       "  - prints alignment to stdout or -out file.aln\n"
    );
-} /*phelp_samToAlnMain*/
+} /*phelp_mainSamToAln*/
 
 /*-------------------------------------------------------\
-| Fun03: checkIfHelp_samToAlnMain
+| Fun03: checkIfHelp_mainSamToAln
 |   - checks if input was the help message
 | Input:
 |   - argStr:
@@ -322,7 +322,7 @@ phelp_samToAlnMain(
 |     o 0 if not the help message
 \-------------------------------------------------------*/
 signed char
-checkIfHelp_samToAlnMain(
+checkIfHelp_mainSamToAln(
    schar *argStr
 ){
    if(! eql_charCp((schar *) "-h", argStr, '\0'))
@@ -341,10 +341,10 @@ checkIfHelp_samToAlnMain(
       return 1;
 
    return 0;
-} /*checkIfHelp_samToAlnMain*/
+} /*checkIfHelp_mainSamToAln*/
 
 /*-------------------------------------------------------\
-| Fun04: checkIfVersion_samToAlnMain
+| Fun04: checkIfVersion_mainSamToAln
 |   - checks if input was the version number request
 | Input:
 |   - argStr:
@@ -355,7 +355,7 @@ checkIfHelp_samToAlnMain(
 |     o 0 if not version number
 \-------------------------------------------------------*/
 signed char
-checkIfVersion_samToAlnMain(
+checkIfVersion_mainSamToAln(
    schar *argStr
 ){
    if(! eql_charCp((schar *) "-v", argStr, '\0'))
@@ -374,10 +374,10 @@ checkIfVersion_samToAlnMain(
       return 1;
 
    return 0;
-} /*checkIfVersion_samToAlnMain*/
+} /*checkIfVersion_mainSamToAln*/
 
 /*-------------------------------------------------------\
-| Fun05: input_samToAlnMain
+| Fun05: input_mainSamToAln
 |   - gets user input
 | Input:
 |   - numArgsSI:
@@ -399,7 +399,7 @@ checkIfVersion_samToAlnMain(
 |     o 2 for errors
 \-------------------------------------------------------*/
 signed char
-input_samToAlnMain(
+input_mainSamToAln(
    int numArgsSI,
    char *argAryStr[],
    signed char **samFileStrPtr,
@@ -435,7 +435,7 @@ input_samToAlnMain(
 
    if(numArgsSI <= 1)
    { /*If: no arguments input*/
-      phelp_samToAlnMain(stdout);
+      phelp_mainSamToAln(stdout);
       goto phelp_fun05_sec04;
    } /*If: no arguments input*/
 
@@ -592,20 +592,20 @@ input_samToAlnMain(
       \**************************************************/
 
       else if(
-         checkIfHelp_samToAlnMain(
+         checkIfHelp_mainSamToAln(
            (schar *) argAryStr[siArg]
         )
       ){ /*Else If: wanted help message*/
-         phelp_samToAlnMain(stdout);
+         phelp_mainSamToAln(stdout);
          goto phelp_fun05_sec04;
       } /*Else If: wanted help message*/
 
       else if(
-         checkIfVersion_samToAlnMain(
+         checkIfVersion_mainSamToAln(
            (schar *) argAryStr[siArg]
         )
       ){ /*Else If: wanted version number*/
-         pversion_samToAlnMain(stdout);
+         pversion_mainSamToAln(stdout);
          goto pversion_fun05_sec04;
       } /*Else If: wanted version numbe*/
 
@@ -664,7 +664,7 @@ input_samToAlnMain(
   
    cleanUp_fun05_sec04:;
    return errSC;
-} /*input_samToAlnMain*/
+} /*input_mainSamToAln*/
 
 /*-------------------------------------------------------\
 | Main:
@@ -699,6 +699,7 @@ main(
    ^    - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
+   schar *tmpStr = 0;
    schar errSC = 0;
    ulong seqUL = 0; /*sequence on*/
 
@@ -707,7 +708,12 @@ main(
    schar *outFileStr = 0;
 
    struct alnSet alnSetStackST;
-   struct seqST refStackST;
+
+   struct seqST *refHeapAryST = 0;
+   slong lenRefSL = 0;
+   slong sizeRefSL = 0;
+   slong indexSL = 0;
+ 
 
    struct samEntry samStackST;
    schar *buffHeapStr = 0;
@@ -739,12 +745,11 @@ main(
    \*****************************************************/
 
    init_alnSet(&alnSetStackST);
-   init_seqST(&refStackST);
    init_samEntry(&samStackST);
 
-   alnSetStackST.lineWrapUI = def_lineWrap_samToAlnMain;
-   alnSetStackST.pBasePosBl = def_ppos_samToAlnMain;
-   alnSetStackST.pFullAlnBl = def_pmask_samToAlnMain;
+   alnSetStackST.lineWrapUI = def_lineWrap_mainSamToAln;
+   alnSetStackST.pBasePosBl = def_ppos_mainSamToAln;
+   alnSetStackST.pFullAlnBl = def_pmask_mainSamToAln;
 
    /*****************************************************\
    * Main Sec02 Sub02:
@@ -752,7 +757,7 @@ main(
    \*****************************************************/
 
    errSC =
-      input_samToAlnMain(
+      input_mainSamToAln(
          numArgsSI,
          argAryStr,
          &samFileStr,
@@ -806,7 +811,18 @@ main(
    /*****************************************************\
    * Main Sec02 Sub05:
    *   - open reference file and get reference
+   *   o main sec02 sub05 cat01:
+   *     - open reference file
+   *   o main sec02 sub05 cat02:
+   *     - get all sequences from fasta file
+   *   o main sec02 sub05 cat03:
+   *     - remove name white space and sort by id
    \*****************************************************/
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Main Sec02 Sub05 Cat01:
+   +   - open reference file
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
    outFILE =
       fopen(
@@ -825,26 +841,21 @@ main(
       goto fileErr_main_sec04_sub03;
    } /*If: could not open reference file*/
 
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Main Sec02 Sub05 Cat02:
+   +   - get all sequences from fasta file
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   errSC =
-      getFaSeq_seqST(
+   refHeapAryST =
+      readFaFile_seqST(
          outFILE,
-         &refStackST
-      );
+         &lenRefSL,
+         &sizeRefSL,
+         &errSC
+      ); /*get reference sequences from file*/
 
    if(errSC)
    { /*If: had error*/
-      if(errSC & def_fileErr_seqST)
-      { /*If: not a fasta file*/
-         fprintf(
-            stderr,
-            "-ref %s is not a fasta file\n",
-            refFileStr
-         );
-
-         goto fileErr_main_sec04_sub03;
-      } /*If: not a fasta file*/
-
       if(errSC & def_memErr_seqST)
       { /*If: memory error*/
          fprintf(
@@ -856,18 +867,40 @@ main(
          goto memErr_main_sec04_sub02;
       } /*If: memory error*/
 
-      /*else is EOF; only one seqeunce*/
+      else
+      { /*If: not a fasta file*/
+         fprintf(
+            stderr,
+            "-ref %s is not a fasta file\n",
+            refFileStr
+         );
+
+         goto fileErr_main_sec04_sub03;
+      } /*If: not a fasta file*/
    } /*If: had error*/
 
    fclose(outFILE);
    outFILE = 0;
 
-   refStackST.lenIdUL =
-      (ulong)
-      cpWhite_ulCp(
-         refStackST.idStr,
-         &refStackST.idStr[refStackST.idStr[0] == '>']
-      ); /*remove white space from reference id*/
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Main Sec02 Sub05 Cat03:
+   +   - remove name white space and sort by id
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   for(
+      indexSL = 0;
+      indexSL < lenRefSL;
+      ++indexSL
+   ){ /*Loop: remove white space from names*/
+      tmpStr = refHeapAryST[indexSL].idStr;
+      tmpStr += endWhite_ulCp(tmpStr);
+      *tmpStr = '\0';
+   } /*Loop: remove white space from names*/
+
+   sort_seqST(
+      refHeapAryST,
+      lenRefSL
+   );
 
    /*****************************************************\
    * Main Sec02 Sub06:
@@ -905,7 +938,7 @@ main(
    ^    o main sec03 sub02:
    ^      - print global header (program history)
    ^    o main sec03 sub03:
-   ^     - add samToAlnMain to program header
+   ^     - add mainSamToAln to program header
    ^    o main sec03 sub04:
    ^     - print alingments
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
@@ -983,7 +1016,7 @@ main(
 
    /*****************************************************\
    * Main Sec03 Sub03:
-   *   - add samToAlnMain to program header
+   *   - add mainSamToAln to program header
    \*****************************************************/
 
    fprintf(
@@ -1034,18 +1067,30 @@ main(
       if(samStackST.flagUS & 4)
          goto nextRead_main_sec03_sub04;
 
-      if(
-          eql_charCp(
-             refStackST.idStr,
-             samStackST.refIdStr,
-             '\0'
-          ) /*see if same reference*/
-      ) goto nextRead_main_sec03_sub04;
+      indexSL =
+         search_seqST(
+            refHeapAryST,
+            samStackST.refIdStr,
+            lenRefSL
+         ); /*see if can find reference*/
+
+      if(indexSL < 0)
+      { /*If: could not find reference*/
+         fprintf(
+            stderr,
+            "-ref %s missing %s, skipping read %s\n",
+            refFileStr,
+            samStackST.refIdStr,
+            samStackST.qryIdStr
+         ); /*warn about missing reference*/
+
+         goto nextRead_main_sec03_sub04;
+      } /*If: could not find reference*/
 
       errSC =
          paln_samToAln(
             &samStackST,
-            &refStackST,
+            &refHeapAryST[indexSL],
             &alnSetStackST,
             outFILE
          ); /*print alignment*/
@@ -1120,28 +1165,34 @@ main(
    cleanUp_main_sec04_sub04:;
 
    freeStack_alnSet(&alnSetStackST);
-   freeStack_seqST(&refStackST);
    freeStack_samEntry(&samStackST);
+
+
+   if(refHeapAryST)
+      freeHeapAry_seqST(
+         refHeapAryST,
+         sizeRefSL
+      );
+   refHeapAryST = 0;
 
    if(buffHeapStr)
       free(buffHeapStr);
-
    buffHeapStr = 0;
+
 
    if(
          samFILE
       && samFILE != stdin
       && samFILE != stdout
    ) fclose(samFILE);
-
    samFILE = 0;
+
 
    if(
          outFILE
       && outFILE != stdin
       && outFILE != stdout
    ) fclose(outFILE);
-
    outFILE = 0;
 
 

@@ -32,6 +32,7 @@
 
 #include "../genLib/charCp.h"
 
+#include "../genLib/ulCp.h"
 #include "../genBio/seqST.h"
 #include "../genBio/samEntry.h"
 #include "../genBio/cigToEqx.h"
@@ -44,7 +45,6 @@
 ! Hidden libraries:
 !   o .c  #include "../genLib/base10StrToNum.h"
 !   o .c  #include "../genLib/numToStr.h"
-!   o .c  #include "../genLib/ulCp.h"
 !   o .c  #include "../genLib/strAry.h"
 !   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -241,9 +241,7 @@ phelp_mainCigToEqx(
 |     o number of arguments the user input
 |   - samFileStr:
 |     o pointer to c-string to point to the samfiles name
-|   - samFILE:
-|     o FILE pointer to hold sam file to convert
-|   - samFileStr:
+|   - refFileStr:
 |     o pointer to c-string to point to the reference
 |      fasta file name
 |   - refSeqSTPtr:
@@ -270,10 +268,8 @@ signed char
 input_mainCigToEqx(
    char *argAryStr[],
    signed int numArgsSI,
-   schar **samFileStr,
-   FILE **samFILE,
-   schar **refFileStr,
-   struct seqST *refSeqSTPtr,
+   signed char **samFileStr,
+   signed char **refFileStr,
    signed char *nAsSnpBl
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
@@ -291,7 +287,6 @@ input_mainCigToEqx(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    sint siArg = 1;
-   FILE *refFILE = 0;
    schar errSC = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -334,36 +329,8 @@ input_mainCigToEqx(
             (schar ) '\0'
          )
       ){ /*If: An sam file was input*/
-         if(*samFILE && *samFILE != stdin)
-            fclose(*samFILE);
-
-         *samFILE = 0;
-
          ++siArg;
-
          *samFileStr = (schar *) argAryStr[siArg];
-
-         if(*argAryStr[siArg] == '-')
-            *samFILE = stdin;
-         else
-         { /*Else: User supplied an sam file*/
-            *samFILE =
-               fopen(
-                  (char *) argAryStr[siArg],
-                  "r"
-               );
-
-            if(! *samFILE)
-            { /*If: I could not open the sam file*/
-               fprintf(
-                  stderr,
-                  "Could not open -sam %s\n",
-                  argAryStr[siArg]
-               );
-
-               goto err_fun03_sec03;
-            } /*If: I could not open the sam file*/
-         } /*Else: User supplied an sam file*/
       } /*If: An sam file was input*/
 
       /**************************************************\
@@ -380,37 +347,6 @@ input_mainCigToEqx(
       ){ /*Else If: An reference file was input*/
          ++siArg;
          *refFileStr = (schar *) argAryStr[siArg];
-
-         refFILE =
-             fopen(
-                (char *) argAryStr[siArg],
-                "r"
-             );
-
-         if(! refFILE)
-         { /*If: I could not open the sam file*/
-            fprintf(
-               stderr,
-               "Could not open -ref %s\n",
-               argAryStr[siArg]
-            );
-
-            goto err_fun03_sec03;
-         } /*If: I could not open the sam file*/
-
-         if(getFaSeq_seqST(refFILE, refSeqSTPtr) > 1)
-         { /*If: I could not get reference sequence*/
-            fprintf(
-               stderr,
-               "Error while reading -ref %s\n",
-               argAryStr[siArg]
-            );
-
-            goto err_fun03_sec03;
-         } /*If: I could not get reference sequence*/
-
-         fclose(refFILE);
-         refFILE = 0;
       } /*Else If: An reference file was input*/
 
       /**************************************************\
@@ -582,25 +518,19 @@ input_mainCigToEqx(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    errSC = 0;
-   goto cleanUp_main_sec05_sub03;
+   goto ret_fun03_sec03;
 
    pversion_fun03_sec03:;
    phelp_fun03_sec03:;
-   errSC = 1;
-   goto cleanUp_main_sec05_sub03;
+     errSC = 1;
+     goto ret_fun03_sec03;
 
    err_fun03_sec03:;
-   errSC = 2;
-   goto cleanUp_main_sec05_sub03;
+     errSC = 2;
+     goto ret_fun03_sec03;
 
-   cleanUp_main_sec05_sub03:;
-
-   if(refFILE)
-      fclose(refFILE);
-
-   refFILE = 0;
-
-   return errSC;
+   ret_fun03_sec03:;
+      return errSC;
 } /*input_mainCigToEqx*/
 
 
@@ -628,8 +558,10 @@ main(
    '   o main Sec02:
    '     - initialize varialbes and get input
    '   o main sec03:
-   '     - convert cigar entris to eqx cigars
+   '     - get reference sequences and open sam file
    '   o main sec04:
+   '     - convert cigar entris to eqx cigars
+   '   o main sec05:
    '     - clean up
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -638,6 +570,7 @@ main(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
+   schar *tmpStr = 0;
    schar errSC = 0;
    schar *buffHeapStr = 0;
    ulong lenBuffUL = 0;
@@ -647,7 +580,11 @@ main(
 
    schar nAsSnpBl = def_nAsSnp;
 
-   struct seqST refSeqStackST;
+   struct seqST *refHeapAryST = 0;
+   signed long lenRefSL = 0;
+   signed long sizeRefSL = 0;
+   signed long indexSL = 0;   /*index of reference*/
+
    struct samEntry samStackST;
 
    schar endOfHeadBl = 0;
@@ -663,7 +600,6 @@ main(
    ^   - initialize varialbes and get input
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   init_seqST(&refSeqStackST);
    init_samEntry(&samStackST);
 
    errSC =
@@ -671,9 +607,7 @@ main(
          argsAryStr,
          numArgsSI,
          &samFileStr,
-         &samFILE,
          &refFileStr,
-         &refSeqStackST,
          &nAsSnpBl
       ); /*Get user input*/
       
@@ -685,23 +619,152 @@ main(
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec03:
-   ^   - convert cigar entris to eqx cigars
+   ^   - get reference sequences and open sam file
    ^   o main sec03 sub01:
-   ^     - read in first sam file line and start loop
+   ^     - open reference file (reusing samFILE variable)
    ^   o main sec03 sub02:
-   ^     - print headers
+   ^     - get sequences from reference file
    ^   o main sec03 sub03:
-   ^     - print this programs sam file header
+   ^     - sort reference sequences
    ^   o main sec03 sub04:
-   ^     - check if can filter, then filter
-   ^   o main sec03 sub05:
-   ^     - print entry if keeping and get next entry
-   ^   o main sec03 sub06:
-   ^     - convert EOF error to no error
+   ^     - open the sam file
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
    * Main Sec03 Sub01:
+   *   - open reference file (reusing samFILE variable)
+   \*****************************************************/
+
+   samFILE =
+      fopen(
+         (char *) refFileStr,
+         "r"
+      );
+
+   if(! samFILE)
+   { /*If: could not open reference file*/
+      fprintf(
+         stderr,
+         "could not open -ref %s\n",
+         refFileStr
+      );
+
+      goto err_main_sec05_sub02;
+   } /*If: could not open reference file*/
+
+   /*****************************************************\
+   * Main Sec03 Sub02:
+   *   - get sequences from reference file
+   \*****************************************************/
+
+   refHeapAryST =
+      readFaFile_seqST(
+         samFILE,
+         &lenRefSL,
+         &sizeRefSL,
+         &errSC
+      ); /*get reference sequences*/
+
+   fclose(samFILE);
+   samFILE = 0;
+
+
+   if(errSC)
+   { /*If: had error*/
+      if(errSC == def_memErr_seqST)
+         fprintf(
+            stderr,
+            "memory error getting references\n"
+         );
+      else if(errSC & def_badLine_seqST)
+         fprintf(
+            stderr,
+            "at least one line in -ref %s is invalid\n",
+            refFileStr
+         );
+      else
+         fprintf(
+            stderr,
+            "file error (likely no sequences) -ref %s\n",
+            refFileStr
+         );
+
+      goto err_main_sec05_sub02;
+   } /*If: had error*/
+
+   /*****************************************************\
+   * Main Sec03 Sub03:
+   *   - sort reference sequences and remove whitespace
+   \*****************************************************/
+
+   for(
+      indexSL = 0;
+      indexSL < lenRefSL;
+      ++indexSL
+   ){ /*Loop: remove white space from names*/
+      tmpStr = refHeapAryST[indexSL].idStr;
+      tmpStr += endWhite_ulCp(tmpStr);
+      *tmpStr = '\0';
+   } /*Loop: remove white space from names*/
+
+   sort_seqST(
+      refHeapAryST,
+      lenRefSL
+   );
+
+   /*****************************************************\
+   * Main Sec03 Sub04:
+   *   - open the sam file
+   \*****************************************************/
+
+   if(
+         ! samFileStr
+      || *samFileStr == '-'
+   ) samFILE = stdin;
+
+   else
+   { /*Else: sam file input*/
+      samFILE =
+         fopen(
+            (char *) samFileStr,
+            "r"
+         );
+
+      if(! samFILE)
+      { /*If: could not open file*/
+         fprintf(
+            stderr,
+            "unable to open -sam %s\n",
+            samFileStr
+         );
+
+         goto err_main_sec05_sub02;
+      } /*If: could not open file*/
+   } /*Else: sam file input*/
+         
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Main Sec04:
+   ^   - convert cigar entris to eqx cigars
+   ^   o main sec04 sub01:
+   ^     - read in first sam file line and start loop
+   ^   o main sec04 sub02:
+   ^     - print headers
+   ^   o main sec04 sub03:
+   ^     - print this programs sam file header
+   ^   o main sec04 sub04:
+   ^     - check if can filter, then filter
+   ^   o main sec04 sub05:
+   ^     - find reference sequence used to map read
+   ^   o main sec04 sub06:
+   ^     - convert cigar to eqx cigar
+   ^   o main sec04 sub07:
+   ^     - print entry if keeping and get next entry
+   ^   o main sec04 sub08:
+   ^     - finished conversion, check fo errors
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Main Sec04 Sub01:
    *   - read in first sam file line and start loop
    \*****************************************************/
 
@@ -722,7 +785,7 @@ main(
    { /*Loop: convert cigar entries to eqx cigars*/
 
       /**************************************************\
-      * Main Sec03 Sub02:
+      * Main Sec04 Sub02:
       *   - print headers
       \**************************************************/
 
@@ -738,11 +801,11 @@ main(
             outFILE
          ); /*Print out the comment*/
 
-         goto nextEntry_main_sec03_sub05;
+         goto nextEntry_main_sec04_sub05;
       } /*If: This is an comment*/
 
       /**************************************************\
-      * Main Sec03 Sub03:
+      * Main Sec04 Sub03:
       *   - print this programs sam file header
       \**************************************************/
 
@@ -798,12 +861,12 @@ main(
       } /*If: I need to print out the program comment*/
 
       /**************************************************\
-      * Main Sec03 Sub04:
+      * Main Sec04 Sub04:
       *   - check if can filter, then filter
       \**************************************************/
 
       if(samStackST.readLenUI < 1)
-         goto nextEntry_main_sec03_sub05; /*No sequence*/
+         goto nextEntry_main_sec04_sub05; /*No sequence*/
 
       if(lenBuffUL > (ulong) lenCigSI)
       { /*If: I need to resize buffers*/
@@ -828,10 +891,40 @@ main(
          } /*If: I had an memory error*/
       } /*If: I need to resize buffers*/
 
+      /**************************************************\
+      * Main Sec04 Sub05:
+      *   - find reference sequence used to map read
+      \**************************************************/
+
+      indexSL =
+         search_seqST(
+            refHeapAryST,
+            samStackST.refIdStr,
+            lenRefSL
+         ); /*see if can find reference*/
+
+      if(indexSL < 0)
+      { /*If: could not find reference*/
+         fprintf(
+            stderr,
+            "-ref %s missing %s, skipping read %s\n",
+            refFileStr,
+            samStackST.refIdStr,
+            samStackST.qryIdStr
+         ); /*warn about missing reference*/
+
+         goto nextEntry_main_sec04_sub05;
+      } /*If: could not find reference*/
+
+      /**************************************************\
+      * Main Sec04 Sub06:
+      *   - convert cigar to eqx cigar
+      \**************************************************/
+
       errSC =
          cigToEqx(
             &samStackST,
-            refSeqStackST.seqStr,
+            refHeapAryST[indexSL].seqStr,
             &buffHeapStr,
             &cigHeapArySI,
             &lenCigSI,
@@ -842,7 +935,7 @@ main(
          lenBuffUL = (ulong) lenCigSI;
 
       /**************************************************\
-      * Main Sec03 Sub05:
+      * Main Sec04 Sub07:
       *   - print entry if keeping and get next entry
       \**************************************************/
 
@@ -854,7 +947,7 @@ main(
          outFILE
       ); /*Print out the comment*/
 
-      nextEntry_main_sec03_sub05:;
+      nextEntry_main_sec04_sub05:;
 
       errSC =
          get_samEntry(
@@ -864,6 +957,11 @@ main(
             samFILE
          );
    } /*Loop: convert cigar entries to eqx cigars*/
+
+   /*****************************************************\
+   * Main Sec04 Sub08:
+   *   - finished conversion, check fo errors
+   \*****************************************************/
 
    if(errSC != def_EOF_samEntry)
    { /*If: had sam file error*/
@@ -877,18 +975,18 @@ main(
    } /*If: had sam file error*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Main Sec04:
+   ^ Main Sec05:
    ^   - clean up
-   ^   o main sec04 sub01:
+   ^   o main sec05 sub01:
    ^     - no error clean up
-   ^   o main sec04 sub02:
+   ^   o main sec05 sub02:
    ^     - error clean up
-   ^   o main sec04 sub03:
+   ^   o main sec05 sub03:
    ^     - general clean up (error/no error)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Main Sec04 Sub01:
+   * Main Sec05 Sub01:
    *   - no error clean up
    \*****************************************************/
 
@@ -896,7 +994,7 @@ main(
    goto cleanUp_main_sec05_sub03;
 
    /*****************************************************\
-   * Main Sec04 Sub02:
+   * Main Sec05 Sub02:
    *   - error clean up
    \*****************************************************/
 
@@ -905,7 +1003,7 @@ main(
    goto cleanUp_main_sec05_sub03;
 
    /*****************************************************\
-   * Main Sec04 Sub03:
+   * Main Sec05 Sub03:
    *   - general clean up (error/no error)
    \*****************************************************/
 
@@ -931,7 +1029,13 @@ main(
 
    samFILE = 0;
 
-   freeStack_seqST(&refSeqStackST);
+   if(refHeapAryST)
+      freeHeapAry_seqST(
+         refHeapAryST,
+         sizeRefSL
+      );
+   refHeapAryST = 0;
+
    freeStack_samEntry(&samStackST);
 
    return(errSC);

@@ -32,3 +32,8 @@ To use cigToEqx you will need to provide a sam file and
 ```
 cigToEqx -sam file.sam -ref ref.fasta > out.sam
 ```
+
+# Updates
+
+- 2025-01-07:
+  - added in multi-ref support

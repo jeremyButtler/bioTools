@@ -173,6 +173,8 @@ My general libraries.
 
 - 2024-01-07:
   - bug fixes (tbCon) and some general libraries
+  - cigToEqx mulit-reference support
+  - samToAln mulit-reference support
 - 2024-12-12:
   - added awk gene coordianteds extraction script for
     exracting coordiantes from genbank genes fasta file
@@ -221,11 +223,11 @@ My general libraries.
    - need to modify hirsch from alnSeq for new style
      and OS portablility. So, conversion project, with a
      bith of thought.
-3. add using_this_code guides (using in C code) for
+3. add in my memWater matrix scan from alnSeq (personal
+   project)
+4. add using_this_code guides (using in C code) for
    programs and libraries
    - less likely to happen, lot of work for shoddy guides
-4. add in multi-reference support for samToAln and
-   cigToEqx
 
 # Thanks
 
