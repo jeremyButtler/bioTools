@@ -211,3 +211,9 @@ After merging, the percentage of mapped reads filtering
   are removed.
 
 As you can guess, this will take some time to run.
+
+# Updates
+
+- 2025-01-07:
+  - added in clustering logging
+  - fixed multi-reference crash issues

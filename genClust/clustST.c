@@ -184,6 +184,8 @@ void
 init_set_clustST(
    struct set_clustST *clustSetSTPtr
 ){
+   clustSetSTPtr->repIntervalSL = def_repInterval_clustST;
+
    /*unique to clustST*/
    clustSetSTPtr->minProbF = def_minProb_clustST;
    clustSetSTPtr->minVarUI = def_minVar_clustST;

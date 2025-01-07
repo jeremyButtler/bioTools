@@ -20,6 +20,8 @@
 |   - included libraries and defaults
 \-------------------------------------------------------*/
 
+#define def_repInterval_mainEdClust 5000
+
 #ifdef PLAN9
    #include <u.h>
    #include <libc.h>
@@ -177,6 +179,29 @@ phelp_mainEdClust(
    fprintf(
       (FILE *) outFILE,
       "      o prefix for output file names\n"
+   );
+
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -report %li: [Optional; %li]\n",
+      (slong) def_repInterval_mainEdClust,
+      (slong) def_repInterval_mainEdClust
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o how often to report progress in number\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "        of reads clustered or discarded\n"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o use \"-report 0\" for no reports\n"
    );
 
    /*****************************************************\
@@ -788,6 +813,35 @@ input_mainEdClust(
          ++siArg;
          *prefixStrPtr = (schar *) argAryStr[siArg];
       } /*Else If: prefix input*/
+
+      else if(
+         ! eql_charCp(
+            (schar *) "-report",
+            (schar *) argAryStr[siArg],
+            (schar) '\0'
+         )
+      ){ /*Else If: progress report interval*/
+         ++siArg;
+
+         tmpStr = (schar *) argAryStr[siArg];
+
+         tmpStr +=
+            strToSL_base10str(
+                tmpStr,
+                &setSTPtr->repIntervalSL
+            );
+
+         if(*tmpStr != '\0')
+         { /*If: invalid input*/
+            fprintf(
+               stderr,
+               "-report %s; non-numeric/to large\n",
+               argAryStr[siArg]
+            );
+
+            goto err_fun03_sec03;
+         } /*If: invalid input*/
+      } /*Else If: progress report interval*/
 
       /**************************************************\
       * Fun03 Sec02 Sub02:
@@ -1868,6 +1922,9 @@ main(
 
    init_set_clustST(&clustSetStackST);
    init_set_tbCon(&conSetStackST);
+
+   clustSetStackST.repIntervalSL = 
+      def_repInterval_mainEdClust;
 
    conSetStackST.minLenSI = clustSetStackST.minLenUI;
    conSetStackST.minMapqUC = clustSetStackST.minMapqUC;
