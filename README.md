@@ -171,6 +171,8 @@ My general libraries.
 
 # Updates:
 
+- 2024-01-07:
+  - bug fixes (tbCon) and some general libraries
 - 2024-12-12:
   - added awk gene coordianteds extraction script for
     exracting coordiantes from genbank genes fasta file

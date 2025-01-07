@@ -138,3 +138,10 @@ One difference between the variant tsv and the consensus
   will not. For deep read depths this will have little
   effect, but for shallow read depths it will. This is why
   the minimum print read depth is 10x instead of 20x.
+
+# Updates
+
+- 2025-01-07:
+  - added reference id to output sam file
+- 2025-01-06:
+  - fixed some issues with multi-reference input
