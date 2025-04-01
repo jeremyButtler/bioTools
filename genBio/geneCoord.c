@@ -62,7 +62,6 @@
 #include "../genLib/charCp.h"
 
 /*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
 #include "../genLib/genMath.h" /*only max macro (in .h)*/
 
 /*-------------------------------------------------------\
@@ -183,17 +182,20 @@ mk_geneCoord(
    if(! retST->refAryStr)
       goto memErr_fun04;
 
-   retST->startAryUI= malloc((numGenesUI) * sizeof(uint));
+   retST->startAryUI=
+       malloc((numGenesUI) * sizeof(unsigned int));
    
    if(! retST->startAryUI)
       goto memErr_fun04;
    
-   retST->endAryUI = malloc((numGenesUI) * sizeof(uint));
+   retST->endAryUI =
+       malloc((numGenesUI) * sizeof(unsigned int));
    
    if(! retST->endAryUI)
       goto memErr_fun04;
 
-   retST->dirAryUC = malloc((numGenesUI) * sizeof(uchar));
+   retST->dirAryUC =
+       malloc((numGenesUI) * sizeof(unsigned char));
    
    if(! retST->dirAryUC)
       goto memErr_fun04;
@@ -233,9 +235,9 @@ getPaf_geneCoord(
    signed char *typeC,
    signed char *pafLineStr
 ){ /*getPagGene*/
-   uchar ucEntry = 0;
-   uint uiChar = 0;
-   schar *tmpStr = 0;
+   unsigned char ucEntry = 0;
+   unsigned int uiChar = 0;
+   signed char *tmpStr = 0;
    
    for(uiChar = 0; (pafLineStr)[uiChar] > 32; ++uiChar)
    { /*Loop: copy id*/
@@ -303,7 +305,7 @@ swap_geneCoord(
    unsigned long oneUL,
    unsigned long secUL
 ){
-  uchar ucSwap = 0;
+  unsigned char ucSwap = 0;
 
   coordST->startAryUI[oneUL]^= coordST->startAryUI[secUL];
   coordST->startAryUI[secUL]^= coordST->startAryUI[oneUL];
@@ -402,19 +404,19 @@ sort_geneCoord(
   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
   
   /*Number of elements to sort*/
-  ulong numElmUL = (endUI) - (startUI);
+  unsigned long numElmUL = (endUI) - (startUI);
   
   /*Number of sorting rounds*/
-  ulong subUL = 0;
-  ulong nextElmUL = 0;
-  ulong lastElmUL = 0;
-  ulong elmOnUL = 0;
+  unsigned long subUL = 0;
+  unsigned long nextElmUL = 0;
+  unsigned long lastElmUL = 0;
+  unsigned long elmOnUL = 0;
   
   /*Get arrays to sort from the matrix (for sanity)*/
   
   /*Variables to incurment loops*/
-  ulong ulIndex = 0;
-  ulong ulElm = 0;
+  unsigned long ulIndex = 0;
+  unsigned long ulElm = 0;
   
   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
   ^ Fun07 Sec02:
@@ -577,19 +579,19 @@ sortName_geneCoord(
   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
   
   /*Number of elements to sort*/
-  ulong numElmUL = (endUI) - (startUI);
+  unsigned long numElmUL = (endUI) - (startUI);
   
   /*Number of sorting rounds*/
-  ulong subUL = 0;
-  ulong nextElmUL = 0;
-  ulong lastElmUL = 0;
-  ulong elmOnUL = 0;
+  unsigned long subUL = 0;
+  unsigned long nextElmUL = 0;
+  unsigned long lastElmUL = 0;
+  unsigned long elmOnUL = 0;
   
   /*Get arrays to sort from the matrix (for sanity)*/
   
   /*Variables to incurment loops*/
-  ulong ulIndex = 0;
-  ulong ulElm = 0;
+  unsigned long ulIndex = 0;
+  unsigned long ulElm = 0;
   
   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
   ^ Fun09 Sec02:
@@ -674,10 +676,10 @@ findName_geneCoord(
    signed char *nameStr,
    signed int numGenesSI
 ){ 
-   sint matchSI = 0;
-   sint midSI = 0;
-   sint rightHalfSI = numGenesSI - 1;
-   sint leftHalfSI = 0;
+   signed int matchSI = 0;
+   signed int midSI = 0;
+   signed int rightHalfSI = numGenesSI - 1;
+   signed int leftHalfSI = 0;
 
    while(leftHalfSI <= rightHalfSI)
    { /*Loop: Search for the starting coordinate*/
@@ -757,20 +759,20 @@ getCoords_geneCoord(
    ^   - Variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   sint lenBuffSI = 1 << 10; /*~ 2000*/
-   schar *buffHeapStr = 0;
+   signed int lenBuffSI = 1 << 10; /*~ 2000*/
+   signed char *buffHeapStr = 0;
    
-   schar newLineBl = 0;     /*Check if on an new line*/
-   schar *cpStr = 0;
-   schar *dupStr = 0;
+   signed char newLineBl = 0;  /*Check if on an new line*/
+   signed char *cpStr = 0;
+   signed char *dupStr = 0;
 
-   sint numLinesSI = 0;
-   sint maxLineLenSI = 0;
-   sint lineLenSI = 0;
+   signed int numLinesSI = 0;
+   signed int maxLineLenSI = 0;
+   signed int lineLenSI = 0;
 
-   ulong bytesUL = 0;
-   ulong ulByte = 0;
-   uint tmpUI = 0;
+   unsigned long bytesUL = 0;
+   unsigned long ulByte = 0;
+   unsigned int tmpUI = 0;
    
    struct geneCoord *genesHeapST = 0;
 
@@ -793,7 +795,11 @@ getCoords_geneCoord(
    if(! tblFILE)
       goto fileErr_fun11_sec06_sub03;
 
-   buffHeapStr = calloc((lenBuffSI + 9), sizeof(schar));
+   buffHeapStr =
+      calloc(
+         (lenBuffSI + 9),
+         sizeof(signed char)
+      );
    /*Why +9:
    `  - 1 for null;
    `  - 8 for endLine_ulCp out of bounds (quites valgrind)
@@ -826,8 +832,28 @@ getCoords_geneCoord(
       { /*Loop: Count the number of newlines in buffer*/
          tmpUI = endLineUnix_ulCp(&buffHeapStr[ulByte]);
          ulByte += tmpUI;
-         newLineBl = buffHeapStr[ulByte] == '\n';
-         numLinesSI += newLineBl;
+
+         /*get of end of line*/
+         if(buffHeapStr[ulByte] == '\r')
+         { /*If: still not at end of line*/
+            ++ulByte;
+            ++newLineBl;
+            ++numLinesSI;
+         } /*If: still not at end of line*/
+
+         if(buffHeapStr[ulByte] == '\n')
+         { /*If: still not at end of line*/
+            ++ulByte;
+            ++newLineBl;
+            ++numLinesSI;
+         } /*If: still not at end of line*/
+
+         if(buffHeapStr[ulByte] == '\r')
+         { /*If: still not at end of line*/
+            ++ulByte;
+            ++newLineBl;
+            ++numLinesSI;
+         } /*If: still not at end of line*/
 
          lineLenSI += tmpUI;
 
@@ -838,7 +864,6 @@ getCoords_geneCoord(
             );
 
          lineLenSI &= ((int) (newLineBl - 1));
-         ulByte += newLineBl; /*get off new line*/
       } /*Loop: Count the number of newlines in buffer*/
             
 
@@ -865,7 +890,7 @@ getCoords_geneCoord(
       lenBuffSI = maxLineLenSI;
 
       buffHeapStr =
-         malloc((lenBuffSI +1 ) * sizeof(schar));
+         malloc((lenBuffSI +1 ) * sizeof(signed char));
 
       if(! buffHeapStr)
          goto memErr_fun11_sec06_sub02;
@@ -902,7 +927,7 @@ getCoords_geneCoord(
    \*****************************************************/
 
    cpStr =
-      (schar *)
+      (signed char *)
       fgets(
          (char *) buffHeapStr,
          lenBuffSI,

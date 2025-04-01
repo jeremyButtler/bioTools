@@ -32,7 +32,6 @@
 #include "indexToCoord.h"
 
 /*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
 #include "../genLib/genMath.h" /*only using .h commands*/
 #include "alnDefs.h"
 
@@ -45,6 +44,7 @@
 !   o .c  #include "../genLib/numToStr.h"
 !   o .c  #include "../genLib/strAry.h"
 !   o .c  #include "../genBio/samEntry.h"
+!   o .h  #include "../genLib/endStr.h"
 !   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -72,6 +72,8 @@
 |      if they are to small
 |    o updates lenMatrixUL and lenScoreUL if dirMatrixSC
 |      or scoreAryUL are resized
+|    o sets errSC in matrixSTPtr to def_memErr_needle if
+|      had memory errors
 |  - Returns:
 |    o score for alignment
 \-------------------------------------------------------*/
@@ -114,25 +116,26 @@ needle(
    \*****************************************************/
 
    /*Get start & end of query and reference sequences*/
-   schar *refSeqStr =
+   signed char *refSeqStr =
       refSTPtr->seqStr + refSTPtr->offsetUL;
 
-   schar *qrySeqStr =
+   signed char *qrySeqStr =
       qrySTPtr->seqStr + qrySTPtr->offsetUL;
 
    /*Find the length of the reference and query*/
-   ulong lenQryUL =
+   unsigned long lenQryUL =
       qrySTPtr->endAlnUL - qrySTPtr->offsetUL + 1;
 
-   ulong lenRefUL =
+   unsigned long lenRefUL =
       refSTPtr->endAlnUL - refSTPtr->offsetUL + 1;
      /*The + 1 is to account for index 0 of endAlnUL*/
 
-   ulong lenMatrixUL = (lenRefUL + 1) * (lenQryUL + 1);
+   unsigned long lenMatrixUL =
+      (lenRefUL + 1) * (lenQryUL + 1);
      /*+1 for the gap column and row*/
 
-   ulong ulRef = 0;
-   ulong ulQry = 0;
+   unsigned long ulRef = 0;
+   unsigned long ulQry = 0;
 
    /*Set up counters for the query and reference base
    `  index
@@ -142,14 +145,15 @@ needle(
    *  - variables holding the scores (only two rows)
    \*****************************************************/
 
-   slong snpScoreSL = 0;    /*Score for deletion*/
-   slong nextSnpScoreSL = 0;/*Score for match/snp*/
+   signed long snpScoreSL = 0;    /*Score for deletion*/
+   signed long nextSnpScoreSL = 0;/*Score for match/snp*/
 
-   slong insScoreSL = 0;    /*Score for deletion*/
-   slong delScoreSL = 0;    /*Score for deletion*/
+   signed long insScoreSL = 0;    /*Score for deletion*/
+   signed long delScoreSL = 0;    /*Score for deletion*/
 
    /*Marks when to reset score buffer (every second row)*/
-   slong *scoreArySL = 0;/*scoring row for alignment*/
+   signed long *scoreArySL = 0;
+      /*scoring row for alignment*/
 
    /*****************************************************\
    * Fun01 Sec01 Sub03:
@@ -157,9 +161,9 @@ needle(
    \*****************************************************/
 
    /*Direction matrix (one cell holds one direction)*/
-   schar *dirMatrixSC = 0;/*Direction matrix*/
-   schar *insDir = 0;    /*Direction above cell*/
-   ulong indexUL = 0;
+   signed char *dirMatrixSC = 0;/*Direction matrix*/
+   signed char *insDir = 0;    /*Direction above cell*/
+   unsigned long indexUL = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun01 Sec02:
@@ -230,22 +234,30 @@ needle(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    dirMatrixSC[0] = def_mvStop_alnDefs; /*stop to start*/
-   scoreArySL[0] = settings->gapSS;
+   scoreArySL[0] = 0;
+   scoreArySL[1] = settings->gapSS;
+   dirMatrixSC[1] = def_mvDel_alnDefs; /*stop to start*/
 
-   for(
+   if(lenRefUL > 1)
+   { /*If: have more than on entry*/
       indexUL = 1;
-      indexUL <= lenRefUL;
-      ++indexUL
-   ){ /*Loop: initialize the first row*/
-      dirMatrixSC[indexUL] = def_mvDel_alnDefs;
-      scoreArySL[indexUL] = scoreArySL[indexUL - 1];
 
-      #ifdef NOEXTEND
-         scoreArySL[indexUL] += settings->gapSS;
-      #else
-         scoreArySL[indexUL] += settings->extendSS;
-      #endif
-   } /*Loop: initialize the first row*/
+      do { /*Loop: init 1st row*/
+         dirMatrixSC[indexUL] = def_mvDel_alnDefs;
+         scoreArySL[indexUL] = scoreArySL[indexUL - 1];
+
+         #ifdef NOEXTEND
+            scoreArySL[indexUL] += settings->gapSS;
+         #else
+            scoreArySL[indexUL] += settings->extendSS;
+         #endif
+
+         ++indexUL;
+      } while(indexUL <= lenRefUL); /*Loop: init 1st row*/
+   } /*If: have more than on entry*/
+
+   else
+      indexUL = 2;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun01 Sec04:
@@ -276,12 +288,10 @@ needle(
 
    nextSnpScoreSL = scoreArySL[0];
 
-   /*set up scores*/
-   #ifdef NOEXTEND
-      delScoreSL = scoreArySL[0] + settings->gapSS;
-   #else
-      delScoreSL = scoreArySL[0] + settings->extendSS;
-   #endif
+   /*set up scores and add next gap extend*/
+   scoreArySL[0] += settings->gapSS;
+   delScoreSL = scoreArySL[0];
+   delScoreSL += settings->delArySS[def_mvIns_alnDefs];
 
    dirMatrixSC[indexUL] = def_mvIns_alnDefs;
 
@@ -343,24 +353,25 @@ needle(
                snpScoreSL
          ); /*find if ins/snp is best (5 Op)*/
  
-         /*find direction (4 Op)*/
+         /*find direction (5 Op)*/
          dirMatrixSC[indexUL] =
             scoreArySL[ulRef] > delScoreSL;
-
-         dirMatrixSC[indexUL] <<=
-            (snpScoreSL < insScoreSL);
-
+         dirMatrixSC[indexUL] +=
+            (
+                 (snpScoreSL <= insScoreSL)
+               & dirMatrixSC[indexUL]
+            );
          ++dirMatrixSC[indexUL];
 
          /*Logic:
          `   - noDel: maxSC > delSc:
          `     o 1 if deletion not max score
          `     o 0 if deletion is max score
-         `   - type: noDel << (snpSc < insSc):
-         `     o 1 << 1 = 2 if insertion is maximum
-         `     o 1 << 0 = 1 if snp is maximum
-         `     o 0 << 0 = 0 if del is max, and snp > ins
-         `     o 0 << 1 = 0 if del is max, but ins >= snp
+         `   - type: noDel + ((snpSc < insSc) & noDel):
+         `     o 1 + (1 & 1) = 2 if insertion is maximum
+         `     o 1 + (0 & 1) = 1 if snp is maximum
+         `     o 0 + (0 & 0) = 0 if del is max; snp > ins
+         `     o 0 + (1 & 0) = 0 if del is max, ins >= snp
          `   - dir: type + 1
          `     o adds 1 to change from stop to direction
          */
@@ -398,10 +409,13 @@ needle(
 
       /*set up scores*/
       #ifdef NOEXTEND
-         delScoreSL = scoreArySL[0] + settings->gapSS;
+         scoreArySL[0] += settings->gapSS;
       #else
-         delScoreSL = scoreArySL[0] + settings->extendSS;
+         scoreArySL[0] += settings->extendSS;
       #endif
+
+      delScoreSL = scoreArySL[0] + settings->gapSS;
+         /*deletion is always extending insertion*/
 
       dirMatrixSC[indexUL] = def_mvIns_alnDefs;
 
@@ -427,7 +441,8 @@ needle(
    ` This is not needed, but is nice.
    */
 
-   --indexUL; /*get off last -1*/
+   matrixSTPtr->errSC = 0;
+   --indexUL; /*account for index being on off end*/
    dirMatrixSC[indexUL] = def_mvStop_alnDefs;
 
    matrixSTPtr->scoreSL = scoreArySL[lenRefUL];
@@ -441,12 +456,11 @@ needle(
    \*****************************************************/
 
    memErr_fun01_sec05:;
-   matrixSTPtr->errSC = def_memErr_needle;
-   goto errCleanUp_fun01_sec05;
+      matrixSTPtr->errSC = def_memErr_needle;
+      goto errCleanUp_fun01_sec05;
 
    errCleanUp_fun01_sec05:;
-
-   return 0;
+      return 0;
 } /*needle*/
 
 /*=======================================================\

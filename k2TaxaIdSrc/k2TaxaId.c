@@ -58,7 +58,7 @@
 #include "../genLib/ptrAry.h"
 
 /*no .c files*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 
 /*
 ` Kraken works by character for level in tree, and
@@ -214,7 +214,7 @@ setup_taxa_k2TaxaId(
    taxaSTPtr->codeArySL =
       calloc(
          numElmSL,
-         sizeof(slong)
+         sizeof(signed long)
       );
 
    if(! taxaSTPtr->codeArySL)
@@ -224,7 +224,7 @@ setup_taxa_k2TaxaId(
    taxaSTPtr->backTrackArySL =
       calloc(
          numElmSL,
-         sizeof(slong)
+         sizeof(signed long)
       );
 
    if(! taxaSTPtr->backTrackArySL)
@@ -234,7 +234,7 @@ setup_taxa_k2TaxaId(
    taxaSTPtr->mergeAryBl =
       calloc(
          numElmSL,
-         sizeof(schar)
+         sizeof(signed char)
       );
 
    if(! taxaSTPtr->mergeAryBl)
@@ -244,7 +244,7 @@ setup_taxa_k2TaxaId(
    taxaSTPtr->levelArySS =
       calloc(
          numElmSL,
-         sizeof(ushort)
+         sizeof(unsigned short)
       );
 
    if(! taxaSTPtr->levelArySS)
@@ -255,7 +255,7 @@ setup_taxa_k2TaxaId(
    taxaSTPtr->indexArySL =
       calloc(
          numElmSL,
-         sizeof(slong)
+         sizeof(signed long)
       );
 
    if(! taxaSTPtr->indexArySL)
@@ -293,7 +293,8 @@ realloc_taxa_k2TaxaId(
    struct taxa_k2TaxaId *taxaSTPtr,
    signed long numElmSL
 ){
-   slong *slPtr = 0;
+   signed long *slPtr = 0;
+   signed long slIter = 0;
 
 
    if(numElmSL == taxaSTPtr->numTaxaSL)
@@ -302,7 +303,7 @@ realloc_taxa_k2TaxaId(
    slPtr =
       realloc(
          taxaSTPtr->codeArySL,
-         numElmSL * sizeof(slong)
+         numElmSL * sizeof(signed long)
       );
 
    if(! slPtr)
@@ -322,7 +323,7 @@ realloc_taxa_k2TaxaId(
    slPtr =
       realloc(
          taxaSTPtr->backTrackArySL,
-         numElmSL * sizeof(slong)
+         numElmSL * sizeof(signed long)
       );
 
    if(! slPtr)
@@ -332,35 +333,35 @@ realloc_taxa_k2TaxaId(
 
 
    slPtr =
-      (slong *)
+      (signed long *)
       realloc(
          taxaSTPtr->mergeAryBl,
-         numElmSL * sizeof(schar)
+         numElmSL * sizeof(signed char)
       );
 
    if(! slPtr)
       goto memErr_fun05;
 
-   taxaSTPtr->mergeAryBl = (schar *) slPtr;
+   taxaSTPtr->mergeAryBl = (signed char *) slPtr;
 
 
    slPtr =
-      (slong *)
+      (signed long *)
       realloc(
          taxaSTPtr->levelArySS,
-         numElmSL * sizeof(ushort)
+         numElmSL * sizeof(unsigned short)
       );
 
    if(! slPtr)
       goto memErr_fun05;
 
-   taxaSTPtr->levelArySS = (sshort *) slPtr;
+   taxaSTPtr->levelArySS = (signed short *) slPtr;
 
 
    slPtr =
       realloc(
          taxaSTPtr->indexArySL,
-         numElmSL * sizeof(slong)
+         numElmSL * sizeof(signed long)
       );
 
    if(! slPtr)
@@ -368,6 +369,18 @@ realloc_taxa_k2TaxaId(
 
    taxaSTPtr->indexArySL = slPtr;
 
+
+   for(
+     slIter = taxaSTPtr->sizeTaxaSL;
+     slIter < numElmSL;
+     ++slIter
+   ){ /*Loop: initialize arrays*/
+      taxaSTPtr->indexArySL[slIter] = 0;
+      taxaSTPtr->levelArySS[slIter] = 0;
+      taxaSTPtr->mergeAryBl[slIter] = 0;
+      taxaSTPtr->backTrackArySL[slIter] = 0;
+      taxaSTPtr->codeArySL[slIter] = 0;
+   }  /*Loop: initialize arrays*/
 
    taxaSTPtr->sizeTaxaSL = numElmSL;
    return 0;
@@ -394,21 +407,21 @@ sortCodes_taxa_k2TaxaId(
    struct taxa_k2TaxaId *taxaSTPtr
 ){
    /*Number of elements to sort (index 1)*/
-   slong endSL = taxaSTPtr->numTaxaSL - 1;
+   signed long endSL = taxaSTPtr->numTaxaSL - 1;
 
    /*for convience*/
-   slong *indexArySL = taxaSTPtr->indexArySL;
-   slong *codeArySL = taxaSTPtr->codeArySL;
+   signed long *indexArySL = taxaSTPtr->indexArySL;
+   signed long *codeArySL = taxaSTPtr->codeArySL;
 
    /*Number of sorting rounds*/
-   slong subSL = 0;
-   slong nextSL = 0;
-   slong lastSL = 0;
-   slong onSL = 0;
+   signed long subSL = 0;
+   signed long nextSL = 0;
+   signed long lastSL = 0;
+   signed long onSL = 0;
 
    /*Variables to incurment loops*/
-   slong slIndex = 0;
-   slong slElm = 0;
+   signed long slIndex = 0;
+   signed long slElm = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun07 Sec02:
@@ -507,13 +520,13 @@ findCode_taxa_k2TaxaId(
    signed long midSL = 0;
 
    signed long rightSL =
-      (slong) taxaSTPtr->numTaxaSL - 1;
+      (signed long) taxaSTPtr->numTaxaSL - 1;
 
    signed long leftSL = 0;
 
    /*for convience*/
-   slong *indexArySL = taxaSTPtr->indexArySL;
-   slong *codeArySL = taxaSTPtr->codeArySL;
+   signed long *indexArySL = taxaSTPtr->indexArySL;
+   signed long *codeArySL = taxaSTPtr->codeArySL;
 
    while(leftSL <= rightSL)
    { /*Loop: Search for the querys index*/
@@ -691,21 +704,22 @@ readReport_k2TaxaId(
 
    #define def_lenBuff_fun10 4096
 
-   schar buffStr[def_lenBuff_fun10 + 1];
-   schar *tmpStr = 0;
+   signed char buffStr[def_lenBuff_fun10 + 1];
+   signed char *tmpStr = 0;
 
-   slong histArySL[def_maxDepth_k2TaxaId];
-   sshort histLevArySS[def_maxDepth_k2TaxaId];
+   signed long histArySL[def_maxDepth_k2TaxaId];
+   signed short histLevArySS[def_maxDepth_k2TaxaId];
       /*keeps track of were at in tree*/
 
-   ulong readDepthUL = 0;
+   unsigned long readDepthUL = 0;
 
-   sint depthSI = 0;     /*current depth in tree*/
+   signed int depthSI = 0;     /*current depth in tree*/
    float percDepthF = 0; /*percent read depth*/
-   sint tmpSI = 1;
-   sint posSI = 1;
-   sshort levelSS = 0;  /*depth of current entry in tree*/
-   sshort lastLevelSS = 0;
+   signed int tmpSI = 1;
+   signed int posSI = 1;
+   signed short levelSS = 0;
+      /*depth of current entry in tree*/
+   signed short lastLevelSS = 0;
 
    #define def_expand_fun10 1028
    struct taxa_k2TaxaId *retTaxaHeapST;
@@ -1128,7 +1142,8 @@ readReport_k2TaxaId(
             } /*If: to little read depth (merge only*/
 
             tmpSI = depthSI - 1;
-            posSI = (sint) retTaxaHeapST->numTaxaSL - 1;
+            posSI = (signed int) retTaxaHeapST->numTaxaSL;
+            --posSI;
 
             while(tmpSI >= 0)
             { /*Loop: update past depths*/
@@ -1286,10 +1301,11 @@ pTaxaId_k2TaxaIds(
   
    fprintf(
       (FILE *) outFILE,
-      "%s\t%li\t%s\n",
+      "%s\t%li\t%s%s",
       idStr,
       taxaSL,
-      taxaStr
+      taxaStr,
+      str_endLine
    );
   
    fclose(outFILE);
@@ -1346,18 +1362,18 @@ pIds_k2TaxaId(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar errSC = 0;
+   signed char errSC = 0;
 
-   slong taxaSL = 0;
-   slong indexSL = 0;
-   slong oldSL = 0;
+   signed long taxaSL = 0;
+   signed long indexSL = 0;
+   signed long oldSL = 0;
 
-   sshort levelSS = 0; /*level taxa is at*/
+   signed short levelSS = 0; /*level taxa is at*/
 
    #define maxHist_fun12_k2TaxaId 32
-   sint histPosSI = 0;
-   sint histIndexSI = 0;
-   slong histArySL[maxHist_fun12_k2TaxaId]; 
+   signed int histPosSI = 0;
+   signed int histIndexSI = 0;
+   signed long histArySL[maxHist_fun12_k2TaxaId]; 
       /*history of taxa merging*/
 
    #define idLen_fun12_k2TaxaId 256
@@ -1365,7 +1381,7 @@ pIds_k2TaxaId(
 
    signed char noClassStr[idLen_fun12_k2TaxaId];
    signed char fileStr[4096]; /*file name for ids*/
-   schar *tmpStr = 0;
+   signed char *tmpStr = 0;
 
 
    #define def_sizeBuff_fun12 (1 << 13)
@@ -1393,7 +1409,7 @@ pIds_k2TaxaId(
       tmpStr +=
          cpLine_ulCp(
             tmpStr,
-            (schar *) "unclassified.ids"
+            (signed char *) "unclassified.ids"
          ); /*set up file name*/
 
       unclassFILE =
@@ -1456,8 +1472,9 @@ pIds_k2TaxaId(
 
          fprintf(
             (FILE *) unclassFILE,
-            "%s\tunclassified\n",
-            idStr
+            "%s\tunclassified%s",
+            idStr,
+            str_endLine
          );
 
          goto nextLine_fun12_sec03_sub07;
@@ -1638,8 +1655,10 @@ pIds_k2TaxaId(
             +   - check if printing id to a taxa
             \+++++++++++++++++++++++++++++++++++++++++++*/
 
-            if(indexSL >= (slong) taxaSTPtr->numTaxaSL)
-               break; /*no more taxa in list*/
+            if(
+                  indexSL
+               >= (signed long) taxaSTPtr->numTaxaSL
+            ) break; /*no more taxa in list*/
 
             if(levelSS >= taxaSTPtr->levelArySS[indexSL])
                break; /*at same level (end of merge)*/
@@ -1727,11 +1746,14 @@ pIds_k2TaxaId(
       nextLine_fun12_sec03_sub07:;
 
       tmpStr = buffStr;
-      tmpStr += endLineUnix_ulCp(tmpStr);
-        /*do not want '\r', only '\n'*/
+      tmpStr += endStr_ulCp(tmpStr);
+      --tmpStr;
+      /*move on to character before '\0'*/
 
-      while(*tmpStr == '\0')
-      { /*Loop: move past line*/
+      while(
+            *tmpStr != '\r'
+         && *tmpStr != '\n'
+      ){ /*Loop: move past line*/
          fgets(
             (char *) buffStr,
             def_sizeBuff_fun12,
@@ -1739,7 +1761,9 @@ pIds_k2TaxaId(
           );
 
           tmpStr = buffStr;
-          tmpStr += endLineUnix_ulCp(tmpStr);
+          tmpStr += endStr_ulCp(tmpStr);
+          --tmpStr;
+          /*move on to character before '\0'*/
       } /*Loop: move past line*/
    } /*Loop: get read ids*/
 

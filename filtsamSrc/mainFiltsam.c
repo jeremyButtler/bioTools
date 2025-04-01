@@ -48,7 +48,7 @@
 #include "../genBio/trimSam.h"
 
 /*These do not have .c files*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
@@ -105,10 +105,11 @@ pversion_mainFiltsam(
 
    fprintf(
       (FILE *) outFILE,
-      "mainFiltsam from bioTools version: %i-%02i-%02i\n",
+      "mainFiltsam from bioTools version: %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
-      def_day_bioTools
+      def_day_bioTools,
+      str_endLine
    );
 } /*pversion_mainFiltsam*/
 
@@ -140,8 +141,17 @@ phelp_mainFiltsam(
    ^   - usage block of help message
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   fprintf(outFILE, "mainFiltsam -sam reads.sam [options]\n");
-   fprintf(outFILE, "  - Filters sam file from user\n");
+   fprintf(
+      outFILE,
+      "mainFiltsam -sam reads.sam [options]%s",
+      str_endLine
+   );
+
+   fprintf(
+      outFILE,
+      "  - Filters sam file from user%s",
+      str_endLine
+   );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun02 Sec02:
@@ -167,87 +177,147 @@ phelp_mainFiltsam(
    *   - print the input header
    \*****************************************************/
 
-   fprintf(outFILE, "Input:\n");
+   fprintf(
+      (FILE *) outFILE,
+      "Input:%s",
+      str_endLine
+   );
 
    /*****************************************************\
    * Fun02 sec02 Sub02:
    *   - print sam file input
    \*****************************************************/
 
-   fprintf(outFILE,"  -sam: [Required; default stdin]\n");
-   fprintf(outFILE, "    o Sam file to filter\n");
-   fprintf(outFILE, "    o Use `-sam -` for stdin\n");
+   fprintf(
+      outFILE,
+      "  -sam: [Required; default stdin]%s",
+      str_endLine
+   );
+
+   fprintf(
+      outFILE,
+      "    o Sam file to filter%s",
+      str_endLine
+   );
+
+   fprintf(
+      outFILE,
+      "    o Use `-sam -` for stdin%s",
+      str_endLine
+   );
 
    /*****************************************************\
    * Fun02 sec02 Sub03:
    *   - print flag filtering options
    \*****************************************************/
 
-   fprintf(outFILE, "  Flag filtering:\n");
-   fprintf(outFILE, "    -F flag: [Nothing]\n");
+   fprintf(outFILE, "  Flag filtering:%s", str_endLine);
    fprintf(
-      outFILE,
-      "      o Filter out reads with flag\n");
-
-   fprintf(
-      outFILE,
-      "      o -F can be input multiple times\n"
+      outFILE, "    -F flag: [Nothing]%s", str_endLine
    );
 
-   fprintf(outFILE, "    -f flag: [Nothing]\n");
    fprintf(
       outFILE,
-      "      o Keep only reads with input flags\n"
-   );
-   fprintf(
-      outFILE,
-      "      o -f can be input multiple times\n"
+      "      o Filter out reads with flag%s",
+      str_endLine
    );
 
-   fprintf(outFILE,"    - Some usefull flags\n");
-   fprintf(outFILE,"       o 0: forward (not as flag)\n");
-   fprintf(outFILE,"       o 4: unmapped read\n");
-   fprintf(outFILE,"       o 16: reverse complement\n");
-   fprintf(outFILE,"       o 256: secondary alignment\n");
-   fprintf(outFILE,"       o 2048: supplemental align\n");
+   fprintf(
+      outFILE,
+      "      o -F can be input multiple times%s",
+      str_endLine
+   );
+
+   fprintf(
+      outFILE,
+      "    -f flag: [Nothing]%s",
+      str_endLine
+   );
+   fprintf(
+      outFILE,
+      "      o Keep only reads with input flags%s",
+      str_endLine
+   );
+   fprintf(
+      outFILE,
+      "      o -f can be input multiple times%s",
+      str_endLine
+   );
+
+   fprintf(
+      outFILE,
+      "    - Some usefull flags%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "       o 0: forward (not as flag)%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "       o 4: unmapped read%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "       o 16: reverse complement%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "       o 256: secondary alignment%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "       o 2048: supplemental align%s",
+      str_endLine
+   );
 
    /*****************************************************\
    * Fun02 sec02 Sub04:
    *   - print min, min aligned, and max length options
    \*****************************************************/
 
-   fprintf(outFILE, "  Length filtering:\n");
+   fprintf(outFILE, "  Length filtering:%s", str_endLine);
 
    fprintf(
       outFILE,
-      "    -min-aln-len length: [%i]\n",
-     def_minAlnLen_mainFiltsam
+      "    -min-aln-len length: [%i]%s",
+     def_minAlnLen_mainFiltsam,
+     str_endLine
+   );
+
+   fprintf(
+     outFILE,
+     "      o Minimum aligned read length to keep read%s",
+     str_endLine
+   );
+   fprintf(
+      outFILE,
+      "    -min-len length: [%i]%s",
+     def_minLen_mainFiltsam,
+     str_endLine
    );
 
    fprintf(
       outFILE,
-      "      o Minimum aligned read length to keep read\n"
-   );
-   fprintf(
-      outFILE,
-      "    -min-len length: [%i]\n",
-     def_minLen_mainFiltsam
+      "      o Minimum read length to keep an read%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "      o Minimum read length to keep an read\n"
+      "    -max-len length: [%i]%s",
+     def_maxLen_mainFiltsam,
+     str_endLine
    );
 
    fprintf(
       outFILE,
-      "    -max-len length: [%i]\n",
-     def_maxLen_mainFiltsam
-   );
-
-   fprintf(
-      outFILE,
-      "      o Maximum read length to keep an read\n"
+      "      o Maximum read length to keep an read%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -255,37 +325,43 @@ phelp_mainFiltsam(
    *   - print min median Q, mean Q, and mapq options
    \*****************************************************/
 
-   fprintf(outFILE, "  Q-score filtering:\n");
+   fprintf(outFILE, "  Q-score filtering:%s", str_endLine);
 
    fprintf(
       outFILE,
-      "    -min-mapq mapq: [%i]\n",
-     def_minMapq_mainFiltsam
-   );
-
-   fprintf(
-      outFILE,
-      "      o Minimum mapping quality to keep an read\n"
+      "    -min-mapq mapq: [%i]%s",
+     def_minMapq_mainFiltsam,
+     str_endLine
    );
 
    fprintf(
       outFILE,
-      "    -min-median-q medianQ: [%f]\n",
-     def_minMedQ_mainFiltsam
-   );
-   fprintf(
-      outFILE,
-      "      o Minimum median Q-score to keep an read\n"
+      "      o Minimum mapping quality to keep an read%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "    -min-mean-q meanQ: [%f]\n",
-     def_minMeanQ_mainFiltsam
+      "    -min-median-q medianQ: [%f]%s",
+     def_minMedQ_mainFiltsam,
+     str_endLine
    );
    fprintf(
       outFILE,
-      "      o Minimum mean Q-score to keep an read\n"
+      "      o Minimum median Q-score to keep an read%s",
+      str_endLine
+   );
+
+   fprintf(
+      outFILE,
+      "    -min-mean-q meanQ: [%f]%s",
+     def_minMeanQ_mainFiltsam,
+     str_endLine
+   );
+   fprintf(
+      outFILE,
+      "      o Minimum mean Q-score to keep an read%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -293,12 +369,16 @@ phelp_mainFiltsam(
    *   - print anonymous base options
    \*****************************************************/
 
-   fprintf(outFILE, "  Stats printing option:\n");
+   fprintf(
+      outFILE,
+      "  Stats printing option:%s",
+      str_endLine
+   );
 
    if(def_nPrint_mainFiltsam)
-      fprintf(outFILE, "    -p-n: [Yes]\n");
+      fprintf(outFILE, "    -p-n: [Yes]%s", str_endLine);
    else
-      fprintf(outFILE, "    -p-n: [No]\n");
+      fprintf(outFILE, "    -p-n: [No]%s", str_endLine);
 
    
    fprintf(
@@ -306,11 +386,12 @@ phelp_mainFiltsam(
       "      o Print anonymous base counts with"
    );
 
-   fprintf(outFILE, " -out-stats\n");
+   fprintf(outFILE, " -out-stats%s", str_endLine);
 
    fprintf(
       outFILE,
-      "      o Disable with `-no-p-n`\n"
+      "      o Disable with `-no-p-n`%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -318,91 +399,117 @@ phelp_mainFiltsam(
    *   - print coodinate options
    \*****************************************************/
 
-   fprintf(outFILE, "  Coordinate filtering:\n");
+   fprintf(
+      outFILE,
+      "  Coordinate filtering:%s",
+      str_endLine
+   );
 
    if(def_coordsTrimBl_mainFiltsam)
-      fprintf(outFILE, "    -coord-trim: [Yes]\n");
+      fprintf(
+         outFILE,
+         "    -coord-trim: [Yes]%s",
+         str_endLine
+      );
    else
-      fprintf(outFILE, "    -coord-trim: [No]\n");
+      fprintf(
+         outFILE,
+         "    -coord-trim: [No]%s",
+         str_endLine
+      );
 
    fprintf(
       outFILE,
       "      o Trim read to first -coords x,y matching"
    );
 
-   fprintf(outFILE, " coordinate\n");
+   fprintf(outFILE, " coordinate%s", str_endLine);
 
    fprintf(
       outFILE,
-      "      o Disable with `-no-coord-trim`\n"
+      "      o Disable with `-no-coord-trim`%s",
+      str_endLine
    );
 
 
    fprintf(
       outFILE,
-      "    -coords x,y: [None]\n"
+      "    -coords x,y: [None]%s",
+      str_endLine
    );
 
    fprintf(
-     outFILE,
-     "      o Removes reads not having input coordinate\n"
+    outFILE,
+    "      o Removes reads not having input coordinate%s",
+    str_endLine
    );
 
    fprintf(
       outFILE,
-      "      o This can be used up to 4000 times\n"
+      "      o This can be used up to 4000 times%s",
+      str_endLine
    );
 
    if(def_inRange_mainFiltsam)
       fprintf(
          outFILE,
-         "    -in-range: [Yes]\n"
+         "    -in-range: [Yes]%s",
+         str_endLine
       );
 
    else
       fprintf(
          outFILE,
-         "    -in-range: [No]\n"
+         "    -in-range: [No]%s",
+         str_endLine
       );
 
    fprintf(
       outFILE,
-      "      o treat coordinates as a range instead\n"
+      "      o treat coordinates as a range instead%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "        of both being required\n"
+      "        of both being required%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "      o disable with -no-range\n"
+      "      o disable with -no-range%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "    -coords-file coords.tsv: [None]\n"
+      "    -coords-file coords.tsv: [None]%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "      o Read coordaintes (-coords) from an file\n"
+      "      o Read coordaintes (-coords) from an file%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "        - same format as adjCoords/ampDepth\n"
+      "        - same format as adjCoords/ampDepth%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "        - first line is header (not used)\n"
+      "        - first line is header (not used)%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "        - ignored\tignored\tignored\tstart\tend\n"
+      "        - ignored\tignored\tignored\tstart\tend%s",
+      str_endLine
    );
 
 
@@ -411,61 +518,121 @@ phelp_mainFiltsam(
    *   - print output options
    \*****************************************************/
 
-   fprintf(outFILE, "  Output options:\n");
+   fprintf(outFILE, "  Output options:%s", str_endLine);
 
    if(def_trimReadsBl_mainFiltsam)
-      fprintf(outFILE, "    -trim: [Yes]\n");
+      fprintf(outFILE, "    -trim: [Yes]%s", str_endLine);
    else
-      fprintf(outFILE, "    -trim: [No]\n");
-
+      fprintf(outFILE, "    -trim: [No]%s", str_endLine);
    fprintf(
       outFILE,
-      "      o Remove (trim) soft masked parts of reads\n"
+      "      o Remove (trim) soft masked parts of reads%s",
+      str_endLine
+   );
+   fprintf(
+      outFILE,
+      "      o disble with -no-trim%s",
+      str_endLine
+   );
+   fprintf(
+      outFILE,
+      "    -out file.ext: [stdout]%s",
+      str_endLine
+   );
+   fprintf(
+      outFILE,
+      "      o File to print output to%s",
+      str_endLine
+   );
+   fprintf(
+      outFILE,
+      "      o Use `-out -` for stdout%s",
+      str_endLine
    );
 
-   fprintf(outFILE, "      o disble with -no-trim\n");
-
-   fprintf(outFILE, "    -out file.ext: [stdout]\n");
-   fprintf(outFILE, "      o File to print output to\n");
-   fprintf(outFILE, "      o Use `-out -` for stdout\n");
 
    if(def_pdefault_mainFiltsam == def_psam_mainFiltsam)
-      fprintf(outFILE, "    -out-sam: [Default]\n");
+      fprintf(
+         outFILE,
+         "    -out-sam: [Default]%s",
+         str_endLine
+      );
    else
-      fprintf(outFILE, "    -out-sam: [No]\n");
-
-   fprintf(outFILE, "      o Print -out as sam file\n");
+      fprintf(
+         outFILE,
+         "    -out-sam: [No]%s",
+         str_endLine
+      );
+   fprintf(
+      outFILE,
+      "      o Print -out as sam file%s",
+      str_endLine
+   );
 
    if(def_pdefault_mainFiltsam == def_pfq_mainFiltsam)
-      fprintf(outFILE, "    -out-fastq: [Default]\n");
+      fprintf(
+         outFILE,
+         "    -out-fastq: [Default]%s",
+         str_endLine
+      );
    else
-      fprintf(outFILE, "    -out-fastq: [No]\n");
-
-   fprintf(outFILE, "      o Print -out as fastq file\n");
+      fprintf(
+         outFILE,
+         "    -out-fastq: [No]%s",
+         str_endLine
+      );
+   fprintf(
+      outFILE,
+      "      o Print -out as fastq file%s",
+      str_endLine
+   );
 
    if(def_pdefault_mainFiltsam == def_pfa_mainFiltsam)
-      fprintf(outFILE, "    -out-fasta: [Default]\n");
+      fprintf(
+         outFILE,
+         "    -out-fasta: [Default]%s",
+         str_endLine
+      );
    else
-      fprintf(outFILE, "    -out-fasta: [No]\n");
-
-   fprintf(outFILE, "      o Print -out as fasta file\n");
+      fprintf(
+         outFILE,
+         "    -out-fasta: [No]%s",
+         str_endLine
+      );
+   fprintf(
+      outFILE,
+      "      o Print -out as fasta file%s",
+      str_endLine
+   );
 
    if(def_pdefault_mainFiltsam == def_pstats_mainFiltsam)
-      fprintf(outFILE, "    -out-stats: [Default]\n");
+      fprintf(
+         outFILE,
+         "    -out-stats: [Default]%s",
+         str_endLine
+      );
    else
-      fprintf(outFILE, "    -out-stats: [No]\n");
-
-   fprintf(outFILE, "      o Print -out as stats file\n");
+      fprintf(
+         outFILE,
+         "    -out-stats: [No]%s",
+         str_endLine
+      );
+   fprintf(
+      outFILE,
+      "      o Print -out as stats file%s",
+      str_endLine
+   );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun02 Sec03:
    ^   - print the output block
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   fprintf(outFILE, "Output:\n");
+   fprintf(outFILE, "Output:%s", str_endLine);
    fprintf(
       outFILE,
-      "  - Prints filtered reads to selected file type\n"
+      "  - Prints filtered reads to selected file type%s",
+      str_endLine
    );
 } /*phelp_mainFiltsam*/
 
@@ -520,13 +687,13 @@ readCoordsFile(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   sint lineSI = 0;
-   sint errSI = 0;
-   uchar uiIter = 0;
+   signed int lineSI = 0;
+   signed int errSI = 0;
+   unsigned char uiIter = 0;
 
    #define lenBuffSI 1024
-   schar buffStr[lenBuffSI];
-   schar *tmpStr = 0;
+   signed char buffStr[lenBuffSI];
+   signed char *tmpStr = 0;
 
    FILE *inFILE = 0;
 
@@ -569,7 +736,7 @@ readCoordsFile(
 
    /*Skip the header*/
    tmpStr =
-      (schar*)
+      (signed char*)
       fgets(
          (char *) buffStr,
          lenBuffSI,
@@ -594,8 +761,11 @@ readCoordsFile(
       ){ /*Loop: move past ignored entries*/
          while(*tmpStr++ > 32) ;
 
-         if(*tmpStr == '\0' || *tmpStr == '\n')
-         { /*If: The user input no coordiantes*/
+         if(
+               *tmpStr == '\0'
+            || *tmpStr == '\n'
+            || *tmpStr == '\r'
+         ){ /*If: The user input no coordiantes*/
             errSI = (lineSI << 8) | 4;
             goto cleanUp_fun03_sec04;
          } /*If: The user input no coordiantes*/
@@ -606,8 +776,11 @@ readCoordsFile(
                break;
          } /*Loop: Until I am off the ignored entry*/
 
-         if(*tmpStr == '\0' || *tmpStr == '\n')
-         { /*If: The user input no coordiantes*/
+         if(
+               *tmpStr == '\0'
+            || *tmpStr == '\n'
+            || *tmpStr == '\r'
+         ){ /*If: The user input no coordiantes*/
             errSI = (lineSI << 8) | 4;
             goto cleanUp_fun03_sec04;
          } /*If: The user input no coordiantes*/
@@ -633,6 +806,7 @@ readCoordsFile(
       if(
             *tmpStr == '\0'
          || *tmpStr == '\n'
+         || *tmpStr == '\r'
       ){ /*If: The user only input one coordinate*/
          errSI = (lineSI << 8) | 4;
          goto cleanUp_fun03_sec04;
@@ -660,6 +834,7 @@ readCoordsFile(
       if(
             *tmpStr != '\0'
          && *tmpStr != '\n'
+         && *tmpStr != '\r'
       ){ /*If: This was non-numeric format*/
          errSI = (lineSI << 8) | 2;
          goto cleanUp_fun03_sec04;
@@ -753,7 +928,7 @@ readCoordsFile(
 |     o all input variables except numArgsSI and argAryStr
 |       to hold user input.
 \-------------------------------------------------------*/
-schar
+signed char
 input_mainFiltsam(
    int numArgsSI,
    char *argAryStr[],
@@ -795,10 +970,10 @@ input_mainFiltsam(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   sint siArg = 1;
-   sint errSI = 0;
-   schar errSC = 0;
-   schar *tmpStr = 0;
+   signed int siArg = 1;
+   signed int errSI = 0;
+   signed char errSC = 0;
+   signed char *tmpStr = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun04 Sec02:
@@ -849,24 +1024,24 @@ input_mainFiltsam(
    { /*Loop: Get user input*/
       if(
          ! eql_charCp(
-            (schar *) "-sam",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-sam",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*If: The user input a sam file*/
          ++siArg;
-         *samStr = (schar *) argAryStr[siArg];
+         *samStr = (signed char *) argAryStr[siArg];
       } /*If: The user input a sam file*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-out",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-out",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: The user provided an output file*/
          ++siArg;
-         *outStr = (schar *) argAryStr[siArg];
+         *outStr = (signed char *) argAryStr[siArg];
       } /*Else If: The user provided an output file*/
 
       /**************************************************\
@@ -876,33 +1051,33 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-out-sam",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-out-sam",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *outFlagSC = def_psam_mainFiltsam;
 
       else if(
          ! eql_charCp(
-            (schar *) "-out-fastq",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-out-fastq",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *outFlagSC = def_pfq_mainFiltsam;
 
       else if(
          ! eql_charCp(
-            (schar *) "-out-fasta",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-out-fasta",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *outFlagSC = def_pfa_mainFiltsam;
 
       else if(
          ! eql_charCp(
-            (schar *) "-out-stats",
-            (schar *) argAryStr[siArg],
-             (schar) '\0'
+            (signed char *) "-out-stats",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *outFlagSC = def_pstats_mainFiltsam;
 
@@ -916,11 +1091,11 @@ input_mainFiltsam(
          && argAryStr[siArg][1] == 'F'
       ){ /*Else if: this is a removal entry*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];   
+         tmpStr = (signed char *) argAryStr[siArg];   
 
          tmpStr +=
             strToUS_base10str(
-               (schar *) argAryStr[siArg],
+               (signed char *) argAryStr[siArg],
                &rmAryUS[*numRmFlagsUS]
             );
 
@@ -928,8 +1103,9 @@ input_mainFiltsam(
          { /*If: invalid number*/
             fprintf(
                stderr,
-               "-F %s is non-numeric or to large\n",
-               argAryStr[siArg]
+               "-F %s is non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun04_sec04;
@@ -943,11 +1119,11 @@ input_mainFiltsam(
          && argAryStr[siArg][1] == 'f'
       ){ /*Else if: this is a removal entry*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];   
+         tmpStr = (signed char *) argAryStr[siArg];   
 
          tmpStr +=
             strToUS_base10str(
-               (schar *) argAryStr[siArg],
+               (signed char *) argAryStr[siArg],
                &keepAryUS[*numKeepFlagsUS]
             );
 
@@ -955,8 +1131,9 @@ input_mainFiltsam(
          { /*If: invalid number*/
             fprintf(
                stderr,
-               "-f %s is non-numeric or to large\n",
-               argAryStr[siArg]
+               "-f %s is non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun04_sec04;
@@ -972,17 +1149,17 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-len",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-len",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: the min length was input*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];   
+         tmpStr = (signed char *) argAryStr[siArg];   
 
          tmpStr +=
             strToUI_base10str(
-               (schar *) argAryStr[siArg],
+               (signed char *) argAryStr[siArg],
                minLenUI
             );
 
@@ -990,8 +1167,9 @@ input_mainFiltsam(
          { /*If: invalid number*/
             fprintf(
                stderr,
-               "-min-len %s is non-numeric or to large\n",
-               argAryStr[siArg]
+               "-min-len %s is non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun04_sec04;
@@ -1000,17 +1178,17 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-max-len",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-max-len",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: the max length was input*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];   
+         tmpStr = (signed char *) argAryStr[siArg];   
 
          tmpStr +=
             strToUI_base10str(
-               (schar *) argAryStr[siArg],
+               (signed char *) argAryStr[siArg],
                maxLenUI
             );
 
@@ -1018,8 +1196,9 @@ input_mainFiltsam(
          { /*If: invalid number*/
             fprintf(
                stderr,
-               "-max-len %s is non-numeric or to large\n",
-               argAryStr[siArg]
+               "-max-len %s is non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun04_sec04;
@@ -1028,17 +1207,17 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-aln-len",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-aln-len",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: min aligned length was input*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];   
+         tmpStr = (signed char *) argAryStr[siArg];   
 
          tmpStr +=
             strToUI_base10str(
-               (schar *) argAryStr[siArg],
+               (signed char *) argAryStr[siArg],
                minAlnLenUI
             );
 
@@ -1046,8 +1225,9 @@ input_mainFiltsam(
          { /*If: invalid number*/
             fprintf(
                stderr,
-               "-min-aln-len %s; non-numeric/to large\n",
-               argAryStr[siArg]
+               "-min-aln-len %s; non-numeric/to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun04_sec04;
@@ -1061,9 +1241,9 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-median-q",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-median-q",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: the min medain Q score was input*/
          ++siArg;
@@ -1072,9 +1252,9 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-mean-q",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-mean-q",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: the min medain Q score was input*/
          ++siArg;
@@ -1083,17 +1263,17 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-mapq",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-mapq",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: the min mapq was input*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];   
+         tmpStr = (signed char *) argAryStr[siArg];   
 
          tmpStr +=
             strToUC_base10str(
-               (schar *) argAryStr[siArg],
+               (signed char *) argAryStr[siArg],
                minMapqUC
             );
 
@@ -1101,8 +1281,9 @@ input_mainFiltsam(
          { /*If: invalid number*/
             fprintf(
                stderr,
-               "-min-mapq %s; non-numeric or to large\n",
-               argAryStr[siArg]
+               "-min-mapq %s; non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun04_sec04;
@@ -1116,66 +1297,66 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-p-n",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-p-n",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *pNBl = 1;
 
       else if(
          ! eql_charCp(
-            (schar *) "-no-p-n",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-no-p-n",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *pNBl = 0;
 
       else if(
          ! eql_charCp(
-            (schar *) "-trim",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-trim",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *trimReadsBl = 1;
 
       else if(
          ! eql_charCp(
-            (schar *) "-no-trim",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-no-trim",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *trimReadsBl = 0;
 
       else if(
          ! eql_charCp(
-            (schar *) "-coord-trim",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-coord-trim",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *coordTrimBl = 1;
 
       else if(
          ! eql_charCp(
-            (schar *) "-no-coord-trim",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-no-coord-trim",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *coordTrimBl = 0;
 
 
       else if(
          ! eql_charCp(
-            (schar *) "-in-range",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-in-range",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *inRangeBl = 1;
 
       else if(
          ! eql_charCp(
-            (schar *) "-no-range",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-no-range",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *inRangeBl = 0;
 
@@ -1186,17 +1367,17 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-coords",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-coords",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: an target coordinate was input*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
-               (schar *) argAryStr[siArg],
+               (signed char *) argAryStr[siArg],
                &startAryUI[*numCoordsSI]
             );
 
@@ -1204,8 +1385,9 @@ input_mainFiltsam(
          { /*If: The user only input one coordinate*/
             fprintf(
                stderr,
-               "-coords %s is not in start,end format\n",
-               argAryStr[siArg]
+               "-coords %s is not in start,end format%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun04_sec04;
@@ -1215,8 +1397,9 @@ input_mainFiltsam(
          { /*If: The user only input one coordinate*/
             fprintf(
                stderr,
-               "-coords %s is not numeric\n",
-               argAryStr[siArg]
+               "-coords %s is not numeric%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun04_sec04;
@@ -1240,7 +1423,8 @@ input_mainFiltsam(
 
             fprintf(
                stderr,
-               "to large\n"
+               "to large%s",
+               str_endLine
             );
 
             goto err_fun04_sec04;
@@ -1260,16 +1444,16 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-coords-file",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-coords-file",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: An coordinates file was input*/
          ++siArg;
 
          errSI =
             readCoordsFile(
-               (schar *) argAryStr[siArg],
+               (signed char *) argAryStr[siArg],
                startAryUI,
                endAryUI,
                numCoordsSI
@@ -1281,8 +1465,9 @@ input_mainFiltsam(
             { /*If: I could not open the file*/
                fprintf(
                   stderr, 
-                  "could not open -coords-file %s\n",
-                   argAryStr[siArg]
+                  "could not open -coords-file %s%s",
+                   argAryStr[siArg],
+                   str_endLine
                );
 
                goto err_fun04_sec04;
@@ -1292,9 +1477,10 @@ input_mainFiltsam(
             { /*If: I could not open the file*/
                fprintf(
                 stderr, 
-                "non-numeric line (%i) -coords-file %s\n",
+                "non-numeric line (%i) -coords-file %s%s",
                 (errSI >> 8),
-                argAryStr[siArg]
+                argAryStr[siArg],
+                str_endLine
                );
 
                goto err_fun04_sec04;
@@ -1308,8 +1494,9 @@ input_mainFiltsam(
 
             fprintf(
                stderr,
-               " -coords-file %s\n",
-               argAryStr[siArg]
+               " -coords-file %s%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun04_sec04;
@@ -1323,9 +1510,9 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-h",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-h",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: wanted help message*/
          phelp_mainFiltsam(stdout);
@@ -1334,9 +1521,9 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "--h",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--h",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: wanted help message*/
          phelp_mainFiltsam(stdout);
@@ -1345,9 +1532,9 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: wanted help message*/
          phelp_mainFiltsam(stdout);
@@ -1356,9 +1543,9 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: wanted help message*/
          phelp_mainFiltsam(stdout);
@@ -1367,9 +1554,9 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "--help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: wanted help message*/
          phelp_mainFiltsam(stdout);
@@ -1383,9 +1570,9 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-v",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-v",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: wanted version number*/
          pversion_mainFiltsam(stdout);
@@ -1394,9 +1581,9 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "--v",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--v",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: wanted version number*/
          pversion_mainFiltsam(stdout);
@@ -1405,9 +1592,9 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: wanted version number*/
          pversion_mainFiltsam(stdout);
@@ -1416,9 +1603,9 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "-version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: wanted version number*/
          pversion_mainFiltsam(stdout);
@@ -1427,9 +1614,9 @@ input_mainFiltsam(
 
       else if(
          ! eql_charCp(
-            (schar *) "--version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: wanted version number*/
          pversion_mainFiltsam(stdout);
@@ -1445,8 +1632,9 @@ input_mainFiltsam(
       { /*Else: invalid input*/
          fprintf(
             stderr,
-            "%s not recognized\n",
-            argAryStr[siArg]
+            "%s not recognized%s",
+            argAryStr[siArg],
+            str_endLine
          );
 
          goto err_fun04_sec04;
@@ -1515,44 +1703,44 @@ int main(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar *samStr = 0;
-   schar *outStr = 0;
-   schar pFlagC = def_pdefault_mainFiltsam;
-   schar pNsBl = def_nPrint_mainFiltsam;
-   schar inRangeBl = def_inRange_mainFiltsam;
+   signed char *samStr = 0;
+   signed char *outStr = 0;
+   signed char pFlagC = def_pdefault_mainFiltsam;
+   signed char pNsBl = def_nPrint_mainFiltsam;
+   signed char inRangeBl = def_inRange_mainFiltsam;
 
-   ushort checkFlagUS = 0;
-   ushort rmAryUS[256];
-   ushort numRmFlagsUS = 0;
-   ushort keepAryUS[256];
-   ushort numKeepFlagsUS = 0;
+   unsigned short checkFlagUS = 0;
+   unsigned short rmAryUS[256];
+   unsigned short numRmFlagsUS = 0;
+   unsigned short keepAryUS[256];
+   unsigned short numKeepFlagsUS = 0;
 
-   schar trimReadsBl = def_trimReadsBl_mainFiltsam;
+   signed char trimReadsBl = def_trimReadsBl_mainFiltsam;
 
-   uint minLenUI = def_minLen_mainFiltsam;
-   uint maxLenUI = def_maxLen_mainFiltsam;
-   uint minAlnLenUI = def_minAlnLen_mainFiltsam;
+   unsigned int minLenUI = def_minLen_mainFiltsam;
+   unsigned int maxLenUI = def_maxLen_mainFiltsam;
+   unsigned int minAlnLenUI = def_minAlnLen_mainFiltsam;
    float minMedianQF = def_minMedQ_mainFiltsam;
    float minMeanQF = def_minMeanQ_mainFiltsam;
-   uchar minMapqUC = def_minMapq_mainFiltsam;
+   unsigned char minMapqUC = def_minMapq_mainFiltsam;
 
    /*For coordinate filtering*/
-   uint startAryUI[4096];
-   uint endAryUI[4096];
-   sint numCoordsSI = 0;
-   sint siPos = 0;
-   schar coordTrimBl = def_coordsTrimBl_mainFiltsam;
+   unsigned int startAryUI[4096];
+   unsigned int endAryUI[4096];
+   signed int numCoordsSI = 0;
+   signed int siPos = 0;
+   signed char coordTrimBl = def_coordsTrimBl_mainFiltsam;
 
    FILE *samFILE = 0;
    FILE *outFILE = 0;
 
    struct samEntry samStackST;
 
-   schar errSC = 0;    /*error reporting*/
-   schar *buffHeapStr = 0;
-   ulong lenBuffUL = 0;
-   schar pHeadBl = 1;  /*for printing a stats tsv file*/
-   ulong ulEntry = 0;
+   signed char errSC = 0;    /*error reporting*/
+   signed char *buffHeapStr = 0;
+   unsigned long lenBuffUL = 0;
+   signed char pHeadBl = 1;  /*printing a stats tsv file*/
+   unsigned long ulEntry = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec02:
@@ -1633,8 +1821,9 @@ int main(
       { /*If: I could not open the sam file*/
          fprintf(
              stderr,
-             "-sam %s could not be opened\n",
-             samStr
+             "-sam %s could not be opened%s",
+             samStr,
+             str_endLine
          );
 
          goto fileErr_main_sec05_sub03;
@@ -1663,8 +1852,9 @@ int main(
       { /*If: I could not open the out file*/
          fprintf(
              stderr,
-             "-out %s could not be opened\n",
-             outStr
+             "-out %s could not be opened%s",
+             outStr,
+             str_endLine
          );
 
          goto fileErr_main_sec05_sub03;
@@ -1693,7 +1883,8 @@ int main(
    { /*If: I had a memory error*/
       fprintf(
          stderr,
-         "memory error setting up samEntry struct\n"
+         "memory error setting up samEntry struct%s",
+         str_endLine
       );
 
       goto memErr_main_sec05_sub02;
@@ -1759,7 +1950,7 @@ int main(
 
       for(
          ulEntry = 1;
-         ulEntry < (uint) numArgsSI;
+         ulEntry < (unsigned int) numArgsSI;
          ++ulEntry
       ){ /*Loop: print input commands*/
          fprintf(
@@ -1773,7 +1964,8 @@ int main(
 
       fprintf(
          outFILE,
-         "\n"
+         "%s",
+         str_endLine
       );
    } /*If: printing program header*/
 
@@ -1963,9 +2155,10 @@ int main(
             { /*If: had memory error*/
                fprintf(
                   stderr,
-                  "memory error on -sam %s read %lu\n",
+                  "memory error on -sam %s read %lu%s",
                   samStr,
-                  ulEntry
+                  ulEntry,
+                  str_endLine
                );
 
                goto memErr_main_sec05_sub02;

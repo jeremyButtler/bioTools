@@ -38,15 +38,15 @@
 #include "samEntry.h"
 
 /*No .c files (.h only)*/
-#include "../genLib/dataTypeShortHand.h"
 #include "ntTo5Bit.h" /*look up tables*/
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
-!   o .c  #include "../generalLib/base10str.h"
-!   o .c  #include "../generalLib/numToStr.h"
-!   o .c  #include "../genLib/ulCp.h"
-!   o .c  #include "../generalLib/strAry.h"
+!   o .c  #include "../genLib/base10str.h"
+!   o .c  #include "../genLib/numToStr.h"
+!   o .c  #include "../genulCp.h"
+!   o .c  #include "../genLib/strAry.h"
+!   o .h  #include "../genLib/endLine.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -120,17 +120,17 @@ cigToEqx(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar *tmpStr = 0;
+   signed char *tmpStr = 0;
 
-   sint siCig = 0;
-   sint siNumNtCig = 0;
-   sint siNewCig = 0;
+   signed int siCig = 0;
+   signed int siNumNtCig = 0;
+   signed int siNewCig = 0;
 
-   uint refPosUI = 0;
-   uint seqPosUI = 0;
+   unsigned int refPosUI = 0;
+   unsigned int seqPosUI = 0;
 
-   schar refNtSC = 0;
-   schar qryNtSC = 0;
+   signed char refNtSC = 0;
+   signed char qryNtSC = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun01 Sec02:
@@ -147,25 +147,26 @@ cigToEqx(
 
    if(*strBuffPtr == 0)
    { /*If: I need to allocate memory*/
-      *lenBuffSI = (sint) samSTPtr->lenCigUI << 1;
+      *lenBuffSI = (signed int) samSTPtr->lenCigUI << 1;
 
       *strBuffPtr =
-         malloc((*lenBuffSI + 1) * sizeof(schar));
+         malloc((*lenBuffSI + 1) * sizeof(signed char));
 
       if(! strBuffPtr)
          goto memErr_fun01_sec02_sub02;
 
-      *valArySI = malloc(*lenBuffSI * sizeof(sint));
+      *valArySI = malloc(*lenBuffSI * sizeof(signed int));
 
       if(! valArySI)
          goto memErr_fun01_sec02_sub02;
    } /*If: I need to allocate memory*/
 
-   else if(*lenBuffSI < (sint) samSTPtr->readLenUI)
+   else if(*lenBuffSI < (signed int) samSTPtr->readLenUI)
    { /*Else If: I need to reallocate memory*/
-      *lenBuffSI = (sint) samSTPtr->readLenUI << 1;
+      *lenBuffSI = (signed int) samSTPtr->readLenUI << 1;
 
-      tmpStr = malloc((*lenBuffSI +1) * sizeof(schar));
+      tmpStr =
+         malloc((*lenBuffSI +1) * sizeof(signed char));
 
       if(! tmpStr)
          goto memErr_fun01_sec02_sub02;
@@ -174,14 +175,16 @@ cigToEqx(
       *strBuffPtr = 0;
       *strBuffPtr = tmpStr;
 
-      tmpStr= (schar *) malloc(*lenBuffSI * sizeof(sint));
+      tmpStr=
+         (signed char *)
+         malloc(*lenBuffSI * sizeof(signed int));
 
       if(! valArySI)
          goto memErr_fun01_sec02_sub02;
 
       free(*valArySI);
       *valArySI = 0;
-      *valArySI = (sint *) tmpStr;
+      *valArySI = (signed int *) tmpStr;
    } /*Else If: I need to reallocate memory*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -214,7 +217,7 @@ cigToEqx(
 
    for(
       siCig = 0;
-      siCig < (sint) samSTPtr->lenCigUI;
+      siCig < (signed int) samSTPtr->lenCigUI;
       ++siCig
    ){ /*Loop: Check all cigar entries*/
       switch(samSTPtr->cigTypeStr[siCig])
@@ -235,13 +238,13 @@ cigToEqx(
                { /*Loop: break up by anonymous bases*/
                   qryNtSC =
                      ntTo5Bit[
-                         (uchar)
+                         (unsigned char)
                          samSTPtr->seqStr[seqPosUI]
                      ]; /*Convert query to code*/
 
                    refNtSC =
                      ntTo5Bit[
-                        (uchar)
+                        (unsigned char)
                         refStr[refPosUI]
                      ]; /*Convert reference to code*/
 
@@ -307,13 +310,13 @@ cigToEqx(
                { /*Loop: break up by anonymous bases*/
                   qryNtSC =
                      ntTo5Bit[
-                         (uchar)
+                         (unsigned char)
                          samSTPtr->seqStr[seqPosUI]
                      ];
 
                    refNtSC =
                       ntTo5Bit[
-                         (uchar)
+                         (unsigned char)
                          refStr[refPosUI]
                       ];
 
@@ -394,13 +397,13 @@ cigToEqx(
             { /*Loop: break up by anonymous bases*/
                qryNtSC =
                   ntTo5Bit[
-                      (uchar)
+                      (unsigned char)
                       samSTPtr->seqStr[seqPosUI]
                   ];
 
                 refNtSC =
                    ntTo5Bit[
-                      (uchar)
+                      (unsigned char)
                       refStr[refPosUI]
                    ];
 
@@ -568,13 +571,18 @@ cigToEqx(
 
    ++siNewCig; /*Convert index 0 to index 1*/
 
-   if(samSTPtr->lenCigBuffUI < (uint) (siNewCig + 1))
-   { /*If: I need to resize the cigar arrays*/
-      samSTPtr->lenCigBuffUI = (uint) siNewCig << 1;
+   if(
+        samSTPtr->lenCigBuffUI
+      < (unsigned int) (siNewCig + 1)
+   ){ /*If: I need to resize the cigar arrays*/
+      samSTPtr->lenCigBuffUI =
+         (unsigned int) siNewCig << 1;
 
       tmpStr =
-         (schar *)
-         malloc(samSTPtr->lenCigBuffUI * sizeof(char));
+         (signed char *)
+         malloc(
+            samSTPtr->lenCigBuffUI * sizeof(signed char)
+         );
 
       if(! tmpStr)
          goto memErr_fun01_sec02_sub02;
@@ -584,15 +592,17 @@ cigToEqx(
       samSTPtr->cigTypeStr = tmpStr;
 
       tmpStr =
-         (schar *)
-         malloc(samSTPtr->lenCigBuffUI * sizeof(sint));
+         (signed char *)
+         malloc(
+            samSTPtr->lenCigBuffUI * sizeof(signed int)
+         );
 
       if(! tmpStr)
          goto memErr_fun01_sec02_sub02;
 
       free(samSTPtr->cigArySI);
       samSTPtr->cigArySI = 0;
-      samSTPtr->cigArySI = (sint *) tmpStr;
+      samSTPtr->cigArySI = (signed int *) tmpStr;
    } /*If: I need to resize the cigar arrays*/
 
    /*****************************************************\
@@ -600,7 +610,7 @@ cigToEqx(
    *   - copy the new cigar entry
    \*****************************************************/
 
-   samSTPtr->lenCigUI = (uint) siNewCig;
+   samSTPtr->lenCigUI = (unsigned int) siNewCig;
 
    for(siCig = 0; siCig < siNewCig; ++siCig)
    { /*Loop: Copy the new cigar over*/

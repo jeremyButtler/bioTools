@@ -7,7 +7,8 @@ b mainK2TaxaId.c:1047
 
 #r -id barcode12.kraken2.assignments.tsv -report barcode12.kraken2.report.txt -prefix delete/delete
 #r -id barcode11.kraken2.assignments.tsv -report barcode11.kraken2.report.txt -prefix delete/delete
-r -start P -end G7 -id testId.tsv -report testRep.tsv -prefix delete/delete
+#r -start P -end G7 -id testId.tsv -report testRep.tsv -prefix delete/delete
+r -report ~/files/analysis/Eric-TB-project/2024-bethel/01-input/01-kraken/barcode04.kraken2.report.txt -id ~/files/analysis/Eric-TB-project/2024-bethel/01-input/01-kraken/barcode04.kraken2.assignments.tsv
 
 define pTaxa
    set $siCnt = 0

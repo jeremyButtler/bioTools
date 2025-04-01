@@ -1,6 +1,7 @@
 LD=cc
 CC=cc
-CFLAGS= -O3 -std=c89 -Wall -Wextra
+coreCFLAGS= -O3 -std=c89 -Wall -Wextra
+CFLAGS=-DNONE
 NAME=ampDepth
 PREFIX=/usr/local/bin
 O=o.unix
@@ -23,38 +24,38 @@ objFiles= \
 all: mainAmpDepth.$O
 	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
 
-mainAmpDepth.$O: mainAmpDepth.c $(genBio)/ampDepth.$O $(genBio)/trimSam.$O
-	$(CC) -o mainAmpDepth.$O -c $(CFLAGS) mainAmpDepth.c
+mainAmpDepth.$O: mainAmpDepth.c $(genBio)/ampDepth.$O $(genBio)/trimSam.$O ampDepthDefs.h ampDepthDefs.h ampDepthDefs.h
+	$(CC) -o mainAmpDepth.$O -c $(coreCFLAGS) $(CFLAGS) mainAmpDepth.c
 
 $(genBio)/ampDepth.$O: $(genBio)/ampDepth.c $(genBio)/ampDepth.h $(genBio)/geneCoord.$O $(genBio)/samEntry.$O
-	$(CC) -o $(genBio)/ampDepth.$O -c $(CFLAGS) $(genBio)/ampDepth.c
+	$(CC) -o $(genBio)/ampDepth.$O -c $(coreCFLAGS) $(CFLAGS) $(genBio)/ampDepth.c
 
-$(genBio)/geneCoord.$O: $(genBio)/geneCoord.c $(genBio)/geneCoord.h $(genLib)/base10str.$O $(genLib)/ulCp.$O $(genLib)/charCp.$O $(genLib)/genMath.h $(genLib)/dataTypeShortHand.h
-	$(CC) -o $(genBio)/geneCoord.$O -c $(CFLAGS) $(genBio)/geneCoord.c
+$(genBio)/geneCoord.$O: $(genBio)/geneCoord.c $(genBio)/geneCoord.h $(genLib)/base10str.$O $(genLib)/ulCp.$O $(genLib)/charCp.$O $(genLib)/genMath.h
+	$(CC) -o $(genBio)/geneCoord.$O -c $(coreCFLAGS) $(CFLAGS) $(genBio)/geneCoord.c
 
 $(genLib)/base10str.$O: $(genLib)/base10str.c $(genLib)/base10str.h
-	$(CC) -o $(genLib)/base10str.$O -c $(CFLAGS) $(genLib)/base10str.c
+	$(CC) -o $(genLib)/base10str.$O -c $(coreCFLAGS) $(CFLAGS) $(genLib)/base10str.c
 
 $(genLib)/ulCp.$O: $(genLib)/ulCp.c $(genLib)/ulCp.h
-	$(CC) -o $(genLib)/ulCp.$O -c $(CFLAGS) $(genLib)/ulCp.c
+	$(CC) -o $(genLib)/ulCp.$O -c $(coreCFLAGS) $(CFLAGS) $(genLib)/ulCp.c
 
 $(genLib)/charCp.$O: $(genLib)/charCp.c $(genLib)/charCp.h
-	$(CC) -o $(genLib)/charCp.$O -c $(CFLAGS) $(genLib)/charCp.c
+	$(CC) -o $(genLib)/charCp.$O -c $(coreCFLAGS) $(CFLAGS) $(genLib)/charCp.c
 
-$(genBio)/samEntry.$O: $(genBio)/samEntry.c $(genBio)/samEntry.h $(genLib)/strAry.$O $(genLib)/base10str.$O $(genLib)/numToStr.$O $(genBio)/ntTo5Bit.h $(genLib)/dataTypeShortHand.h
-	$(CC) -o $(genBio)/samEntry.$O -c $(CFLAGS) $(genBio)/samEntry.c
+$(genBio)/samEntry.$O: $(genBio)/samEntry.c $(genBio)/samEntry.h $(genLib)/strAry.$O $(genLib)/base10str.$O $(genLib)/numToStr.$O $(genBio)/ntTo5Bit.h $(genLib)/endLine.h
+	$(CC) -o $(genBio)/samEntry.$O -c $(coreCFLAGS) $(CFLAGS) $(genBio)/samEntry.c
 
 $(genLib)/strAry.$O: $(genLib)/strAry.c $(genLib)/strAry.h $(genLib)/ulCp.$O
-	$(CC) -o $(genLib)/strAry.$O -c $(CFLAGS) $(genLib)/strAry.c
+	$(CC) -o $(genLib)/strAry.$O -c $(coreCFLAGS) $(CFLAGS) $(genLib)/strAry.c
 
 $(genLib)/numToStr.$O: $(genLib)/numToStr.c $(genLib)/numToStr.h
-	$(CC) -o $(genLib)/numToStr.$O -c $(CFLAGS) $(genLib)/numToStr.c
+	$(CC) -o $(genLib)/numToStr.$O -c $(coreCFLAGS) $(CFLAGS) $(genLib)/numToStr.c
 
 $(genBio)/trimSam.$O: $(genBio)/trimSam.c $(genBio)/trimSam.h $(genBio)/samEntry.$O
-	$(CC) -o $(genBio)/trimSam.$O -c $(CFLAGS) $(genBio)/trimSam.c
+	$(CC) -o $(genBio)/trimSam.$O -c $(coreCFLAGS) $(CFLAGS) $(genBio)/trimSam.c
 
 install:
-	cp $(NAME) $(PREFIX)
+	mv $(NAME) $(PREFIX)
 	chmod a+x $(PREFIX)/$(NAME)
 
 clean:

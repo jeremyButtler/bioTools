@@ -40,7 +40,7 @@
 #include "../genBio/maskPrim.h"
 
 /*No .c files (only .h)*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
@@ -69,45 +69,45 @@
 |     o 0 if not an help message request
 |     o 1 if is an help message request
 \-------------------------------------------------------*/
-schar
+signed char
 checkHelp_mainMaskPrim(
    signed char *parmStr
 ){
-   schar retSC = 0;
+   signed char retSC = 0;
 
    if(
       ! eql_charCp(
-         (schar *) "-h",
+         (signed char *) "-h",
          (parmStr),
-         (schar) '\0'
+         (signed char) '\0'
    )) retSC = 1;
 
    else if(
       ! eql_charCp(
-         (schar *) "--h",
+         (signed char *) "--h",
          (parmStr),
-         (schar) '\0'
+         (signed char) '\0'
    )) retSC = 1;
 
    else if(
       ! eql_charCp(
-         (schar *) "help",
+         (signed char *) "help",
          (parmStr),
-         (schar) '\0'
+         (signed char) '\0'
    )) retSC = 1;
 
    else if(
       ! eql_charCp(
-         (schar *) "-help",
+         (signed char *) "-help",
          (parmStr),
-         (schar) '\0'
+         (signed char) '\0'
    )) retSC = 1;
 
    else if(
       ! eql_charCp(
-         (schar *) "--help",
+         (signed char *) "--help",
          (parmStr),
-         (schar) '\0'
+         (signed char) '\0'
    )) retSC = 1;
 
    return retSC;
@@ -124,59 +124,59 @@ checkHelp_mainMaskPrim(
 |     o 0 if not an verson request
 |     o 1 if is an version request
 \-------------------------------------------------------*/
-schar
+signed char
 checkVersion_mainMaskPrim(
-   schar *parmStr
+   signed char *parmStr
 ){
-   schar retSC = 0;
+   signed char retSC = 0;
 
    if(
       ! eql_charCp(
-         (schar *) "-v",
+         (signed char *) "-v",
          (parmStr),
-         (schar) '\0'
+         (signed char) '\0'
    )) retSC = 1;
 
    else if(
       ! eql_charCp(
-         (schar *) "--v",
+         (signed char *) "--v",
          (parmStr),
-         (schar) '\0'
+         (signed char) '\0'
    )) retSC = 1;
 
    if(
       ! eql_charCp(
-         (schar *) "-V",
+         (signed char *) "-V",
          (parmStr),
-         (schar) '\0'
+         (signed char) '\0'
    )) retSC = 1;
 
    else if(
       ! eql_charCp(
-         (schar *) "--V",
+         (signed char *) "--V",
          (parmStr),
-         (schar) '\0'
+         (signed char) '\0'
    )) retSC = 1;
 
    else if(
       ! eql_charCp(
-         (schar *) "version",
+         (signed char *) "version",
          (parmStr),
-         (schar) '\0'
+         (signed char) '\0'
    )) retSC = 1;
 
    else if(
       ! eql_charCp(
-         (schar *) "-version",
+         (signed char *) "-version",
          (parmStr),
-         (schar) '\0'
+         (signed char) '\0'
    )) retSC = 1;
 
    else if(
       ! eql_charCp(
-         (schar *) "--version",
+         (signed char *) "--version",
          (parmStr),
-         (schar) '\0'
+         (signed char) '\0'
    )) retSC = 1;
 
    return retSC; 
@@ -198,10 +198,11 @@ pversion_mainMaskPrim(
 ){
    fprintf(
       (FILE *) outFILE,
-      "maskPrim from bioTools version: %i-%02i-%02i\n",
+      "maskPrim from bioTools version: %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
-      def_day_bioTools
+      def_day_bioTools,
+      str_endLine
    );
 } /*pversion_mainMaskPrim*/
 
@@ -235,13 +236,15 @@ phelp_mainMaskPrim(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    fprintf(
-      (FILE *) outFILE,
-      "maskPrim -sam reads.sam -prim primer-coords.tsv\n"
+     (FILE *) outFILE,
+     "maskPrim -sam reads.sam -prim primer-coords.tsv%s",
+     str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - Masks primer positions in reads\n"
+      "  - Masks primer positions in reads%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -270,7 +273,8 @@ phelp_mainMaskPrim(
 
    fprintf(
       (FILE *) outFILE,
-      "Input:\n"
+      "Input:%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -280,17 +284,20 @@ phelp_mainMaskPrim(
 
    fprintf(
       (FILE *) outFILE,
-      "  -sam: [stdin]\n"
+      "  -sam: [stdin]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o Sam file with reads to mask primers in\n"
+      "    o Sam file with reads to mask primers in%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o use \"-\" for stdin input\n"
+      "    o use \"-\" for stdin input%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -300,17 +307,20 @@ phelp_mainMaskPrim(
 
    fprintf(
       (FILE *) outFILE,
-      "  -out: [stdout]\n"
+      "  -out: [stdout]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o File to output masked sam file to\n"
+      "    o File to output masked sam file to%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o use \"-\" for stdout output\n"
+      "    o use \"-\" for stdout output%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -320,27 +330,32 @@ phelp_mainMaskPrim(
 
    fprintf(
       (FILE *) outFILE,
-      "  -prim: [Required]\n"
+      "  -prim: [Required]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o Tsv file with the primer coordinages\n"
+      "    o Tsv file with the primer coordinages%s",
+      str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "      - First column is ingored (refernce id?)\n"
+     "      - First column is ingored (refernce id?)%s",
+     str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "      - Second column is ingored (primer name?)\n"
+     "      - Second column is ingored (primer name?)%s",
+     str_endLine
    );
 
    fprintf(
-     (FILE *) outFILE,
-     "      - Third column is 1 primers are paired or 0\n"
+    (FILE *) outFILE,
+    "      - Third column is 1 primers are paired or 0%s",
+    str_endLine
    );
 
    fprintf(
@@ -348,35 +363,41 @@ phelp_mainMaskPrim(
      "        o Paired = both primers must be present to"
    );
 
-   fprintf((FILE *) outFILE,  " mask\n");
+   fprintf((FILE *) outFILE,  " mask%s", str_endLine);
 
    fprintf(
-     (FILE *) outFILE,
-     "      - Fourth column is forward start coordinate\n"
+    (FILE *) outFILE,
+    "      - Fourth column is forward start coordinate%s",
+    str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "        - use \"NA\" for no forward primer\n"
+     "        - use \"NA\" for no forward primer%s",
+     str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "      - Fifth column is forward end coordinate\n"
+     "      - Fifth column is forward end coordinate%s",
+     str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "      - Six column is reverse start coordinate\n"
+     "      - Six column is reverse start coordinate%s",
+     str_endLine
    );
    fprintf(
      (FILE *) outFILE,
-     "        - use \"NA\" for no reverse primer\n"
+     "        - use \"NA\" for no reverse primer%s",
+     str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "      - Seventh column is reverse end coordinate\n"
+     "      - Seventh column is reverse end coordinate%s",
+     str_endLine
    );
 
    /*****************************************************\
@@ -386,13 +407,15 @@ phelp_mainMaskPrim(
 
    fprintf(
       (FILE *) outFILE,
-      "  -mask: [%c]\n",
-      def_mask_mainMaskPrim
+      "  -mask: [%c]%s",
+      def_mask_mainMaskPrim,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o Chacter to mask with\n"
+      "    o Chacter to mask with%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -402,18 +425,21 @@ phelp_mainMaskPrim(
 
    fprintf(
       (FILE *) outFILE,
-      "  -fudge: [%i]\n",
-      def_fudge_mainMaskPrim
+      "  -fudge: [%i]%s",
+      def_fudge_mainMaskPrim,
+      str_endLine
+   );
+
+   fprintf(
+     (FILE *) outFILE,
+     "    o How much seqence can come before an primer%s",
+     str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o How much seqence can come before an primer\n"
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "    o -1 = mask regardless of position\n"
+      "    o -1 = mask regardless of position%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -425,7 +451,8 @@ phelp_mainMaskPrim(
    { /*If: default is to filter*/
       fprintf(
          (FILE *) outFILE,
-         "  -filter: [Yes]\n"
+         "  -filter: [Yes]%s",
+         str_endLine
       );
    } /*If: default is to filter*/
 
@@ -433,18 +460,21 @@ phelp_mainMaskPrim(
    { /*If: default is to filter*/
       fprintf(
          (FILE *) outFILE,
-         "  -filter: [No]\n"
+         "  -filter: [No]%s",
+         str_endLine
       );
    } /*If: default is to filter*/
 
    fprintf(
       (FILE *) outFILE,
-      "    o Remove reads with no detected primers\n"
+      "    o Remove reads with no detected primers%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o Disable with -no-filter\n"
+      "    o Disable with -no-filter%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -454,12 +484,14 @@ phelp_mainMaskPrim(
     
    fprintf(
       (FILE *) outFILE,
-      "Output:\n"
+      "Output:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - Prints sam file with masked reads to -out\n"
+      "  - Prints sam file with masked reads to -out%s",
+      str_endLine
    );
 } /*phelp_mainMaskPrim*/
 
@@ -529,9 +561,9 @@ input_mainMaskPrim(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   uint uiArg = 1;
-   schar *tmpStr = 0;
-   schar errSC = 0;
+   unsigned int uiArg = 1;
+   signed char *tmpStr = 0;
+   signed char errSC = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun05 Sec02:
@@ -564,39 +596,39 @@ input_mainMaskPrim(
    *   - file io (input/output)
    \*****************************************************/
 
-   while(uiArg < (uint) numArgsSI)
+   while(uiArg < (unsigned int) numArgsSI)
    { /*Loop: Process each peice of user input*/
       if(
          ! eql_charCp(
-            (schar *) "-sam",
-            (schar *) argAryStr[uiArg],
-            (schar) '\0'
+            (signed char *) "-sam",
+            (signed char *) argAryStr[uiArg],
+            (signed char) '\0'
          )
       ){ /*If: sam file*/
          ++uiArg;
-         *samFileStr = (schar *) argAryStr[uiArg];
+         *samFileStr = (signed char *) argAryStr[uiArg];
       } /*If: sam file*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-prim",
-            (schar *) argAryStr[uiArg],
-            (schar) '\0'
+            (signed char *) "-prim",
+            (signed char *) argAryStr[uiArg],
+            (signed char) '\0'
          )
       ){ /*Else If: primer coordiantes file*/
          ++uiArg;
-         *primFileStr = (schar *) argAryStr[uiArg];
+         *primFileStr = (signed char *) argAryStr[uiArg];
       } /*Else If: primer coordinates file*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-out",
-            (schar *) argAryStr[uiArg],
-            (schar) '\0'
+            (signed char *) "-out",
+            (signed char *) argAryStr[uiArg],
+            (signed char) '\0'
          )
       ){ /*Else If: output file*/
          ++uiArg;
-         *outFileStr = (schar *) argAryStr[uiArg];
+         *outFileStr = (signed char *) argAryStr[uiArg];
       } /*Else If: output file*/
 
       /**************************************************\
@@ -606,29 +638,29 @@ input_mainMaskPrim(
 
       else if(
          ! eql_charCp(
-            (schar *) "-mask",
-            (schar *) argAryStr[uiArg],
-            (schar) '\0'
+            (signed char *) "-mask",
+            (signed char *) argAryStr[uiArg],
+            (signed char) '\0'
          )
       ){ /*Else If: mask primers*/
          ++uiArg;
-         *maskSC = (schar) *argAryStr[uiArg];
+         *maskSC = (signed char) *argAryStr[uiArg];
       } /*Else If: mask primers*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-fudge",
-            (schar *) argAryStr[uiArg],
-            (schar) '\0'
+            (signed char *) "-fudge",
+            (signed char *) argAryStr[uiArg],
+            (signed char) '\0'
          )
       ){ /*Else If: fudge length*/
          ++uiArg;
 
-         tmpStr = (schar *) argAryStr[uiArg];
+         tmpStr = (signed char *) argAryStr[uiArg];
 
          tmpStr +=
             strToSI_base10str(
-               (schar *) argAryStr[uiArg],
+               (signed char *) argAryStr[uiArg],
                fudgeSI
             );
 
@@ -636,8 +668,9 @@ input_mainMaskPrim(
          { /*If: non-numeric input*/
             fprintf(
                stderr,
-               "-fudge %s is non-numeric or to large\n",
-               argAryStr[uiArg]
+               "-fudge %s is non-numeric or to large%s",
+               argAryStr[uiArg],
+               str_endLine
             );
  
             goto err_fun05_sec04;
@@ -646,16 +679,16 @@ input_mainMaskPrim(
 
       else if(
          ! eql_charCp(
-            (schar *) "-filter",
-            (schar *) argAryStr[uiArg],
-            (schar) '\0'
+            (signed char *) "-filter",
+            (signed char *) argAryStr[uiArg],
+            (signed char) '\0'
       )) *filterBl = 1;
 
       else if(
          ! eql_charCp(
-            (schar *) "-no-filter",
-            (schar *) argAryStr[uiArg],
-            (schar) '\0'
+            (signed char *) "-no-filter",
+            (signed char *) argAryStr[uiArg],
+            (signed char) '\0'
        )) *filterBl = 0;
 
       /**************************************************\
@@ -665,7 +698,7 @@ input_mainMaskPrim(
 
       else if(
          checkHelp_mainMaskPrim(
-            (schar *) argAryStr[uiArg]
+            (signed char *) argAryStr[uiArg]
          )
       ){ /*Else If: help message requested*/
          phelp_mainMaskPrim(stdout);
@@ -674,7 +707,7 @@ input_mainMaskPrim(
 
       else if(
          checkVersion_mainMaskPrim(
-            (schar *) argAryStr[uiArg])
+            (signed char *) argAryStr[uiArg])
          )
       { /*Else If: version number requested*/
          pversion_mainMaskPrim(stdout);
@@ -690,8 +723,9 @@ input_mainMaskPrim(
       { /*Else: invalid input*/
          fprintf(
             stderr,
-            "%s no recognized\n",
-            argAryStr[uiArg]
+            "%s no recognized%s",
+            argAryStr[uiArg],
+            str_endLine
          );
 
          goto err_fun05_sec04;
@@ -739,11 +773,7 @@ input_mainMaskPrim(
 |   - Prints:
 |     o sam file with masked sequenes to output file
 \-------------------------------------------------------*/
-#ifdef PLAN9
-schar
-#else
 int
-#endif
 main(
    signed int numArgsSI,
    char *argAryStr[]
@@ -769,22 +799,22 @@ main(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar *samFileStr = 0;
-   schar *primFileStr = 0;
-   schar *outFileStr = 0;
-   schar maskSC = def_mask_mainMaskPrim;
-   sint fudgeSI = def_fudge_mainMaskPrim;
+   signed char *samFileStr = 0;
+   signed char *primFileStr = 0;
+   signed char *outFileStr = 0;
+   signed char maskSC = def_mask_mainMaskPrim;
+   signed int fudgeSI = def_fudge_mainMaskPrim;
 
-   schar filterBl = def_filter_mainMaskPrim;
+   signed char filterBl = def_filter_mainMaskPrim;
      /*Remove reads with no primers*/
 
-   schar *buffHeapStr = 0;
-   ulong lenBuffUL = 0;
+   signed char *buffHeapStr = 0;
+   unsigned long lenBuffUL = 0;
 
-   uint *startAryHeapUI = 0;
-   uint *endAryHeapUI = 0;
-   uint *flagAryHeapUI = 0;
-   sint numPrimSI = 0;
+   unsigned int *startAryHeapUI = 0;
+   unsigned int *endAryHeapUI = 0;
+   unsigned int *flagAryHeapUI = 0;
+   signed int numPrimSI = 0;
 
    struct samEntry samStackST;
 
@@ -792,8 +822,8 @@ main(
    FILE *outFILE = 0;
 
    /*For error reporting*/
-   slong errSL = 0;
-   schar errSC = 0;
+   signed long errSL = 0;
+   signed char errSC = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec02:
@@ -850,8 +880,9 @@ main(
    { /*If: could not open primer coordinates file*/
       fprintf(
          stderr,
-         "Unable to open -prim %s\n",
-         primFileStr
+         "Unable to open -prim %s%s",
+         primFileStr,
+         str_endLine
       );
 
       goto err_main_sec05_sub02;
@@ -882,8 +913,9 @@ main(
       { /*If: I could not open primer coordinates file*/
          fprintf(
             stderr,
-            "Unable to open -out %s\n",
-            outFileStr
+            "Unable to open -out %s%s",
+            outFileStr,
+            str_endLine
          );
 
          goto err_main_sec05_sub02;
@@ -912,8 +944,9 @@ main(
       { /*If: could not open sam file*/
          fprintf(
             stderr,
-            "Unable to open -sam %s\n",
-            samFileStr
+            "Unable to open -sam %s%s",
+            samFileStr,
+            str_endLine
          );
 
          goto err_main_sec05_sub02;
@@ -940,8 +973,9 @@ main(
       { /*If: I had an empty file*/
          fprintf(
             stderr,
-            "-prim %s is emtpy\n",
-            primFileStr
+            "-prim %s is emtpy%s",
+            primFileStr,
+            str_endLine
          );
       } /*If: I had an empty file*/
 
@@ -949,9 +983,10 @@ main(
       { /*Else If: I had an invalid line*/
          fprintf(
             stderr,
-            "line number %lu in -prim %s is invalid\n",
+            "line number %lu in -prim %s is invalid%s",
             (errSL >> 8),
-            primFileStr
+            primFileStr,
+            str_endLine
          );
       } /*Else If: I had an invalid line*/
       
@@ -959,8 +994,9 @@ main(
       { /*Else: I had an memory error*/
          fprintf(
             stderr,
-            "Memory error reading %s\n",
-            primFileStr
+            "Memory error reading %s%s",
+            primFileStr,
+            str_endLine
          );
 
       } /*Else: I had an memory error*/
@@ -990,14 +1026,15 @@ main(
    { /*If: memory error*/
       fprintf(
          stderr,
-         "memory error setting up samEntry struct\n"
+         "memory error setting up samEntry struct%s",
+         str_endLine
       );
        
       goto err_main_sec05_sub02;
    } /*If: memory error*/
 
    errSC =
-      (schar)
+      (signed char)
       get_samEntry(
         &samStackST,
         &buffHeapStr,
@@ -1084,13 +1121,15 @@ main(
    if(outFileStr)
       fprintf(
          outFILE,
-         "\t-out %s\n",
-         outFileStr
+         "\t-out %s%s",
+         outFileStr,
+         str_endLine
       );
    else
       fprintf(
          outFILE,
-         "\t-out -\n"
+         "\t-out -%s",
+         str_endLine
       );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -1163,8 +1202,9 @@ main(
    { /*If: I had an memroy error*/
       fprintf(
          stderr,
-         "Memory error reading -sam %s\n",
-         samFileStr
+         "Memory error reading -sam %s%s",
+         samFileStr,
+         str_endLine
       );
 
       goto err_main_sec05_sub02;
@@ -1184,50 +1224,49 @@ main(
    \*****************************************************/
 
    err_main_sec05_sub02:;
-   errSC = -1;
-   goto cleanUp_main_sec05_sub03;
+      errSC = -1;
+      goto cleanUp_main_sec05_sub03;
 
    cleanUp_main_sec05_sub03:;
+      if(startAryHeapUI)
+         free(startAryHeapUI);
 
-   if(startAryHeapUI)
-      free(startAryHeapUI);
+      startAryHeapUI = 0;
 
-   startAryHeapUI = 0;
+      if(endAryHeapUI)
+         free(endAryHeapUI);
 
-   if(endAryHeapUI)
-      free(endAryHeapUI);
+      endAryHeapUI = 0;
 
-   endAryHeapUI = 0;
+      if(flagAryHeapUI)
+         free(flagAryHeapUI);
 
-   if(flagAryHeapUI)
-      free(flagAryHeapUI);
+      flagAryHeapUI = 0;
 
-   flagAryHeapUI = 0;
+      if(buffHeapStr)
+         free(buffHeapStr);
 
-   if(buffHeapStr)
-      free(buffHeapStr);
+      buffHeapStr = 0;
 
-   buffHeapStr = 0;
+      freeStack_samEntry(&samStackST);
 
-   freeStack_samEntry(&samStackST);
+      if(
+            samFILE
+         && samFILE != stdin
+         && samFILE != stdout
+      ) fclose(samFILE);
 
-   if(
-         samFILE
-      && samFILE != stdin
-      && samFILE != stdout
-   ) fclose(samFILE);
+      samFILE = 0;
 
-   samFILE = 0;
+      if(
+            outFILE
+         && outFILE != stdin
+         && outFILE != stdout
+      ) fclose(outFILE);
 
-   if(
-         outFILE
-      && outFILE != stdin
-      && outFILE != stdout
-   ) fclose(outFILE);
+      outFILE = 0;
 
-   outFILE = 0;
-
-   return errSC;
+      return errSC;
 } /*main*/
 
 /*=======================================================\

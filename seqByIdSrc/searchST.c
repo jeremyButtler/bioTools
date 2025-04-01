@@ -83,7 +83,6 @@
 
 
 /*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
 #include "idLkTbl.h"
 #include "../genLib/genMath.h" /*max .h macro only*/
 
@@ -143,18 +142,23 @@ cnvtIdToHexAry_searchST(
    ulong_searchST indexPosUL = *posInUL;
       /*limb with index*/
 
-   uchar numLimbUC = 0;
-   uchar lenIdUC = 0;
-   uchar endLenIdUC = 0;
-   uchar hexUC = 0;
+   unsigned char numLimbUC = 0;
+   unsigned char lenIdUC = 0;
+   unsigned char endLenIdUC = 0;
+   unsigned char hexUC = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun03 Sec02:
    ^   - convert the read id
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   idStr += (*idStr == '\r'); /*windows end of line*/
-   idStr += (*idStr == '\n'); /*windows/unix end of line*/
+   if(*idStr == '\r')
+      ++idStr;
+   if(*idStr == '\n')
+      ++idStr;
+   if(*idStr == '\r')
+      ++idStr;
+
    idStr += ( (*idStr == '@') | (*idStr == '>') );
 
    idAryUL[sumPosUL] = 0; /*blank total limb*/
@@ -173,7 +177,8 @@ cnvtIdToHexAry_searchST(
 
       while(lenIdUC < endLenIdUC)
       { /*Loop: add each id character to the list*/
-         hexUC = hexTblUC_idLkTbl[(uchar) *idStr++];
+         hexUC =
+            hexTblUC_idLkTbl[(unsigned char) *idStr++];
 
          if(hexUC == def_invsChar_idLkTbl)
             break;
@@ -234,7 +239,7 @@ swapIds_searchST(
    unsigned long firstIdUL,
    unsigned long secIdUL
 ){
-   uchar ucLimbMac = 0;
+   unsigned char ucLimbMac = 0;
 
    for(
       ucLimbMac = 0;
@@ -278,7 +283,8 @@ cmpIds_searchST(
    unsigned char ucLimb = 0;
 
    signed long retSL =
-        (slong) refIdAryUL[1] - (slong) qryIdAryUL[1];
+        (signed long) refIdAryUL[1]
+      - (signed long) qryIdAryUL[1];
 
    if(! retSL)
    { /*If: the sums agree*/
@@ -362,7 +368,7 @@ sortIds_searchST(
    ulong_searchST ulIndex = 0;
    ulong_searchST ulElm = 0;
 
-   slong idEqlSL = 0;
+   signed long idEqlSL = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun07 Sec02:
@@ -529,7 +535,7 @@ hashSortIds_searchST(
    ulong_searchST ulIndex = 0;
    ulong_searchST ulElm = 0;
 
-   slong hashIdSL = 0;
+   signed long hashIdSL = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun08 Sec02:
@@ -817,8 +823,9 @@ mkSkip_searchST(
    signed long numIdsSL,     /*index of last id*/
    unsigned char limbsUC     /*# of limbs in 1 id*/
 ){
-   slong midSL = (numIdsSL + firstIdSL) >> 1;
-   uint *posAryUI = (uint *) &idAryUL[midSL * limbsUC];
+   signed long midSL = (numIdsSL + firstIdSL) >> 1;
+   unsigned int *posAryUI =
+      (unsigned int *) &idAryUL[midSL * limbsUC];
 
    if(midSL <= 0)
       return;
@@ -1043,8 +1050,7 @@ mkhash_searchST(
    return 0;
 
    memErr_fun12_sec05:;
-
-   return 1;
+      return 1;
 } /*mkhash_searchST*/
 
 /*-------------------------------------------------------\
@@ -1091,7 +1097,8 @@ getReadIds_searchST(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    #define lenBuffUS 4096  /*maximum size of buffer*/
-   schar buffStr[lenBuffUS]; /*buffer for file input*/
+   signed char buffStr[lenBuffUS];
+      /*buffer for file input*/
    ulong_searchST ulId = 0;
 
    ulong_searchST newBytesUL = 0;/*bytes read by fread*/
@@ -1152,7 +1159,7 @@ getReadIds_searchST(
    newBytesUL =
       fread(
          (char *) buffStr,
-         sizeof(uchar),
+         sizeof(unsigned char),
          lenBuffUS - 1,
          idFILE
       ); /*read in the file*/
@@ -1214,7 +1221,7 @@ getReadIds_searchST(
          newBytesUL =
             fread(
                (char *) &buffStr[bytesUL],
-               sizeof(schar),
+               sizeof(signed char),
                lenBuffUS - (1 + bytesUL),
                idFILE
             ); /*read in the file*/
@@ -1244,7 +1251,8 @@ getReadIds_searchST(
       ++ulId; /*get off white space*/
 
       /*make sure final limb count is always at end*/
-      idLenUL = (uchar) hashHeapST->idAryUL[oldPosUL];
+      idLenUL =
+         (unsigned char) hashHeapST->idAryUL[oldPosUL];
       hashHeapST->idAryUL[posUL] = idLenUL;
 
       /*add the previos read ids length in*/
@@ -1254,7 +1262,7 @@ getReadIds_searchST(
       hashHeapST->maxLimbsUC =
          max_genMath(
             hashHeapST->maxLimbsUC,
-            (uchar) idLenUL
+            (unsigned char) idLenUL
          ); /*find the most limbs used for a single id*/
 
       hashHeapST->numLimbsUL = posUL;
@@ -1273,7 +1281,7 @@ getReadIds_searchST(
          newBytesUL =
             fread(
                (char *) buffStr,
-               sizeof(schar),
+               sizeof(signed char),
                lenBuffUS - 1,
                idFILE
             ); /*read in the file*/
@@ -1407,8 +1415,8 @@ searchHash_searchST(
 ){
    signed long midSL = 0;
    signed long leftSL = 0;
-   slong rightSL = 0;
-   slong indexSL = 0;
+   signed long rightSL = 0;
+   signed long indexSL = 0;
    signed long eqlSL = 0;
 
    indexSL =
@@ -1417,13 +1425,14 @@ searchHash_searchST(
          qryIdAryUL
       ); /*find the hash value*/
 
-   indexSL = (slong) searchSTPtr->hashTblUL[indexSL];
+   indexSL =
+      (signed long) searchSTPtr->hashTblUL[indexSL];
 
    if(indexSL < 0)
       return def_negULBit_searchST; /*not in hash table*/
 
    leftSL = 0;
-   rightSL = (slong) searchSTPtr->idAryUL[indexSL];
+   rightSL = (signed long) searchSTPtr->idAryUL[indexSL];
 
    while(leftSL <= rightSL)
    { /*Loop: Search for the querys index*/
@@ -1579,7 +1588,7 @@ idToHexAry_maxLimb_searchST(
    unsigned char maxLimbsUC
 ){
    ulong_searchST ulPos = 0; /*first limb to add char to*/
-   uchar lenIdUC = 0;
+   unsigned char lenIdUC = 0;
 
    lenIdUC = 
       cnvtIdToHexAry_searchST(
@@ -1607,6 +1616,7 @@ idToHexAry_maxLimb_searchST(
 |     o firstST to have secST values
 |     o secST to have firstST values
 \-------------------------------------------------------*/
+void
 swap_searchST(
    struct searchST *firstST,
    struct searchST *secST

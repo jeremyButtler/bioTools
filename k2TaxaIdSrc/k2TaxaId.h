@@ -67,9 +67,9 @@ struct str_ptrAry;
 #define def_fileErr_k2TaxaId 2
 #define def_noIds_k2TaxaId 4
 
-#define def_mergeUpBl_k2TaxaId ((schar) 1)
-#define def_mergeDownBl_k2TaxaId ((schar) 2)
-#define def_skip_k2TaxaId ((schar) 4)
+#define def_mergeUpBl_k2TaxaId ((signed char) 1)
+#define def_mergeDownBl_k2TaxaId ((signed char) 2)
+#define def_skip_k2TaxaId ((signed char) 4)
 
 /*-------------------------------------------------------\
 | ST01: taxa_k2TaxaId

@@ -110,8 +110,8 @@ ulfq_getSeq(
     unsigned long *outPosUL,/*position at in outBuffStr*/
     unsigned int lenBuffUI, /*Size of buffer*/
     unsigned long *bytesUL, /*Number chars in buffStr*/
-    FILE *fqFILE,           /*Fastq file with input*/
-    FILE *outFILE           /*file to output reads to*/
+    void *fqFILE,           /*Fastq file with input*/
+    void *outFILE           /*file to output reads to*/
 );
 
 /*--------------------------------------------------------\
@@ -166,8 +166,8 @@ ulsam_getSeq(
     unsigned long *outPosUL,/*position at in outBuffStr*/
     unsigned int lenBuffUI, /*Size of buffer*/
     unsigned long *bytesUL, /*Number chars in buffStr*/
-    FILE *samFILE,           /*Fastq file with input*/
-    FILE *outFILE           /*file to output reads to*/
+    void *samFILE,           /*Fastq file with input*/
+    void *outFILE           /*file to output reads to*/
 );
 
 /*-------------------------------------------------------\
@@ -211,8 +211,8 @@ ulfqNoBuff_getSeq(
     unsigned long *posUL,   /*Position in buffer*/
     unsigned int lenBuffUI, /*Size of buffer*/
     unsigned long *bytesUL, /*Number chars in buffStr*/
-    FILE *fqFILE,           /*Fastq file with input*/
-    FILE *outFILE           /*file to output reads to*/
+    void *fqFILE,           /*Fastq file with input*/
+    void *outFILE           /*file to output reads to*/
 );
 
 /*--------------------------------------------------------\
@@ -258,8 +258,8 @@ ulsamNoBuff_getSeq(
     unsigned long *posUL,   /*Position in buffer*/
     unsigned int lenBuffUI, /*Size of buffer*/
     unsigned long *bytesUL, /*Number chars in buffStr*/
-    FILE *samFILE,           /*Fastq file with input*/
-    FILE *outFILE           /*file to output reads to*/
+    void *samFILE,           /*Fastq file with input*/
+    void *outFILE           /*file to output reads to*/
 );
 
 #endif

@@ -25,8 +25,9 @@
 #include "../genLib/ulCp.h"
 #include "../genLib/charCp.h"
 #include "../genLib/numToStr.h"
-#include "../genLib/seqST.h"
-#include "../genLib/samEntry.h"
+
+#include "../genBio/seqST.h"
+#include "../genBio/samEntry.h"
 
 #include "../genAln/alnSet.h"
 #include "../genAln/dirMatrix.h"
@@ -44,7 +45,7 @@
 !   o .c  #include "../genLib/strAry.h"
 !   o .c  #include "../genLib/base10str.h"
 !   o .c  #include "../genAln/indexToCoord.h"
-!   o .h  #include "../genLib/ntTo5Bit.h"
+!   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*-------------------------------------------------------\

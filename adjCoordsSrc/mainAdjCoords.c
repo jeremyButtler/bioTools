@@ -45,8 +45,8 @@
 #include "../genBio/adjCoords.h"
 
 /*These have no .c files*/
-#include "../genLib/dataTypeShortHand.h"
 #include "../bioTools.h" /*version*/
+#include "../genLib/endLine.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden includes:
@@ -78,10 +78,11 @@ pversion_mainAdjCoords(
 ){
    fprintf(
       outFILE,
-      "adjCoords from bioTools version: %i-%02i-%02i\n",
+      "adjCoords from bioTools version: %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
-      def_day_bioTools
+      def_day_bioTools,
+      str_endLine
     );
 } /*pversion_mainAdjCoords*/
 
@@ -115,12 +116,14 @@ phelp_mainAdjCoords(
 
    fprintf(
       outFILE,
-      "adjCoords -coords gene-coords.tsv -sam file.sam\n"
+      "adjCoords -coords gene-coords.tsv -sam file.sam%s",
+      str_endLine
     );
 
    fprintf(
       outFILE,
-      "  - adjust coordinates in sam file to reference\n"
+      "  - adjust coordinates in sam file to reference%s",
+      str_endLine
     );
 
    fprintf(
@@ -130,7 +133,8 @@ phelp_mainAdjCoords(
 
    fprintf(
       outFILE,
-      " removed\n"
+      " removed%s",
+      str_endLine
     );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -153,7 +157,8 @@ phelp_mainAdjCoords(
 
    fprintf(
       outFILE,
-      "Input:\n"
+      "Input:%s",
+      str_endLine
     );
 
    /*****************************************************\
@@ -163,33 +168,39 @@ phelp_mainAdjCoords(
 
    fprintf(
       outFILE,
-      "  -coords gene-coordinates.tsv: [Required]\n"
+      "  -coords gene-coordinates.tsv: [Required]%s",
+      str_endLine
     );
 
    fprintf(
       outFILE,
-      "    o tsv file with coordiantes of each gene\n"
+      "    o tsv file with coordiantes of each gene%s",
+      str_endLine
     );
 
    fprintf(
       (FILE *) outFILE,
-      "     - example:\n"
+      "     - example:%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "       gene\tnew_ref_id\tdirection\tstart\tend\n"
+      "       gene\tref_id\tdirection\tstart\tend%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       dnaA\tNC000962.3\tF\t1\t1525\n"
+      "       dnaA\tNC000962.3\tF\t1\t1525%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       pknB\tNC000962.3\tR\t15590\t17470\n"
+      "       pknB\tNC000962.3\tR\t15590\t17470%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -199,17 +210,20 @@ phelp_mainAdjCoords(
 
    fprintf(
       outFILE,
-      "  -sam file.sam: [stdin]\n"
+      "  -sam file.sam: [stdin]%s",
+      str_endLine
     );
 
    fprintf(
       outFILE,
-      "    o sam file to adjust coordinates on\n"
+      "    o sam file to adjust coordinates on%s",
+      str_endLine
     );
 
    fprintf(
       outFILE,
-      "    o use `-sam -` for stdin input \n"
+      "    o use `-sam -` for stdin input%s",
+      str_endLine
     );
 
    /*****************************************************\
@@ -219,12 +233,14 @@ phelp_mainAdjCoords(
 
    fprintf(
       outFILE,
-      "  -h: print this help message\n"
+      "  -h: print this help message%s",
+      str_endLine
     );
 
    fprintf(
       outFILE,
-      "  -v: print the versio number\n"
+      "  -v: print the versio number%s",
+      str_endLine
     );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -234,12 +250,14 @@ phelp_mainAdjCoords(
 
    fprintf(
       outFILE,
-      "Output:\n"
+      "Output:%s",
+      str_endLine
     );
 
    fprintf(
       outFILE,
-      "  - prints adjusted sam file to stdout\n"
+      "  - prints adjusted sam file to stdout%s",
+      str_endLine
     );
 } /*phelp_mainAdjCoords*/
 
@@ -270,7 +288,7 @@ phelp_mainAdjCoords(
 |     o 1 for help message or version request
 |     o 2 for errors
 \-------------------------------------------------------*/
-schar
+signed char
 input_mainAdjCoord(
    char *argAryStr[],
    int numArgsSI,
@@ -293,8 +311,8 @@ input_mainAdjCoord(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   sint siArg = 1;
-   schar errSC = 0;
+   signed int siArg = 1;
+   signed char errSC = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun03 Sec02:
@@ -333,13 +351,13 @@ input_mainAdjCoord(
    { /*Loop: process the user input*/
       if(!
           eql_charCp(
-             (schar *) "-coords",
-             (schar *) argAryStr[siArg],
-             (schar) '\0'
+             (signed char *) "-coords",
+             (signed char *) argAryStr[siArg],
+             (signed char) '\0'
           )
       ){ /*If: the user provided coordinates*/
          ++siArg;
-         *tblFileStr = (schar *) argAryStr[siArg];
+         *tblFileStr = (signed char *) argAryStr[siArg];
       } /*If: the user provided coordinates*/
 
       /**************************************************\
@@ -349,13 +367,13 @@ input_mainAdjCoord(
 
       else if(!
           eql_charCp(
-             (schar *) "-sam",
-             (schar *) argAryStr[siArg],
-             (schar) '\0'
+             (signed char *) "-sam",
+             (signed char *) argAryStr[siArg],
+             (signed char) '\0'
           )
       ){ /*Else If: the user provided an sam file*/
          ++siArg;
-         *samFileStr = (schar *) argAryStr[siArg];
+         *samFileStr = (signed char *) argAryStr[siArg];
       } /*Else If: the user provided an sam file*/
 
       /**************************************************\
@@ -365,9 +383,9 @@ input_mainAdjCoord(
       
       else if(!
           eql_charCp(
-             (schar *) "-h",
-             (schar *) argAryStr[siArg],
-             (schar) '\0'
+             (signed char *) "-h",
+             (signed char *) argAryStr[siArg],
+             (signed char) '\0'
           )
       ){ /*Else If: requested help message*/
          phelp_mainAdjCoords(stdout);
@@ -376,9 +394,9 @@ input_mainAdjCoord(
 
       else if(!
           eql_charCp(
-             (schar *) "--h",
-             (schar *) argAryStr[siArg],
-             (schar) '\0'
+             (signed char *) "--h",
+             (signed char *) argAryStr[siArg],
+             (signed char) '\0'
           )
       ){ /*Else If: requested help message*/
          phelp_mainAdjCoords(stdout);
@@ -387,9 +405,9 @@ input_mainAdjCoord(
 
       else if(!
           eql_charCp(
-             (schar *) "help",
-             (schar *) argAryStr[siArg],
-             (schar) '\0'
+             (signed char *) "help",
+             (signed char *) argAryStr[siArg],
+             (signed char) '\0'
           )
       ){ /*Else If: requested help message*/
          phelp_mainAdjCoords(stdout);
@@ -398,9 +416,9 @@ input_mainAdjCoord(
 
       else if(!
           eql_charCp(
-             (schar *) "-help",
-             (schar *) argAryStr[siArg],
-             (schar) '\0'
+             (signed char *) "-help",
+             (signed char *) argAryStr[siArg],
+             (signed char) '\0'
           )
       ){ /*Else If: requested help message*/
          phelp_mainAdjCoords(stdout);
@@ -409,9 +427,9 @@ input_mainAdjCoord(
 
       else if(!
           eql_charCp(
-             (schar *) "--help",
-             (schar *) argAryStr[siArg],
-             (schar) '\0'
+             (signed char *) "--help",
+             (signed char *) argAryStr[siArg],
+             (signed char) '\0'
           )
       ){ /*Else If: requested help message*/
          phelp_mainAdjCoords(stdout);
@@ -425,9 +443,9 @@ input_mainAdjCoord(
 
       else if(!
           eql_charCp(
-             (schar *) "-v",
-             (schar *) argAryStr[siArg],
-             (schar) '\0'
+             (signed char *) "-v",
+             (signed char *) argAryStr[siArg],
+             (signed char) '\0'
           )
       ){ /*Else If: requested version number*/
          pversion_mainAdjCoords(stdout);
@@ -436,9 +454,9 @@ input_mainAdjCoord(
 
       else if(!
           eql_charCp(
-             (schar *) "--v",
-             (schar *) argAryStr[siArg],
-             (schar) '\0'
+             (signed char *) "--v",
+             (signed char *) argAryStr[siArg],
+             (signed char) '\0'
           )
       ){ /*Else If: requested version number*/
          pversion_mainAdjCoords(stdout);
@@ -447,9 +465,9 @@ input_mainAdjCoord(
 
       else if(!
           eql_charCp(
-             (schar *) "version",
-             (schar *) argAryStr[siArg],
-             (schar) '\0'
+             (signed char *) "version",
+             (signed char *) argAryStr[siArg],
+             (signed char) '\0'
           )
       ){ /*Else If: requested version number*/
          pversion_mainAdjCoords(stdout);
@@ -458,9 +476,9 @@ input_mainAdjCoord(
 
       else if(!
           eql_charCp(
-             (schar *) "-version",
-             (schar *) argAryStr[siArg],
-             (schar) '\0'
+             (signed char *) "-version",
+             (signed char *) argAryStr[siArg],
+             (signed char) '\0'
           )
       ){ /*Else If: requested version number*/
          pversion_mainAdjCoords(stdout);
@@ -469,9 +487,9 @@ input_mainAdjCoord(
 
       else if(!
           eql_charCp(
-             (schar *) "--version",
-             (schar *) argAryStr[siArg],
-             (schar) '\0'
+             (signed char *) "--version",
+             (signed char *) argAryStr[siArg],
+             (signed char) '\0'
           )
       ){ /*Else If: requested version number*/
          pversion_mainAdjCoords(stdout);
@@ -487,8 +505,9 @@ input_mainAdjCoord(
       { /*Else: no idea what is*/
          fprintf(
             stderr,
-            "%s is not recongnized\n",
-            argAryStr[siArg]
+            "%s is not recongnized%s",
+            argAryStr[siArg],
+            str_endLine
          ); /*No errors reported yet*/
 
          goto err_fun03_sec04;
@@ -558,18 +577,18 @@ main(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar *tblFileStr = 0;
-   schar *samFileStr = 0;
+   signed char *tblFileStr = 0;
+   signed char *samFileStr = 0;
 
-   ulong errUL = 0;
+   unsigned long errUL = 0;
 
    struct geneCoord *coordsHeapST = 0;
-   sint numGenesSI = 0;
+   signed int numGenesSI = 0;
 
    struct samEntry samStackST;
-   schar *buffHeapStr = 0;
-   ulong lenBuffUL = 0;
-   schar onReadsBl = 0; /*For printing the header*/
+   signed char *buffHeapStr = 0;
+   unsigned long lenBuffUL = 0;
+   signed char onReadsBl = 0; /*For printing the header*/
 
    FILE *samFILE = 0;
    FILE *outFILE = 0;
@@ -596,7 +615,7 @@ main(
    \*****************************************************/
 
    errUL =
-      (ulong)
+      (unsigned long)
       input_mainAdjCoord(
          argAryStr,
          numArgsSI,
@@ -648,8 +667,9 @@ main(
       { /*If: I could not open the sam file*/
          fprintf(
             stderr,
-            "Could not open -sam %s\n",
-            samFileStr
+            "Could not open -sam %s%s",
+            samFileStr,
+            str_endLine
          );
 
          goto cleanUp_main_sec05;
@@ -673,35 +693,38 @@ main(
       if(errUL & def_fileErr_geneCoord)
          fprintf(
             stderr,
-            "could not open -coords %s\n",
-            tblFileStr
+            "could not open -coords %s%s",
+            tblFileStr,
+            str_endLine
          );
 
       if(errUL & def_memErr_geneCoord)
          fprintf(
             stderr,
-            "mem error reading -coords %s\n",
-            tblFileStr
+            "mem error reading -coords %s%s",
+            tblFileStr,
+            str_endLine
          );
 
       else
          fprintf(
             stderr,
-            "line %lu in -coords %s is not valid\n",
+            "line %lu in -coords %s is not valid%s",
             errUL >> 8,
-            tblFileStr
-
+            tblFileStr,
+            str_endLine
           );
 
-      errUL = (ulong) -1;
+      errUL = (unsigned long) -1;
       goto cleanUp_main_sec05;
    } /*If: I had an error*/
 
    /*fprintf(
       outFILE,
-      "@SQ\tSN:%s\tLN:%u\n",
+      "@SQ\tSN:%s\tLN:%u%s",
       refStr,
-      coordsHeapST->endAryUI[numGenesSI - 1]
+      coordsHeapST->endAryUI[numGenesSI - 1],
+      str_endLine
     );*/ /*print out the sequence and length header*/
 
    sortName_geneCoord(
@@ -756,9 +779,9 @@ main(
      ){ /*If: have an comment*/
         if(
            ! eql_charCp(
-              (schar *) "@SQ\t",
+              (signed char *) "@SQ\t",
               samStackST.extraStr,
-              (schar) '\t'
+              (signed char) '\t'
          )) goto nextEntry_main_sec04_sub06;
            /*this is an sequence header that I need to
            `  discard
@@ -792,8 +815,9 @@ main(
         { /*If: An sam file was input*/
            fprintf(
               outFILE,
-              " %s\n",
-              samFileStr
+              " %s%s",
+              samFileStr,
+              str_endLine
            );
         } /*If: An sam file was input*/
 
@@ -801,7 +825,8 @@ main(
         { /*Else: sam file read in by stdin*/
            fprintf(
               outFILE,
-              " -\n"
+              " -%s",
+              str_endLine
            );
         } /*Else: sam file read in by stdin*/
 
@@ -814,7 +839,7 @@ main(
      \***************************************************/
 
      errUL =
-        (ulong)
+        (unsigned long)
         adjCoords(
            &samStackST,  /*sam entry to adjust*/
            coordsHeapST, /*has genes names & coordinates*/
@@ -868,13 +893,15 @@ main(
       if(samFileStr)
          fprintf(
             stderr,
-            "memory error reading -sam %s\n",
-            samFileStr
+            "memory error reading -sam %s%s",
+            samFileStr,
+            str_endLine
           );
       else
          fprintf(
             stderr,
-            "memory error reading -sam -\n"
+            "memory error reading -sam -%s",
+            str_endLine
           );
 
       goto cleanUp_main_sec05;

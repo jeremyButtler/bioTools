@@ -1,15 +1,10 @@
 LD=link
 CC=cl
-CFLAGS= /O2 /Ot /Za /Tc
-EXTRA_FLAGS =
-   # options:
-   #   - P_STATUS for status printing
-   #   - PLAN9_64 for 64bit plan9
+coreCFLAGS= /c /O2 /Ot /Za /Tc
+CFLAGS=/DNONE
 NAME=edClust.exe
-PREFIX=%%HOME%%\appData
+PREFIX=%localAppData
 O=o.win
-
-CFLAGS = $(EXTRA_FLAGS) $(CFLAGS)
 
 genClust=..\genClust
 genBio=..\genBio
@@ -32,44 +27,44 @@ objFiles= \
 all: mainEdClust.$O
 	$(LD) /out:$(NAME) $(objFiles)
 
-mainEdClust.$O: mainEdClust.c $(genClust)\edClust.$O $(genLib)\charCp.$O
-	$(CC) /Fo:mainEdClust.$O /c $(CFLAGS) mainEdClust.c
+mainEdClust.$O: mainEdClust.c $(genClust)\edClust.$O $(genLib)\charCp.$O ../bioTools.h ../bioTools.h ../bioTools.h
+	$(CC) /Fo:mainEdClust.$O  $(coreCFLAGS) $(CFLAGS) mainEdClust.c
 
 $(genClust)\edClust.$O: $(genClust)\edClust.c $(genClust)\edClust.h $(genClust)\clustST.$O
-	$(CC) /Fo:$(genClust)\edClust.$O /c $(CFLAGS) $(genClust)\edClust.c
+	$(CC) /Fo:$(genClust)\edClust.$O  $(coreCFLAGS) $(CFLAGS) $(genClust)\edClust.c
 
 $(genClust)\clustST.$O: $(genClust)\clustST.c $(genClust)\clustST.h $(genBio)\samEntry.$O $(genBio)\tbCon.$O $(genBio)\edDist.$O $(genLib)\genMath.h
-	$(CC) /Fo:$(genClust)\clustST.$O /c $(CFLAGS) $(genClust)\clustST.c
+	$(CC) /Fo:$(genClust)\clustST.$O  $(coreCFLAGS) $(CFLAGS) $(genClust)\clustST.c
 
-$(genBio)\samEntry.$O: $(genBio)\samEntry.c $(genBio)\samEntry.h $(genLib)\strAry.$O $(genLib)\base10str.$O $(genLib)\numToStr.$O $(genBio)\ntTo5Bit.h $(genLib)\dataTypeShortHand.h
-	$(CC) /Fo:$(genBio)\samEntry.$O /c $(CFLAGS) $(genBio)\samEntry.c
+$(genBio)\samEntry.$O: $(genBio)\samEntry.c $(genBio)\samEntry.h $(genLib)\strAry.$O $(genLib)\base10str.$O $(genLib)\numToStr.$O $(genBio)\ntTo5Bit.h $(genLib)\endLine.h
+	$(CC) /Fo:$(genBio)\samEntry.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\samEntry.c
 
 $(genLib)\strAry.$O: $(genLib)\strAry.c $(genLib)\strAry.h $(genLib)\ulCp.$O
-	$(CC) /Fo:$(genLib)\strAry.$O /c $(CFLAGS) $(genLib)\strAry.c
+	$(CC) /Fo:$(genLib)\strAry.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\strAry.c
 
 $(genLib)\ulCp.$O: $(genLib)\ulCp.c $(genLib)\ulCp.h
-	$(CC) /Fo:$(genLib)\ulCp.$O /c $(CFLAGS) $(genLib)\ulCp.c
+	$(CC) /Fo:$(genLib)\ulCp.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\ulCp.c
 
 $(genLib)\numToStr.$O: $(genLib)\numToStr.c $(genLib)\numToStr.h
-	$(CC) /Fo:$(genLib)\numToStr.$O /c $(CFLAGS) $(genLib)\numToStr.c
+	$(CC) /Fo:$(genLib)\numToStr.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\numToStr.c
 
 $(genLib)\base10str.$O: $(genLib)\base10str.c $(genLib)\base10str.h
-	$(CC) /Fo:$(genLib)\base10str.$O /c $(CFLAGS) $(genLib)\base10str.c
+	$(CC) /Fo:$(genLib)\base10str.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\base10str.c
 
-$(genBio)\tbCon.$O: $(genBio)\tbCon.c $(genBio)\tbCon.h $(genBio)\samEntry.$O $(genBio)\tbConDefs.h $(genLib)\genMath.h
-	$(CC) /Fo:$(genBio)\tbCon.$O /c $(CFLAGS) $(genBio)\tbCon.c
+$(genBio)\tbCon.$O: $(genBio)\tbCon.c $(genBio)\tbCon.h $(genBio)\samEntry.$O $(genBio)\tbConDefs.h $(genLib)\genMath.h $(genLib)\endLine.h
+	$(CC) /Fo:$(genBio)\tbCon.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\tbCon.c
 
-$(genBio)\edDist.$O: $(genBio)\edDist.c $(genBio)\edDist.h $(genBio)\samEntry.$O $(genBio)\seqST.$O $(genLib)\genMath.h
-	$(CC) /Fo:$(genBio)\edDist.$O /c $(CFLAGS) $(genBio)\edDist.c
+$(genBio)\edDist.$O: $(genBio)\edDist.c $(genBio)\edDist.h $(genBio)\samEntry.$O $(genBio)\seqST.$O $(genLib)\genMath.h $(genLib)\endLine.h
+	$(CC) /Fo:$(genBio)\edDist.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\edDist.c
 
-$(genBio)\seqST.$O: $(genBio)\seqST.c $(genBio)\seqST.h $(genLib)\ulCp.$O $(genLib)\dataTypeShortHand.h
-	$(CC) /Fo:$(genBio)\seqST.$O /c $(CFLAGS) $(genBio)\seqST.c
+$(genBio)\seqST.$O: $(genBio)\seqST.c $(genBio)\seqST.h $(genLib)\ulCp.$O
+	$(CC) /Fo:$(genBio)\seqST.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\seqST.c
 
 $(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
-	$(CC) /Fo:$(genLib)\charCp.$O /c $(CFLAGS) $(genLib)\charCp.c
+	$(CC) /Fo:$(genLib)\charCp.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\charCp.c
 
 install:
-	copy $(NAME) $(PREFIX)
+	move $(NAME) $(PREFIX)
 
 clean:
 	del $(objFiles)

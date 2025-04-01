@@ -31,9 +31,6 @@
 #include "samEntry.h"
 #include "../genLib/ulCp.h"
 
-/*These have no .c files*/
-#include "../genLib/dataTypeShortHand.h"
-
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden includes:
 !   - .c  #include "../genLib/numToStr.h"
@@ -42,6 +39,7 @@
 !   - .c  #include "../genLib/strAry.h"
 !   - .h  #include "../genLib/genMath.h" .h macro only
 !   - .h  #include "ntTo5Bit.h"
+!   - .h  #include "../genLib/endLine.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*-------------------------------------------------------\
@@ -68,13 +66,13 @@ adjCoords(
    struct geneCoord *coordsSTPtr,
    signed int numGenesSI
 ){
-   schar errSC = 0;
-   sint siIndx = 0;
+   signed char errSC = 0;
+   signed int siIndx = 0;
 
    siIndx =
       findName_geneCoord(
          coordsSTPtr,
-         (schar *) samSTPtr->refIdStr,
+         (signed char *) samSTPtr->refIdStr,
          numGenesSI
       );
 
@@ -113,7 +111,7 @@ adjCoords(
    } /*Else: this is a foward gene*/
 
    samSTPtr->lenRefIdUC =
-      (uchar)
+      (unsigned char)
       cpDelim_ulCp(
          samSTPtr->refIdStr,
          coordsSTPtr->refAryStr[siIndx],

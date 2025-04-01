@@ -3,13 +3,12 @@
 Holds small tools I have made for biology programs. The
   tools are either niche tools, re-inventing the wheel, or
   just plain odd. They all should compile on Linux, BSDs,
-  Mac, and Windows (without cwygin). I use them, but I
-  would be suprised if other people used them. Basically
-  here incase someone else decides they need one.
+  Mac, and Windows. I use them, but I would be suprised if
+  other people used them.
 
 These tools are often built to help me with my projects or
   are smaller parts of my projects. I have included the
-  project they were designed for / first appeared in.
+  project they were designed for or first appeared in.
 
 Still need to do OS tests on all tools. This is a spare
   time project, so does not get done.
@@ -23,7 +22,9 @@ Primary is unlicense (public domain), but if publice
 # Scripts
 
 The mkfileScripts directory has bash scripts to build
-  makefiles for bioTools.
+  makefiles for bioTools. If you plan on using my
+  code, then you likely find buildMkfile.sh to be
+  helpful in generating your make files.
 
 - buildMkfile.sh is a bash script to build a make file
   for a specified OS type from the librarys
@@ -37,6 +38,8 @@ The mkfileScripts directory has bash scripts to build
     - static: for unix's that support static builds
     - win: windows (still need to test some programs)
     - plan9: for plan9 (have not tested all programs yet)
+  - One of these days I will build a better system, this
+    is my quick and dirty solution to OS portability.
 - allOSMkfiles.sh is a bash scripts that calls
   buildMkfile.sh for all its OS's
   - Input: program-name main-file librarys
@@ -44,13 +47,20 @@ The mkfileScripts directory has bash scripts to build
   - Here is the example for the unix tbCon
   - Here is the example for tbCon
     - `bash allOSMkfiles.sh tbCon mainTbCon samEntry charCp tbCon charCp`
+- allMks.sh is a bash script that makes all makes files
+  for my working programs (except seqById)
+  - call from top level (bash mkfileScripts/allMks.sh)
+  - mostly for when I need to make a change and
+    re-build all my make files at once
 
 # testing:
 
 The programs are built and debugged on Linux and then
   lightly tested on other OSs. So, not all features may
-  tested on every OS. In this case may invovle one or
-  two light cases or just making sure it complies.
+  tested on every OS. In this case it may use one or
+  two light cases or just making sure it compiles. For
+  windows, I currently only print `\n` (not `\r\n`) for
+  end of lines.
 
 # List of tools
 
@@ -58,42 +68,45 @@ The programs are built and debugged on Linux and then
   - filtsam (freezeTB):
     - filter sam files by flag, length, median/mean
       q-scores, and coordinates
+      - for coordiantes use `-coords start,end -in-range`
     - also supports read soft mask removal
     - samtools view nock off, with an odd twist
     - works on linux and plan9
-  - alnNeelde (find-co--infections/alnSeq/fluDI):
+  - alnNeedle (find-co--infections/alnSeq/fluDI):
     - needleman alignment with gap extension penalties
-    - needlemans are a dime a dozen. This one rivals
-      biopythons pairwise alignmer for memory and might
-      even be faster (the alnSeq needleman python lib
-      was).
     - works on linux and plan9
   - alnWater (find-co--infecitons/alnSeq/fluDI):
     - waterman alignment with gap extension penalties
     - slower than striped watermans
-    - watermans are a dime a dozen
+    - Watermans are a dime a dozen
     - works on linux and plan9
+  - mapReads (freezeTB and maybe fluDI):
+    - read mapper, slower than minimap2
+    - main reason is I wanted a read mapper for freezeTB
+      that I integrate and thus is always there
+    - tested on Linux only
   - memwater (alnSeq/freezeTB):
     - waterman alignment with gap extension penalties
     - only returns score and alignment coordinates, but
       also uses less memory
-    - watermans are a dime a dozen
+    - Watermans are a dime a dozen
     - works on linux and plan9
   - primFind (fluDI/freezeTB):
     - find primers in sequence(s)
     - emboss primer finder program nock off (forgot name)
     - works on linux and plan9
   - seqById (fqGetIds/find-co--infections):
-    - extract sequences by read id from sam files and
-      fastq files
-    - seqkit grep nock off, without regular expressions
-      and no fasta file support
+    - extract sequences by read id from fastq files and
+      sam files
+    - `seqkit grep` nock off, but without regular
+       expression support and no fasta file support
     - works on linux and plan9
   - tbCon (freezeTB):
     - reference based majority consensus that saves the
       cosensus as a sam file (convert cigar to eqx cigar
       with cigToEqx)
     - nock of of Ivar and who knows what other programs
+    - not best method for insertions (unsensitive)
     - positions of low confidence are replaced with a 'N',
       (no other anoymous bases are used)
     - works on linux and plan9
@@ -106,6 +119,10 @@ The programs are built and debugged on Linux and then
        https://github.com/jenniferlu717/KrakenTools
      )
     - works on linux complies on plan9
+  - tranSeq (converted from asfv annotation)
+    - translate fasta sequences to amino acids
+    - emboss program knock of (think similar name) also,
+      many of these exist already, 
 - niche or odd programs
   - adjCoords (freezeTB):
     - adjust mapping coordinates from genes to entire
@@ -121,12 +138,11 @@ The programs are built and debugged on Linux and then
       reference is supported)
     - works on linux and plan9
   - cigToEqx (freezeTB):
-    - convert regular cigars to eqx cigars (only one
-      reference is supported [TODO: fix])
+    - convert regular cigars to eqx cigars
     - works on linux and plan9
   - edClust (fluDI/freezeTB):
-    - needs testing, but is running
     - try to cluster reads by edit distance
+      - not very sensitive, but kinda works
     - works on linux and plan9
   - edDist (fluDI/freezeTB):
     - finds modified edit distances
@@ -134,8 +150,8 @@ The programs are built and debugged on Linux and then
         q-scores > 6
       - for non-modified use the "NM:i:" entry in the
         sam file
-      - can do sam file to sam file or by ref
-    - not best program, but part of a bigger plan
+      - default is mapped reference comparision, but you
+        can compare two sam entries (less accurate)
     - works on linux and plan9
   - illNano (freezeTB/fluDI; dugging edClust):
     - finds Illumina variants from tbCon tsv file and then
@@ -145,17 +161,17 @@ The programs are built and debugged on Linux and then
     - mask primer sites by coordinates (for sam file)
     - tsv file with coordinates is needed
     - works on linux and plan9
-  - samToAln (freezeTB/fluDI; dugging alingers):
+  - rmHomo (freezeTB):
+    - remove small indels in homopolymers (you pick sizes)
+  - samToAln (freezeTB/fluDI; dugging aligners):
     - convert sam file to human readable alignment
-    - uses first reference from file [TODO: fix])
     - this is how to get a viewable alignment for alnwater
     - emboss like format, except the "|"'s are replaced
-      with cigar symbols "SIDX=".
+      with cigar symbols "SIDX=" (more clearer)
     - works on linux and plan9
   - trimSam (find-co--infections):
     - trims soft masking off reads in sam file
-    - filtsam can do this with `-trim` and has filtering
-      options
+    - filtsam includes trimSam with `-trim`
     - works on linux and plan9
 
 # genLib and genAln
@@ -171,6 +187,25 @@ My general libraries.
 
 # Updates:
 
+- 2025-03-31
+  - mapReads added
+- 2025-03-24
+  - added new lines support for each OS
+    - windows is `\r\n`
+    - Unix (Linux/Mac/BSD) is `\n`
+- 2025-03-12
+  - fixed pLen and tLen being mapq when printing sam
+    files.
+  - fixed rNext not being set to '*' in blank_samEntry
+    (also added support for rNext = '\0' in p_samEntry)
+  - fixed memory leak in tbCon
+  - added rmHomo
+  - added various small projects (cgMLST/mapRead/mkPng),
+    none are in a working phase
+- 2025-02-25
+  - minor improvments to prim find to improve memory usage
+    at higher kmer sizes
+  - added tranSeq (translation program)
 - 2024-01-07:
   - bug fixes (tbCon) and some general libraries
   - cigToEqx mulit-reference support
@@ -217,7 +252,7 @@ My general libraries.
 1. make replacement for make (different repo/side project)
    - make is getting to clunky, need to take some time to
      make a OS portable replacement that is more geared to
-     projects like bioTools (many programs referencing
+     projects like bioTools (many programs referencing the
      same set of libraries)
 2. add in hirschberg/myers miller (personal project)
    - need to modify hirsch from alnSeq for new style

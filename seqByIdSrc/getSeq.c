@@ -22,14 +22,11 @@
    #include <libc.h>
 #endif
 
+#include "getSeq.h"
 #include <stdio.h>
 
 #include "../genLib/ulCp.h"
-#include "getSeq.h"
 #include "vectScan.h"
-
-/*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden Libraries:
@@ -147,8 +144,8 @@ ulfq_getSeq(
     unsigned long *outPosUL,/*position at in outBuffStr*/
     unsigned int lenBuffUI, /*Size of buffer*/
     unsigned long *bytesUL, /*Number chars in buffStr*/
-    FILE *fqFILE,           /*Fastq file with input*/
-    FILE *outFILE           /*file to output reads to*/
+    void *fqFILE,           /*Fastq file with input*/
+    void *outFILE           /*file to output reads to*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun02b TOC:
    '  - Moves the the next fastq entry and prints to the
@@ -176,8 +173,8 @@ ulfq_getSeq(
     ^   - variable declerations
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-    ulong startPosUL = *posUL;
-    slong lenSeqSL = 0;
+    unsigned long startPosUL = *posUL;
+    signed long lenSeqSL = 0;
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun02 Sec02:
@@ -194,7 +191,7 @@ ulfq_getSeq(
            (char *) buffStr,
            sizeof(char),
            lenBuffUI - 1,
-           fqFILE
+           (FILE *) fqFILE
         ); /*Read in more of the file*/
 
       if(! *bytesUL)
@@ -238,7 +235,7 @@ ulfq_getSeq(
             (char *) buffStr,
             sizeof(char),
             lenBuffUI - 1,
-            fqFILE
+            (FILE *) fqFILE
          ); /*Read in more of the file*/
 
        *posUL = 0;
@@ -285,7 +282,7 @@ ulfq_getSeq(
                  (char *) buffStr,
                  sizeof(char),
                  lenBuffUI - 1,
-                 fqFILE
+                 (FILE *) fqFILE
               );
 
             *posUL = 0;
@@ -331,7 +328,7 @@ ulfq_getSeq(
             (char *) buffStr,
             sizeof(char),
             lenBuffUI - 1,
-            fqFILE
+            (FILE *) fqFILE
          );
 
        *posUL = 0;
@@ -378,7 +375,7 @@ ulfq_getSeq(
             (char *) buffStr,
             sizeof(char),
             lenBuffUI - 1,
-            fqFILE
+            (FILE *) fqFILE
          );
 
        *posUL = 0;
@@ -431,7 +428,7 @@ ulfq_getSeq(
            &buffStr[*posUL],
            sizeof(char),
            lenBuffUI - *posUL,
-           fqFILE
+           (FILE *) fqFILE
         );
 
       *bytesUL += *posUL;
@@ -498,8 +495,8 @@ ulsam_getSeq(
     unsigned long *outPosUL,/*position at in outBuffStr*/
     unsigned int lenBuffUI, /*Size of buffer*/
     unsigned long *bytesUL, /*Number chars in buffStr*/
-    FILE *samFILE,           /*Fastq file with input*/
-    FILE *outFILE           /*file to output reads to*/
+    void *samFILE,           /*Fastq file with input*/
+    void *outFILE           /*file to output reads to*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03b TOC:
    '  - Moves the the next sam entry and prints to the
@@ -521,7 +518,7 @@ ulsam_getSeq(
     ^   - variable declerations
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-    ulong startPosUL = *posUL;
+    unsigned long startPosUL = *posUL;
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun03 Sec02:
@@ -538,7 +535,7 @@ ulsam_getSeq(
            (char *) buffStr,
            sizeof(char),
            lenBuffUI - 1,
-           samFILE
+           (FILE *) samFILE
         ); /*Read in more of the file*/
 
       if(! *bytesUL)
@@ -582,7 +579,7 @@ ulsam_getSeq(
             (char *) buffStr,
             sizeof(char),
             lenBuffUI - 1,
-            samFILE
+            (FILE *) samFILE
          ); /*Read in more of the file*/
 
        *posUL = 0;
@@ -636,7 +633,7 @@ ulsam_getSeq(
            &buffStr[*posUL],
            sizeof(char),
            lenBuffUI - *posUL,
-           samFILE
+           (FILE *) samFILE
         );
 
       *bytesUL += *posUL;
@@ -693,8 +690,8 @@ ulfqNoBuff_getSeq(
     unsigned long *posUL,   /*Position in buffer*/
     unsigned int lenBuffUI, /*Size of buffer*/
     unsigned long *bytesUL, /*Number chars in buffStr*/
-    FILE *fqFILE,           /*Fastq file with input*/
-    FILE *outFILE           /*file to output reads to*/
+    void *fqFILE,           /*Fastq file with input*/
+    void *outFILE           /*file to output reads to*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun04 TOC:
    '  - Moves the the next fastq entry and prints to
@@ -720,9 +717,9 @@ ulfqNoBuff_getSeq(
     ^   - variable declerations
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-    schar tmpSC = 0;
-    ulong startPosUL = *posUL;
-    slong lenSeqSL = 0;
+    signed char tmpSC = 0;
+    unsigned long startPosUL = *posUL;
+    signed long lenSeqSL = 0;
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun04 Sec02:
@@ -739,7 +736,7 @@ ulfqNoBuff_getSeq(
            (char *) buffStr,
            sizeof(char),
            lenBuffUI - 1,
-           fqFILE
+           (FILE *) fqFILE
         ); /*Read in more of the file*/
 
       if(! *bytesUL)
@@ -779,7 +776,7 @@ ulfqNoBuff_getSeq(
             (char *) buffStr,
             sizeof(char),
             lenBuffUI - 1,
-            fqFILE
+            (FILE *) fqFILE
          ); /*Read in more of the file*/
 
        *posUL = 0;
@@ -789,6 +786,11 @@ ulfqNoBuff_getSeq(
     } /*Loop: move past header*/
 
     ++(*posUL); /*Get off new line*/
+
+    if(buffStr[*posUL] == '\r')
+       ++(*posUL); /*Get off new line*/
+    if(buffStr[*posUL] == '\n')
+       ++(*posUL); /*Get off new line*/
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun04 Sec04:
@@ -822,7 +824,7 @@ ulfqNoBuff_getSeq(
                  (char *) buffStr,
                  sizeof(char),
                  lenBuffUI - 1,
-                 fqFILE
+                 (FILE *) fqFILE
               );
 
             *posUL = 0;
@@ -864,7 +866,7 @@ ulfqNoBuff_getSeq(
             (char *) buffStr,
             sizeof(char),
             lenBuffUI - 1,
-            fqFILE
+            (FILE *) fqFILE
          );
 
        *posUL = 0;
@@ -874,6 +876,11 @@ ulfqNoBuff_getSeq(
     } /*Loop: get past spacer entry*/
 
     ++(*posUL); /*Get off new line*/
+
+    if(buffStr[*posUL] == '\r')
+       ++(*posUL); /*Get off new line*/
+    if(buffStr[*posUL] == '\n')
+       ++(*posUL); /*Get off new line*/
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun04 Sec06:
@@ -907,7 +914,7 @@ ulfqNoBuff_getSeq(
             (char *) buffStr,
             sizeof(char),
             lenBuffUI - 1,
-            fqFILE
+            (FILE *) fqFILE
          );
 
        *posUL = 0;
@@ -916,6 +923,14 @@ ulfqNoBuff_getSeq(
 
     *posUL += lenSeqSL; /*end of q-score entry*/
     /*new line is included*/
+
+    /*playing it safe*/
+    if(buffStr[*posUL] == '\r')
+       ++(*posUL); /*Get off new line*/
+    if(buffStr[*posUL] == '\n')
+       ++(*posUL); /*Get off new line*/
+    if(buffStr[*posUL] == '\r')
+       ++(*posUL); /*Get off new line*/
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun04 Sec07:
@@ -961,7 +976,7 @@ ulfqNoBuff_getSeq(
            &buffStr[*posUL],
            sizeof(char),
            lenBuffUI - *posUL,
-           fqFILE
+           (FILE *) fqFILE
         );
 
       *bytesUL += *posUL;
@@ -1019,8 +1034,8 @@ ulsamNoBuff_getSeq(
     unsigned long *posUL,   /*Position in buffer*/
     unsigned int lenBuffUI, /*Size of buffer*/
     unsigned long *bytesUL, /*Number chars in buffStr*/
-    FILE *samFILE,           /*Fastq file with input*/
-    FILE *outFILE           /*file to output reads to*/
+    void *samFILE,           /*Fastq file with input*/
+    void *outFILE           /*file to output reads to*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun05b TOC:
    '  - Moves the the next sam entry and prints to the
@@ -1042,8 +1057,8 @@ ulsamNoBuff_getSeq(
     ^   - variable declerations
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-    schar tmpSC = 0;
-    ulong startPosUL = *posUL;
+    signed char tmpSC = 0;
+    unsigned long startPosUL = *posUL;
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun05 Sec02:
@@ -1060,7 +1075,7 @@ ulsamNoBuff_getSeq(
            (char *) buffStr,
            sizeof(char),
            lenBuffUI - 1,
-           samFILE
+           (FILE *) samFILE
         ); /*Read in more of the file*/
 
       if(! *bytesUL)
@@ -1100,7 +1115,7 @@ ulsamNoBuff_getSeq(
             (char *) buffStr,
             sizeof(char),
             lenBuffUI - 1,
-            samFILE
+            (FILE *) samFILE
          ); /*Read in more of the file*/
 
        *posUL = 0;
@@ -1110,6 +1125,11 @@ ulsamNoBuff_getSeq(
     } /*Loop: move past header*/
 
     ++(*posUL); /*Get off new line*/
+
+    if(buffStr[*posUL] == '\n')
+       ++(*posUL); /*Get off new line*/
+    if(buffStr[*posUL] == '\r')
+       ++(*posUL); /*Get off new line*/
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun05 Sec04:
@@ -1155,7 +1175,7 @@ ulsamNoBuff_getSeq(
            &buffStr[*posUL],
            sizeof(char),
            lenBuffUI - *posUL,
-           samFILE
+           (FILE *) samFILE
         );
 
       *bytesUL += *posUL;

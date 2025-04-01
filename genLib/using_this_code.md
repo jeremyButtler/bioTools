@@ -12,6 +12,8 @@ Here to give you an orientation of the C code files and
     - byte copy functions
   - [dataTypeShortHand](#datatypeshorthand)
     - shorthand values for datatypes
+  - [endLine](#endLine)
+    - line ending variable for OS's
   - [genMath](#genmath)
     - math (branchless) functions
   - [numToStr](#numtostr)
@@ -73,6 +75,30 @@ Has my shorthand notations for data types. Mainly because
 
 .h file only.
 
+## endLine
+
+Has the line endings for each OS. Only has one variable
+  named `str_endLine` (c-string). For printf, do
+  `printf(outFILE, "text%s", str_endLine);`. To add
+  line ending to variable do.
+
+```
+buffStr[indexSL++] = str_endLine[0];`
+if(str_endLine[1] != '\0')
+   buffStr[indexSL++] = str_endLine[1];`
+```
+
+You can set the line ending with flags
+
+| Flag            | OS      | ending |
+|:----------------|---------|--------|
+| `-DWINDOWS`     | windows | `\r\n` |
+| `-DLINUX`       | linux   | `\n`   |
+| `-DMAC`         | mac     | `\r`   |
+| `-DWIN_BREAK`   | any     | `\r\n` |
+| `-DLINUX_BREAK` | any     | `\n`   |
+| `-DMAC_BREAK`   | any     | `\r`   |
+
 ## genMath
 
 These are my general math functions. Most are branchless
@@ -109,6 +135,14 @@ Inorder to use this you first must create a str_ptrAry
   size). Then you add strings with add_str_ptrAry (memory
   is reallocated as needed). Finally, when finished, you
   can free the array with freeHeap_str_ptrAry (fun04).
+
+Another way to add strings is to use addSort_str_ptrAry.
+  This is inefficent, but inserts string into a sorted
+  position. This does not auto realloc memory, so make
+  sure you have enough memory to add one more string. If
+  you need more memory call resize_str_ptrAry (fun10). The
+  returned value is the index of the inserted string or -1
+  for memory errors.
 
 ## shellSort
 
@@ -166,10 +200,11 @@ ulCp is short for unsigned long copy. It is like charCp,
   except that it uses unsigned long. As a general rule it
   is slower thang strcpy, which uses SIMD. However, it
   is often faster than charCp or other byte by byte
-  methods (at least on 64 bit). It also allows for you to
-  use your own deliminators for some functions. Use
-  mkDelim_ulCp (fun02) to make a deliminator (store it in
-  an ulong_ulCp dataType).
+  methods (at least on 64 bit) when strings are longer
+  then 8 or 16 bytes. It also allows for you to use your
+  own deliminators for some functions. Use mkDelim_ulCp
+  (fun02) to make a deliminator (store it in an ulong_ulCp
+  dataType).
 
 I had to define my own data type for ulCp because plan9
   treats longs as 32 bits. So, their is a special flag
@@ -211,3 +246,6 @@ Table: of macros that check a long for certain charaters.
   to make a deliminator. By white space I mean any
   asccii value less then 33 (this includes space, tab,
   carriage return, newline, and null).
+
+Finally, this has a slew of functions, check the header
+  of the .c or .h file for a list.

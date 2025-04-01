@@ -42,7 +42,7 @@
 #include "../genAln/samToAln.h"
 
 /*no .c files*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
@@ -74,10 +74,11 @@ pversion_mainSamToAln(
 ){
    fprintf(
       (FILE *) outFILE,
-      "samToAln from bioTools version: %i-%02i-%02i\n",
+      "samToAln from bioTools version: %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
-      def_day_bioTools
+      def_day_bioTools,
+      str_endLine
    );
 } /*pversion_mainSamToAln*/
 
@@ -111,13 +112,15 @@ phelp_mainSamToAln(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    fprintf(
-      (FILE *) outFILE,
-      "samToAln -ref ref.fa -sam reads.sam [options...]\n"
+     (FILE *) outFILE,
+     "samToAln -ref ref.fa -sam reads.sam [options...]%s",
+     str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - converts sam file to expand cigar aligment\n"
+      "  - converts sam file to expand cigar aligment%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -140,426 +143,466 @@ phelp_mainSamToAln(
 
    fprintf(
       (FILE *) outFILE,
-      "Input:\n"
+      "Input:%s",
+      str_endLine
    );
 
-	/*****************************************************\
-	 * Fun02 Sec02 Sub02:
-	 *   - file input arguments
-	 \*****************************************************/
+  /*****************************************************\
+  * Fun02 Sec02 Sub02:
+  *   - file input arguments
+  \*****************************************************/
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "  -ref ref.fa: [Required]\n"
-			 );
+   fprintf(
+       (FILE *) outFILE,
+       "  -ref ref.fa: [Required]%s",
+       str_endLine              
+    );
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o fasta with reference sequence used for\n"
-			 );
+   fprintf(
+       (FILE *) outFILE,
+       "    o fasta with reference sequence used for%s",
+       str_endLine
+    );
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "      mapping\n"
-			 );
-
-
-	/*sam file*/
-	fprintf(
-						 (FILE *) outFILE,
-						 "  -sam reads.sam: [Required; stdin]\n"
-			 );
-
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o sam file with mapped reads\n"
-			 );
-
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o use \"-sam -\" for stdin input\n"
-			 );
+   fprintf(
+       (FILE *) outFILE,
+       "      mapping%s",
+       str_endLine
+    );
 
 
-	/*match matrix*/
-	fprintf(
-						 (FILE *) outFILE,
-						 "  -match matrix.txt: [Optional]\n"
-			 );
+   /*sam file*/
+   fprintf(
+       (FILE *) outFILE,
+       "  -sam reads.sam: [Required; stdin]%s",
+       str_endLine
+    );
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o match matrix for alignment\n"
-			 );
+   fprintf(
+       (FILE *) outFILE,
+       "    o sam file with mapped reads%s",
+       str_endLine
+    );
 
-	/*****************************************************\
-	 * Fun02 Sec02 Sub03:
-	 *   - output arguments
-	 \*****************************************************/
-
-	if(def_pFullId_mainSamToAln)
-			  fprintf(
-									(FILE *) outFILE,
-									"  -full-id: [Optional; Yes]\n"
-						);
-	else
-			  fprintf(
-									(FILE *) outFILE,
-									"  -full-id: [Optional; No]\n"
-						);
-
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o print refernce id past first space or tab\n"
-			 );
-
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o use \"-short-id\" to disable\n"
-			 );
+   fprintf(
+       (FILE *) outFILE,
+       "    o use \"-sam -\" for stdin input%s",
+       str_endLine
+    );
 
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "  -wrap %i: [Optional]\n",
-						 def_lineWrap_mainSamToAln
-			 );
+   /*match matrix*/
+   fprintf(
+       (FILE *) outFILE,
+       "  -match matrix.txt: [Optional]%s",
+       str_endLine
+    );
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o maximum line length (0 is no limit)\n"
-			 );
+   fprintf(
+       (FILE *) outFILE,
+       "    o match matrix for alignment%s",
+       str_endLine
+    );
 
+ /*****************************************************\
+  * Fun02 Sec02 Sub03:
+  *   - output arguments
+  \*****************************************************/
 
-	/*keep/remove masking*/
-	if(def_pmask_mainSamToAln)
-			  fprintf(
-									(FILE *) outFILE,
-									"  -mask: [Optional; Yes]\n"
-						);
-	else
-			  fprintf(
-									(FILE *) outFILE,
-									"  -mask: [Optional; No]\n"
-						);
+   if(def_pFullId_mainSamToAln)
+     fprintf(
+         (FILE *) outFILE,
+         "  -full-id: [Optional; Yes]%s",
+         str_endLine
+      );
+   else
+     fprintf(
+         (FILE *) outFILE,
+         "  -full-id: [Optional; No]%s",
+         str_endLine
+      );
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o print unaligned reference and query\n"
-			 );
+   fprintf(
+      (FILE *) outFILE,
+      "    o print refernce id past first space or tab%s",
+      str_endLine
+    );
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o disable with \"-no-mask\"\n"
-			 );
-
-	/*print sequence positions*/
-	if(def_ppos_mainSamToAln)
-			  fprintf(
-									(FILE *) outFILE,
-									"  -pos: [Optional; Yes]\n"
-						);
-	else
-			  fprintf(
-									(FILE *) outFILE,
-									"  -pos: [Optional; No]\n"
-						);
-
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o print out line start and end positions\n"
-			 );
-
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o disable with \"-no-pos\"\n"
-			 );
+   fprintf(
+       (FILE *) outFILE,
+       "    o use \"-short-id\" to disable%s",
+       str_endLine
+    );
 
 
-	/*output file*/
-	fprintf(
-						 (FILE *) outFILE,
-						 "  -out out.file: [Optional; stdout]\n"
-			 );
+   fprintf(
+       (FILE *) outFILE,
+       "  -wrap %i: [Optional]%s",
+       def_lineWrap_mainSamToAln,
+       str_endLine
+    );
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o file to save alignmet to\n"
-			 );
-
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o use \"-out -\" for stdout\n"
-			 );
+   fprintf(
+       (FILE *) outFILE,
+       "    o maximum line length (0 is no limit)%s",
+       str_endLine
+    );
 
 
-	/*****************************************************\
-	 * Fun02 Sec02 Sub04:
-	 *   - print help/version number commands
-	 \*****************************************************/
+   /*keep/remove masking*/
+   if(def_pmask_mainSamToAln)
+     fprintf(
+         (FILE *) outFILE,
+         "  -mask: [Optional; Yes]%s",
+         str_endLine
+      );
+   else
+     fprintf(
+         (FILE *) outFILE,
+         "  -mask: [Optional; No]%s",
+         str_endLine
+      );
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "  -h: print this help message to stdout and exit\n"
-			 );
+   fprintf(
+       (FILE *) outFILE,
+       "    o print unaligned reference and query%s",
+       str_endLine
+    );
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "  -v: print version number to stdout and exit\n"
-			 );
+   fprintf(
+       (FILE *) outFILE,
+       "    o disable with \"-no-mask\"%s",
+       str_endLine
+    );
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "  -p-match: print default match matrix to stdout\n"
-			 );
-	fprintf(
-						 (FILE *) outFILE,
-						 "    o only used when have \'M\' in cigar\n"
-			 );
+   /*print sequence positions*/
+   if(def_ppos_mainSamToAln)
+     fprintf(
+         (FILE *) outFILE,
+         "  -pos: [Optional; Yes]%s",
+         str_endLine
+      );
+   else
+     fprintf(
+         (FILE *) outFILE,
+         "  -pos: [Optional; No]%s",
+         str_endLine
+      );
 
-	/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-	  ^ Fun02 Sec03:
-	  ^   - print output block
-	  \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+   fprintf(
+       (FILE *) outFILE,
+       "    o print out line start and end positions%s",
+       str_endLine
+    );
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "Output:\n"
-			 );
+   fprintf(
+       (FILE *) outFILE,
+       "    o disable with \"-no-pos\"%s",
+       str_endLine
+    );
 
-	fprintf(
-						 (FILE *) outFILE,
-						 "  - prints alignment to stdout or -out file.aln\n"
-			 );
+
+   /*output file*/
+   fprintf(
+       (FILE *) outFILE,
+       "  -out out.file: [Optional; stdout]%s",
+       str_endLine
+    );
+
+   fprintf(
+       (FILE *) outFILE,
+       "    o file to save alignmet to%s",
+       str_endLine
+    );
+
+   fprintf(
+       (FILE *) outFILE,
+       "    o use \"-out -\" for stdout%s",
+       str_endLine
+    );
+
+
+  /*****************************************************\
+  * Fun02 Sec02 Sub04:
+  *   - print help/version number commands
+  \*****************************************************/
+
+  fprintf(
+      (FILE *) outFILE,
+      "  -h: print this help message to stdout and exit%s",
+      str_endLine
+    );
+
+   fprintf(
+       (FILE *) outFILE,
+       "  -v: print version number to stdout and exit%s",
+       str_endLine
+    );
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -p-match: print default match matrix to stdout%s",
+      str_endLine
+    );
+   fprintf(
+       (FILE *) outFILE,
+       "    o only used when have \'M\' in cigar%s",
+       str_endLine
+    );
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun02 Sec03:
+   ^   - print output block
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   fprintf(
+       (FILE *) outFILE,
+       "Output:%s",
+       str_endLine
+    );
+
+   fprintf(
+      (FILE *) outFILE,
+      "  - prints alignment to stdout or -out file.aln%s",
+      str_endLine
+    );
 } /*phelp_mainSamToAln*/
 
 /*-------------------------------------------------------\
-  | Fun03: checkIfHelp_mainSamToAln
-  |   - checks if input was the help message
-  | Input:
-  |   - argStr:
-  |     o c-string with argument to check for help message
-  | Output:
-  |   - Returns:
-  |     o 1 if is the help message
-  |     o 0 if not the help message
-  \-------------------------------------------------------*/
+| Fun03: checkIfHelp_mainSamToAln
+|   - checks if input was the help message
+| Input:
+|   - argStr:
+|     o c-string with argument to check for help message
+| Output:
+|   - Returns:
+|     o 1 if is the help message
+|     o 0 if not the help message
+\-------------------------------------------------------*/
 signed char
 checkIfHelp_mainSamToAln(
-					 schar *argStr
-					 ){
-		  if(! eql_charCp((schar *) "-h", argStr, '\0'))
-					 return 1;
+   signed char *argStr
+){
+   if(! eql_charCp((signed char *) "-h", argStr, '\0'))
+     return 1;
 
-		  if(! eql_charCp((schar *) "--h", argStr, '\0'))
-					 return 1;
+   if(! eql_charCp((signed char *) "--h", argStr, '\0'))
+     return 1;
 
-		  if(! eql_charCp((schar *) "help", argStr, '\0'))
-					 return 1;
+   if(! eql_charCp((signed char *) "help", argStr, '\0'))
+     return 1;
 
-		  if(! eql_charCp((schar *) "-help", argStr, '\0'))
-					 return 1;
+   if(! eql_charCp((signed char *) "-help", argStr, '\0'))
+     return 1;
 
-		  if(! eql_charCp((schar *) "--help", argStr, '\0'))
-					 return 1;
+   if(! eql_charCp((signed char *) "--help",argStr,'\0'))
+     return 1;
 
-		  return 0;
+   return 0;
 } /*checkIfHelp_mainSamToAln*/
 
 /*-------------------------------------------------------\
-  | Fun04: checkIfVersion_mainSamToAln
-  |   - checks if input was the version number request
-  | Input:
-  |   - argStr:
-  |     o c-string with argument to check for version number
-  | Output:
-  |   - Returns:
-  |     o 1 if is version number
-  |     o 0 if not version number
-  \-------------------------------------------------------*/
+| Fun04: checkIfVersion_mainSamToAln
+|   - checks if input was the version number request
+| Input:
+|   - argStr:
+|     o c-string with argument to check for version number
+| Output:
+|   - Returns:
+|     o 1 if is version number
+|     o 0 if not version number
+\-------------------------------------------------------*/
 signed char
 checkIfVersion_mainSamToAln(
-					 schar *argStr
-					 ){
-		  if(! eql_charCp((schar *) "-v", argStr, '\0'))
-					 return 1;
+   signed char *argStr
+){
+    if(! eql_charCp((signed char *) "-v", argStr, '\0'))
+      return 1;
 
-		  if(! eql_charCp((schar *) "--v", argStr, '\0'))
-					 return 1;
+    if(! eql_charCp((signed char *) "--v", argStr, '\0'))
+      return 1;
 
-		  if(! eql_charCp((schar *) "version", argStr, '\0'))
-					 return 1;
+    if(
+       ! eql_charCp((signed char *) "version",argStr,'\0')
+    ) return 1;
 
-		  if(! eql_charCp((schar *) "-version", argStr, '\0'))
-					 return 1;
+    if(
+       ! eql_charCp(
+          (signed char *) "-version",argStr,'\0'
+       )
+    ) return 1;
 
-		  if(! eql_charCp((schar *) "--version", argStr, '\0'))
-					 return 1;
+    if(
+       ! eql_charCp(
+          (signed char *) "--version", argStr, '\0'
+       )
+    ) return 1;
 
-		  return 0;
+    return 0;
 } /*checkIfVersion_mainSamToAln*/
 
 /*-------------------------------------------------------\
-  | Fun05: input_mainSamToAln
-  |   - gets user input
-  | Input:
-  |   - numArgsSI:
-  |     o number of arguments the user input
-  |   - argAryStr:
-  |     o c-string array with user input
-  |   - samFileStrPtr:
-  |     o pointer to c-string to point to the sam file
-  |   - refFileStrPtr:
-  |     o pointer to c-string to point to refernece file
-  |   - outFileStrPtr:
-  |     o pointer to c-string to point to output file
-  |   - pFullIdBlPtr:
-  |     o pointer to sigend char to be set to
-  |       * 1 if user wanted full reference id
-  |       * 0 if user wanted short (no white space) id
-  |   - alnSetSTPtr:
-  |     o pointer to alnSet structure to hold input
-  | Output:
-  |   - Returns:
-  |     o 0 for no errors
-  |     o 1 if printed help, version number, or match matrix
-  |     o 2 for errors
-  \-------------------------------------------------------*/
+| Fun05: input_mainSamToAln
+|   - gets user input
+| Input:
+|   - numArgsSI:
+|     o number of arguments the user input
+|   - argAryStr:
+|     o c-string array with user input
+|   - samFileStrPtr:
+|     o pointer to c-string to point to the sam file
+|   - refFileStrPtr:
+|     o pointer to c-string to point to refernece file
+|   - outFileStrPtr:
+|     o pointer to c-string to point to output file
+|   - pFullIdBlPtr:
+|     o pointer to sigend char to be set to
+|       * 1 if user wanted full reference id
+|       * 0 if user wanted short (no white space) id
+|   - alnSetSTPtr:
+|     o pointer to alnSet structure to hold input
+| Output:
+|   - Returns:
+|     o 0 for no errors
+|     o 1 if printed help, version number, or match matrix
+|     o 2 for errors
+\-------------------------------------------------------*/
 signed char
 input_mainSamToAln(
-					 int numArgsSI,
-					 char *argAryStr[],
-					 signed char **samFileStrPtr,
-					 signed char **refFileStrPtr,
-					 signed char **outFileStrPtr,
-					 signed char *pFullIdBlPtr,
-					 struct alnSet *alnSetSTPtr
-					 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-							' Fun05 TOC:
-							'   - gets user input
-							'   o fun05 sec02:
-							'     - variable declerations
-							'   o fun05 sec02:
-							'     - check if user input anything
-							'   o fun05 sec03:
-							'     - get use input
-							'   o fun05 sec03:
-							'     - return any errors
-							\~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+      int numArgsSI,
+      char *argAryStr[],
+      signed char **samFileStrPtr,
+      signed char **refFileStrPtr,
+      signed char **outFileStrPtr,
+      signed char *pFullIdBlPtr,
+      struct alnSet *alnSetSTPtr
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun05 TOC:
+   '   - gets user input
+   '   o fun05 sec02:
+   '     - variable declerations
+   '   o fun05 sec02:
+   '     - check if user input anything
+   '   o fun05 sec03:
+   '     - get use input
+   '   o fun05 sec03:
+   '     - return any errors
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-		  /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-			 ^ Fun05 Sec01:
-			 ^   - variable declerations
-			 \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun05 Sec01:
+   ^   - variable declerations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-		  schar errSC = 0;
-		  sint siArg = 1;
-		  schar *tmpStr = 0;
+   signed char errSC = 0;
+   signed int siArg = 1;
+   signed char *tmpStr = 0;
 
-		  /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-			 ^ Fun05 Sec02:
-			 ^   - check if user input anything
-			 \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun05 Sec02:
+   ^   - check if user input anything
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-		  if(numArgsSI <= 1)
-		  { /*If: no arguments input*/
-					 phelp_mainSamToAln(stdout);
-					 goto phelp_fun05_sec04;
-		  } /*If: no arguments input*/
+   if(numArgsSI <= 1)
+   { /*If: no arguments input*/
+     phelp_mainSamToAln(stdout);
+     goto phelp_fun05_sec04;
+   } /*If: no arguments input*/
 
-		  /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-			 ^ Fun05 Sec03:
-			 ^   - get use input
-			 ^   o fun05 sec03 sub01:
-			 ^     - get file io and start get input loop
-			 ^   o fun05 sec03 sub02:
-			 ^     - get output formating
-			 ^   o fun05 sec03 sub03:
-			 ^     - see if help/version/match settings print
-			 ^   o fun05 sec03 sub04:
-			 ^     - else; unkown input
-			 ^   o fun05 sec03 sub05:
-			 ^     - move to next argument
-			 \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun05 Sec03:
+   ^   - get use input
+   ^   o fun05 sec03 sub01:
+   ^     - get file io and start get input loop
+   ^   o fun05 sec03 sub02:
+   ^     - get output formating
+   ^   o fun05 sec03 sub03:
+   ^     - see if help/version/match settings print
+   ^   o fun05 sec03 sub04:
+   ^     - else; unkown input
+   ^   o fun05 sec03 sub05:
+   ^     - move to next argument
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-		  /*****************************************************\
-			* Fun05 Sec03 Sub01:
-			*   - get file io and start get input loop
-			\*****************************************************/
+   /*****************************************************\
+   * Fun05 Sec03 Sub01:
+   *   - get file io and start get input loop
+   \*****************************************************/
 
-		  while(siArg < numArgsSI)
-		  { /*Loop: get user input*/
-					 if(
-										  ! eql_charCp(
-													 (schar *) "-ref",
-													 (schar *) argAryStr[siArg],
-													 '\0'
-													 )
-						){ /*If: reference seqeunce*/
-								++siArg;
-								*refFileStrPtr = (schar *) argAryStr[siArg];
-					 } /*If: reference seqeunce*/
+    while(siArg < numArgsSI)
+    { /*Loop: get user input*/
+      if(
+         ! eql_charCp(
+           (signed char *) "-ref",
+           (signed char *) argAryStr[siArg],
+           '\0'
+         )
+      ){ /*If: reference seqeunce*/
+        ++siArg;
+        *refFileStrPtr = (signed char *) argAryStr[siArg];
+      } /*If: reference seqeunce*/
 
-					 else if(
-										  ! eql_charCp(
-													 (schar *) "-sam",
-													 (schar *) argAryStr[siArg],
-													 '\0'
-													 )
-							  ){ /*Else If: sam file with mapped reads*/
-								++siArg;
-								*samFileStrPtr = (schar *) argAryStr[siArg];
-					 } /*Else If: sam file with mapped reads*/
-
-					 else if(
-										  ! eql_charCp(
-													 (schar *) "-out",
-													 (schar *) argAryStr[siArg],
-													 '\0'
-													 )
-							  ){ /*Else If: output file*/
-								++siArg;
-								*outFileStrPtr = (schar *) argAryStr[siArg];
-					 } /*Else If: output file*/
-
-					 else if(
-										  ! eql_charCp(
-													 (schar *) "-full-id",
-													 (schar *) argAryStr[siArg],
+      else if(
+         ! eql_charCp(
+            (signed char *) "-sam",
+            (signed char *) argAryStr[siArg],
             '\0'
-           )
-       ) *pFullIdBlPtr = 1;
+         )
+      ){ /*Else If: sam file with mapped reads*/
+        ++siArg;
+        *samFileStrPtr = (signed char *) argAryStr[siArg];
+      } /*Else If: sam file with mapped reads*/
+
+      else if(
+         ! eql_charCp(
+            (signed char *) "-out",
+            (signed char *) argAryStr[siArg],
+            '\0'
+        )
+      ){ /*Else If: output file*/
+        ++siArg;
+        *outFileStrPtr = (signed char *) argAryStr[siArg];
+      } /*Else If: output file*/
+
+      else if(
+         ! eql_charCp(
+            (signed char *) "-full-id",
+            (signed char *) argAryStr[siArg],
+            '\0'
+         )
+      ) *pFullIdBlPtr = 1;
          /*Else If: user wanted full reference id*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-short-id",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-short-id",
+            (signed char *) argAryStr[siArg],
             '\0'
-           )
-       ) *pFullIdBlPtr = 0;
+         )
+      ) *pFullIdBlPtr = 0;
          /*user wanted short, nowhite space reference id*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-match",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-match",
+            (signed char *) argAryStr[siArg],
             '\0'
-           )
-       ){ /*Else If: match matrix file*/
+         )
+      ){ /*Else If: match matrix file*/
           ++siArg;
           errSC =
               readMatchFile_alnSet(
                  alnSetSTPtr,
-                 (schar *) argAryStr[siArg]
+                 (signed char *) argAryStr[siArg]
              );
 
           if(errSC)
           { /*If: had an error*/
              fprintf(
                 stderr,
-                "error reading -match %s\n",
-                argAryStr[siArg]
+                "error reading -match %s%s",
+                argAryStr[siArg],
+                str_endLine
              );
 
              goto err_fun05_sec04;
@@ -573,50 +616,50 @@ input_mainSamToAln(
 
       else if(
          ! eql_charCp(
-            (schar *) "-mask",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-mask",
+            (signed char *) argAryStr[siArg],
             '\0'
-           )
-       ) alnSetSTPtr->pFullAlnBl = 1;
+         )
+      ) alnSetSTPtr->pFullAlnBl = 1;
 
       else if(
          ! eql_charCp(
-            (schar *) "-no-mask",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-no-mask",
+            (signed char *) argAryStr[siArg],
             '\0'
-           )
-       ) alnSetSTPtr->pFullAlnBl = 0;
+         )
+      ) alnSetSTPtr->pFullAlnBl = 0;
 
       else if(
          ! eql_charCp(
-            (schar *) "-pos",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-pos",
+            (signed char *) argAryStr[siArg],
             '\0'
-           )
-       ) alnSetSTPtr->pBasePosBl = 1;
+         )
+      ) alnSetSTPtr->pBasePosBl = 1;
 
       else if(
          ! eql_charCp(
-            (schar *) "-no-pos",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-no-pos",
+            (signed char *) argAryStr[siArg],
             '\0'
-           )
-       ) alnSetSTPtr->pBasePosBl = 0;
+         )
+      ) alnSetSTPtr->pBasePosBl = 0;
 
       else if(
          ! eql_charCp(
-            (schar *) "-wrap",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-wrap",
+            (signed char *) argAryStr[siArg],
             '\0'
-           )
-       ){ /*Else If: line wrap*/
+         )
+      ){ /*Else If: line wrap*/
           ++siArg;
           
-          tmpStr = (schar *) argAryStr[siArg];
+          tmpStr = (signed char *) argAryStr[siArg];
 
           tmpStr +=
              strToUI_base10str(
-                (schar *) argAryStr[siArg],
+                (signed char *) argAryStr[siArg],
                 &alnSetSTPtr->lineWrapUI
              );
 
@@ -624,8 +667,9 @@ input_mainSamToAln(
           { /*If: non-numeric entry*/
              fprintf(
                 stderr,
-                "non-numeric or to large -wrap %s\n",
-                argAryStr[siArg]
+                "non-numeric or to large -wrap %s%s",
+                argAryStr[siArg],
+                str_endLine
              );
 
              goto err_fun05_sec04;
@@ -639,7 +683,7 @@ input_mainSamToAln(
 
       else if(
          checkIfHelp_mainSamToAln(
-           (schar *) argAryStr[siArg]
+           (signed char *) argAryStr[siArg]
         )
       ){ /*Else If: wanted help message*/
          phelp_mainSamToAln(stdout);
@@ -648,7 +692,7 @@ input_mainSamToAln(
 
       else if(
          checkIfVersion_mainSamToAln(
-           (schar *) argAryStr[siArg]
+           (signed char *) argAryStr[siArg]
         )
       ){ /*Else If: wanted version number*/
          pversion_mainSamToAln(stdout);
@@ -657,8 +701,8 @@ input_mainSamToAln(
 
       else if(
          ! eql_charCp(
-            (schar *) "-p-match",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-p-match",
+            (signed char *) argAryStr[siArg],
             '\0'
            )
        ){ /*Else If: printing default match matrix*/
@@ -675,8 +719,9 @@ input_mainSamToAln(
        { /*Else: unkown input*/
           fprintf(
              stderr,
-             "%s is not reconginized\n",
-             argAryStr[siArg]
+             "%s is not reconginized%s",
+             argAryStr[siArg],
+             str_endLine
            );
 
           goto err_fun05_sec04;
@@ -745,26 +790,26 @@ main(
    ^    - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar *tmpStr = 0;
-   schar errSC = 0;
-   ulong seqUL = 0; /*sequence on*/
+   signed char *tmpStr = 0;
+   signed char errSC = 0;
+   unsigned long seqUL = 0; /*sequence on*/
 
-   schar pFullIdBl = def_pFullId_mainSamToAln;
-   schar *samFileStr = 0;
-   schar *refFileStr = 0;
-   schar *outFileStr = 0;
+   signed char pFullIdBl = def_pFullId_mainSamToAln;
+   signed char *samFileStr = 0;
+   signed char *refFileStr = 0;
+   signed char *outFileStr = 0;
 
    struct alnSet alnSetStackST;
 
    struct seqST *refHeapAryST = 0;
-   slong lenRefSL = 0;
-   slong sizeRefSL = 0;
-   slong indexSL = 0;
+   signed long lenRefSL = 0;
+   signed long sizeRefSL = 0;
+   signed long indexSL = 0;
  
 
    struct samEntry samStackST;
-   schar *buffHeapStr = 0;
-   ulong lenBuffUL = 0;
+   signed char *buffHeapStr = 0;
+   unsigned long lenBuffUL = 0;
 
    FILE *samFILE = 0;
    FILE *outFILE = 0;
@@ -848,8 +893,9 @@ main(
       { /*If: could not open the sam file*/
          fprintf(
             stderr,
-            "could not open -sam %s\n",
-            samFileStr
+            "could not open -sam %s%s",
+            samFileStr,
+            str_endLine
          );
 
          goto fileErr_main_sec04_sub03;
@@ -882,8 +928,9 @@ main(
    { /*If: could not open reference file*/
       fprintf(
          stderr,
-         "could not open -ref %s\n",
-         refFileStr
+         "could not open -ref %s%s",
+         refFileStr,
+         str_endLine
       );
 
       goto fileErr_main_sec04_sub03;
@@ -908,8 +955,9 @@ main(
       { /*If: memory error*/
          fprintf(
             stderr,
-            "memory error reading -ref %s\n",
-            refFileStr
+            "memory error reading -ref %s%s",
+            refFileStr,
+            str_endLine
          );
 
          goto memErr_main_sec04_sub02;
@@ -919,8 +967,9 @@ main(
       { /*If: not a fasta file*/
          fprintf(
             stderr,
-            "-ref %s is not a fasta file\n",
-            refFileStr
+            "-ref %s is not a fasta file%s",
+            refFileStr,
+            str_endLine
          );
 
          goto fileErr_main_sec04_sub03;
@@ -970,8 +1019,9 @@ main(
       { /*If: could not open output file*/
          fprintf(
             stderr,
-            "could not open -out %s\n",
-            outFileStr
+            "could not open -out %s%s",
+            outFileStr,
+            str_endLine
          );
 
          goto fileErr_main_sec04_sub03;
@@ -1010,8 +1060,9 @@ main(
       { /*If: had empty file*/
           fprintf(
              stderr,
-             "-sam %s is empty\n",
-             samFileStr
+             "-sam %s is empty%s",
+             samFileStr,
+             str_endLine
            );
 
          goto fileErr_main_sec04_sub03;
@@ -1019,8 +1070,9 @@ main(
 
       fprintf(
          stderr,
-         "memory error reading first line of -sam %s\n",
-         samFileStr
+         "memory error reading first line of -sam %s%s",
+         samFileStr,
+         str_endLine
        );
 
       goto memErr_main_sec04_sub02;
@@ -1046,8 +1098,9 @@ main(
       { /*If: had empty file*/
           fprintf(
              stderr,
-             "-sam %s had only header entries\n",
-             samFileStr
+             "-sam %s had only header entries%s",
+             samFileStr,
+             str_endLine
            );
 
          goto fileErr_main_sec04_sub03;
@@ -1055,8 +1108,9 @@ main(
 
       fprintf(
          stderr,
-         "memory error header/first read of -sam %s\n",
-         samFileStr
+         "memory error header/first read of -sam %s%s",
+         samFileStr,
+         str_endLine
        );
 
       goto memErr_main_sec04_sub02;
@@ -1080,7 +1134,7 @@ main(
 
    for(
       seqUL = 1;
-      seqUL < (ulong) numArgsSI;
+      seqUL < (unsigned long) numArgsSI;
       ++seqUL
    ){ /*Loop: print out command arguments*/
       fprintf(
@@ -1092,7 +1146,9 @@ main(
 
    fprintf(
       (FILE*) outFILE,
-      "\n\n"
+      "%s%s",
+      str_endLine,
+      str_endLine
     );
 
    /*****************************************************\
@@ -1126,10 +1182,11 @@ main(
       { /*If: could not find reference*/
          fprintf(
             stderr,
-            "-ref %s missing %s, skipping read %s\n",
+            "-ref %s missing %s, skipping read %s%s",
             refFileStr,
             samStackST.refIdStr,
-            samStackST.qryIdStr
+            samStackST.qryIdStr,
+            str_endLine
          ); /*warn about missing reference*/
 
          goto nextRead_main_sec03_sub04;
@@ -1172,9 +1229,10 @@ main(
    { /*If: had an error*/
       fprintf(
          stderr,
-         "memory error for read %lu of -sam %s\n",
+         "memory error for read %lu of -sam %s%s",
          seqUL,
-         samFileStr
+         samFileStr,
+         str_endLine
        );
 
       goto memErr_main_sec04_sub02;
@@ -1290,7 +1348,7 @@ main(
 :   act of relinquishment in perpetuity of all present and
 :   future rights to this software under copyright law.
 : 
-: THE SOFTWARE IS PROVIDED "AS IS\n",WITHOUT WARRANTY OF
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
 :   ANY KIND,EXPRESS OR IMPLIED,INCLUDING BUT NOT
 :   LIMITED TO THE WARRANTIES OF MERCHANTABILITY,FITNESS
 :   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO
@@ -1321,7 +1379,7 @@ main(
 :   shall be included in all copies or substantial
 :   portions of the Software.
 : 
-: THE SOFTWARE IS PROVIDED "AS IS\n",WITHOUT WARRANTY OF
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
 :   ANY KIND,EXPRESS OR IMPLIED,INCLUDING BUT NOT
 :   LIMITED TO THE WARRANTIES OF MERCHANTABILITY,FITNESS
 :   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO

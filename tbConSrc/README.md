@@ -141,6 +141,9 @@ One difference between the variant tsv and the consensus
 
 # Updates
 
+- 2025-01-09:
+  - added `-no-frag` option to not fragment assemblies
+    (low depth positions replaced with `N`)
 - 2025-01-07:
   - added reference id to output sam file
 - 2025-01-06:

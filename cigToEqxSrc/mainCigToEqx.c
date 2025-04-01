@@ -38,7 +38,7 @@
 #include "../genBio/cigToEqx.h"
 
 /*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
@@ -67,10 +67,11 @@ pversion_mainCigToEqx(
 ){
    fprintf(
       outFILE,
-      "cigToEqx from bioTools version %i-%02i-%02i\n",
+      "cigToEqx from bioTools version %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
-      def_day_bioTools
+      def_day_bioTools,
+      str_endLine
    );
 } /*pversion_mainCigToEqx*/
 
@@ -106,12 +107,14 @@ phelp_mainCigToEqx(
 
    fprintf(
       outFILE,
-      "cigToEqx -sam reads.sam -ref reference.fasta\n"
+      "cigToEqx -sam reads.sam -ref reference.fasta%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "  - Converst cigars in sam files to eqx cigars\n"
+      "  - Converst cigars in sam files to eqx cigars%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -136,7 +139,8 @@ phelp_mainCigToEqx(
 
    fprintf(
       outFILE,
-      "Input:\n"
+      "Input:%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -146,17 +150,20 @@ phelp_mainCigToEqx(
 
    fprintf(
       outFILE,
-      "  -sam reads.sam: [Required]\n"
+      "  -sam reads.sam: [Required]%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "    o Sam file to convert to cigar eqx entries\n"
+      "    o Sam file to convert to cigar eqx entries%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "    o Use `sam -` for stdin input\n"
+      "    o Use `sam -` for stdin input%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -166,12 +173,14 @@ phelp_mainCigToEqx(
 
    fprintf(
       outFILE,
-      "  -ref reference.fastaq: [Required]\n"
+      "  -ref reference.fastaq: [Required]%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "    o Reference file used to map reads to\n"
+      "    o Reference file used to map reads to%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -182,22 +191,26 @@ phelp_mainCigToEqx(
    if(def_nAsSnp)
       fprintf(
          outFILE,
-         "  -n-as-snp: [Yes]\n"
+         "  -n-as-snp: [Yes]%s",
+         str_endLine
       );
    else
       fprintf(
          outFILE,
-         "  -n-as-snp: [No]\n"
+         "  -n-as-snp: [No]%s",
+         str_endLine
       );
 
    fprintf(
       outFILE,
-      "    o Treat anonymous bases as SNPs\n"
+      "    o Treat anonymous bases as SNPs%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "    o Disable with `-n-as-match`\n"
+      "    o Disable with `-n-as-match`%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -207,12 +220,14 @@ phelp_mainCigToEqx(
 
    fprintf(
       outFILE,
-      "  -h: print out help message\n"
+      "  -h: print out help message%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "  -v: print out version number\n"
+      "  -v: print out version number%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -222,12 +237,14 @@ phelp_mainCigToEqx(
 
    fprintf(
       outFILE,
-      "Output:\n"
+      "Output:%s",
+      str_endLine
    );
 
    fprintf(
       outFILE,
-      "  - Prints converted sam file to stdout\n"
+      "  - Prints converted sam file to stdout%s",
+      str_endLine
    );
 } /*phelp_mainCigToEqx*/
 
@@ -286,8 +303,8 @@ input_mainCigToEqx(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   sint siArg = 1;
-   schar errSC = 0;
+   signed int siArg = 1;
+   signed char errSC = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun03 Sec02:
@@ -324,13 +341,13 @@ input_mainCigToEqx(
 
       if(
          ! eql_charCp(
-            (schar *) "-sam",
-            (schar *) argAryStr[siArg],
-            (schar ) '\0'
+            (signed char *) "-sam",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*If: An sam file was input*/
          ++siArg;
-         *samFileStr = (schar *) argAryStr[siArg];
+         *samFileStr = (signed char *) argAryStr[siArg];
       } /*If: An sam file was input*/
 
       /**************************************************\
@@ -340,13 +357,13 @@ input_mainCigToEqx(
 
       else if(
          ! eql_charCp(
-            (schar *) "-ref",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-ref",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: An reference file was input*/
          ++siArg;
-         *refFileStr = (schar *) argAryStr[siArg];
+         *refFileStr = (signed char *) argAryStr[siArg];
       } /*Else If: An reference file was input*/
 
       /**************************************************\
@@ -356,16 +373,16 @@ input_mainCigToEqx(
 
       else if(
          ! eql_charCp(
-            (schar *) "-n-as-snp",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-n-as-snp",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
       )) *nAsSnpBl = 1;
 
       else if(
          ! eql_charCp(
-            (schar *) "-n-as-match",
-            (schar *) argAryStr[siArg],
-            (schar) 0
+            (signed char *) "-n-as-match",
+            (signed char *) argAryStr[siArg],
+            (signed char) 0
       )) *nAsSnpBl = 0;
 
       /**************************************************\
@@ -375,9 +392,9 @@ input_mainCigToEqx(
 
       else if(
          ! eql_charCp(
-            (schar *) "-h",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-h",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: user wanted the help message*/
          phelp_mainCigToEqx(stdout);
@@ -386,9 +403,9 @@ input_mainCigToEqx(
 
       else if(
          ! eql_charCp(
-            (schar *) "--h",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--h",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: user wanted the help message*/
          phelp_mainCigToEqx(stdout);
@@ -397,9 +414,9 @@ input_mainCigToEqx(
 
       else if(
          ! eql_charCp(
-            (schar *) "help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: user wanted the help message*/
          phelp_mainCigToEqx(stdout);
@@ -408,9 +425,9 @@ input_mainCigToEqx(
 
       else if(
          ! eql_charCp(
-            (schar *) "-help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: user wanted the help message*/
          phelp_mainCigToEqx(stdout);
@@ -419,9 +436,9 @@ input_mainCigToEqx(
 
       else if(
          ! eql_charCp(
-            (schar *) "--help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: user wanted the help message*/
          phelp_mainCigToEqx(stdout);
@@ -435,9 +452,9 @@ input_mainCigToEqx(
 
       else if(
          ! eql_charCp(
-            (schar *) "-v",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-v",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: user wanted the help message*/
          pversion_mainCigToEqx(stdout);
@@ -446,9 +463,9 @@ input_mainCigToEqx(
 
       else if(
          ! eql_charCp(
-            (schar *) "--v",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--v",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: user wanted the help message*/
          pversion_mainCigToEqx(stdout);
@@ -457,9 +474,9 @@ input_mainCigToEqx(
 
       else if(
          ! eql_charCp(
-            (schar *) "version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: user wanted the help message*/
          pversion_mainCigToEqx(stdout);
@@ -468,9 +485,9 @@ input_mainCigToEqx(
 
       else if(
          ! eql_charCp(
-            (schar *) "-version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: user wanted the help message*/
          pversion_mainCigToEqx(stdout);
@@ -479,9 +496,9 @@ input_mainCigToEqx(
 
       else if(
          ! eql_charCp(
-            (schar *) "--version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: user wanted the help message*/
          pversion_mainCigToEqx(stdout);
@@ -497,8 +514,9 @@ input_mainCigToEqx(
       { /*Else: input not recongnized*/
          fprintf(
             stderr,
-            "%s is unkown\n",
-            argAryStr[siArg]
+            "%s is unkown%s",
+            argAryStr[siArg],
+            str_endLine
          );
 
          goto err_fun03_sec03;
@@ -570,15 +588,15 @@ main(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar *tmpStr = 0;
-   schar errSC = 0;
-   schar *buffHeapStr = 0;
-   ulong lenBuffUL = 0;
+   signed char *tmpStr = 0;
+   signed char errSC = 0;
+   signed char *buffHeapStr = 0;
+   unsigned long lenBuffUL = 0;
 
-   sint *cigHeapArySI = 0;
-   sint lenCigSI = 0;
+   signed int *cigHeapArySI = 0;
+   signed int lenCigSI = 0;
 
-   schar nAsSnpBl = def_nAsSnp;
+   signed char nAsSnpBl = def_nAsSnp;
 
    struct seqST *refHeapAryST = 0;
    signed long lenRefSL = 0;
@@ -587,10 +605,10 @@ main(
 
    struct samEntry samStackST;
 
-   schar endOfHeadBl = 0;
+   signed char endOfHeadBl = 0;
 
-   schar *samFileStr = 0; /*For input command reporting*/
-   schar *refFileStr = 0; /*For input command reporting*/
+   signed char *samFileStr = 0; /*For input command reporting*/
+   signed char *refFileStr = 0; /*For input command reporting*/
 
    FILE *samFILE = 0;
    FILE *outFILE = stdout;
@@ -645,8 +663,9 @@ main(
    { /*If: could not open reference file*/
       fprintf(
          stderr,
-         "could not open -ref %s\n",
-         refFileStr
+         "could not open -ref %s%s",
+         refFileStr,
+         str_endLine
       );
 
       goto err_main_sec05_sub02;
@@ -674,19 +693,22 @@ main(
       if(errSC == def_memErr_seqST)
          fprintf(
             stderr,
-            "memory error getting references\n"
+            "memory error getting references%s",
+            str_endLine
          );
       else if(errSC & def_badLine_seqST)
          fprintf(
             stderr,
-            "at least one line in -ref %s is invalid\n",
-            refFileStr
+            "at least one line in -ref %s is invalid%s",
+            refFileStr,
+            str_endLine
          );
       else
          fprintf(
             stderr,
-            "file error (likely no sequences) -ref %s\n",
-            refFileStr
+            "file error (likely no sequences) -ref %s%s",
+            refFileStr,
+            str_endLine
          );
 
       goto err_main_sec05_sub02;
@@ -734,8 +756,9 @@ main(
       { /*If: could not open file*/
          fprintf(
             stderr,
-            "unable to open -sam %s\n",
-            samFileStr
+            "unable to open -sam %s%s",
+            samFileStr,
+            str_endLine
          );
 
          goto err_main_sec05_sub02;
@@ -846,14 +869,16 @@ main(
          if(samFileStr)
             fprintf(
                outFILE,
-               " -sam %s\n",
-               samFileStr
+               " -sam %s%s",
+               samFileStr,
+               str_endLine
             );
 
          else
             fprintf(
                outFILE,
-               " -sam -\n"
+               " -sam -%s",
+               str_endLine
             );
 
          
@@ -868,9 +893,9 @@ main(
       if(samStackST.readLenUI < 1)
          goto nextEntry_main_sec04_sub05; /*No sequence*/
 
-      if(lenBuffUL > (ulong) lenCigSI)
+      if(lenBuffUL > (unsigned long) lenCigSI)
       { /*If: I need to resize buffers*/
-         lenCigSI = (sint) lenBuffUL;
+         lenCigSI = (signed int) lenBuffUL;
 
          if(cigHeapArySI)
             free(cigHeapArySI);
@@ -878,13 +903,14 @@ main(
          cigHeapArySI = 0;
 
          cigHeapArySI =
-            malloc((lenCigSI + 1) * sizeof(sint));
+            malloc((lenCigSI + 1) * sizeof(signed int));
 
          if(! cigHeapArySI)
          { /*If: I had an memory error*/
             fprintf(
                stderr,
-               "memory error\n"
+               "memory error%s",
+               str_endLine
             );
 
             goto err_main_sec05_sub02;
@@ -907,10 +933,11 @@ main(
       { /*If: could not find reference*/
          fprintf(
             stderr,
-            "-ref %s missing %s, skipping read %s\n",
+            "-ref %s missing %s, skipping read %s%s",
             refFileStr,
             samStackST.refIdStr,
-            samStackST.qryIdStr
+            samStackST.qryIdStr,
+            str_endLine
          ); /*warn about missing reference*/
 
          goto nextEntry_main_sec04_sub05;
@@ -931,8 +958,8 @@ main(
             nAsSnpBl
          );
 
-      if(lenBuffUL < (ulong) lenCigSI)
-         lenBuffUL = (ulong) lenCigSI;
+      if(lenBuffUL < (unsigned long) lenCigSI)
+         lenBuffUL = (unsigned long) lenCigSI;
 
       /**************************************************\
       * Main Sec04 Sub07:
@@ -967,8 +994,9 @@ main(
    { /*If: had sam file error*/
       fprintf(
          stderr,
-         "memory error reading -sam %s\n",
-         samFileStr
+         "memory error reading -sam %s%s",
+         samFileStr,
+         str_endLine
       );
 
       goto err_main_sec05_sub02;

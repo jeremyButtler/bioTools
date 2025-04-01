@@ -4,6 +4,8 @@
 '     filtering)
 '   o header:
 '     - included libraries
+'   o .h st01: res_edDist
+'     - holds results and windows for edDist struct 
 '   o fun01: blank_res_edDist
 '     - blanks (sets 0) values in a res_edDist struct
 '   o fun02: init_res_edDist
@@ -54,7 +56,7 @@
 #include "samEntry.h"
 
 /*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../genLib/genMath.h" /*min .h macro only*/
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
@@ -318,27 +320,31 @@ readCmpDist_edDist(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   sint siQryCig = 0;  /*query cigar position*/
-   sint siRefCig = 0;  /*reference cigar position*/
-   sint refValSI = 0;
-   sint qryValSI = 0;
+   signed int siQryCig = 0;  /*query cigar position*/
+   signed int siRefCig = 0;  /*reference cigar position*/
+   signed int refValSI = 0;
+   signed int qryValSI = 0;
 
-   sint tmpSI = 0;
+   signed int tmpSI = 0;
 
-   uint uiQry = 0;     /*query nucleotide on*/
-   uint uiRef = 0;     /*reference nucleotide on*/
+   unsigned int uiQry = 0;     /*query nucleotide on*/
+   unsigned int uiRef = 0;     /*reference nucleotide on*/
 
    float overlapF = 0;
-   slong retSL = 0;    /*edit distance*/
+   signed long retSL = 0;    /*edit distance*/
 
-   schar qryQBl = 0;
-   schar refQBl = 0;
-   uchar qUC = 0;
+   signed char qryQBl = 0;
+   signed char refQBl = 0;
+   unsigned char qUC = 0;
 
-   schar indelBl = 0;     /*for adding indesl to windows*/
-   uint baseInWinUI = 0;  /*number of bases in window*/
-   uint winDistUI = 0;    /*edit distance of window*/
-   uint indelAddUI = 0;   /*find offset for indels*/
+   signed char indelBl = 0;
+       /*for adding indesl to windows*/
+   unsigned int baseInWinUI = 0;
+      /*number of bases in window*/
+   unsigned int winDistUI = 0;
+      /*edit distance of window*/
+   unsigned int indelAddUI = 0;
+      /*find offset for indels*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun06 Sec02:
@@ -454,8 +460,8 @@ readCmpDist_edDist(
          &siRefCig,
          &refValSI,
          qrySTPtr->refStartUI,
-         (sint *) &uiQry, /*reference pos (discard)*/
-         (sint *) &uiRef
+         (signed int *) &uiQry, /*reference pos; discard*/
+         (signed int *) &uiRef
       ); /*set reference to first query base*/
 
       uiQry = 0;
@@ -470,8 +476,8 @@ readCmpDist_edDist(
          &siQryCig,
          &qryValSI,
          refSTPtr->refStartUI, /*end query position*/
-         (sint *) &uiRef, /*query pos (discard)*/
-         (sint *) &uiQry  /*end query position*/
+         (signed int *) &uiRef, /*query pos; discard*/
+         (signed int *) &uiQry  /*end query position*/
       ); /*set reference to first query base*/
 
       uiRef = 0;
@@ -535,8 +541,8 @@ readCmpDist_edDist(
    \*****************************************************/
 
    while(
-         siQryCig < (sint) qrySTPtr->lenCigUI
-      && siRefCig < (sint) refSTPtr->lenCigUI
+         siQryCig < (signed int) qrySTPtr->lenCigUI
+      && siRefCig < (signed int) refSTPtr->lenCigUI
    ){ /*Loop: get edit distance*/
       if(refSTPtr->cigTypeStr[siRefCig] == 'S')
          break; /*soft masking only at ends (finished)*/
@@ -809,7 +815,7 @@ readCmpDist_edDist(
 
             indelBl = 0;
 
-            if(tmpSI >= (sint) indelLenUI)
+            if(tmpSI >= (signed int) indelLenUI)
             { /*If: keeping deletion event*/
                if(
                      resSTPtr->depthAryUI
@@ -960,7 +966,7 @@ readCmpDist_edDist(
 
             indelBl = 0;
 
-            if(tmpSI >= (sint) indelLenUI)
+            if(tmpSI >= (signed int) indelLenUI)
             { /*If: keeping query deletion*/
                if(
                      resSTPtr->depthAryUI
@@ -1221,20 +1227,24 @@ dist_edDist(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   sint siQryCig = 0;  /*query cigar position*/
-   sint qryValSI = 0;
-   uint uiQry = 0;     /*query nucleotide on*/
-   uint uiRef = 0;
+   signed int siQryCig = 0;  /*query cigar position*/
+   signed int qryValSI = 0;
+   unsigned int uiQry = 0;     /*query nucleotide on*/
+   unsigned int uiRef = 0;
 
-   slong retSL = 0;    /*returned edit distance*/
+   signed long retSL = 0;    /*returned edit distance*/
 
-   schar qryQBl = 0;
-   uchar qUC = 0;
+   signed char qryQBl = 0;
+   unsigned char qUC = 0;
 
-   schar indelBl = 0;     /*for adding indesl to windows*/
-   uint baseInWinUI = 0;  /*number of bases in window*/
-   uint winDistUI = 0;    /*edit distance of window*/
-   uint indelAddUI = 0;   /*find offset for indels*/
+   signed char indelBl = 0;
+       /*for adding indesl to windows*/
+   unsigned int baseInWinUI = 0;
+      /*number of bases in window*/
+   unsigned int winDistUI = 0;
+      /*edit distance of window*/
+   unsigned int indelAddUI = 0;
+      /*find offset for indels*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun07 Sec02:
@@ -1313,7 +1323,7 @@ dist_edDist(
    *   - start loop and check if at end (hard/soft mask)
    \*****************************************************/
 
-   while(siQryCig < (sint) qrySTPtr->lenCigUI)
+   while(siQryCig < (signed int) qrySTPtr->lenCigUI)
    { /*Loop: get edit distance*/
       if(qrySTPtr->cigTypeStr[siQryCig] == 'S')
          break; /*soft masking only at ends (finished)*/
@@ -1462,7 +1472,7 @@ dist_edDist(
          /*deletion cases*/
          case 'D':
          /*Case: deletion*/
-            if(qryValSI >= (sint) indelLenUI)
+            if(qryValSI >= (signed int) indelLenUI)
             { /*If: keeping deletion event*/
                resSTPtr->edDistSL += qryValSI;
                ++resSTPtr->indelEventsUI;
@@ -1552,7 +1562,7 @@ dist_edDist(
          /*Case: insertion*/
             uiQry += qryValSI;
 
-            if(qryValSI >= (sint) indelLenUI)
+            if(qryValSI >= (signed int) indelLenUI)
             { /*If: keeping query deletion*/
                resSTPtr->edDistSL += qryValSI;
                ++resSTPtr->indelEventsUI;
@@ -1742,19 +1752,21 @@ addReadToDepth_edDist(
 
    float overlapF = 0;  /*finding overlap*/
 
-   sint siQryCig = 0;  /*query cigar position*/
-   sint siRefCig = 0;  /*reference cigar position*/
-   sint refValSI = 0;  /*number reference bases in cigar*/
-   sint qryValSI = 0;  /*number query bases in cigar*/
+   signed int siQryCig = 0;  /*query cigar position*/
+   signed int siRefCig = 0;  /*reference cigar position*/
+   signed int refValSI = 0;
+      /*number reference bases in cigar*/
+   signed int qryValSI = 0;
+      /*number query bases in cigar*/
 
-   sint tmpSI = 0;
+   signed int tmpSI = 0;
 
-   uint uiQry = 0;     /*query nucleotide on*/
-   uint uiRef = 0;     /*reference nucleotide on*/
-   uchar qUC = 0;      /*for q-score finding*/
+   unsigned int uiQry = 0;  /*query nucleotide on*/
+   unsigned int uiRef = 0;  /*reference nucleotide on*/
+   unsigned char qUC = 0;   /*for q-score finding*/
 
-   schar qryQBl = 0;    /*tells if query has q-score*/
-   schar refQBl = 0;    /*tells if ref has q-score*/
+   signed char qryQBl = 0;  /*tells if query has q-score*/
+   signed char refQBl = 0;  /*tells if ref has q-score*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun09 Sec02:
@@ -1885,8 +1897,8 @@ addReadToDepth_edDist(
          &siRefCig,
          &refValSI,
          qrySTPtr->refStartUI,
-         (sint *) &uiQry, /*reference pos (discard)*/
-         (sint *) &uiRef
+         (signed int *) &uiQry, /*reference pos; discard*/
+         (signed int *) &uiRef
       ); /*set reference to first query base*/
 
       uiQry = 0;
@@ -1901,8 +1913,8 @@ addReadToDepth_edDist(
          &siQryCig,
          &qryValSI,
          refSTPtr->refStartUI, /*end query position*/
-         (sint *) &uiRef, /*query pos (discard)*/
-         (sint *) &uiQry  /*end query position*/
+         (signed int *) &uiRef, /*query pos; discard*/
+         (signed int *) &uiQry  /*end query position*/
       ); /*set reference to first query base*/
 
       uiRef = 0;
@@ -1964,8 +1976,8 @@ addReadToDepth_edDist(
    \*****************************************************/
 
    while(
-         siQryCig < (sint) qrySTPtr->lenCigUI
-      && siRefCig < (sint) refSTPtr->lenCigUI
+         siQryCig < (signed int) qrySTPtr->lenCigUI
+      && siRefCig < (signed int) refSTPtr->lenCigUI
    ){ /*Loop: add depths*/
       if(refSTPtr->cigTypeStr[siRefCig] == 'S')
          break; /*soft masking only at ends (finished)*/
@@ -2292,7 +2304,7 @@ mkDepthProfile_edDist(
       resSTPtr->depthAryUI =
          calloc(
             (refSTPtr->readLenUI + 9),
-            sizeof(uint)
+            sizeof(unsigned int)
          );
 
       if(! resSTPtr->depthAryUI)
@@ -2399,7 +2411,8 @@ phead_edDist(
 
    fprintf(
       (FILE *) outFILE,
-     "\tmax_win\tmax_win_div_err\n"
+     "\tmax_win\tmax_win_div_err%s",
+     str_endLine
    );
 } /*phead_edDist*/
 
@@ -2448,11 +2461,12 @@ pdist_edDist(
 
    fprintf(
       outFILE,
-      "\t%u\t%0.3f\t%u\t%u\n",
+      "\t%u\t%0.3f\t%u\t%u%s",
       resSTPtr->minWinDistUI,
       resSTPtr->avgWinDistF,
       resSTPtr->maxWinDistUI,
-      resSTPtr->probMaxWinUI
+      resSTPtr->probMaxWinUI,
+      str_endLine
    );
 } /*pdist_edDist*/
    

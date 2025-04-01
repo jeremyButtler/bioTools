@@ -31,9 +31,6 @@
 #include "searchST.h"
 #include "getSeq.h"
 
-/*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
-
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
 !   - .h  #include "idLkTbl.h"
@@ -89,23 +86,23 @@ getFqSeq_idSearch(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar buffStr[def_lenBuff_idSearch + 1];
+   signed char buffStr[def_lenBuff_idSearch + 1];
+   signed char outBuffStr[def_lenBuff_idSearch + 1];
+   unsigned long outPosUL = 0; /*byte to copy at*/
 
-   schar outBuffStr[def_lenBuff_idSearch + 1];
-   ulong outPosUL = 0; /*byte to copy at*/
+   unsigned char hashBl = !!(searchSTPtr->hashTblUL);
 
-   uchar hashBl = !!(searchSTPtr->hashTblUL);
+   unsigned long bytesUL = 0; /*number bytes in buffer*/
+   signed long entrySL = 0; /*for errors*/
 
-   ulong bytesUL = 0; /*number bytes in buffer*/
-   slong entrySL = 0; /*for errors*/
+   unsigned char errUC = 0;            /*holds errors*/
 
-   uchar errUC = 0;            /*holds errors*/
-
-   ulong startUL = 0; /*start of read id*/
-   ulong endUL = 0;   /*end of read id*/
+   unsigned long startUL = 0; /*start of read id*/
+   unsigned long endUL = 0;   /*end of read id*/
    ulong_searchST idAryUL[17]; /*maximum libs allowed*/
 
-   slong indexSL = -1; /*array index of found read id*/
+   signed long indexSL = -1;
+     /*array index of found read id*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun01 Sec02:
@@ -117,7 +114,7 @@ getFqSeq_idSearch(
    bytesUL =
       fread(
          (char *) buffStr,
-         sizeof(schar),
+         sizeof(signed char),
          def_lenBuff_idSearch - 1,
          (FILE *) fqFILE
       ); /*read in first chunk from file*/
@@ -273,26 +270,27 @@ getSamSeq_idSearch(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar buffStr[def_lenBuff_idSearch + 1];
+   signed char buffStr[def_lenBuff_idSearch + 1];
 
-   schar outBuffStr[def_lenBuff_idSearch + 1];
-   ulong outPosUL = 0; /*byte to copy at*/
-   ulong tmpUL = 0;
+   signed char outBuffStr[def_lenBuff_idSearch + 1];
+   unsigned long outPosUL = 0; /*byte to copy at*/
+   unsigned long tmpUL = 0;
 
-   uchar hashBl = !!(searchSTPtr->hashTblUL);
+   unsigned char hashBl = !!(searchSTPtr->hashTblUL);
 
-   ulong bytesUL = 0; /*number bytes in buffer*/
-   slong entrySL = 0; /*for errors*/
+   unsigned long bytesUL = 0; /*number bytes in buffer*/
+   signed long entrySL = 0; /*for errors*/
 
-   uchar errUC = 0;            /*holds errors*/
+   unsigned char errUC = 0;            /*holds errors*/
 
-   ulong startUL = 0; /*start of read id*/
-   ulong endUL = 0;   /*end of read id*/
+   unsigned long startUL = 0; /*start of read id*/
+   unsigned long endUL = 0;   /*end of read id*/
    ulong_searchST idAryUL[17]; /*maximum libs allowed*/
 
-   slong indexSL = -1; /*array index of found read id*/
+   signed long indexSL = -1;
+      /*array index of found read id*/
 
-   schar pheadBl = 1;
+   signed char pheadBl = 1;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun02 Sec02:
@@ -304,7 +302,7 @@ getSamSeq_idSearch(
    bytesUL =
       fread(
          (char *) buffStr,
-         sizeof(schar),
+         sizeof(signed char),
          def_lenBuff_idSearch - 1,
          (FILE *) samFILE
       ); /*read in first chunk from file*/

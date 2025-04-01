@@ -30,7 +30,7 @@
 #include "../genBio/samEntry.h"
 
 /*no .c files*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
@@ -61,10 +61,11 @@ pversion_mainTrimSam(
 ){
    fprintf(
       (FILE *) outFILE,
-      "trimSam from bioTools version: %i-%02i-%02i\n",
+      "trimSam from bioTools version: %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
-      def_day_bioTools
+      def_day_bioTools,
+      str_endLine
    );
 } /*pversion_mainTrimSam*/
 
@@ -99,12 +100,14 @@ phelp_mainTrimSam(
 
    fprintf(
       (FILE *) outFILE,
-      "trimSam -sam reads.sam [options ...] > out.sam\n"
+      "trimSam -sam reads.sam [options ...] > out.sam%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - removes softmaskng from reads in a sam file\n"
+      "  - removes softmaskng from reads in a sam file%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -114,52 +117,62 @@ phelp_mainTrimSam(
 
    fprintf(
       (FILE *) outFILE,
-      "Input:\n"
+      "Input:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -sam reads.sam: [Required; stdin]\n"
+      "  -sam reads.sam: [Required; stdin]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o sam file with reads to trim\n"
+      "    o sam file with reads to trim%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -out out.sam: [stdout]\n"
+      "  -out out.sam: [stdout]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o sam file to print trimmed reads to\n"
+      "    o sam file to print trimmed reads to%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -keep-no-map: [Optional; No]\n"
+      "  -keep-no-map: [Optional; No]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o keep unmapped reads\n"
+      "    o keep unmapped reads%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o disable with -no-unmapped\n"
+      "    o disable with -no-unmapped%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -h: prints this help message and exits\n"
+      "  -h: prints this help message and exits%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -v: prints version number and exits\n"
+      "  -v: prints version number and exits%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -169,12 +182,14 @@ phelp_mainTrimSam(
 
    fprintf(
       (FILE *) outFILE,
-      "Output:\n"
+      "Output:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "   - prints trimmed reads to stdout or -out\n"
+      "   - prints trimmed reads to stdout or -out%s",
+      str_endLine
    );
 } /*phelp_mainTrimSam*/
 
@@ -228,8 +243,8 @@ char input_mainTrimSam(
     ^   - variable declerations
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-    schar errSC = 0;
-    sint siArg = 1;
+    signed char errSC = 0;
+    signed int siArg = 1;
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun03 Sec02:
@@ -267,13 +282,13 @@ char input_mainTrimSam(
         if(! strcmp("-sam", argAryStr[siArg]))
         { /*If: This is the input file*/
            ++siArg;
-           *samFileStr = (schar *) argAryStr[siArg];
+           *samFileStr = (signed char *) argAryStr[siArg];
         } /*If: This is the input file*/
 
         else if(! strcmp("-out", argAryStr[siArg]))
         { /*Else If: This is the output file*/
            ++siArg;
-           *outFileStr = (schar *) argAryStr[siArg];
+           *outFileStr = (signed char *) argAryStr[siArg];
         } /*Else If: This is the output file*/
 
         else if(! strcmp("-keep-no-map",argAryStr[siArg]))
@@ -361,8 +376,9 @@ char input_mainTrimSam(
         { /*Else: invalid input*/
            fprintf(
               stderr,
-              "%s is not recognized\n",
-              argAryStr[siArg]
+              "%s is not recognized%s",
+              argAryStr[siArg],
+              str_endLine
            );
 
            goto err_fun03_sec04;
@@ -385,19 +401,19 @@ char input_mainTrimSam(
     goto cleanUp_fun03_sec04;
 
     phelp_fun03_sec04:;
-    errSC = 1;
-    goto cleanUp_fun03_sec04;
+       errSC = 1;
+       goto cleanUp_fun03_sec04;
 
     pversion_fun03_sec04:;
-    errSC = 1;
-    goto cleanUp_fun03_sec04;
+       errSC = 1;
+       goto cleanUp_fun03_sec04;
 
     err_fun03_sec04:;
-    errSC = 2;
-    goto cleanUp_fun03_sec04;
+       errSC = 2;
+       goto cleanUp_fun03_sec04;
 
     cleanUp_fun03_sec04:;
-    return errSC;
+       return errSC;
 } /*input_mainTrimSam*/
 
 /*-------------------------------------------------------\
@@ -432,14 +448,14 @@ main(
     ^   - variable declarations
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-    schar *samFileStr = 0;     /*sam file to trim*/
-    schar *outFileStr = 0;     /*output file (as sam)*/
-    schar keepNoMapBl = def_keepNoMap_mainTrimSam;
-    schar errSC = 0;
+    signed char *samFileStr = 0;     /*sam file to trim*/
+    signed char *outFileStr = 0;     /*output sam file*/
+    signed char keepNoMapBl = def_keepNoMap_mainTrimSam;
+    signed char errSC = 0;
 
     struct samEntry samStackST;
-    schar *buffHeapStr = 0;
-    ulong lenBuffUL = 0;
+    signed char *buffHeapStr = 0;
+    unsigned long lenBuffUL = 0;
 
     FILE *samFILE = 0;
     FILE *outFILE = 0;
@@ -483,7 +499,8 @@ main(
     { /*If: memory error*/
        fprintf(
           stderr,
-          "memory error setting up sam entry\n"
+          "memory error setting up sam entry%s",
+          str_endLine
        );
 
        goto memErr_main_sec04;
@@ -509,8 +526,9 @@ main(
         { /*If: could not open sam file*/
             fprintf(
                 stderr,
-                "could not open -sam %s\n",
-                samFileStr
+                "could not open -sam %s%s",
+                samFileStr,
+                str_endLine
             ); /*If file was not valid*/
 
             goto fileErr_main_sec04;
@@ -537,8 +555,9 @@ main(
         { /*If: could no open output file*/
             fprintf(
                 stderr,
-                "could not open -out (%s)\n",
-                outFileStr
+                "could not open -out (%s)%s",
+                outFileStr,
+                str_endLine
             );
                 
             goto fileErr_main_sec04;
@@ -577,8 +596,9 @@ main(
        { /*If: memory error*/
           fprintf(
              stderr,
-             "memory error first line in -sam %s\n",
-             samFileStr
+             "memory error first line in -sam %s%s",
+             samFileStr,
+             str_endLine
           );
 
           goto memErr_main_sec04;
@@ -587,8 +607,9 @@ main(
        /*EOF*/
        fprintf(
           stderr,
-          "nothing in -sam %s\n",
-          samFileStr
+          "nothing in -sam %s%s",
+          samFileStr,
+          str_endLine
        );
 
        goto fileErr_main_sec04;
@@ -617,8 +638,9 @@ main(
        { /*If: memory error*/
           fprintf(
              stderr,
-             "memory error printing -sam %s headers\n",
-             samFileStr
+             "memory error printing -sam %s headers%s",
+             samFileStr,
+             str_endLine
           );
 
           goto memErr_main_sec04;
@@ -645,8 +667,9 @@ main(
        { /*If: memory error*/
           fprintf(
              stderr,
-             "memory error printing -sam %s headers\n",
-             samFileStr
+             "memory error printing -sam %s headers%s",
+             samFileStr,
+             str_endLine
           );
 
           goto memErr_main_sec04;
@@ -655,8 +678,9 @@ main(
        /*EOF*/
        fprintf(
           stderr,
-          "no reads in -sam %s\n",
-          samFileStr
+          "no reads in -sam %s%s",
+          samFileStr,
+          str_endLine
        );
 
        goto fileErr_main_sec04;
@@ -712,7 +736,8 @@ main(
 
     fprintf(
        (FILE *) outFILE,
-       "\n"
+       "%s",
+       str_endLine
     );
     
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -754,7 +779,8 @@ main(
     { /*If: had an error*/
        fprintf(
           stderr,
-          "memory error when trimming reads\n"
+          "memory error when trimming reads%s",
+          str_endLine
        );
 
        goto memErr_main_sec04;

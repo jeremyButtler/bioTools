@@ -23,9 +23,6 @@
 
 #include "../genLib/ulCp.h" /*scalar fallback*/
 
-/*.h file only (no .c)*/
-#include "../genLib/dataTypeShortHand.h"
-
 #ifdef SSE
    #include <immintrin.h>
 #else
@@ -78,7 +75,7 @@ endLine_vectScan(
    ' Fun01 Var0A TOC:
    '   - finds end of line using SSE vectors
    '   o fun01 var0a sec01:
-   '     - var0aible declerations
+   '     - variable declerations
    '   o fun01 var0a sec02:
    '     - find end of line
    '   o fun01 var0a sec03:
@@ -87,11 +84,11 @@ endLine_vectScan(
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun01 Var0A Sec01:
-   ^  - var0aible declerations
+   ^  - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   ulong posUL = 0;
-   ulong maskUL = 0;
+   unsigned long posUL = 0;
+   unsigned long maskUL = 0;
 
    __m128i lineVect = _mm_set1_epi8('\n');
    __m128i nullVect = _mm_setzero_si128();
@@ -193,8 +190,8 @@ endLine_vectScan(
    ^  - var0aible declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   ulong posUL = 0;
-   ulong maskUL = 0;
+   unsigned long posUL = 0;
+   unsigned long maskUL = 0;
 
    __m256i lineVect = _mm256_set1_epi8('\n');
    __m256i nullVect = _mm256_setzero_si256();
@@ -327,8 +324,8 @@ endLine_vectScan(
    ^  - var0aible declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   ulong posUL = 0;
-   ulong maskUL = 0;
+   unsigned long posUL = 0;
+   unsigned long maskUL = 0;
 
    __m512i lineVect = _mm512_set1_epi8('\n');
    __m512i nullVect = _mm512_setzero_si512();
@@ -450,16 +447,6 @@ endLine_vectScan(
 @   - NEON find end of line
 \_______________________________________________________*/
 
-#define \
-storeNeon_vectScan( \
-   vectI8 \
-)({ \
-  uint16x8_t res16x8 = vreinterpretq_u16_s8((vectI8)); \
-  uint8x8_t res8x8 = vshrn_n_u16(res16x8, 4); \
-  uint64x1_t res64x1 = vreinterpret_u64_u8(res8x8); \
-  vget_lane_u64(res64x1, 0); \
-}) /*storeNeon_vectScan*/
-
 unsigned long
 endLine_vectScan(
    signed char *buffStr
@@ -479,27 +466,35 @@ endLine_vectScan(
    ^  - var0aible declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   ulong posUL = 0;
-   ulong offsetUL = 0;
-   ulong maskUL = 0;
+   unsigned long posUL = 0;
+   unsigned long offsetUL = 0;
+   unsigned long maskUL = 0;
 
    int8x16_t lineVect = vdupq_n_s8('\n');
    int8x16_t nullVect = vdupq_n_s8(0);
 
    int8x16_t buffVect = vld1q_s8((int8_t *) buffStr);
 
+   /*get population counts*/
+   uint16x8_t res16x8 = vreinterpretq_u16_s8((vectI8)); \
+   uint8x8_t res8x8 = vshrn_n_u16(res16x8, 4); \
+   uint64x1_t res64x1 = vreinterpret_u64_u8(res8x8); \
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun01 Var0D Sec02:
    ^  - find end of line
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   maskUL =
-      storeNeon_vectScan(
-         vorrq_s8(
+  res16x8 =
+     vreinterpretq_u16_s8(
+        vorrq_s8(
             vceqq_s8(buffVect, lineVect),
             vceqq_s8(buffVect, nullVect)
-         ) /*merge comparisons*/
-      ); /*get mask from comparisons*/
+        ) /*merge comparisons*/
+     );
+  res8x8 = vshrn_n_u16(res16x8, 4);
+  res64x1 = vreinterpret_u64_u8(res8x8);
+  maskUL = vget_lane_u64(res64x1, 0);
 
    while(! maskUL)
    { /*Loop: find end of line/buffer*/
@@ -508,13 +503,17 @@ endLine_vectScan(
       buffVect =
          vld1q_s8((int8_t *) &buffStr[posUL]);
 
-      maskUL =
-         storeNeon_vectScan(
+      /*get poplution count*/
+      res16x8 =
+         vreinterpretq_u16_s8(
             vorrq_s8(
-               vceqq_s8(buffVect, lineVect),
-               vceqq_s8(buffVect, nullVect)
+                vceqq_s8(buffVect, lineVect),
+                vceqq_s8(buffVect, nullVect)
             ) /*merge comparisons*/
-         ); /*get mask from comparisons*/
+         );
+      res8x8 = vshrn_n_u16(res16x8, 4);
+      res64x1 = vreinterpret_u64_u8(res8x8);
+      maskUL = vget_lane_u64(res64x1, 0);
    } /*Loop: find end of line/buffer*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -584,10 +583,21 @@ unsigned long
 endLine_vectScan(
    signed char *buffStr
 ){
-   return endLineUnix_ulCp(buffStr);
-   /*cacluations on this are bases on '\n', so need to
-   `  move past carriage returns
-   */
+   #ifdef NON_SAFE
+      return endLineUnix_ulCp(buffStr);
+      /*cacluations on this are bases on '\n', so need to
+      `  move past carriage returns. This might pose a
+      `  problem on MACs
+      */
+      /*this is actually slower, odd*/
+   #else
+      /*not as fast, but will work even if only a '\r' (mac)
+      `  is present
+      */
+      unsigned long retUL = endLine_ulCp(buffStr);
+
+      return retUL;
+   #endif
 } /*endLine_vectScan*/
 
 #endif /*NEON or scalr check*/

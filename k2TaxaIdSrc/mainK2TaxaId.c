@@ -36,7 +36,7 @@
 #include "k2TaxaId.h"
 
 /*no .c files*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../bioTools.h" /*version*/
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
@@ -45,9 +45,9 @@
 !   o .c  #include "../genLib/ptrAry.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-signed char *glob_prefStr = (schar *) "Hagrid";
-signed char *glob_startLevStr = (schar *) "G";
-signed char *glob_endLevStr = (schar *) "S15";
+signed char *glob_prefStr = (signed char *) "Hagrid";
+signed char *glob_startLevStr = (signed char *) "G";
+signed char *glob_endLevStr = (signed char *) "S15";
 
 #define def_minDepth_mainK2TaxaId 10 /*at least 10 reads*/
 #define def_minPercDepth_mainK2TaxaId 0.0f
@@ -77,10 +77,11 @@ pversion_mainK2TaxaId(
 ){
    fprintf(
       (FILE *) outFILE,
-      "k2TaxaId from bioTools version: %i-%02i-%02i\n",
+      "k2TaxaId from bioTools version: %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
-      def_day_bioTools
+      def_day_bioTools,
+      str_endLine
    );
 } /*pversion_mainK2TaxaId*/
 
@@ -113,17 +114,20 @@ phelp_mainK2TaxaId(
 
     fprintf(
        (FILE *) outFILE,
-       "k2TaxaId -report k2-report.tsv -id k2-out.tsv\n"
+       "k2TaxaId -report k2-report.tsv -id k2-out.tsv%s",
+       str_endLine
     );
 
     fprintf(
        (FILE *) outFILE,
-       "  - extracts read ids of target taxa level and\n"
+       "  - extracts read ids of target taxa level and%s",
+       str_endLine
     );
 
     fprintf(
        (FILE *) outFILE,
-       "    prints ids to individual files\n"
+       "    prints ids to individual files%s",
+       str_endLine
     );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -148,7 +152,8 @@ phelp_mainK2TaxaId(
 
    fprintf(
       (FILE *) outFILE,
-      "Input:\n"
+      "Input:%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -158,84 +163,99 @@ phelp_mainK2TaxaId(
 
    fprintf(
       (FILE *) outFILE,
-      "  File IO:\n"
+      "  File IO:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    -report k2-report.tsv: [Required]\n"
+      "    -report k2-report.tsv: [Required]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o tsv report made by kraken2\n"
+      "      o tsv report made by kraken2%s",
+      str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "      o \"kraken2 --report k2-report.tsv ...\"\n"
+     "      o \"kraken2 --report k2-report.tsv ...\"%s",
+     str_endLine
    );
 
 
    if(def_minimizeRep_mainK2TaxaId)
       fprintf(
          (FILE *) outFILE,
-         "    -minimize: [Optional; Yes]\n"
+         "    -minimize: [Optional; Yes]%s",
+         str_endLine
       );
    else
       fprintf(
          (FILE *) outFILE,
-         "    -minimize: [Optional; No]\n"
+         "    -minimize: [Optional; No]%s",
+         str_endLine
       );
 
    fprintf(
      (FILE *) outFILE,
-     "      o report from -report has minimizer columns\n"
+     "      o -report report.tsv has minimizer columns%s",
+     str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "        (krakenUnique; --report-minimizer-data)\n"
+      "        (krakenUnique; --report-minimizer-data)%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o disable with -no-minimize\n"
+      "      o disable with -no-minimize%s",
+      str_endLine
    );
 
 
    fprintf(
      (FILE *) outFILE,
-     "      o \"kraken2 --report k2-report.tsv ...\"\n"
+     "      o \"kraken2 --report k2-report.tsv ...\"%s",
+     str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -id k2-out.tsv: [Required]\n"
-   );
-
-   fprintf(
-    (FILE *) outFILE,
-    "      o tsv with ids & assignments made by kraken2\n"
+      "    -id k2-out.tsv: [Required]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o \"kraken2 --out k2-out.tsv ...\"\n"
+      "      o tsv with kraken2 ids and assignments%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o \"kraken2 --out k2-out.tsv ...\"%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -prefix %s: [Optional; %s]\n",
+      "    -prefix %s: [Optional; %s]%s",
       glob_prefStr,
-      glob_prefStr
+      glob_prefStr,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o prefix for output files\n"
+      "      o prefix for output files%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -245,79 +265,94 @@ phelp_mainK2TaxaId(
 
    fprintf(
       (FILE *) outFILE,
-      "  Taxa Printing:\n"
+      "  Taxa Printing:%s",
+      str_endLine
    );
 
 
    if(def_unclassifed_mainK2TaxaId)
       fprintf(
          (FILE *) outFILE,
-         "    -un-class: [Optional; Yes]\n"
+         "    -un-class: [Optional; Yes]%s",
+         str_endLine
       );
    else
       fprintf(
          (FILE *) outFILE,
-         "    -un-class: [Optional; No]\n"
+         "    -un-class: [Optional; No]%s",
+         str_endLine
       );
 
    fprintf(
       (FILE *) outFILE,
-      "      o print unclassified reads\n"
+      "      o print unclassified reads%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o turn off with \"-no-un-class\"\n"
+      "      o turn off with \"-no-un-class\"%s",
+      str_endLine
    );
 
 
    if(def_mergeRoot_mainK2TaxaId)
       fprintf(
          (FILE *) outFILE,
-         "    -merge-root: [Optional; Yes]\n"
+         "    -merge-root: [Optional; Yes]%s",
+         str_endLine
       );
    else
       fprintf(
          (FILE *) outFILE,
-         "    -merge-root: [Optional; No]\n"
+         "    -merge-root: [Optional; No]%s",
+         str_endLine
       );
 
    fprintf(
      (FILE *) outFILE,
-     "      o merge lower taxa (nearer root) with taxa\n"
+     "      o merge lower taxa (nearer root) with taxa%s",
+     str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "        closer to tip of tree\n"
+     "        closer to tip of tree%s",
+     str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "      o turn off with \"-no-merge-root\"\n"
+     "      o turn off with \"-no-merge-root\"%s",
+     str_endLine
    );
 
 
    if(def_tip_maink2TaxaId)
       fprintf(
          (FILE *) outFILE,
-         "    -merge-tip: [Optional; Yes]\n"
+         "    -merge-tip: [Optional; Yes]%s",
+         str_endLine
       );
    else
       fprintf(
          (FILE *) outFILE,
-         "    -merge-tip: [Optional; No]\n"
+         "    -merge-tip: [Optional; No]%s",
+         str_endLine
       );
 
    fprintf(
      (FILE *) outFILE,
-     "      o merge tip/near tip taxa ids not in range\n"
+     "      o merge tip/near tip taxa ids not in range%s",
+     str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "      o turn off with \"-no-merge-tip\"\n"
+     "      o turn off with \"-no-merge-tip\"%s",
+     str_endLine
    );
+
    /*****************************************************\
    * Fun02 Sec02 Sub04:
    *   - taxa filtering options
@@ -325,64 +360,74 @@ phelp_mainK2TaxaId(
 
    fprintf(
       (FILE *) outFILE,
-      "  Taxa Filtering:\n"
+      "  Taxa Filtering:%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -start %s: [Optional; %s]\n",
+      "    -start %s: [Optional; %s]%s",
       glob_startLevStr,
-      glob_startLevStr
+      glob_startLevStr,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o first taxonomic level to extract at\n"
+      "      o first taxonomic level to extract at%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o letter (R,D,P,O,F,G,S) + number (0-15)\n"
+      "      o letter (R,D,P,O,F,G,S) + number (0-15)%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    -end %s: [Optional; %s]\n",
+      "    -end %s: [Optional; %s]%s",
       glob_endLevStr,
-      glob_endLevStr
+      glob_endLevStr,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o last taxonomic level to extract at\n"
+      "      o last taxonomic level to extract at%s",
+      str_endLine
    );
 
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -depth %u: [Optional; %u]\n",
+      "    -depth %u: [Optional; %u]%s",
       def_minDepth_mainK2TaxaId,
-      def_minDepth_mainK2TaxaId
+      def_minDepth_mainK2TaxaId,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o minimum read depth to print ids for taxa\n"
+      "      o minimum read depth to print ids for taxa%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -perc-depth %0.04f: [Optional; %0.04f]\n",
+      "    -perc-depth %0.04f: [Optional; %0.04f]%s",
       def_minPercDepth_mainK2TaxaId,
-      def_minPercDepth_mainK2TaxaId
+      def_minPercDepth_mainK2TaxaId,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o minimum percent read depth to print ids\n"
+      "      o minimum percent read depth to print ids%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -392,18 +437,21 @@ phelp_mainK2TaxaId(
 
    fprintf(
       (FILE *) outFILE,
-      "  Misc:\n"
+      "  Misc:%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -h: print this help message and exit\n"
+      "    -h: print this help message and exit%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    -v: print version number and exit\n"
+      "    -v: print version number and exit%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -413,12 +461,14 @@ phelp_mainK2TaxaId(
 
    fprintf(
       (FILE *) outFILE,
-      "Output:\n"
+      "Output:%s",
+      str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "  - prints read ids to prefix-taxa_code-taxon.ids\n"
+     "  - print read ids to prefix-taxa_code-taxon.ids%s",
+     str_endLine
    );
 } /*phelp_mainK2TaxaId*/
 
@@ -506,9 +556,9 @@ input_mainK2TaxaId(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   sint siArg = 1;
-   schar *tmpStr = 0;
-   schar errSC = 0;
+   signed int siArg = 1;
+   signed char *tmpStr = 0;
+   signed char errSC = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun03 Sec02:
@@ -550,46 +600,47 @@ input_mainK2TaxaId(
 
       if(
          ! eqlNull_ulCp(
-            (schar *) "-report",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-report",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*If: kraken report input*/
          ++siArg;
-         *reportFileStrPtr = (schar *) argAryStr[siArg];
+         *reportFileStrPtr =
+            (signed char *) argAryStr[siArg];
       } /*If: kraken report input*/
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-minimize",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-minimize",
+            (signed char *) argAryStr[siArg]
          )
       ) *miniRepBlPtr = 1;
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-no-minimize",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-no-minimize",
+            (signed char *) argAryStr[siArg]
          )
       ) *miniRepBlPtr = 0;
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-id",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-id",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*If: kraken read assignment (out) file*/
          ++siArg;
-         *idFileStrPtr = (schar *) argAryStr[siArg];
+         *idFileStrPtr = (signed char *) argAryStr[siArg];
       } /*If: kraken read assignment (out) file*/
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-prefix",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-prefix",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*If: prefix for output files*/
          ++siArg;
-         *prefixStrPtr = (schar *) argAryStr[siArg];
+         *prefixStrPtr = (signed char *) argAryStr[siArg];
       } /*If: prefix for output files*/
 
       /**************************************************\
@@ -599,43 +650,43 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-un-class",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-un-class",
+            (signed char *) argAryStr[siArg]
          )
       ) *pUnclassBlPtr = 1;
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-no-un-class",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-no-un-class",
+            (signed char *) argAryStr[siArg]
          )
       ) *pUnclassBlPtr = 0;
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-merge-root",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-merge-root",
+            (signed char *) argAryStr[siArg]
          )
       ) *mergeRootBlPtr = 1;
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-no-merge-root",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-no-merge-root",
+            (signed char *) argAryStr[siArg]
          )
       ) *mergeRootBlPtr = 0;
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-merge-tip",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-merge-tip",
+            (signed char *) argAryStr[siArg]
          )
       ) *mergeTipBlPtr = 1;
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-no-merge-tip",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-no-merge-tip",
+            (signed char *) argAryStr[siArg]
          )
       ) *mergeTipBlPtr = 0;
 
@@ -646,26 +697,30 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-start",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-start",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: frist taxa to start print*/
          ++siArg;
 
          *startSSPtr =
-            getLevel_k2TaxaId((schar *) argAryStr[siArg]);
+            getLevel_k2TaxaId(
+               (signed char *) argAryStr[siArg]
+            );
 
          if(*startSSPtr == 0)
          { /*If: unregonized taxa id*/
             fprintf(
                stderr,
-               "-start %s is not a regonized taxa id\n",
-               argAryStr[siArg]
+               "-start %s is not a regonized taxa id%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             fprintf(
                stderr,
-               "  recognized: D, P, C, O, F, G, and S\n"
+               "  recognized: D, P, C, O, F, G, and S%s",
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -674,26 +729,30 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-end",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-end",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: last taxa to print*/
          ++siArg;
 
          *endSSPtr =
-            getLevel_k2TaxaId((schar *) argAryStr[siArg]);
+            getLevel_k2TaxaId(
+               (signed char *) argAryStr[siArg]
+            );
 
          if(*startSSPtr == 0)
          { /*If: unregonized taxa id*/
             fprintf(
                stderr,
-               "-end %s is not a regonized taxa id\n",
-               argAryStr[siArg]
+               "-end %s is not a regonized taxa id%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             fprintf(
                stderr,
-               "  recognized: D, P, C, O, F, G, and S\n"
+               "  recognized: D, P, C, O, F, G, and S%s",
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -703,12 +762,12 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-depth",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-depth",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: min read depth*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUL_base10str(
@@ -720,8 +779,9 @@ input_mainK2TaxaId(
          { /*If: non-numeric*/
             fprintf(
                stderr,
-               "-depth %s is to large or non-numeric\n",
-               argAryStr[siArg]
+               "-depth %s is to large or non-numeric%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -731,8 +791,8 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-perc-depth",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-perc-depth",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: min percent read depth*/
          ++siArg;
@@ -746,8 +806,8 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-h",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-h",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: help message requested*/
          phelp_mainK2TaxaId(stdout);
@@ -756,8 +816,8 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "--h",
-            (schar *) argAryStr[siArg]
+            (signed char *) "--h",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: help message requested*/
          phelp_mainK2TaxaId(stdout);
@@ -766,8 +826,8 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "help",
-            (schar *) argAryStr[siArg]
+            (signed char *) "help",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: help message requested*/
          phelp_mainK2TaxaId(stdout);
@@ -776,8 +836,8 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-help",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-help",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: help message requested*/
          phelp_mainK2TaxaId(stdout);
@@ -786,8 +846,8 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "--help",
-            (schar *) argAryStr[siArg]
+            (signed char *) "--help",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: help message requested*/
          phelp_mainK2TaxaId(stdout);
@@ -801,8 +861,8 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-v",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-v",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: version number requested*/
          pversion_mainK2TaxaId(stdout);
@@ -811,8 +871,8 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "--v",
-            (schar *) argAryStr[siArg]
+            (signed char *) "--v",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: version number requested*/
          pversion_mainK2TaxaId(stdout);
@@ -821,8 +881,8 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "version",
-            (schar *) argAryStr[siArg]
+            (signed char *) "version",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: version number requested*/
          pversion_mainK2TaxaId(stdout);
@@ -831,8 +891,8 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-version",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-version",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: version number requested*/
          pversion_mainK2TaxaId(stdout);
@@ -841,8 +901,8 @@ input_mainK2TaxaId(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "--version",
-            (schar *) argAryStr[siArg]
+            (signed char *) "--version",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: version number requested*/
          pversion_mainK2TaxaId(stdout);
@@ -858,8 +918,9 @@ input_mainK2TaxaId(
       { /*Else: no idea what was input*/
          fprintf(
             stderr,
-            "%s is not recongnized\n",
-            argAryStr[siArg]
+            "%s is not recongnized%s",
+            argAryStr[siArg],
+            str_endLine
          );
 
          goto err_fun03_sec04;
@@ -933,22 +994,24 @@ main(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar *reportFileStr = (schar *) "";
-   schar *idFileStr = (schar *) "";
-   schar *prefixStr = glob_prefStr;
+   signed char *reportFileStr = (signed char *) "";
+   signed char *idFileStr = (signed char *) "";
+   signed char *prefixStr = glob_prefStr;
 
-   sshort startLevSS= getLevel_k2TaxaId(glob_startLevStr);
-   sshort endLevSS = getLevel_k2TaxaId(glob_endLevStr);
+   signed short startLevSS =
+      getLevel_k2TaxaId(glob_startLevStr);
+   signed short endLevSS =
+      getLevel_k2TaxaId(glob_endLevStr);
 
-   ulong depthUL = def_minDepth_mainK2TaxaId;
+   unsigned long depthUL = def_minDepth_mainK2TaxaId;
    float percDepthF = def_minPercDepth_mainK2TaxaId;
 
-   schar pUnclassBl = def_unclassifed_mainK2TaxaId;
-   schar miniRepBl = def_minimizeRep_mainK2TaxaId;
-   schar mergeRootBl = def_mergeRoot_mainK2TaxaId;
-   schar mergeTipBl = def_tip_maink2TaxaId;
+   signed char pUnclassBl = def_unclassifed_mainK2TaxaId;
+   signed char miniRepBl = def_minimizeRep_mainK2TaxaId;
+   signed char mergeRootBl = def_mergeRoot_mainK2TaxaId;
+   signed char mergeTipBl = def_tip_maink2TaxaId;
 
-   schar errSC = 0; /*for function errors*/
+   signed char errSC = 0; /*for function errors*/
    struct taxa_k2TaxaId *taxaHeapST = 0;
 
    FILE *inFILE = 0;
@@ -1007,9 +1070,10 @@ main(
       ){ /*If: two stdin files*/
          fprintf(
             stderr,
-            "-report %s and -id %s from stdin\n",
+            "-report %s and -id %s from stdin%s",
             reportFileStr,
-            idFileStr
+            idFileStr,
+            str_endLine
          );
 
          goto err_main_sec05;
@@ -1030,8 +1094,9 @@ main(
       { /*If: could not open file*/
          fprintf(
             stderr,
-            "unable to open -id %s\n",
-            idFileStr
+            "unable to open -id %s%s",
+            idFileStr,
+            str_endLine
          );
 
          goto err_main_sec05;
@@ -1057,9 +1122,10 @@ main(
       ){ /*If: two stdin files*/
          fprintf(
             stderr,
-            "-report %s and -id %s from stdin\n",
+            "-report %s and -id %s from stdin%s",
             reportFileStr,
-            idFileStr
+            idFileStr,
+            str_endLine
          );
 
          goto err_main_sec05;
@@ -1080,8 +1146,9 @@ main(
       { /*If: could not open file*/
          fprintf(
             stderr,
-            "unable to open -report %s\n",
-            reportFileStr
+            "unable to open -report %s%s",
+            reportFileStr,
+            str_endLine
          );
 
          goto err_main_sec05;
@@ -1115,20 +1182,23 @@ main(
       if(errSC == def_noIds_k2TaxaId)
          fprintf(
             stderr,
-            "no ids in -report %s\n",
-            reportFileStr
+            "no ids in -report %s%s",
+            reportFileStr,
+            str_endLine
          );
       else if(errSC == def_memErr_k2TaxaId)
          fprintf(
             stderr,
-            "memory error reading -report %s\n",
-            reportFileStr
+            "memory error reading -report %s%s",
+            reportFileStr,
+            str_endLine
          );
       else
          fprintf(
             stderr,
-            "file error reading -report %s\n",
-            reportFileStr
+            "file error reading -report %s%s",
+            reportFileStr,
+            str_endLine
          );
 
       goto err_main_sec05;
@@ -1167,8 +1237,9 @@ main(
       { /*If: could not open file*/
          fprintf(
             stderr,
-            "unable to open (non-check) -id %s\n",
-            idFileStr
+            "unable to open (non-check) -id %s%s",
+            idFileStr,
+            str_endLine
          );
 
          goto err_main_sec05;
@@ -1204,8 +1275,9 @@ main(
    { /*If: error*/
       fprintf(
          stderr,
-         "file error printing ids from -id %s\n",
-         idFileStr
+         "file error printing ids from -id %s%s",
+         idFileStr,
+         str_endLine
       );
 
       goto err_main_sec05;

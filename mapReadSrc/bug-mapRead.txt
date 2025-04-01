@@ -1,0 +1,126 @@
+# minimap2 maps qry.fq in 0.92 seconds using 129424 kb 
+#b mainMapRead.c:2284 if seqSL == 32
+#b mapRead.c:4943
+#b mainMapRead.c:2378 if seqSL == 22
+
+#r -ref-index ref.index -fq qry.fq
+#r -ref-index ref.index -fq test.fq
+#r -ref-index ref.index -fq gyr.fq
+#r -ref-index ref.index -fq miss.fq
+r -ref-index ref.index -fq ~/files/testing/tb/BC33.fq
+#r -ref ref.fa -fq miss.fq -kmer-val 0,15,10
+#r -ref-index ref.index -fq ~/files/testing/tb/bar49-gid--sample29.fastq
+
+# Notes:
+#   figure out why chain merging is sloppy if chain length
+#     is not 1 (~ sequence 32 [2nd print seq])
+#   still missing sequences
+#   figure out double match entry in merge
+
+define pseq
+   set $pos = $arg0
+   set $end = $arg1
+   set $seqStr = $arg2
+
+   while($pos <= $end)
+      printf "%c", ($seqStr[$pos] + 64)
+      set $pos = $pos + 1
+   end
+
+   printf "\n"
+end
+
+# works on a samEntry struct named samSTPtr
+define psam
+   set $posUI = 0
+
+   printf "%s\t", samSTPtr->qryIdStr
+   printf "0\t"
+   printf "%s\t", samSTPtr->refIdStr
+   printf "%u\t", samSTPtr->refStartUI + 1
+   printf "0\t"
+
+   while($posUI < samSTPtr->lenCigUI)
+      printf "%i", samSTPtr->cigArySI[$posUI]
+      printf "%c", samSTPtr->cigTypeStr[$posUI]
+      set $posUI = $posUI + 1
+   end
+
+   printf "\t*\t0\t0\t"
+   printf "%s\t", samSTPtr->seqStr
+   printf "%s", samSTPtr->qStr
+   printf "\n"
+end
+
+# set up to be used in align_mapRead
+define pkmers
+   set $start = $arg0
+   set $end = $arg1
+   set $wrap = 0
+
+   while($start <= $end)
+      if($wrap >= 8)
+          printf "\n"
+          set $wrap = 0
+      end
+
+      if($wrap != 0)
+         printf " "
+      end
+
+      set $index = refSTPtr->indexArySI[$start]
+      printf "%i", refSTPtr->kmerArySI[$index]
+      set $start = $start + 1
+      set $wrap = $wrap + 1
+  end
+
+  printf "\n"
+end
+
+# set up to be used in align_mapRead
+define pchain
+   set $posSI = alnSTPtr->chainsSTPtr->nextArySI[$arg0]
+
+   printf "|  query  |   ref   |   len    |\n"
+
+   if($posSI == 0)
+      printf "| %07i |", alnSTPtr->chainsSTPtr->qryArySI[$posSI]
+      printf " %07i | ", alnSTPtr->chainsSTPtr->refArySI[$posSI]
+      printf " %07i |\n", alnSTPtr->chainsSTPtr->chainArySI[$posSI]
+   end
+
+   while($posSI > 0)
+      printf "| %07i |", alnSTPtr->chainsSTPtr->qryArySI[$posSI]
+      printf " %07i | ", alnSTPtr->chainsSTPtr->refArySI[$posSI]
+      printf " %07i |\n", alnSTPtr->chainsSTPtr->chainArySI[$posSI]
+      set $posSI = alnSTPtr->chainsSTPtr->nextArySI[$posSI]
+  end
+
+end
+
+define plistchain
+   set $pathSI = $arg0
+   set $posSI = 0
+   set $end = alnSTPtr->chainsSTPtr->lenChainSI
+
+   printf "| pos |  query  |   ref   |   len    |  score  | path | next |\n"
+
+   while($posSI < $end)
+      printf "| %03i |", $posSI
+      printf " %07i |", alnSTPtr->chainsSTPtr->qryArySI[$posSI]
+      printf " %07i | ", alnSTPtr->chainsSTPtr->refArySI[$posSI]
+      printf " %07i |", alnSTPtr->chainsSTPtr->chainArySI[$posSI]
+      printf " %07i |", alnSTPtr->chainsSTPtr->scoreArySI[$posSI]
+
+      if($pathSI == $posSI)
+         printf " yes  |"
+         set $pathSI = alnSTPtr->chainsSTPtr->nextArySI[$posSI]
+      else
+         printf "  *   |"
+      end
+
+      printf " %03i  |\n", alnSTPtr->chainsSTPtr->nextArySI[$posSI]
+      set $posSI = $posSI + 1
+  end
+
+end

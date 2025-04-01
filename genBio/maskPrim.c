@@ -5,7 +5,7 @@
 '   o header:
 '     - defined variables and guards
 '   o .h fun01: blankFlag_maskPrim
-'     - blanks all flags in an primFlag uint
+'     - blanks all flags in an primFlag unsigned int
 '   o .h fun02: setDir_maskPrim
 '     - sets the direction flag for an primer
 '   o .h fun03: setPair_maskPrim
@@ -53,14 +53,12 @@
 #include "../genLib/shellSort.h"
 #include "samEntry.h"
 
-/*No .c files (only .h)*/
-#include "../genLib/dataTypeShortHand.h"
-
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries
 !   o .c  #include "../genLib/numToStr.h"
 !   o .c  #include "../genLib/ulCp.h"
 !   o .c  #include "../genLib/strAry.h"
+!   o .h  #include "../genLib/str_endLine.h"
 !   o .h  #include "ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -132,32 +130,32 @@ maskPrim(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar revPrimBl = 0;
-   schar pairPrimBl = 0;
-   sint primIndexSI = 0;
-   sint revIndexSI = -1;
+   signed char revPrimBl = 0;
+   signed char pairPrimBl = 0;
+   signed int primIndexSI = 0;
+   signed int revIndexSI = -1;
 
-   uint forStartUI = 0;
-   uint forEndUI = 0;
-   uint revStartUI = 0;
-   uint revEndUI = 0;
+   unsigned int forStartUI = 0;
+   unsigned int forEndUI = 0;
+   unsigned int revStartUI = 0;
+   unsigned int revEndUI = 0;
 
-   char firstMaskBl = 1; /*No primers masked yet*/
+   signed char firstMaskBl = 1; /*No primers masked yet*/
 
    /*Values for finding start position*/
-   uint uiCig = 0;
-   uint cigBaseLeftUI = 0;
+   unsigned int uiCig = 0;
+   unsigned int cigBaseLeftUI = 0;
 
-   uint refPosUI = 0;
-   uint seqPosUI = 0;
+   unsigned int refPosUI = 0;
+   unsigned int seqPosUI = 0;
 
    /*Are for finding end of mask region*/
-   uint uiEndCig = 0;
-   uint cigEndBaseLeftUI = 0;
-   uint refEndPosUI = 0;
-   uint seqEndPosUI = 0;
+   unsigned int uiEndCig = 0;
+   unsigned int cigEndBaseLeftUI = 0;
+   unsigned int refEndPosUI = 0;
+   unsigned int seqEndPosUI = 0;
 
-   sint retIndexSI = 0; /*For error returing*/
+   signed int retIndexSI = 0; /*For error returing*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun08 Sec02:
@@ -194,7 +192,7 @@ maskPrim(
       forStartUI = 0;
 
    primIndexSI =
-      (sint)
+      (signed int)
       uiRange_shellSort(
          primStartAryUI,
          forStartUI,
@@ -315,11 +313,11 @@ maskPrim(
 
       findRefPos_samEntry(
          samSTPtr, 
-         (sint *) &uiCig,
-         (sint *) &cigBaseLeftUI,
+         (signed int *) &uiCig,
+         (signed int *) &cigBaseLeftUI,
          forStartUI,
-         (sint *) &refPosUI,
-         (sint *) &seqPosUI
+         (signed int *) &refPosUI,
+         (signed int *) &seqPosUI
       );
 
       uiEndCig = uiCig;
@@ -453,11 +451,11 @@ maskPrim(
 
          findRefPos_samEntry(
             samSTPtr, 
-            (sint *) &uiEndCig,
-            (sint *) &cigEndBaseLeftUI,
+            (signed int *) &uiEndCig,
+            (signed int *) &cigEndBaseLeftUI,
             forStartUI,
-            (sint *) &refEndPosUI,
-            (sint *) &seqEndPosUI
+            (signed int *) &refEndPosUI,
+            (signed int *) &seqEndPosUI
          );
 
          pairPrimBl = 0;
@@ -500,9 +498,9 @@ maskPrim(
    noMask_fun08_sec03_sub02:;
 
    if(primIndexSI < 0) 
-      retIndexSI = (sint) -1;
+      retIndexSI = (signed int) -1;
    else
-      retIndexSI = (((sint) primIndexSI) << 1) | 1;
+      retIndexSI = (((signed int) primIndexSI) << 1) | 1;
 
    return retIndexSI;
 } /*maskPrim*/
@@ -560,16 +558,16 @@ sortCoords_maskPrim(
   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
   
   /*number of sorting rounds*/
-  uint subUI = 0;
-  uint nextUI = 0;
-  uint lastUI = 0;
-  uint elmOnUI = 0;
+  unsigned int subUI = 0;
+  unsigned int nextUI = 0;
+  unsigned int lastUI = 0;
+  unsigned int elmOnUI = 0;
   
   /*Variables to incurment loops*/
-  uint uiIndex = 0;
-  uint uiElm = 0;
+  unsigned int uiIndex = 0;
+  unsigned int uiElm = 0;
  
-  uint swapUI = 0;
+  unsigned int swapUI = 0;
   
   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
   ^ Fun09 Sec02:
@@ -798,7 +796,7 @@ getCoords_maskPrim(
    signed int numPrimSI = 0;
    signed int siLine = 0;
 
-   schar revBl = 0; /*On the reverse primer*/
+   signed char revBl = 0; /*On the reverse primer*/
 
    FILE *primFILE = 0;
 
@@ -841,7 +839,7 @@ getCoords_maskPrim(
 
    *startAryUI = 0;
 
-   *startAryUI = malloc(numPrimSI * sizeof(uint));
+   *startAryUI = malloc(numPrimSI * sizeof(unsigned int));
 
    if(! *startAryUI)
       goto memErr_fun11_sec05_sub02;
@@ -851,7 +849,7 @@ getCoords_maskPrim(
 
    *endAryUI = 0;
 
-   *endAryUI = malloc(numPrimSI * sizeof(uint));
+   *endAryUI = malloc(numPrimSI * sizeof(unsigned int));
 
    if(! *endAryUI)
        goto memErr_fun11_sec05_sub02;
@@ -861,7 +859,7 @@ getCoords_maskPrim(
 
    *flagAryUI = 0;
 
-   *flagAryUI = malloc(numPrimSI * sizeof(uint));
+   *flagAryUI = malloc(numPrimSI * sizeof(unsigned int));
 
    if(! *flagAryUI)
       goto memErr_fun11_sec05_sub02;
@@ -893,7 +891,7 @@ getCoords_maskPrim(
    \*****************************************************/
 
    tmpStr =
-      (schar *)
+      (signed char *)
       fgets(
          (char *) buffStr,
          lenBuffUS,
@@ -916,10 +914,11 @@ getCoords_maskPrim(
       while(*tmpStr > 32)
         ++tmpStr; /*Move past the reference name*/
 
-      if(*tmpStr == '\n')
+      if(*tmpStr == '\r')
          goto fileErr_fun11_sec05_sub03;
-
-      if(*tmpStr == '\0')
+      else if(*tmpStr == '\n')
+         goto fileErr_fun11_sec05_sub03;
+      else if(*tmpStr == '\0')
          goto fileErr_fun11_sec05_sub03;
 
       while(*tmpStr < 33)
@@ -938,10 +937,11 @@ getCoords_maskPrim(
       while(*tmpStr > 32)
         ++tmpStr; /*Move past the primer name*/
 
-      if(*tmpStr == '\n')
+      if(*tmpStr == '\r')
          goto fileErr_fun11_sec05_sub03;
-
-      if(*tmpStr == '\0')
+      else if(*tmpStr == '\n')
+         goto fileErr_fun11_sec05_sub03;
+      else if(*tmpStr == '\0')
          goto fileErr_fun11_sec05_sub03;
 
       while(*tmpStr < 33)
@@ -976,10 +976,11 @@ getCoords_maskPrim(
       while(*tmpStr > 32)
         ++tmpStr; /*Move to end of entry*/
 
-      if(*tmpStr == '\n')
+      if(*tmpStr == '\r')
          goto fileErr_fun11_sec05_sub03;
-
-      if(*tmpStr == '\0')
+      else if(*tmpStr == '\n')
+         goto fileErr_fun11_sec05_sub03;
+      else if(*tmpStr == '\0')
          goto fileErr_fun11_sec05_sub03;
 
       while(*tmpStr < 33)
@@ -1010,10 +1011,11 @@ getCoords_maskPrim(
             
          --(*startAryUI)[numPrimSI]; /*to index 0*/
 
-         if(*tmpStr == '\n')
+         if(*tmpStr == '\r')
             goto fileErr_fun11_sec05_sub03;
-
-         if(*tmpStr == '\n')
+         else if(*tmpStr == '\n')
+            goto fileErr_fun11_sec05_sub03;
+         else if(*tmpStr == '\0')
             goto fileErr_fun11_sec05_sub03;
 
          while(*tmpStr < 33)
@@ -1106,40 +1108,40 @@ getCoords_maskPrim(
 
       skipFor_fun11_sec04_sub07:;
 
-      if(revBl)
-         goto fileErr_fun11_sec05_sub03;
-         /*If there was more than two primers*/
+         if(revBl)
+            goto fileErr_fun11_sec05_sub03;
+            /*If there was more than two primers*/
 
-      if(*tmpStr == 'N')
-         goto nextLine_fun11_sec04_sub08;
-         /*only a forward primer*/
+         if(*tmpStr == 'N')
+            goto nextLine_fun11_sec04_sub08;
+            /*only a forward primer*/
 
-      ++numPrimSI;
+         ++numPrimSI;
 
-      /*At this point this is not the end of the line*/
-      setMateIndex_maskPrim(
-         (*flagAryUI)[numPrimSI - 1],
-         numPrimSI
-      );
+         /*At this point this is not the end of the line*/
+         setMateIndex_maskPrim(
+            (*flagAryUI)[numPrimSI - 1],
+            numPrimSI
+         );
 
-      setPair_maskPrim(
-         (*flagAryUI)[numPrimSI],
-         getPair_maskPrim((*flagAryUI)[numPrimSI - 1])
-      );
+         setPair_maskPrim(
+            (*flagAryUI)[numPrimSI],
+            getPair_maskPrim((*flagAryUI)[numPrimSI - 1])
+         );
 
-      setDir_maskPrim(
-         (*flagAryUI)[numPrimSI],
-         1
-      );
+         setDir_maskPrim(
+            (*flagAryUI)[numPrimSI],
+            1
+         );
 
-      setMateIndex_maskPrim(
-         (*flagAryUI)[numPrimSI],
-         numPrimSI - 1
-      );
+         setMateIndex_maskPrim(
+            (*flagAryUI)[numPrimSI],
+            numPrimSI - 1
+         );
 
-      revBl = 1;
+         revBl = 1;
 
-      goto getPrimInfo_fun11_sec04_sub05;
+         goto getPrimInfo_fun11_sec04_sub05;
 
       /**************************************************\
       * Fun11 Sec04 Sub08:
@@ -1191,9 +1193,9 @@ getCoords_maskPrim(
    \*****************************************************/
 
    memErr_fun11_sec05_sub02:;
-   *errSL = def_memErr_maskPrim;
-   numPrimSI = 0;
-   goto cleanUp_fun11_sec05_sub05;
+      *errSL = def_memErr_maskPrim;
+      numPrimSI = 0;
+      goto cleanUp_fun11_sec05_sub05;
 
    /*****************************************************\
    * Fun11 Sec05 Sub03:
@@ -1201,9 +1203,9 @@ getCoords_maskPrim(
    \*****************************************************/
 
    fileErr_fun11_sec05_sub03:;
-   *errSL = (siLine << 8) | def_fileErr_maskPrim;
-   numPrimSI = 0;
-   goto cleanUp_fun11_sec05_sub05;
+      *errSL = (siLine << 8) | def_fileErr_maskPrim;
+      numPrimSI = 0;
+      goto cleanUp_fun11_sec05_sub05;
 
    /*****************************************************\
    * Fun11 Sec05 Sub04:
@@ -1211,9 +1213,9 @@ getCoords_maskPrim(
    \*****************************************************/
 
    emptyFileErr_fun11_sec05_sub04:;
-   *errSL = def_emptyFileErr_maskPrim;
-   numPrimSI = 0;
-   goto cleanUp_fun11_sec05_sub05;
+      *errSL = def_emptyFileErr_maskPrim;
+      numPrimSI = 0;
+      goto cleanUp_fun11_sec05_sub05;
 
    /*****************************************************\
    * Fun11 Sec05 Sub05:
@@ -1221,13 +1223,11 @@ getCoords_maskPrim(
    \*****************************************************/
 
    cleanUp_fun11_sec05_sub05:;
+      if(primFILE)
+         fclose(primFILE);
+      primFILE = 0;
 
-   if(primFILE)
-      fclose(primFILE);
-
-   primFILE = 0;
-
-   return numPrimSI;
+      return numPrimSI;
 } /*getCoords_maskPrim*/
 
 /*=======================================================\

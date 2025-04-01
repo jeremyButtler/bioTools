@@ -72,7 +72,7 @@
 #include "../genBio/samEntry.h"
 
 /*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../genLib/genMath.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
@@ -98,7 +98,7 @@ void
 blank_prof_illNano(
    struct prof_illNano *profSTPtr
 ){
-   uint uiPos = 0;
+   unsigned int uiPos = 0;
 
    profSTPtr->varInProfUI = 0;
 
@@ -124,7 +124,8 @@ blank_prof_illNano(
             profSTPtr->posAryUI[uiPos] = 0;
 
          if(profSTPtr->ntArySC)
-            profSTPtr->ntArySC[uiPos] = (schar) '\0';
+            profSTPtr->ntArySC[uiPos] =
+               (signed char) '\0';
 
          if(profSTPtr->depthAryUI)
             profSTPtr->depthAryUI[uiPos] = 0;
@@ -265,7 +266,7 @@ mk_prof_illNano(
    signed char *ntArySC,   /*has nucleotides to copy*/
    unsigned int numVarUI   /*number variants in arrays*/
 ){
-   uint uiVar = 0;
+   unsigned int uiVar = 0;
    struct prof_illNano *retHeapST = 0;
 
 
@@ -281,28 +282,28 @@ mk_prof_illNano(
    /*allocate array memory*/
 
    retHeapST->posAryUI =
-      malloc((numVarUI + 9) * sizeof(uint));
+      malloc((numVarUI + 9) * sizeof(unsigned int));
 
    if(! retHeapST->posAryUI)
       goto memErr_fun06;
 
 
    retHeapST->ntArySC =
-      malloc((numVarUI + 9) * sizeof(schar));
+      malloc((numVarUI + 9) * sizeof(signed char));
 
    if(! retHeapST->ntArySC)
       goto memErr_fun06;
 
 
    retHeapST->depthAryUI =
-      malloc((numVarUI + 9) * sizeof(uint));
+      malloc((numVarUI + 9) * sizeof(unsigned int));
 
    if(! retHeapST->depthAryUI)
       goto memErr_fun06;
 
 
    retHeapST->xDepthAryUI =
-      malloc((numVarUI + 9) * sizeof(uint));
+      malloc((numVarUI + 9) * sizeof(unsigned int));
 
    if(! retHeapST->xDepthAryUI)
       goto memErr_fun06;
@@ -331,9 +332,9 @@ mk_prof_illNano(
    retHeapST->sizeProfUI = numVarUI;
 
    cpLen_ulCp(
-      (schar *) retHeapST->posAryUI,
-      (schar *) posAryUI,
-      numVarUI * sizeof(uint)
+      (signed char *) retHeapST->posAryUI,
+      (signed char *) posAryUI,
+      numVarUI * sizeof(unsigned int)
    );
 
    cpLen_ulCp(
@@ -402,9 +403,9 @@ cmp_prof_illNano(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   uint uiFirst = 0;
-   uint uiSec = 0;
-   sint diffSI = 0;
+   unsigned int uiFirst = 0;
+   unsigned int uiSec = 0;
+   signed int diffSI = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun07 Sec02:
@@ -560,25 +561,26 @@ swap_prof_illNano(
    struct prof_illNano *firstProfSTPtr, /*first struct*/
    struct prof_illNano *secProfSTPtr    /*second struct*/
 ){
-   schar *swapSCPtr = 0;
+   signed char *swapSCPtr = 0;
    float swapF = 0;
 
    /*swap the arrays*/
-   swapSCPtr = (schar *) firstProfSTPtr->posAryUI;
+   swapSCPtr = (signed char *) firstProfSTPtr->posAryUI;
    firstProfSTPtr->posAryUI = secProfSTPtr->posAryUI;
-   secProfSTPtr->posAryUI = (uint *) swapSCPtr;
+   secProfSTPtr->posAryUI = (unsigned int *) swapSCPtr;
 
    swapSCPtr = firstProfSTPtr->ntArySC;
    firstProfSTPtr->ntArySC = secProfSTPtr->ntArySC;
    secProfSTPtr->ntArySC = swapSCPtr;
 
-   swapSCPtr = (schar *) firstProfSTPtr->depthAryUI;
+   swapSCPtr = (signed char *) firstProfSTPtr->depthAryUI;
    firstProfSTPtr->depthAryUI = secProfSTPtr->depthAryUI;
-   secProfSTPtr->depthAryUI = (uint *) swapSCPtr;
+   secProfSTPtr->depthAryUI = (unsigned int *) swapSCPtr;
 
-   swapSCPtr = (schar *) firstProfSTPtr->xDepthAryUI;
+   swapSCPtr =
+      (signed char *) firstProfSTPtr->xDepthAryUI;
    firstProfSTPtr->xDepthAryUI=secProfSTPtr->xDepthAryUI;
-   secProfSTPtr->xDepthAryUI = (uint *) swapSCPtr;
+   secProfSTPtr->xDepthAryUI = (unsigned int *) swapSCPtr;
 
    /*swap the array sizes, max, min, and mean*/
    firstProfSTPtr->sizeProfUI ^= secProfSTPtr->sizeProfUI;
@@ -634,8 +636,8 @@ merge_prof_illNano(
    struct prof_illNano *firstProfSTPtr, /*first struct*/
    struct prof_illNano *secProfSTPtr    /*second struct*/
 ){
-   uint uiFirst = 0;
-   uint uiSec = 0;
+   unsigned int uiFirst = 0;
+   unsigned int uiSec = 0;
 
    if(
         firstProfSTPtr->varInProfUI
@@ -826,19 +828,19 @@ getIllSnp_illNano(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    #define lenBuff_fun14 4096
-   schar buffStr[lenBuff_fun14];
-   uint uiPos = 0;
+   signed char buffStr[lenBuff_fun14];
+   unsigned int uiPos = 0;
 
-   uint refPosUI = 0;
-   schar baseSC = 0;
-   uint depthUI = 0;
+   unsigned int refPosUI = 0;
+   signed char baseSC = 0;
+   unsigned int depthUI = 0;
    float percDepthF = 0;
-   schar *profileStr = 0;
-   uint sizeProfUI = 0;
-   uint tmpUI = 0;
+   signed char *profileStr = 0;
+   unsigned int sizeProfUI = 0;
+   unsigned int tmpUI = 0;
 
-   schar *tmpStr = 0;
-   schar delBl = 0;   /*1: deletion entry*/
+   signed char *tmpStr = 0;
+   signed char delBl = 0;   /*1: deletion entry*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun14 Sec02:
@@ -848,7 +850,7 @@ getIllSnp_illNano(
    *numVarUIPtr = 0;
    *lenProfUI = 0;
 
-   profileStr = malloc((4096 + 9) * sizeof(schar));
+   profileStr = malloc((4096 + 9) * sizeof(signed char));
    sizeProfUI = 4095;
 
    if(! profileStr)
@@ -887,7 +889,7 @@ getIllSnp_illNano(
    \*****************************************************/
 
    tmpStr =
-      (schar *)
+      (signed char *)
       fgets(
          (char *) buffStr,
          lenBuff_fun14,
@@ -1070,7 +1072,7 @@ getIllSnp_illNano(
          tmpStr =
             realloc(
                profileStr,
-               ((refPosUI << 1) + 9) * sizeof(schar)
+               ((refPosUI << 1) + 9) * sizeof(signed char)
             );
 
          if(! tmpStr)
@@ -1237,12 +1239,12 @@ getVarNano_illNano(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   uint refPosUI = 0;
-   uint readPosUI = 0;
-   uint cigPosUI = 0;
-   uint cigNtUI = 0;
+   unsigned int refPosUI = 0;
+   unsigned int readPosUI = 0;
+   unsigned int cigPosUI = 0;
+   unsigned int cigNtUI = 0;
 
-   uint numVarUI = 0;     /*number of variants*/
+   unsigned int numVarUI = 0;     /*number of variants*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun15 Sec03:
@@ -1627,31 +1629,36 @@ getNanoReads_illNano(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar errSC = 0;
+   signed char errSC = 0;
 
-   uint *mapPosHeapAryUI = 0; /*position of mapped var*/
-   schar *mapNtHeapArySC = 0; /*nucleotide of mapped var*/
-   uint numVarUI = 0;     /*number of variants*/
-   uint uiVar = 0;        /*for printing variants*/
-   uint uiPos = 0;        /*position in output buffer*/
+   unsigned int *mapPosHeapAryUI = 0;
+      /*position of mapped var*/
+   signed char *mapNtHeapArySC = 0;
+      /*nucleotide of mapped var*/
+   unsigned int numVarUI = 0;/*number of variants*/
+   unsigned int uiVar = 0;   /*for printing variants*/
+   unsigned int uiPos = 0;   /*position in output buffer*/
 
    struct prof_illNano *tmpHeapProfST = 0;
    struct prof_illNano *nodeSTPtr = 0; /*node in list*/
 
-   schar mergeBl = 0;
-   sint diffSI = 0;  /*# differences between profiles*/
+   signed char mergeBl = 0;
+   signed int diffSI = 0;
+      /*# differences between profiles*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun16 Sec02:
    ^   - allocate memory and get first line of sam file
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   mapPosHeapAryUI = malloc(lenProfileUI * sizeof(uint));
+   mapPosHeapAryUI =
+      malloc(lenProfileUI * sizeof(unsigned int));
 
    if(! mapPosHeapAryUI)
       goto memErr_fun16_sec04;
 
-   mapNtHeapArySC = malloc(lenProfileUI * sizeof(schar));
+   mapNtHeapArySC =
+      malloc(lenProfileUI * sizeof(signed char));
 
    if(! mapNtHeapArySC)
       goto memErr_fun16_sec04;
@@ -1698,7 +1705,8 @@ getNanoReads_illNano(
 
    fprintf(
       (FILE *) outFILE,
-      "id\tref\tnum_var\tprofile\n"
+      "id\tref\tnum_var\tprofile%s",
+      str_endLine
    );
 
    while(! errSC)
@@ -1828,7 +1836,9 @@ getNanoReads_illNano(
          (*buffStrPtr)[uiPos++] = mapNtHeapArySC[uiVar];
       } /*Loop: print out each variant position*/
 
-      (*buffStrPtr)[uiPos++] = '\n';
+      (*buffStrPtr)[uiPos++] = str_endLine[0];
+      if(str_endLine[1] != '\0')
+         (*buffStrPtr)[uiPos++] = str_endLine[1];
       (*buffStrPtr)[uiPos] = '\0';
 
       fprintf(
@@ -1940,8 +1950,11 @@ getNanoReads_illNano(
          nodeSTPtr->overlapUI = 0;
 
          nodeSTPtr->minDiffUI =
-            ((uint) 1 << (((sizeof(uint)) << 3) - 1)) - 1;
-            /*maximum value possible for sint*/
+            (
+                   (unsigned int) 1
+                << (((sizeof(unsigned int)) << 3) - 1)
+            ) - 1;
+            /*maximum value possible for signed int*/
 
          nodeSTPtr->maxDiffUI = 0;
 
@@ -1983,26 +1996,26 @@ getNanoReads_illNano(
             nodeSTPtr->minDiffUI =
                min_genMath(
                   nodeSTPtr->minDiffUI,
-                  (uint) diffSI
+                  (unsigned int) diffSI
                );
 
             tmpHeapProfST->minDiffUI =
                min_genMath(
                   tmpHeapProfST->minDiffUI,
-                  (uint) diffSI
+                  (unsigned int) diffSI
                );
 
 
             nodeSTPtr->maxDiffUI =
                max_genMath(
                   nodeSTPtr->maxDiffUI,
-                  (uint) diffSI
+                  (unsigned int) diffSI
                );
 
             tmpHeapProfST->maxDiffUI =
                max_genMath(
                   tmpHeapProfST->maxDiffUI,
-                  (uint) diffSI
+                  (unsigned int) diffSI
                );
          } /*If: profiles overlap*/
 
@@ -2096,7 +2109,8 @@ phead_profList_illNano(
 
    fprintf(
       (FILE *) outFILE,
-      "\tmax_diff\tprofile\tvar_depth\tx_var_depth\n"
+      "\tmax_diff\tprofile\tvar_depth\tx_var_depth%s",
+      str_endLine
    );
 } /*phead_profList_illNano*/
 
@@ -2117,7 +2131,7 @@ p_profList_illNano(
    struct profList_illNano *profListSTPtr,
    void *outFILE
 ){
-   uint uiVar = 0;
+   unsigned int uiVar = 0;
    struct prof_illNano *nodeST = 0;
 
    nodeST = profListSTPtr->listST;
@@ -2203,7 +2217,8 @@ p_profList_illNano(
 
       fprintf(
          (FILE *) outFILE,
-         "\n"
+         "%s",
+         str_endLine
       );
 
       nodeST = nodeST->nextST;
@@ -2280,15 +2295,16 @@ run_illNano(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar errSC = 0;
+   signed char errSC = 0;
 
-   schar *profHeapStr = 0;
-   uint lenProfUI = 0;
-   uint varPosUI = 0;  /*number of variant positions*/
+   signed char *profHeapStr = 0;
+   unsigned int lenProfUI = 0;
+   unsigned int varPosUI = 0;
+      /*number of variant positions*/
 
    struct samEntry samStackST;
-   schar *buffHeapStr = 0;
-   ulong lenBuffUL = 0;
+   signed char *buffHeapStr = 0;
+   unsigned long lenBuffUL = 0;
 
    struct profList_illNano profListStackST;
    struct profList_illNano *profListSTPtr = 0;

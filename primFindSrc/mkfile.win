@@ -1,0 +1,66 @@
+LD=link
+CC=cl
+coreCFLAGS= /c /O2 /Ot /Za /Tc
+CFLAGS=/DNONE
+NAME=primFind.exe
+PREFIX=%localAppData
+O=o.win
+
+genAln=..\genAln
+genLib=..\genLib
+genBio=..\genBio
+
+objFiles= \
+   $(genAln)\kmerFind.$O \
+   $(genAln)\memwater.$O \
+   $(genAln)\alnSet.$O \
+   $(genLib)\base10str.$O \
+   $(genLib)\ulCp.$O \
+   $(genAln)\indexToCoord.$O \
+   $(genBio)\seqST.$O \
+   $(genLib)\shellSort.$O \
+   $(genBio)\kmerCnt.$O \
+   $(genLib)\charCp.$O \
+   mainPrimFind.$O
+
+all: mainPrimFind.$O
+	$(LD) /out:$(NAME) $(objFiles)
+
+mainPrimFind.$O: mainPrimFind.c $(genAln)\kmerFind.$O $(genBio)\kmerCnt.$O $(genLib)\charCp.$O ../bioTools.h ../bioTools.h ../bioTools.h
+	$(CC) /Fo:mainPrimFind.$O  $(coreCFLAGS) $(CFLAGS) mainPrimFind.c
+
+$(genAln)\kmerFind.$O: $(genAln)\kmerFind.c $(genAln)\memwater.$O $(genBio)\seqST.$O  $(genLib)\shellSort.$O $(genLib)\genMath.h $(genBio)\kmerBit.h
+	$(CC) /Fo:$(genAln)\kmerFind.$O  $(coreCFLAGS) $(CFLAGS) $(genAln)\kmerFind.c
+
+$(genAln)\memwater.$O: $(genAln)\memwater.c $(genAln)\alnSet.$O $(genAln)\indexToCoord.$O $(genBio)\seqST.$O $(genLib)\genMath.h
+	$(CC) /Fo:$(genAln)\memwater.$O  $(coreCFLAGS) $(CFLAGS) $(genAln)\memwater.c
+
+$(genAln)\alnSet.$O: $(genAln)\alnSet.c $(genAln)\alnDefs.h $(genLib)\ulCp.$O $(genLib)\base10str.$O $(genLib)\endLine.h
+	$(CC) /Fo:$(genAln)\alnSet.$O  $(coreCFLAGS) $(CFLAGS) $(genAln)\alnSet.c
+
+$(genLib)\base10str.$O: $(genLib)\base10str.c $(genLib)\base10str.h
+	$(CC) /Fo:$(genLib)\base10str.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\base10str.c
+
+$(genLib)\ulCp.$O: $(genLib)\ulCp.c $(genLib)\ulCp.h
+	$(CC) /Fo:$(genLib)\ulCp.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\ulCp.c
+
+$(genAln)\indexToCoord.$O: $(genAln)\indexToCoord.c
+	$(CC) /Fo:$(genAln)\indexToCoord.$O  $(coreCFLAGS) $(CFLAGS) $(genAln)\indexToCoord.c
+
+$(genBio)\seqST.$O: $(genBio)\seqST.c $(genBio)\seqST.h $(genLib)\ulCp.$O
+	$(CC) /Fo:$(genBio)\seqST.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\seqST.c
+
+$(genLib)\shellSort.$O: $(genLib)\shellSort.c $(genLib)\shellSort.h
+	$(CC) /Fo:$(genLib)\shellSort.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\shellSort.c
+
+$(genBio)\kmerCnt.$O: $(genBio)\kmerCnt.c $(genBio)\kmerCnt.h $(genBio)\seqST.$O $(genBio)\ntTo2Bit.h $(genLib)\genMath.h
+	$(CC) /Fo:$(genBio)\kmerCnt.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\kmerCnt.c
+
+$(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
+	$(CC) /Fo:$(genLib)\charCp.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\charCp.c
+
+install:
+	move $(NAME) $(PREFIX)
+
+clean:
+	del $(objFiles)

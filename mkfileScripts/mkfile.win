@@ -1,0 +1,53 @@
+LD=link
+CC=cl
+coreCFLAGS= /c /O2 /Ot /Za /Tc
+CFLAGS=/DNONE
+NAME=filtSam.exe
+PREFIX=%localAppData
+O=o.win
+
+genBio=..\genBio
+genLib=..\genLib
+
+objFiles= \
+   $(genBio)\trimSam.$O \
+   $(genBio)\samEntry.$O \
+   $(genLib)\strAry.$O \
+   $(genLib)\ulCp.$O \
+   $(genLib)\numToStr.$O \
+   $(genLib)\base10str.$O \
+   $(genLib)\charCp.$O \
+   mainFiltSam.$O
+
+all: mainFiltSam.$O
+	$(LD) /out:$(NAME) $(objFiles)
+
+mainFiltSam.$O: mainFiltSam.c $(genBio)\trimSam.$O $(genLib)\charCp.$O ../bioTools.h ../bioTools.h
+	$(CC) /Fo:mainFiltSam.$O  $(coreCFLAGS) $(CFLAGS) mainFiltSam.c
+
+$(genBio)\trimSam.$O: $(genBio)\trimSam.c $(genBio)\trimSam.h $(genBio)\samEntry.$O
+	$(CC) /Fo:$(genBio)\trimSam.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\trimSam.c
+
+$(genBio)\samEntry.$O: $(genBio)\samEntry.c $(genBio)\samEntry.h $(genLib)\strAry.$O $(genLib)\base10str.$O $(genLib)\numToStr.$O $(genBio)\ntTo5Bit.h $(genLib)\endLine.h
+	$(CC) /Fo:$(genBio)\samEntry.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\samEntry.c
+
+$(genLib)\strAry.$O: $(genLib)\strAry.c $(genLib)\strAry.h $(genLib)\ulCp.$O
+	$(CC) /Fo:$(genLib)\strAry.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\strAry.c
+
+$(genLib)\ulCp.$O: $(genLib)\ulCp.c $(genLib)\ulCp.h
+	$(CC) /Fo:$(genLib)\ulCp.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\ulCp.c
+
+$(genLib)\numToStr.$O: $(genLib)\numToStr.c $(genLib)\numToStr.h
+	$(CC) /Fo:$(genLib)\numToStr.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\numToStr.c
+
+$(genLib)\base10str.$O: $(genLib)\base10str.c $(genLib)\base10str.h
+	$(CC) /Fo:$(genLib)\base10str.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\base10str.c
+
+$(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
+	$(CC) /Fo:$(genLib)\charCp.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\charCp.c
+
+install:
+	move $(NAME) $(PREFIX)
+
+clean:
+	del $(objFiles)

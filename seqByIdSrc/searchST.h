@@ -546,6 +546,7 @@ idToHexAry_maxLimb_searchST(
 |     o firstST to have secST values
 |     o secST to have firstST values
 \-------------------------------------------------------*/
+void
 swap_searchST(
    struct searchST *firstST,
    struct searchST *secST

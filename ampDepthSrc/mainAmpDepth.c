@@ -39,7 +39,7 @@
 #include "../genBio/ampDepth.h"
 
 /*No .c files*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "ampDepthDefs.h"
 #include "../bioTools.h"
 
@@ -70,10 +70,11 @@ void pversion_mainAmpDepth(
 
    fprintf(
       (FILE *) outFILE,
-      "ampDepth from bioTools version: %i-%02i-%02i\n",
+      "ampDepth from bioTools version: %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
-      def_day_bioTools
+      def_day_bioTools,
+      str_endLine
    );
 } /*pversion_mainAmpDepth*/
 
@@ -108,7 +109,8 @@ void phelp_mainAmpDepth(
    /*General*/
    fprintf(
      (FILE *) outFILE,
-     "ampDepth -gene-tbl gene-tbl.tsv -sam reads.sam\n"
+     "ampDepth -gene-tbl gene-tbl.tsv -sam reads.sam%s",
+     str_endLine
    );
 
    fprintf(
@@ -116,21 +118,33 @@ void phelp_mainAmpDepth(
       "  - Prints out a tsv file with the mean, min, and"
    );
 
-   fprintf((FILE *) outFILE, "\n");
+   fprintf(
+      (FILE *) outFILE,
+      "%s",
+      str_endLine
+   );
 
    fprintf(
       (FILE *) outFILE,
       "    and max read depths for each amplicon. It also"
    );
 
-   fprintf((FILE *) outFILE, "\n");
+   fprintf(
+      (FILE *) outFILE,
+      "%s",
+      str_endLine
+   );
 
    fprintf(
       (FILE *) outFILE,
       "    incudes a list of genes in each amplicon"
    );
 
-   fprintf((FILE *) outFILE, "\n");
+   fprintf(
+      (FILE *) outFILE,
+      "%s",
+      str_endLine
+   );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun02 Sec02:
@@ -154,53 +168,69 @@ void phelp_mainAmpDepth(
 
    fprintf(
       (FILE *) outFILE,
-      "Input:\n"
+      "Input:%s",
+      str_endLine
    );
 
-   fprintf((FILE *) outFILE, "  -gene-tbl: [Required]\n");
+   fprintf(
+      (FILE *) outFILE,
+      "  -gene-tbl: [Required]%s",
+      str_endLine
+   );
 
    fprintf(
      (FILE *) outFILE,
      "    o Tsv file with the coordiantes of each gene in"
    );
 
-   fprintf((FILE *) outFILE, "\n");
+   fprintf(
+      (FILE *) outFILE,
+      "%s",
+      str_endLine
+   );
 
    fprintf(
       (FILE *) outFILE,
-      "      the reference genome\n"
+      "      the reference genome%s",
+      str_endLine
    );
 
 
    fprintf(
      (FILE *) outFILE,
-     "    o Format:\n"
+     "    o Format:%s",
+     str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "      - first line is ignored (header)\n"
+     "      - first line is ignored (header)%s",
+     str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "     - example:\n"
+      "     - example:%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "       gene\tref\tdirection\tstart\tend\n"
+      "       gene\tref\tdirection\tstart\tend%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       dnaA\tNC000962.3\tF\t1\t1525\n"
+      "       dnaA\tNC000962.3\tF\t1\t1525%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       pknB\tNC000962.3\tR\t15590\t17470\n"
+      "       pknB\tNC000962.3\tR\t15590\t17470%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -210,7 +240,8 @@ void phelp_mainAmpDepth(
 
    fprintf(
       (FILE *) outFILE,
-      "  -sam: [Required (stdin)]\n"
+      "  -sam: [Required (stdin)]%s",
+      str_endLine
    );
 
    fprintf(
@@ -218,17 +249,23 @@ void phelp_mainAmpDepth(
      "    o Sam file with reads mapped to the same"
    );
 
-   fprintf((FILE *) outFILE, "\n");
+   fprintf(
+      (FILE *) outFILE,
+      "%s",
+      str_endLine
+   );
 
    fprintf(
       (FILE *) outFILE,
-      "      reference genome as file from -paf\n"
+      "      reference genome as file from -paf%s",
+      str_endLine
    );
 
 
    fprintf(
-     (FILE *) outFILE,
-     "    o You can use \"-\" to specify stdin input\n"
+      (FILE *) outFILE,
+      "    o You can use \"-\" to specify stdin input%s",
+      str_endLine
    );
 
 
@@ -237,16 +274,22 @@ void phelp_mainAmpDepth(
    *   - Print out the -out entry (output file)
    \*****************************************************/
 
-   fprintf((FILE *) outFILE, "  -out: [stdout]\n");
-
    fprintf(
-     (FILE *) outFILE,
-     "    o File to output the tsv file to\n"
+      (FILE *) outFILE,
+      "  -out: [stdout]%s",
+      str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "    o You can use \"-\" to specify stdout output\n"
+     "    o File to output the tsv file to%s",
+     str_endLine
+   );
+
+   fprintf(
+     (FILE *) outFILE,
+     "    o You can use \"-\" to specify stdout output%s",
+     str_endLine
    );
 
 
@@ -257,7 +300,9 @@ void phelp_mainAmpDepth(
 
    fprintf(
       (FILE *) outFILE,
-      "  -min-depth: [%u]\n", def_minDepth_ampDepthDefs
+      "  -min-depth: [%u]%s",
+      def_minDepth_ampDepthDefs,
+      str_endLine
    );
 
    fprintf(
@@ -265,7 +310,12 @@ void phelp_mainAmpDepth(
      "    o Minimum read depth to count base as part of"
    );
 
-   fprintf((FILE *) outFILE, "\n      an amplicon\n");
+   fprintf(
+      (FILE *) outFILE,
+      "%s      an amplicon%s",
+      str_endLine,
+      str_endLine
+   );
 
    /*****************************************************\
    * Fun02 Sec02 Sub05:
@@ -274,13 +324,15 @@ void phelp_mainAmpDepth(
 
    fprintf(
       (FILE *) outFILE,
-      "  -flag: [%s]\n",
-      globalExtraCol
+      "  -flag: [%s]%s",
+      globalExtraCol,
+      str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "    o Flag to add to the first column\n"
+     "    o Flag to add to the first column%s",
+     str_endLine
    );
 
 
@@ -291,98 +343,117 @@ void phelp_mainAmpDepth(
 
    fprintf(
       (FILE *) outFILE,
-      "Output:\n"
+      "Output:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - Prints the tsv to the file provided by -out\n"
+      "  - Prints the tsv to the file provided by -out%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 01: Value input for -flag\n"
+      "    o 01: Value input for -flag%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 02: Number marking wich amplicon on\n"
+      "    o 02: Number marking wich amplicon on%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 03: First base of first mapped gene\n"
+      "    o 03: First base of first mapped gene%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 04: Last base of last mapped gene\n"
+      "    o 04: Last base of last mapped gene%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 05: First reference base in amplicon\n"
+      "    o 05: First reference base in amplicon%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 06: Last reference base in amplicon\n"
+      "    o 06: Last reference base in amplicon%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 07: Mean read depth for amplicon\n"
+      "    o 07: Mean read depth for amplicon%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 08: Minimum read depth for amplicon\n"
+      "    o 08: Minimum read depth for amplicon%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    o 09: Maximum read depth for amplicon\n"
+      "    o 09: Maximum read depth for amplicon%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 10: Gene name\n" 
+      "    o 10: Gene name%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 11: Start of gene on reference\n" 
+      "    o 11: Start of gene on reference%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 12: End of gene on reference\n" 
+      "    o 12: End of gene on reference%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 13: Read depth of first base in gene\n" 
+      "    o 13: Read depth of first base in gene%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 14: Read depth of last base in gene\n" 
+      "    o 14: Read depth of last base in gene%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 15: Mean read depth for gene\n" 
+      "    o 15: Mean read depth for gene%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 16: Minimum read depth for gene\n" 
+      "    o 16: Minimum read depth for gene%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o 17: Maximum read depth for gene\n" 
+      "    o 17: Maximum read depth for gene%s",
+      str_endLine
    );
 } /*phelp_mainAmpDepth*/
 
@@ -439,9 +510,9 @@ input_ampDepth(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar errSC = 0;
-   schar *errStr = 0;
-   sint siArg = 1;
+   signed char errSC = 0;
+   signed char *errStr = 0;
+   signed int siArg = 1;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun03 Sec02:
@@ -480,35 +551,35 @@ input_ampDepth(
    { /*Loop: Process user input*/
       if(
          ! eql_charCp(
-            (schar *) "-gene-tbl",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-gene-tbl",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) { /*If: is gene table input*/
          ++siArg;
-         *tblStr = (schar *) argAryStr[siArg];
+         *tblStr = (signed char *) argAryStr[siArg];
       } /*If: is gene table input*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-sam",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-sam",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) { /*Else If: sam file input*/
          ++siArg;
-         *samStr = (schar *) argAryStr[siArg];
+         *samStr = (signed char *) argAryStr[siArg];
       } /*Else If: sam file input*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-out",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-out",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) { /*Else If: output file input*/
          ++siArg;
-         *outStr = (schar *) argAryStr[siArg];
+         *outStr = (signed char *) argAryStr[siArg];
       } /*Else If: output file input*/
 
       /**************************************************\
@@ -518,24 +589,24 @@ input_ampDepth(
 
       else if(
          ! eql_charCp(
-            (schar *) "-flag",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-flag",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) { /*Else If: output file input*/
          ++siArg;
-         *extraColStr = (schar *) argAryStr[siArg];
+         *extraColStr = (signed char *) argAryStr[siArg];
       } /*Else If: output file input*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-depth",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-depth",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) { /*Else If: output file input*/
          ++siArg;
-         errStr = (schar *) argAryStr[siArg];
+         errStr = (signed char *) argAryStr[siArg];
 
          errStr +=
             strToSI_base10str(
@@ -547,8 +618,9 @@ input_ampDepth(
          { /*If: input to large*/
             fprintf(
                stderr,
-               "-min-depth %s; non-numeric or to large\n",
-               errStr
+               "-min-depth %s; non-numeric or to large%s",
+               errStr,
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -562,8 +634,8 @@ input_ampDepth(
 
       else if(
          ! eql_charCp(
-            (schar *) "-h",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-h",
+            (signed char *) argAryStr[siArg],
             '\0'
          )
       ){ /*Else If: user wanted help message*/
@@ -573,8 +645,8 @@ input_ampDepth(
 
       else if(
          ! eql_charCp(
-            (schar *) "--h",
-            (schar *) argAryStr[siArg],
+            (signed char *) "--h",
+            (signed char *) argAryStr[siArg],
             '\0'
          )
       ){ /*Else If: user wanted help message*/
@@ -584,8 +656,8 @@ input_ampDepth(
 
       else if(
          ! eql_charCp(
-            (schar *) "help",
-            (schar *) argAryStr[siArg],
+            (signed char *) "help",
+            (signed char *) argAryStr[siArg],
             '\0'
          )
       ){ /*Else If: user wanted help message*/
@@ -595,8 +667,8 @@ input_ampDepth(
 
       else if(
          ! eql_charCp(
-            (schar *) "-help",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-help",
+            (signed char *) argAryStr[siArg],
             '\0'
          )
       ){ /*Else If: user wanted help message*/
@@ -606,8 +678,8 @@ input_ampDepth(
 
       else if(
          ! eql_charCp(
-            (schar *) "--help",
-            (schar *) argAryStr[siArg],
+            (signed char *) "--help",
+            (signed char *) argAryStr[siArg],
             '\0'
          )
       ){ /*Else If: user wanted help message*/
@@ -622,8 +694,8 @@ input_ampDepth(
 
       else if(
          ! eql_charCp(
-            (schar *) "-v",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-v",
+            (signed char *) argAryStr[siArg],
             '\0'
          )
       ){ /*Else If: user wanted version number*/
@@ -633,8 +705,8 @@ input_ampDepth(
 
       else if(
          ! eql_charCp(
-            (schar *) "--v",
-            (schar *) argAryStr[siArg],
+            (signed char *) "--v",
+            (signed char *) argAryStr[siArg],
             '\0'
          )
       ){ /*Else If: user wanted version number*/
@@ -644,8 +716,8 @@ input_ampDepth(
 
       else if(
          ! eql_charCp(
-            (schar *) "version",
-            (schar *) argAryStr[siArg],
+            (signed char *) "version",
+            (signed char *) argAryStr[siArg],
             '\0'
          )
       ){ /*Else If: user wanted version number*/
@@ -655,8 +727,8 @@ input_ampDepth(
 
       else if(
          ! eql_charCp(
-            (schar *) "-version",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-version",
+            (signed char *) argAryStr[siArg],
             '\0'
          )
       ){ /*Else If: user wanted version number*/
@@ -666,8 +738,8 @@ input_ampDepth(
 
       else if(
          ! eql_charCp(
-            (schar *) "--version",
-            (schar *) argAryStr[siArg],
+            (signed char *) "--version",
+            (signed char *) argAryStr[siArg],
             '\0'
          )
       ){ /*Else If: user wanted version number*/
@@ -684,8 +756,9 @@ input_ampDepth(
       { /*Else: invalid input*/
          fprintf(
             stderr,
-            "%s is not recognized\n",
-            argAryStr[siArg]
+            "%s is not recognized%s",
+            argAryStr[siArg],
+            str_endLine
          );
 
          goto err_fun03_sec04;
@@ -760,26 +833,28 @@ main(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*User input*/
-   schar *geneTblFileStr = 0;
-   schar *samStr = 0;
-   schar *outStr = 0;
-   sint minDepthSI = def_minDepth_ampDepthDefs;
-   schar *extraColStr = globalExtraCol;
+   signed char *geneTblFileStr = 0;
+   signed char *samStr = 0;
+   signed char *outStr = 0;
+   signed int minDepthSI = def_minDepth_ampDepthDefs;
+   signed char *extraColStr = globalExtraCol;
 
-   schar errSC = 0;  /*Error report*/
-   ulong errUL = 0;  /*For gene table reading errors*/
+   signed char errSC = 0;  /*Error report*/
+   unsigned long errUL = 0;
+      /*For gene table reading errors*/
    
-   sint numGenesSI = 0;
+   signed int numGenesSI = 0;
 
-   sint *readMapHeapArySI = 0; /*Mapped region of reads*/
-   sint offTargSI = 0;
-   sint noMapSI = 0;
+   signed int *readMapHeapArySI = 0;
+      /*Mapped region of reads*/
+   signed int offTargSI = 0;
+   signed int noMapSI = 0;
 
    struct geneCoord *genesHeapST = 0; 
 
    struct samEntry samStackST;
-   schar *samBuffHeapStr = 0;
-   ulong lenSamBuffUL = 0;
+   signed char *samBuffHeapStr = 0;
+   unsigned long lenSamBuffUL = 0;
 
    FILE *samFILE = 0;
    FILE *outFILE = 0;
@@ -845,8 +920,9 @@ main(
       { /*If: the file could not be opened*/
          fprintf(
             stderr,
-            "-sam %s could not be opened\n",
-            samStr
+            "-sam %s could not be opened%s",
+            samStr,
+            str_endLine
           );
 
           goto err_main_sec06_sub02;
@@ -872,8 +948,9 @@ main(
       { /*If: the file could not be opened*/
          fprintf(
             stderr,
-            "-out %s could not be opened\n",
-            outStr
+            "-out %s could not be opened%s",
+            outStr,
+            str_endLine
           );
 
           goto err_main_sec06_sub02;
@@ -907,8 +984,9 @@ main(
       { /*If: This was an file error*/;
          fprintf(
             stderr,
-            "Could not open %s\n",
-            geneTblFileStr
+            "Could not open %s%s",
+            geneTblFileStr,
+            str_endLine
          );
       } /*If: This was an file error*/
 
@@ -916,8 +994,9 @@ main(
       { /*Else If: This was an memory error*/;
          fprintf(
             stderr,
-            "Memory error when reading in %s\n",
-            geneTblFileStr
+            "Memory error when reading in %s%s",
+            geneTblFileStr,
+            str_endLine
          );
       } /*Else If: This was an memory error*/
 
@@ -925,9 +1004,10 @@ main(
       { /*Else If: This was an memory error*/;
          fprintf(
             stderr,
-            "Line number %lu in %s is not valid\n",
+            "Line number %lu in %s is not valid%s",
             (errUL >> 8),
-            geneTblFileStr
+            geneTblFileStr,
+            str_endLine
          );
       } /*Else If: This was an memory error*/
 
@@ -945,7 +1025,8 @@ main(
    { /*If: had memory error*/
       fprintf(
           stderr,
-          "memory error\n"
+          "memory error%s",
+          str_endLine
       );
           
       goto err_main_sec06_sub02;
@@ -961,14 +1042,15 @@ main(
    readMapHeapArySI =
       calloc(
          offTargSI,
-         sizeof(uint)
+         sizeof(unsigned int)
       );
 
    if(readMapHeapArySI == 0)
    { /*If: I had a memory error*/
       fprintf(
          stderr,
-         "Memory error (main sec05)\n"
+         "Memory error (main sec05)%s",
+         str_endLine
       );
 
       goto err_main_sec06_sub02;
@@ -1025,8 +1107,8 @@ main(
 
       addRead_ampDepth(
          &samStackST,
-         (sint) genesHeapST->startAryUI[0],
-         (sint) genesHeapST->endAryUI[numGenesSI],
+         (signed int) genesHeapST->startAryUI[0],
+         (signed int) genesHeapST->endAryUI[numGenesSI],
          readMapHeapArySI,
          &offTargSI
       ); /*Add in the coverd bases to the histogram*/
@@ -1051,7 +1133,8 @@ main(
    { /*If: I had a memory error*/
       fprintf(
          stderr,
-         "Memory error while reading sam file\n"
+         "Memory error while reading sam file%s",
+         str_endLine
       );
 
       goto err_main_sec06_sub02;
@@ -1074,7 +1157,7 @@ main(
    phead_ampDepth(outFILE);
 
    phist_ampDepth(
-      (sint *) readMapHeapArySI,
+      (signed int *) readMapHeapArySI,
       minDepthSI,
       genesHeapST,
       numGenesSI,
@@ -1112,7 +1195,7 @@ main(
    \*****************************************************/
 
    errSC = 0;
-   goto cleanUp_main_sec06_sub03;
+      goto cleanUp_main_sec06_sub03;
 
    /*****************************************************\
    * Main Sec06 Sub02:
@@ -1120,8 +1203,8 @@ main(
    \*****************************************************/
 
    err_main_sec06_sub02:;
-   errSC = -1;
-   goto cleanUp_main_sec06_sub03;
+      errSC = -1;
+      goto cleanUp_main_sec06_sub03;
 
    /*****************************************************\
    * Main Sec06 Sub03:
@@ -1130,39 +1213,39 @@ main(
 
    cleanUp_main_sec06_sub03:;
 
-   if(samBuffHeapStr)
-      free(samBuffHeapStr);
+      if(samBuffHeapStr)
+         free(samBuffHeapStr);
 
-   samBuffHeapStr = 0;
-   lenSamBuffUL = 0;
+      samBuffHeapStr = 0;
+      lenSamBuffUL = 0;
 
-   freeStack_samEntry(&samStackST);
+      freeStack_samEntry(&samStackST);
 
-   freeHeap_geneCoord(genesHeapST);
-   genesHeapST = 0;
+      freeHeap_geneCoord(genesHeapST);
+      genesHeapST = 0;
 
-   if(readMapHeapArySI)
-      free(readMapHeapArySI);
+      if(readMapHeapArySI)
+         free(readMapHeapArySI);
 
-   readMapHeapArySI = 0;
+      readMapHeapArySI = 0;
 
-   if(
-         samFILE
-      && samFILE != stdin
-      && samFILE != stdout
-   ) fclose(samFILE);
+      if(
+            samFILE
+         && samFILE != stdin
+         && samFILE != stdout
+      ) fclose(samFILE);
 
-   samFILE = 0;
+      samFILE = 0;
 
-   if(
-         outFILE
-      && outFILE != stdin
-      && outFILE != stdout
-   ) fclose(outFILE);
+      if(
+            outFILE
+         && outFILE != stdin
+         && outFILE != stdout
+      ) fclose(outFILE);
 
-   outFILE = 0;
+      outFILE = 0;
 
-   return(errSC);
+      return(errSC);
 } /*main*/
 
 

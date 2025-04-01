@@ -36,7 +36,7 @@
 #include "../genClust/illNano.h"
 
 /*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
@@ -72,10 +72,11 @@ pversion_mainIllNano(
 ){
    fprintf(
       (FILE *) outFILE,
-      "illNano from bioTools version: %i-%02i-%02i\n",
+      "illNano from bioTools version: %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
-      def_day_bioTools
+      def_day_bioTools,
+      str_endLine
    );
 } /*pversion_mainIllNano*/
 
@@ -108,23 +109,27 @@ phelp_mainIllNano(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    fprintf(
-      (FILE *) outFILE,
-      "illNano -ill-tsv variants.tsv -sam-ont reads.sam\n"
+     (FILE *) outFILE,
+     "illNano -ill-tsv variants.tsv -sam-ont reads.sam%s",
+     str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - extracts read ids for ONT sequence reads\n"
+      "  - extracts read ids for ONT sequence reads%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    that have Illumina variants\n"
+      "    that have Illumina variants%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - this is inteaded for sick (ill) nanopores\n"
+      "  - this is inteaded for sick (ill) nanopores%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -147,7 +152,8 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "Input:\n"
+      "Input:%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -170,7 +176,8 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "   FILE IO:\n"
+      "   FILE IO:%s",
+      str_endLine
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -180,17 +187,20 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "     -ill-tsv variants.tsv: [Required]\n"
+      "     -ill-tsv variants.tsv: [Required]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       o tbCon variant tsv for Illumina reads\n"
+      "       o tbCon variant tsv for Illumina reads%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       o use \"-ill-tsv -\" for stdin input \n"
+      "       o use \"-ill-tsv -\" for stdin input %s",
+      str_endLine
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -200,22 +210,26 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "    -sam-ont variants.tsv: [Required]\n"
+      "    -sam-ont reads.sam: [Required]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       o sam file with ONT reads mapped to same\n"
+      "       o sam file with ONT reads mapped to same%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "         reference as -ill-tsv\n"
+      "         reference as -ill-tsv%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       o use \"-sam-ont -\" for stdin input \n"
+      "       o use \"-sam-ont -\" for stdin input %s",
+      str_endLine
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -225,17 +239,20 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "    -out filt.tsv: [Optional; stdout]\n"
+      "    -out filt.tsv: [Optional; stdout]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       o file name to print output to\n"
+      "       o file name to print output to%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       o use \"-out -\" for stdout output \n"
+      "       o use \"-out -\" for stdout output %s",
+      str_endLine
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -244,18 +261,21 @@ phelp_mainIllNano(
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
    fprintf(
-      (FILE *) outFILE,
-      "    -uniq-out uniqe_profiles.tsv: [Optional; No]\n"
+     (FILE *) outFILE,
+     "    -uniq-out uniqe_profiles.tsv: [Optional; No]%s",
+     str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       o file name to print unique profiles to\n"
+      "       o file name to print unique profiles to%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       o use \"-uniq-out -\" for stdout output \n"
+      "       o use \"-uniq-out -\" for stdout output %s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -280,7 +300,8 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "   SETTINGS:\n"
+      "   SETTINGS:%s",
+      str_endLine
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -290,19 +311,22 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "     -min-depth %i: [Optional; %i]\n",
+      "     -min-depth %i: [Optional; %i]%s",
       def_minDepth_mainIllNano,
-      def_minDepth_mainIllNano
+      def_minDepth_mainIllNano,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       o minimum read depth to keep an Illumina\n"
+      "       o minimum read depth to keep an Illumina%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "         SNP\n"
+      "         SNP%s",
+      str_endLine
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -312,19 +336,22 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "     -min-perc-depth %04f: [Optional; %04f]\n",
+      "     -min-perc-depth %04f: [Optional; %04f]%s",
       def_minPercDepth_mainIllNano,
-      def_minPercDepth_mainIllNano
+      def_minPercDepth_mainIllNano,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       o minimum percent read depth to keep\n"
+      "       o minimum percent read depth to keep%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "         an Illumina SNP\n"
+      "         an Illumina SNP%s",
+      str_endLine
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -334,19 +361,22 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "     -min-perc-del %04f: [Optional; %04f]\n",
+      "     -min-perc-del %04f: [Optional; %04f]%s",
       def_minPercDel_mainIllNano,
-      def_minPercDel_mainIllNano
+      def_minPercDel_mainIllNano,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       o minimum percent read depth to keep\n"
+      "       o minimum percent read depth to keep%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "         an Illumina deletion\n"
+      "         an Illumina deletion%s",
+      str_endLine
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -357,33 +387,39 @@ phelp_mainIllNano(
    if(def_transition_mainIllNano)
       fprintf(
          (FILE *) outFILE,
-         "     -tran: [Optional; Yes]\n"
+         "     -tran: [Optional; Yes]%s",
+         str_endLine
       );
    else
       fprintf(
          (FILE *) outFILE,
-         "     -tran: [Optional; No]\n"
+         "     -tran: [Optional; No]%s",
+         str_endLine
       );
 
    fprintf(
       (FILE *) outFILE,
-      "       o if nanopore read has unkown variant\n"
+      "       o if nanopore read has unkown variant%s",
+      str_endLine
+   );
+
+   fprintf(
+     (FILE *) outFILE,
+     "         assign to illumina transition (if have)%s",
+     str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "         assign to illumina transition (if have)\n"
+      "         before calling unkown (%c) variant%s",
+      def_unkown_illNano,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "         before calling unkown (%c) variant\n",
-      def_unkown_illNano
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "       o use \"-no-tran\" to disable\n"
+      "       o use \"-no-tran\" to disable%s",
+      str_endLine
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -394,27 +430,32 @@ phelp_mainIllNano(
    if(def_partOverlapMerge_mainIllNano)
       fprintf(
          (FILE *) outFILE,
-         "     -part-overlap: [Optional; Yes]\n"
+         "     -part-overlap: [Optional; Yes]%s",
+         str_endLine
       );
    else
       fprintf(
          (FILE *) outFILE,
-         "     -part-overlap: [Optional; No]\n"
+         "     -part-overlap: [Optional; No]%s",
+         str_endLine
       );
 
    fprintf(
       (FILE *) outFILE,
-      "       o merge profiles were one read does not\n"
+      "       o merge profiles were one read does not%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "         fully cover the other (can be longer)\n"
+      "         fully cover the other (can be longer)%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "       o disable with \"-full-overlap\"\n"
+      "       o disable with \"-full-overlap\"%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -424,17 +465,20 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "   OTHER:\n"
+      "   OTHER:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "     -h: print this help message and exit\n"
+      "     -h: print this help message and exit%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "     -v: print version number and exit\n"
+      "     -v: print version number and exit%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -444,62 +488,74 @@ phelp_mainIllNano(
 
    fprintf(
       (FILE *) outFILE,
-      "Output:\n"
+      "Output:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - Prints: tsv file with ids of reads having\n"
+      "  - Prints: tsv file with ids of reads having%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    variants to \"-out\" (default stdout)\n"
+      "    variants to \"-out\" (default stdout)%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o column 1: read id\n"
+      "    o column 1: read id%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o column 2: reference id\n"
+      "    o column 2: reference id%s",
+      str_endLine
+   );
+
+   fprintf(
+     (FILE *) outFILE,
+     "    o column 3: number variant positions in read%s",
+     str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o column 3: number variant positions in read\n"
+      "    o column 4: variant profile%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o column 4: variant profile\n"
+      "      - format: reference_position_base%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      - format: reference_position_base\n"
+      "        - A, C, G, T: nucleotide at position%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "        - A, C, G, T: nucleotide at position\n"
+      "        - D: is deletion at position%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "        - D: is deletion at position\n"
+      "        - X: does not match Illumina profile%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "        - X: does not match Illumina profile \n"
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "      - example: 123A_130D_140X_150G_200T_250C\n"
+      "      - example: 123A_130D_140X_150G_200T_250C%s",
+      str_endLine
    );
 } /*phelp_mainIllNano*/
 
@@ -573,9 +629,9 @@ input_mainIllNano(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar errSC = 0;
-   schar *tmpStr = 0;
-   sint siArg = 1;
+   signed char errSC = 0;
+   signed char *tmpStr = 0;
+   signed int siArg = 1;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun03 Sec02:
@@ -618,42 +674,46 @@ input_mainIllNano(
    { /*Loop: get user input*/
       if(
          ! eqlNull_ulCp(
-            (schar *) "-ill-tsv",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-ill-tsv",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*If: illumina tsv file*/
          ++siArg;
-         *illTsvFileStrPtr = (schar *) argAryStr[siArg];
+         *illTsvFileStrPtr =
+            (signed char *) argAryStr[siArg];
       } /*If: illumina tsv file*/
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-sam-ont",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-sam-ont",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: nanopore reads in sam file*/
          ++siArg;
-         *ontSamFileStrPtr = (schar *) argAryStr[siArg];
+         *ontSamFileStrPtr =
+           (signed char *) argAryStr[siArg];
       } /*Else If: nanopore reads in sam file*/
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-out",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-out",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: output file*/
          ++siArg;
-         *outFileStrPtr = (schar *) argAryStr[siArg];
+         *outFileStrPtr =
+            (signed char *) argAryStr[siArg];
       } /*Else If: output file*/
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-uniq-out",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-uniq-out",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: output file*/
          ++siArg;
-         *uniqFileStrPtr = (schar *) argAryStr[siArg];
+         *uniqFileStrPtr =
+            (signed char *) argAryStr[siArg];
       } /*Else If: output file*/
 
       /**************************************************\
@@ -678,12 +738,12 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-min-depth",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-min-depth",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: min read depth (Illumina)*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
@@ -695,8 +755,9 @@ input_mainIllNano(
          { /*If: error*/
             fprintf(
                stderr,
-               "-min-depth %s; non-numeric or to large\n",
-               argAryStr[siArg]
+               "-min-depth %s; non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -710,8 +771,8 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-min-perc-depth",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-min-perc-depth",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: min percent read depth (Illumina)*/
          ++siArg;
@@ -725,8 +786,8 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-min-perc-del",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-min-perc-del",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: min percent read depth (Illumina)*/
          ++siArg;
@@ -740,15 +801,15 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-tran",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-tran",
+            (signed char *) argAryStr[siArg]
          )
       ) *tranBlPtr = 1;
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-no-tran",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-no-tran",
+            (signed char *) argAryStr[siArg]
          )
       ) *tranBlPtr = 0;
 
@@ -759,15 +820,15 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-part-overlap",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-part-overlap",
+            (signed char *) argAryStr[siArg]
          )
       ) *partOverlapBlPtr = 1;
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-full-overlap",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-full-overlap",
+            (signed char *) argAryStr[siArg]
          )
       ) *partOverlapBlPtr = 0;
 
@@ -778,8 +839,8 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-h",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-h",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: help message request*/
          phelp_mainIllNano(stdout);
@@ -788,8 +849,8 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "--h",
-            (schar *) argAryStr[siArg]
+            (signed char *) "--h",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: help message request*/
          phelp_mainIllNano(stdout);
@@ -798,8 +859,8 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "help",
-            (schar *) argAryStr[siArg]
+            (signed char *) "help",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: help message request*/
          phelp_mainIllNano(stdout);
@@ -808,8 +869,8 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-help",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-help",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: help message request*/
          phelp_mainIllNano(stdout);
@@ -818,8 +879,8 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "--help",
-            (schar *) argAryStr[siArg]
+            (signed char *) "--help",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: help message request*/
          phelp_mainIllNano(stdout);
@@ -833,8 +894,8 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-v",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-v",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: version number request*/
          pversion_mainIllNano(stdout);
@@ -843,8 +904,8 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "--v",
-            (schar *) argAryStr[siArg]
+            (signed char *) "--v",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: version number request*/
          pversion_mainIllNano(stdout);
@@ -853,8 +914,8 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "version",
-            (schar *) argAryStr[siArg]
+            (signed char *) "version",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: version number request*/
          pversion_mainIllNano(stdout);
@@ -863,8 +924,8 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "-version",
-            (schar *) argAryStr[siArg]
+            (signed char *) "-version",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: version number request*/
          pversion_mainIllNano(stdout);
@@ -873,8 +934,8 @@ input_mainIllNano(
 
       else if(
          ! eqlNull_ulCp(
-            (schar *) "--version",
-            (schar *) argAryStr[siArg]
+            (signed char *) "--version",
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: version number request*/
          pversion_mainIllNano(stdout);
@@ -890,8 +951,9 @@ input_mainIllNano(
       { /*Else: ivalid input*/
          fprintf(
             stderr,
-            "%s is not recongnized\n",
-            argAryStr[siArg]
+            "%s is not recongnized%s",
+            argAryStr[siArg],
+            str_endLine
          );
 
          goto err_fun03_sec04;
@@ -961,18 +1023,19 @@ main(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar errSC = 0;
+   signed char errSC = 0;
 
-   schar *illTsvFileStr = 0;
-   schar *ontSamFileStr = 0;
-   schar *outFileStr = 0;
-   schar *uniqFileStr = 0; /*for printing uniq varaints*/
+   signed char *illTsvFileStr = 0;
+   signed char *ontSamFileStr = 0;
+   signed char *outFileStr = 0;
+   signed char *uniqFileStr = 0;/*printing uniq varaints*/
 
-   uint minDepthUI = def_minDepth_mainIllNano;
+   unsigned int minDepthUI = def_minDepth_mainIllNano;
    float minPercDepthF  = def_minPercDepth_mainIllNano;
    float minPercDelF  = def_minPercDel_mainIllNano;
-   schar tranBl  = def_transition_mainIllNano;
-   schar partOverlapBl = def_partOverlapMerge_mainIllNano;
+   signed char tranBl  = def_transition_mainIllNano;
+   signed char partOverlapBl =
+      def_partOverlapMerge_mainIllNano;
 
    FILE *illFILE = 0;
    FILE *ontFILE = 0;
@@ -1040,8 +1103,9 @@ main(
       { /*If: file error*/
          fprintf(
             stderr,
-            "could not open -ill-tsv %s\n",
-            illTsvFileStr
+            "could not open -ill-tsv %s%s",
+            illTsvFileStr,
+            str_endLine
          );
 
          goto err_main_sec04;
@@ -1070,8 +1134,9 @@ main(
       { /*If: file error*/
          fprintf(
             stderr,
-            "could not open -sam-ont %s\n",
-            ontSamFileStr
+            "could not open -sam-ont %s%s",
+            ontSamFileStr,
+            str_endLine
          );
 
          goto err_main_sec04;
@@ -1084,9 +1149,10 @@ main(
    ){ /*If: two stdin files*/
       fprintf(
          stderr,
-         "-ill-tsv %s and -sam-ont %s are from stdin\n",
+         "-ill-tsv %s and -sam-ont %s are from stdin%s",
          illTsvFileStr,
-         ontSamFileStr
+         ontSamFileStr,
+         str_endLine
       );
 
       goto err_main_sec04;
@@ -1114,8 +1180,9 @@ main(
       { /*If: file error*/
          fprintf(
             stderr,
-            "could not open -out %s\n",
-            outFileStr
+            "could not open -out %s%s",
+            outFileStr,
+            str_endLine
          );
 
          goto err_main_sec04;
@@ -1136,12 +1203,14 @@ main(
       { /*If: dual stdout output*/
          fprintf(
             stderr,
-            "printing uniqe profiles and ids tsv's to\n"
+            "printing uniqe profiles and ids tsv's to%s",
+            str_endLine
           );
 
          fprintf(
             stderr,
-            "  stdout\n"
+            "  stdout%s",
+            str_endLine
           );
       } /*If: dual stdout output*/
 
@@ -1160,8 +1229,9 @@ main(
       { /*If: file error*/
          fprintf(
             stderr,
-            "could not open -uniq-out %s\n",
-            outFileStr
+            "could not open -uniq-out %s%s",
+            outFileStr,
+            str_endLine
          );
 
          goto err_main_sec04;
@@ -1192,8 +1262,9 @@ main(
       { /*If: no variants found*/
          fprintf(
             stderr,
-            "-ill-tsv %s has no variations\n",
-            illTsvFileStr
+            "-ill-tsv %s has no variations%s",
+            illTsvFileStr,
+            str_endLine
          );
 
          errSC = 0;
@@ -1203,12 +1274,14 @@ main(
       else if(errSC == def_memErr_illNano)
          fprintf(
             stderr,
-            "memory error while running illNano\n"
+            "memory error while running illNano%s",
+            str_endLine
          );
       else
          fprintf(
             stderr,
-            "file error while running illNano\n"
+            "file error while running illNano%s",
+            str_endLine
          );
 
       goto err_main_sec04;

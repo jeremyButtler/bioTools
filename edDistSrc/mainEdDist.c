@@ -31,7 +31,7 @@
 #include "../genBio/edDist.h"
 
 /*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../genLib/genMath.h"
 #include "../bioTools.h"
 
@@ -72,10 +72,11 @@ pversion_mainEdDist(
 ){
    fprintf(
       (FILE *) outFILE,
-      "edDist from bioTools version: %i-%02i-%02i\n",
+      "edDist from bioTools version: %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
-      def_day_bioTools
+      def_day_bioTools,
+      str_endLine
    );
 } /*pversion_mainEdDist*/
 
@@ -110,24 +111,28 @@ phelp_mainEdDist(
 
    fprintf(
       (FILE *) outFILE,
-      "edDist -sam reads.sam\n"
+      "edDist -sam reads.sam%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - prints an table of adjusted edit distances\n"
+      "  - prints an table of adjusted edit distances%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - edit distance:\n"
+      "  - edit distance:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    (SNPs with q-score > %i) + (indels > %i)\n",
+      "    (SNPs with q-score > %i) + (indels > %i)%s",
       def_minSnpQ_mainEdDist - 1,
-      def_minIndelLen_mainEdDist - 1
+      def_minIndelLen_mainEdDist - 1,
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -154,7 +159,8 @@ phelp_mainEdDist(
 
    fprintf(
       (FILE *) outFILE,
-      "Input:\n"
+      "Input:%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -164,33 +170,39 @@ phelp_mainEdDist(
 
    fprintf(
       (FILE *) outFILE,
-      "  -sam reads.sam: [Required]\n"
+      "  -sam reads.sam: [Required]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o sam file with reads to find edit distance\n"
+      "    o sam file with reads to find edit distance%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o use \"-sam -\" for stdin input\n"
+      "    o use \"-sam -\" for stdin input%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -out stats.tsv: [Optional; stdout]\n"
+      "  -out stats.tsv: [Optional; stdout]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o file to print distance table to\n"
+      "    o file to print distance table to%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o use \"-out -\" for stdout\n"
+      "    o use \"-out -\" for stdout%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -200,63 +212,75 @@ phelp_mainEdDist(
 
    fprintf(
       (FILE *) outFILE,
-      "  -ref ref.sam: [Optional; No]\n"
+      "  -ref ref.sam: [Optional; No]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o sam file with reference mapped to same\n"
+      "    o sam file with reference mapped to same%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      reference as read\n"
+      "      reference as read%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o use \"-ref -\" for stdin input\n"
+      "    o use \"-ref -\" for stdin input%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o edit distence is for -ref ref.sam not\n"
+      "    o edit distence is for -ref ref.sam not%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      orignal reference\n"
+      "      orignal reference%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o insertions are not re-aligned, so only\n"
+      "    o insertions are not re-aligned, so only%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      number of insertions present is checked\n"
+      "      number of insertions present is checked%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -ref-fa ref.fa: [Optional; Replaces -ref]\n"
+      "  -ref-fa ref.fa: [Optional; Replaces -ref]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o fasta file with reference filter\n"
+      "    o fasta file with reference filter%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      transitions with (sets -no-tran)\n"
+      "      transitions with (sets -no-tran)%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o use \"-ref-fa -\" for stdin input\n"
+      "    o use \"-ref-fa -\" for stdin input%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -277,32 +301,37 @@ phelp_mainEdDist(
 
    fprintf(
       (FILE *) outFILE,
-      "  -overlap %0.2f: [Optional; %0.2f]\n",
+      "  -overlap %0.2f: [Optional; %0.2f]%s",
       def_minPercOverlap_mainEdDist,
-      def_minPercOverlap_mainEdDist
+      def_minPercOverlap_mainEdDist,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum percent overlap to score read\n"
+      "    o minimum percent overlap to score read%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -window %u: [Optional; %u]\n",
+      "  -window %u: [Optional; %u]%s",
       def_winSize_mainEdDist,
-      def_winSize_mainEdDist
+      def_winSize_mainEdDist,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o size of window for window error rates\n"
+      "    o size of window for window error rates%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o each window move is one full window\n"
+      "    o each window move is one full window%s",
+      str_endLine
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -312,32 +341,37 @@ phelp_mainEdDist(
 
    fprintf(
       (FILE *) outFILE,
-      "  -q %i: [Optional; %i]\n",
+      "  -q %i: [Optional; %i]%s",
       def_minSnpQ_mainEdDist,
-      def_minSnpQ_mainEdDist
+      def_minSnpQ_mainEdDist,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum q-score to count a SNP\n"
+      "    o minimum q-score to count a SNP%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -indel %i: [Optional; %i]\n",
+      "  -indel %i: [Optional; %i]%s",
       def_minIndelLen_mainEdDist,
-      def_minIndelLen_mainEdDist
+      def_minIndelLen_mainEdDist,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum indel length to count an indel\n"
+      "    o minimum indel length to count an indel%s",
+      str_endLine
    );
 
    fprintf(
-      (FILE *) outFILE,
-      "    o the full indel length is added to distance\n"
+     (FILE *) outFILE,
+     "    o the full indel length is added to distance%s",
+     str_endLine
    );
 
 
@@ -349,41 +383,48 @@ phelp_mainEdDist(
    if(def_depthProf_mainEdDist)
       fprintf(
          (FILE *) outFILE,
-         "  -depth-prof: [Optional; Yes]\n"
+         "  -depth-prof: [Optional; Yes]%s",
+         str_endLine
       );
 
    else
       fprintf(
          (FILE *) outFILE,
-         "  -depth-prof: [Optional; No]\n"
+         "  -depth-prof: [Optional; No]%s",
+         str_endLine
       );
 
    fprintf(
       (FILE *) outFILE,
-      "    o profile reference depth and only keep\n"
+      "    o profile reference depth and only keep%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      differences > minimum depth\n"
+      "      differences > minimum depth%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o disable with \"-no-depth-prof\"\n"
+      "    o disable with \"-no-depth-prof\"%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "  -min-depth %i: [Optional; %i]\n",
+      "  -min-depth %i: [Optional; %i]%s",
      def_minDepth_mainEdDist,
-     def_minDepth_mainEdDist
+     def_minDepth_mainEdDist,
+     str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum read depth for depth profiling\n"
+      "    o minimum read depth for depth profiling%s",
+      str_endLine
    );
 
 
@@ -394,36 +435,42 @@ phelp_mainEdDist(
 
    fprintf(
       (FILE *) outFILE,
-      "  -err %0.3f: [Optional; %0.3f]\n",
+      "  -err %0.3f: [Optional; %0.3f]%s",
       def_errRate_mainEdDist,
-      def_errRate_mainEdDist
+      def_errRate_mainEdDist,
+      str_endLine
    );
    
    fprintf(
       (FILE *) outFILE,
-      "    o expected error rates for reads\n"
+      "    o expected error rates for reads%s",
+      str_endLine
    );
 
 
    if(def_readRate_mainEdDist)
       fprintf(
          (FILE *) outFILE,
-         "  -cmp-read: [Optional; Yes]\n"
+         "  -cmp-read: [Optional; Yes]%s",
+         str_endLine
       );
    else
       fprintf(
          (FILE *) outFILE,
-         "  -cmp-read: [Optional; No]\n"
+         "  -cmp-read: [Optional; No]%s",
+         str_endLine
       );
    
    fprintf(
       (FILE *) outFILE,
-      "    o use read error rate (error rate * 2)\n"
+      "    o use read error rate (error rate * 2)%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o disable with \"-cmp-con\"\n"
+      "    o disable with \"-cmp-con\"%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -433,12 +480,14 @@ phelp_mainEdDist(
 
    fprintf(
       (FILE *) outFILE,
-      "  -h: print this help message and exit\n"
+      "  -h: print this help message and exit%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -v: print version number and exit\n"
+      "  -v: print version number and exit%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -448,27 +497,32 @@ phelp_mainEdDist(
 
    fprintf(
       (FILE *) outFILE,
-      "Output:\n"
+      "Output:%s",
+      str_endLine
+   );
+
+   fprintf(
+     (FILE *) outFILE,
+     "  - prints read id, reference id, edit distance,%s",
+     str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - prints read id, reference id, edit distance,\n"
+      "    edit distance / error rate, overlap length,%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    edit distance / error rate, overlap length,\n"
+      "    number indels counted, and number indel%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    number indels counted, and number indel\n"
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "    events to stdout\n"
+      "    events to stdout%s",
+      str_endLine
    );
 } /*phelp_mainEdDist*/
 
@@ -558,9 +612,9 @@ input_mainEdDist(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   sint siArg = 1;
-   schar errSC = 0;
-   schar *tmpStr = 0;
+   signed int siArg = 1;
+   signed char errSC = 0;
+   signed char *tmpStr = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun03 Sec02:
@@ -601,48 +655,52 @@ input_mainEdDist(
    { /*Loop: get input*/
       if(
          ! eql_charCp(
-            (schar *) "-sam",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-sam",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*If: sam file with reads input*/
          ++siArg;
-         *samFileStrPtr = (schar *) argAryStr[siArg];
+         *samFileStrPtr =
+            (signed char *) argAryStr[siArg];
       } /*If: sam file with reads input*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-ref",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-ref",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: reference file*/
          ++siArg;
-         *refFileStrPtr = (schar *) argAryStr[siArg];
+         *refFileStrPtr =
+            (signed char *) argAryStr[siArg];
          *faRefBlPtr = 0;
       } /*Else If: reference file*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-ref-fa",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-ref-fa",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: reference file*/
          ++siArg;
-         *refFileStrPtr = (schar *) argAryStr[siArg];
+         *refFileStrPtr =
+            (signed char *) argAryStr[siArg];
          *faRefBlPtr = 1;
       } /*Else If: reference file*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-out",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-out",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: output file*/
          ++siArg;
-         *outFileStrPtr = (schar *) argAryStr[siArg];
+         *outFileStrPtr =
+            (signed char *) argAryStr[siArg];
       } /*Else If: output file*/
 
       /**************************************************\
@@ -665,13 +723,13 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "-q",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-q",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum q-score for snp*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUC_base10str(
@@ -683,8 +741,9 @@ input_mainEdDist(
          { /*If: non-numeric or to large*/
             fprintf(
                stderr,
-               "-q %s is to large or non-numeric\n",
-               argAryStr[siArg]
+               "-q %s is to large or non-numeric%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -693,13 +752,13 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "-indel",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-indel",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: min indel length*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
@@ -711,8 +770,9 @@ input_mainEdDist(
          { /*If: non-numeric or to large*/
             fprintf(
                stderr,
-               "-indel %s is to large or non-numeric\n",
-               argAryStr[siArg]
+               "-indel %s is to large or non-numeric%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -726,13 +786,13 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-depth",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-depth",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: min depth for depth profiling*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
@@ -744,8 +804,9 @@ input_mainEdDist(
          { /*If: non-numeric or to large*/
             fprintf(
                stderr,
-               "-min-depth %s is to large/non-numeric\n",
-               argAryStr[siArg]
+               "-min-depth %s is to large/non-numeric%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -756,17 +817,17 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "-depth-prof",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-depth-prof",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *depthProfBlPtr = 1;
 
       else if(
          ! eql_charCp(
-            (schar *) "-no-depth-prof",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-no-depth-prof",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *depthProfBlPtr = 0;
 
@@ -777,9 +838,9 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "-overlap",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-overlap",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum perecent overlap*/
          ++siArg;
@@ -793,13 +854,13 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "-window",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-window",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: window size*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
@@ -811,8 +872,9 @@ input_mainEdDist(
          { /*If: non-numeric or to large*/
             fprintf(
                stderr,
-               "-window %s is to large or non-numeric\n",
-               argAryStr[siArg]
+               "-window %s is to large or non-numeric%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -826,9 +888,9 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "-err",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-err",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: error rate input*/
          ++siArg;
@@ -837,17 +899,17 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "-cmp-read",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-cmp-read",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *readCmpBlPtr = 1;
 
       else if(
          ! eql_charCp(
-            (schar *) "-cmp-con",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-cmp-con",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *readCmpBlPtr = 0;
 
@@ -858,9 +920,9 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "-h",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-h",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: help message*/
          phelp_mainEdDist(stdout);
@@ -869,9 +931,9 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "--h",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--h",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: help message*/
          phelp_mainEdDist(stdout);
@@ -880,9 +942,9 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: help message*/
          phelp_mainEdDist(stdout);
@@ -891,9 +953,9 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "-help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: help message*/
          phelp_mainEdDist(stdout);
@@ -902,9 +964,9 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "--help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: help message*/
          phelp_mainEdDist(stdout);
@@ -918,9 +980,9 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "-v",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-v",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: version number*/
          pversion_mainEdDist(stdout);
@@ -929,9 +991,9 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "--v",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--v",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: version number*/
          pversion_mainEdDist(stdout);
@@ -940,9 +1002,9 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: version number*/
          pversion_mainEdDist(stdout);
@@ -951,9 +1013,9 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "-version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: version number*/
          pversion_mainEdDist(stdout);
@@ -962,9 +1024,9 @@ input_mainEdDist(
 
       else if(
          ! eql_charCp(
-            (schar *) "--version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: version number*/
          pversion_mainEdDist(stdout);
@@ -980,8 +1042,9 @@ input_mainEdDist(
       { /*Else: invalid input*/
          fprintf(
             stderr,
-            "%s is not recognized\n",
-            argAryStr[siArg]
+            "%s is not recognized%s",
+            argAryStr[siArg],
+            str_endLine
          );
 
          goto err_fun03_sec04;
@@ -1051,37 +1114,38 @@ main(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar *refFileStr = 0;
-   schar refFaBl = 0;      /*tells if fasta ref input*/
-   schar *samFileStr = 0;
-   schar *outFileStr = 0;
+   signed char *refFileStr = 0;
+   signed char refFaBl = 0;   /*tells if fasta ref input*/
+   signed char *samFileStr = 0;
+   signed char *outFileStr = 0;
 
    /*edit distance settings*/
-   uint minIndelLenUI = def_minIndelLen_mainEdDist;
-   uchar minQUC = def_minSnpQ_mainEdDist;
+   unsigned int minIndelLenUI =
+      def_minIndelLen_mainEdDist;
+   unsigned char minQUC = def_minSnpQ_mainEdDist;
    float minOverlapF = def_minPercOverlap_mainEdDist;
 
    float percErrF = def_errRate_mainEdDist;
-   schar readCmpBl = def_readRate_mainEdDist;
+   signed char readCmpBl = def_readRate_mainEdDist;
 
-   schar depthProfileBl = def_depthProf_mainEdDist;
-   uint minDepthUI = def_minDepth_mainEdDist;
-   uint winSizeUI = def_winSize_mainEdDist;
+   signed char depthProfileBl = def_depthProf_mainEdDist;
+   unsigned int minDepthUI = def_minDepth_mainEdDist;
+   unsigned int winSizeUI = def_winSize_mainEdDist;
 
-   schar errSC = 0;
-   slong distSL = 0;
+   signed char errSC = 0;
+   signed long distSL = 0;
 
    FILE *samFILE = 0;
    FILE *outFILE = 0;
 
    struct seqST refSeqStackST;
-   schar refBl = 0;
+   signed char refBl = 0;
 
    struct samEntry refStackST;
    struct samEntry qryStackST;
-   schar *buffHeapStr = 0;
-   ulong lenBuffUL = 0;
-   ulong entryUL = 0;
+   signed char *buffHeapStr = 0;
+   unsigned long lenBuffUL = 0;
+   unsigned long entryUL = 0;
 
    struct res_edDist resEdStackST;
 
@@ -1155,7 +1219,8 @@ main(
    { /*If: had memory error*/
       fprintf(
          stderr,
-         "MEMORY error\n"
+         "MEMORY error%s",
+         str_endLine
       );
 
       goto err_main_sec04_sub02;
@@ -1167,7 +1232,8 @@ main(
    { /*If: had memory error*/
       fprintf(
          stderr,
-         "MEMORY error\n"
+         "MEMORY error%s",
+         str_endLine
       );
 
       goto err_main_sec04_sub02;
@@ -1205,7 +1271,8 @@ main(
          ){ /*If: two files from stdin*/
             fprintf(
                stderr,
-               "-ref and -sam are both from stdin\n"
+               "-ref and -sam are both from stdin%s",
+               str_endLine
             );
 
             goto err_main_sec04_sub02;
@@ -1226,8 +1293,9 @@ main(
          { /*If: error*/
             fprintf(
                stderr,
-               "could not open -ref %s\n",
-               refFileStr
+               "could not open -ref %s%s",
+               refFileStr,
+               str_endLine
             );
 
             goto err_main_sec04_sub02;
@@ -1253,8 +1321,9 @@ main(
             { /*If: file error*/
                fprintf(
                   stderr,
-                  "-ref-fa %s is not a fasta file\n",
-                  refFileStr
+                  "-ref-fa %s is not a fasta file%s",
+                  refFileStr,
+                  str_endLine
                );
 
                goto err_main_sec04_sub02;
@@ -1264,8 +1333,9 @@ main(
             { /*If: memory error*/
                fprintf(
                   stderr,
-                  "memory error reading -ref-fa %s\n",
-                  refFileStr
+                  "memory error reading -ref-fa %s%s",
+                  refFileStr,
+                  str_endLine
                );
 
                goto err_main_sec04_sub02;
@@ -1299,14 +1369,16 @@ main(
             if(errSC == def_memErr_samEntry)
                fprintf(
                   stderr,
-                  "memory error reading reference\n"
+                  "memory error reading reference%s",
+                  str_endLine
                );
 
             else
                fprintf(
                   stderr,
-                  "-ref %s has nothing\n",
-                  refFileStr
+                  "-ref %s has nothing%s",
+                  refFileStr,
+                  str_endLine
                );
 
             goto err_main_sec04_sub02;
@@ -1336,14 +1408,16 @@ main(
             if(errSC == def_memErr_samEntry)
                fprintf(
                   stderr,
-                  "memory error reading reference\n"
+                  "memory error reading reference%s",
+                  str_endLine
                );
 
             else if(*refStackST.extraStr == '@')
                fprintf(
                   stderr,
-                  "-ref %s has no sequences\n",
-                  refFileStr
+                  "-ref %s has no sequences%s",
+                  refFileStr,
+                  str_endLine
                );
 
             goto err_main_sec04_sub02;
@@ -1380,8 +1454,9 @@ main(
       if(depthProfileBl)
       { /*If: doing depth profiling*/
          fprintf(
-            stderr,
-            "can not do depth profiling with stdin data\n"
+           stderr,
+           "can not do depth profiling with stdin data%s",
+           str_endLine
          );
 
          goto err_main_sec04_sub02;
@@ -1403,8 +1478,9 @@ main(
       { /*If: could not open sam file*/
          fprintf(
             stderr,
-            "could not open -sam %s\n",
-            samFileStr
+            "could not open -sam %s%s",
+            samFileStr,
+            str_endLine
          );
 
          goto err_main_sec04_sub02;
@@ -1433,8 +1509,9 @@ main(
       { /*If: could not open output file*/
          fprintf(
             stderr,
-            "could not open -out %s\n",
-            outFileStr
+            "could not open -out %s%s",
+            outFileStr,
+            str_endLine
          );
 
          goto err_main_sec04_sub02;
@@ -1480,15 +1557,17 @@ main(
          if(errSC == def_memErr_edDist)
             fprintf(
                stderr,
-               "memory error depth profiling -sam %s\n",
-               samFileStr
+               "memory error depth profiling -sam %s%s",
+               samFileStr,
+               str_endLine
             );
 
          else
             fprintf(
                stderr,
-               "file error depth profiling -sam %s\n",
-               samFileStr
+               "file error depth profiling -sam %s%s",
+               samFileStr,
+               str_endLine
             );
 
          goto err_main_sec04_sub02;
@@ -1509,7 +1588,7 @@ main(
    \*****************************************************/
 
    errSC =
-      (schar)
+      (signed char)
       get_samEntry(
          &qryStackST,
          &buffHeapStr,
@@ -1522,15 +1601,17 @@ main(
       if(errSC == def_memErr_samEntry)
          fprintf(
             stderr,
-            "memory error first len of -sam %s\n",
-            samFileStr
+            "memory error first len of -sam %s%s",
+            samFileStr,
+            str_endLine
          );
 
       else
          fprintf(
             stderr,
-            "-sam %s has nothing\n",
-            samFileStr
+            "-sam %s has nothing%s",
+            samFileStr,
+            str_endLine
          );
 
       goto err_main_sec04_sub02;
@@ -1619,7 +1700,7 @@ main(
       } /*If: have edit distance*/
 
       errSC =
-         (schar)
+         (signed char)
          get_samEntry(
             &qryStackST,
             &buffHeapStr,
@@ -1637,9 +1718,10 @@ main(
    { /*If: had an error*/
       fprintf(
          stderr,
-         "MEMORY ERROR reading %lu in -sam %s\n",
+         "MEMORY ERROR reading %lu in -sam %s%s",
          entryUL,
-         samFileStr
+         samFileStr,
+         str_endLine
       );
 
       goto err_main_sec04_sub02;

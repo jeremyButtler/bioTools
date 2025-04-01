@@ -49,7 +49,7 @@
 #include "idSearch.h"
 
 /*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
@@ -88,10 +88,11 @@ pversion_seqById(
 ){
    fprintf(
       (FILE *) outFILE,
-      "seqById from bioTools version: %i-%02i-%02i\n",
+      "seqById from bioTools version: %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
-      def_day_bioTools
+      def_day_bioTools,
+      str_endLine
    );
 } /*pversion_seqById*/
 
@@ -126,12 +127,15 @@ phelp_seqById(
 
    fprintf(
       (FILE *) outFILE,
-      "seqById -fq reads.fq -id target.ids > out.fq\n"
+      "seqById -fq reads.fq -id target.ids > out.fq%s",
+      str_endLine
    ); /*print usage entry*/
       
    fprintf(
       (FILE *) outFILE,
-      "  - extracts sequences by read id\n"
+      "  - extracts sequences by read id%s",
+      str_endLine
+
    ); /*print description*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -150,7 +154,9 @@ phelp_seqById(
 
    fprintf(
       (FILE *) outFILE,
-      "Input:\n"
+      "Input:%s",
+      str_endLine
+
    ); /*print description*/
 
    /*****************************************************\
@@ -175,12 +181,16 @@ phelp_seqById(
 
    fprintf(
       (FILE *) outFILE,
-      "  -out out.fq: [Optional; stdout]\n"
+      "  -out out.fq: [Optional; stdout]%s",
+      str_endLine
+
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o file to save read ids to\n"
+      "    o file to save read ids to%s",
+      str_endLine
+
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -190,12 +200,16 @@ phelp_seqById(
 
    fprintf(
       (FILE *) outFILE,
-      "  -id target.ids: [Required]\n"
+      "  -id target.ids: [Required]%s",
+      str_endLine
+
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o read ids of sequences to extract\n"
+      "    o read ids of sequences to extract%s",
+      str_endLine
+
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -205,12 +219,16 @@ phelp_seqById(
 
    fprintf(
       (FILE *) outFILE,
-      "  -fq reads.fq: [Required]\n"
+      "  -fq reads.fq: [Required]%s",
+      str_endLine
+
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o fastq file with sequences to extract\n"
+      "    o fastq file with sequences to extract%s",
+      str_endLine
+
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -220,12 +238,16 @@ phelp_seqById(
 
    fprintf(
       (FILE *) outFILE,
-      "  -sam reads.sam: [Replaces -fq]\n"
+      "  -sam reads.sam: [Replaces -fq]%s",
+      str_endLine
+
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o sam file with sequences to extract\n"
+      "    o sam file with sequences to extract%s",
+      str_endLine
+
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -236,12 +258,16 @@ phelp_seqById(
    /*
    fprintf(
       (FILE *) outFILE,
-      "  -fq sequences.fa: [Replaces -fq]\n"
+      "  -fq sequences.fa: [Replaces -fq]%s",
+      str_endLine
+
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o fasta file with sequences to extract\n"
+      "    o fasta file with sequences to extract%s",
+      str_endLine
+
    );
    */
 
@@ -253,23 +279,31 @@ phelp_seqById(
    if(def_ignoreIds_seqById)
       fprintf(
          (FILE *) outFILE,
-         "  -v: [Optional; Yes]\n"
+         "  -v: [Optional; Yes]%s",
+      str_endLine
+
       );
 
    else
       fprintf(
          (FILE *) outFILE,
-         "  -v: [Optional; No]\n"
+         "  -v: [Optional; No]%s",
+      str_endLine
+
       );
 
    fprintf(
       (FILE *) outFILE,
-      "    o extract sequences not matching read ids\n"
+      "    o extract sequences not matching read ids%s",
+      str_endLine
+
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o disable with \"-no-v\"\n"
+      "    o disable with \"-no-v\"%s",
+      str_endLine
+
    );
 
    /*****************************************************\
@@ -279,12 +313,16 @@ phelp_seqById(
 
    fprintf(
       (FILE *) outFILE,
-      "  -h: print this help message\n"
+      "  -h: print this help message%s",
+      str_endLine
+
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -V: print version number\n"
+      "  -V: print version number%s",
+      str_endLine
+
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -294,12 +332,16 @@ phelp_seqById(
 
    fprintf(
       (FILE *) outFILE,
-      "Output:\n"
+      "Output:%s",
+      str_endLine
+
    ); /*print description*/
 
    fprintf(
       (FILE *) outFILE,
-      "  - prints extracted sequences to output file\n"
+      "  - prints extracted sequences to output file%s",
+      str_endLine
+
    ); /*print description*/
 } /*phelp_seqById*/
 
@@ -361,8 +403,8 @@ getInput_seqById(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   sint siArg = 1;
-   schar resBl = 0;
+   signed int siArg = 1;
+   signed char resBl = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun03 Sec02:
@@ -417,15 +459,15 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "-id",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-id",
+            (signed char *) argAryStr[siArg],
             0
          );
 
       if(! resBl)
       { /*If: an read id file was input*/
          ++siArg;
-         *idFileStrPtr = (schar *) argAryStr[siArg];
+         *idFileStrPtr = (signed char *) argAryStr[siArg];
          goto nextArg_fun03_sec03_sub0x;
       } /*If: an read id file was input*/
 
@@ -436,15 +478,16 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "-out",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-out",
+            (signed char *) argAryStr[siArg],
             0
          );
 
       if(! resBl)
       { /*If: an read id file was input*/
          ++siArg;
-         *outFileStrPtr = (schar *) argAryStr[siArg];
+         *outFileStrPtr =
+            (signed char *) argAryStr[siArg];
          goto nextArg_fun03_sec03_sub0x;
       } /*If: an read id file was input*/
 
@@ -455,15 +498,16 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "-fq",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-fq",
+            (signed char *) argAryStr[siArg],
             0
          );
 
       if(! resBl)
       { /*If: a fastq file was input*/
          ++siArg;
-         *seqFileStrPtr = (schar *) argAryStr[siArg];
+         *seqFileStrPtr =
+            (signed char *) argAryStr[siArg];
          *fileTypeSC = def_fqFile_seqById;
          goto nextArg_fun03_sec03_sub0x;
       } /*If: a fastq file was input*/
@@ -475,15 +519,16 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "-fa",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-fa",
+            (signed char *) argAryStr[siArg],
             0
          ); /*check if read id file*/
 
       if(! resBl)
       { /*If: a fasta file was input*/
          ++siArg;
-         *seqFileStrPtr = (schar *) argAryStr[siArg];
+         *seqFileStrPtr =
+            (signed char *) argAryStr[siArg];
          *fileTypeSC = def_faFile_seqById;
          goto nextArg_fun03_sec03_sub0x;
       } /*If: a fasta file was input*/
@@ -495,15 +540,16 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "-sam",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-sam",
+            (signed char *) argAryStr[siArg],
             0
          );
 
       if(! resBl)
       { /*If: a sam file was input*/
          ++siArg;
-         *seqFileStrPtr = (schar *) argAryStr[siArg];
+         *seqFileStrPtr =
+            (signed char *) argAryStr[siArg];
          *fileTypeSC = def_samFile_seqById;
          goto nextArg_fun03_sec03_sub0x;
       } /*If: a sam file was input*/
@@ -515,8 +561,8 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "-v",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-v",
+            (signed char *) argAryStr[siArg],
             0
          );
 
@@ -528,8 +574,8 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "-no-v",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-no-v",
+            (signed char *) argAryStr[siArg],
             0
          ); /*check if read id file*/
 
@@ -546,8 +592,8 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "-h",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-h",
+            (signed char *) argAryStr[siArg],
             0
          );
 
@@ -559,8 +605,8 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "--h",
-            (schar *) argAryStr[siArg],
+            (signed char *) "--h",
+            (signed char *) argAryStr[siArg],
             0
          );
 
@@ -572,8 +618,8 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "help",
-            (schar *) argAryStr[siArg],
+            (signed char *) "help",
+            (signed char *) argAryStr[siArg],
             0
          );
 
@@ -585,8 +631,8 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "-help",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-help",
+            (signed char *) argAryStr[siArg],
             0
          ); /*check if read id file*/
 
@@ -598,8 +644,8 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "--help",
-            (schar *) argAryStr[siArg],
+            (signed char *) "--help",
+            (signed char *) argAryStr[siArg],
             0
          );
 
@@ -616,8 +662,8 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "-V",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-V",
+            (signed char *) argAryStr[siArg],
             0
          );
 
@@ -629,8 +675,8 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "--V",
-            (schar *) argAryStr[siArg],
+            (signed char *) "--V",
+            (signed char *) argAryStr[siArg],
             0
          );
 
@@ -642,8 +688,8 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "version",
-            (schar *) argAryStr[siArg],
+            (signed char *) "version",
+            (signed char *) argAryStr[siArg],
             0
          );
 
@@ -655,8 +701,8 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "-version",
-            (schar *) argAryStr[siArg],
+            (signed char *) "-version",
+            (signed char *) argAryStr[siArg],
             0
          );
 
@@ -668,8 +714,8 @@ getInput_seqById(
 
       resBl =
          eql_charCp(
-            (schar *) "--version",
-            (schar *) argAryStr[siArg],
+            (signed char *) "--version",
+            (signed char *) argAryStr[siArg],
             0
          );
 
@@ -686,8 +732,9 @@ getInput_seqById(
 
       fprintf(
          stderr,
-         "%s is not recongnized\n",
-         argAryStr[siArg]
+         "%s is not recongnized%s",
+         argAryStr[siArg],
+         str_endLine
       );
          
       goto err_fun03_sec04;
@@ -756,20 +803,23 @@ main(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar *idFileStr = 0;    /*has read ids to extract*/
-   schar *seqFileStr = 0;   /*file to get sequences from*/
-   schar fileTypeSC = 0;    /*file type of seqFileStr*/
-   schar *outFileStr = 0;   /*file to output to*/
+   signed char *idFileStr = 0;
+      /*has read ids to extract*/
+   signed char *seqFileStr = 0;
+      /*file to get sequences from*/
+   signed char fileTypeSC = 0;
+      /*file type of seqFileStr*/
+   signed char *outFileStr = 0;   /*file to output to*/
 
-   sint tmpSI = 0;
+   signed int tmpSI = 0;
 
-   schar headerStr[1024];   /*header for sam file*/
+   signed char headerStr[1024];   /*header for sam file*/
 
-   schar compBl = def_ignoreIds_seqById;
+   signed char compBl = def_ignoreIds_seqById;
       /*1: keep reads not matching read ids*/
 
    signed char errSC = 0;
-   slong errSL = 0;
+   signed long errSL = 0;
 
    struct searchST *hashHeapST = 0;
    FILE *inFILE = 0;
@@ -808,7 +858,7 @@ main(
 
    if(errSC)
    { /*If: had an error*/
-      errSL = (ulong) errSC - 1;
+      errSL = (unsigned long) errSC - 1;
          /*convert help/version error to 0*/
 
       goto cleanUp_main_sec06_sub0x;
@@ -835,12 +885,14 @@ main(
    { /*If: both files from stdin*/
       fprintf(
          stderr,
-         "ERROR: id file (-id) and sequence file\n"
+         "ERROR: id file (-id) and sequence file%s",
+         str_endLine
       );
 
       fprintf(
          stderr,
-         "  (-fq, -fa, or -sam) are from stdin\n"
+         "  (-fq, -fa, or -sam) are from stdin%s",
+         str_endLine
       );
 
       goto fileErr_main_sec06_sub03;
@@ -869,22 +921,25 @@ main(
          if(fileTypeSC == def_fqFile_seqById)
             fprintf(
                stderr,
-               "could not open -fq %s\n",
-               seqFileStr
+               "could not open -fq %s%s",
+               seqFileStr,
+               str_endLine
             );
 
          else if(fileTypeSC == def_faFile_seqById)
             fprintf(
                stderr,
-               "could not open -fa %s\n",
-               seqFileStr
+               "could not open -fa %s%s",
+               seqFileStr,
+               str_endLine
             );
 
          else
             fprintf(
                stderr,
-               "could not open -sam %s\n",
-               seqFileStr
+               "could not open -sam %s%s",
+               seqFileStr,
+               str_endLine
             );
 
         goto fileErr_main_sec06_sub03;
@@ -918,8 +973,9 @@ main(
          if(fileTypeSC == def_fqFile_seqById)
             fprintf(
                stderr,
-               "could not open -id %s\n",
-               idFileStr
+               "could not open -id %s%s",
+               idFileStr,
+               str_endLine
             );
 
         goto fileErr_main_sec06_sub03;
@@ -949,8 +1005,9 @@ main(
          if(fileTypeSC == def_fqFile_seqById)
             fprintf(
                stderr,
-               "could not open -out %s\n",
-               outFileStr
+               "could not open -out %s%s",
+               outFileStr,
+               str_endLine
             );
 
         goto fileErr_main_sec06_sub03;
@@ -981,8 +1038,9 @@ main(
    { /*If: had memory error*/
       fprintf(
          stderr,
-         "MEMORY ERROR: getting read ids from -id %s\n",
-         idFileStr
+         "MEMORY ERROR: getting read ids from -id %s%s",
+         idFileStr,
+         str_endLine
       );
 
       goto memErr_main_sec06_sub02;
@@ -1017,7 +1075,7 @@ main(
       tmpSI +=
          cpDelim_ulCp(
             &headerStr[tmpSI],
-            (schar *)
+            (signed char *)
               "@PG\tID:seqById\tPN:seqById\tVN:bioTools_",
             0,
             '\0'
@@ -1183,7 +1241,9 @@ main(
       *   - end the c-string
       \**************************************************/
 
-      headerStr[tmpSI++] = '\n';
+      headerStr[tmpSI++] = str_endLine[0];
+      if(str_endLine[1] != '\0')
+         headerStr[tmpSI++] = str_endLine[1];
       headerStr[tmpSI++] = '\0';
    } /*If: input is samfile (output needs header)*/
 
@@ -1228,31 +1288,35 @@ main(
       if(errSL < 0)
          fprintf(
             stderr,
-            "MEMORY ERROR creating buffers\n"
+            "MEMORY ERROR creating buffers%s",
+            str_endLine
          );
       
       else if(fileTypeSC == def_fqFile_seqById)
          fprintf(
             stderr,
-            "entry %lu in -fq %s is not a fastq entry\n",
+            "entry %lu in -fq %s is not a fastq entry%s",
             errSL,
-            seqFileStr
+            seqFileStr,
+            str_endLine
          );
 
       else if(fileTypeSC == def_faFile_seqById)
          fprintf(
             stderr,
-            "entry %lu in -fa %s is not a fasta entry\n",
+            "entry %lu in -fa %s is not a fasta entry%s",
             errSL,
-            seqFileStr
+            seqFileStr,
+            str_endLine
          );
 
       else
          fprintf(
             stderr,
-            "entry %lu in -sam %s is not a sam entry\n",
+            "entry %lu in -sam %s is not a sam entry%s",
             errSL,
-            seqFileStr
+            seqFileStr,
+            str_endLine
          );
 
       goto fileErr_main_sec06_sub03;

@@ -1,5 +1,6 @@
 </$objtype/mkfile
-CFLAGS=-DPLAN9
+coreCFLAGS=-DPLAN9
+CFLAGS=-DNONE
 NAME=alnWater
 PREFIX=$home/bin
 
@@ -12,10 +13,10 @@ objFiles= \
    $genAln/dirMatrix.$O \
    $genAln/alnSet.$O \
    $genLib/base10str.$O \
+   $genLib/ulCp.$O \
    $genAln/indexToCoord.$O \
    $genBio/samEntry.$O \
    $genLib/strAry.$O \
-   $genLib/ulCp.$O \
    $genLib/numToStr.$O \
    $genBio/seqST.$O \
    $genLib/charCp.$O \
@@ -25,47 +26,47 @@ objFiles= \
 all: mainWater.$O
 	$LD -o $NAME $CFLAGS $objFiles
 
-mainWater.$O: mainWater.c $genAln/water.$O $genBio/kmerCnt.$O
-	$CC -o mainWater.$O  $CFLAGS mainWater.c
+mainWater.$O: mainWater.c $genAln/water.$O $genBio/kmerCnt.$O ../bioTools.h ../bioTools.h
+	$CC -o mainWater.$O  $coreCFLAGS $CFLAGS mainWater.c
 
 $genAln/water.$O: $genAln/water.c $genAln/dirMatrix.$O $genLib/genMath.h
-	$CC -o $genAln/water.$O  $CFLAGS $genAln/water.c
+	$CC -o $genAln/water.$O  $coreCFLAGS $CFLAGS $genAln/water.c
 
 $genAln/dirMatrix.$O: $genAln/dirMatrix.c $genAln/alnSet.$O $genAln/indexToCoord.$O $genBio/samEntry.$O $genBio/seqST.$O $genLib/charCp.$O
-	$CC -o $genAln/dirMatrix.$O  $CFLAGS $genAln/dirMatrix.c
+	$CC -o $genAln/dirMatrix.$O  $coreCFLAGS $CFLAGS $genAln/dirMatrix.c
 
-$genAln/alnSet.$O: $genAln/alnSet.c $genAln/alnDefs.h $genLib/base10str.$O $genLib/dataTypeShortHand.h
-	$CC -o $genAln/alnSet.$O  $CFLAGS $genAln/alnSet.c
+$genAln/alnSet.$O: $genAln/alnSet.c $genAln/alnDefs.h $genLib/ulCp.$O $genLib/base10str.$O $genLib/endLine.h
+	$CC -o $genAln/alnSet.$O  $coreCFLAGS $CFLAGS $genAln/alnSet.c
 
 $genLib/base10str.$O: $genLib/base10str.c $genLib/base10str.h
-	$CC -o $genLib/base10str.$O  $CFLAGS $genLib/base10str.c
-
-$genAln/indexToCoord.$O: $genAln/indexToCoord.c
-	$CC -o $genAln/indexToCoord.$O  $CFLAGS $genAln/indexToCoord.c
-
-$genBio/samEntry.$O: $genBio/samEntry.c $genBio/samEntry.h $genLib/strAry.$O $genLib/base10str.$O $genLib/numToStr.$O $genBio/ntTo5Bit.h $genLib/dataTypeShortHand.h
-	$CC -o $genBio/samEntry.$O  $CFLAGS $genBio/samEntry.c
-
-$genLib/strAry.$O: $genLib/strAry.c $genLib/strAry.h $genLib/ulCp.$O
-	$CC -o $genLib/strAry.$O  $CFLAGS $genLib/strAry.c
+	$CC -o $genLib/base10str.$O  $coreCFLAGS $CFLAGS $genLib/base10str.c
 
 $genLib/ulCp.$O: $genLib/ulCp.c $genLib/ulCp.h
-	$CC -o $genLib/ulCp.$O  $CFLAGS $genLib/ulCp.c
+	$CC -o $genLib/ulCp.$O  $coreCFLAGS $CFLAGS $genLib/ulCp.c
+
+$genAln/indexToCoord.$O: $genAln/indexToCoord.c
+	$CC -o $genAln/indexToCoord.$O  $coreCFLAGS $CFLAGS $genAln/indexToCoord.c
+
+$genBio/samEntry.$O: $genBio/samEntry.c $genBio/samEntry.h $genLib/strAry.$O $genLib/base10str.$O $genLib/numToStr.$O $genBio/ntTo5Bit.h $genLib/endLine.h
+	$CC -o $genBio/samEntry.$O  $coreCFLAGS $CFLAGS $genBio/samEntry.c
+
+$genLib/strAry.$O: $genLib/strAry.c $genLib/strAry.h $genLib/ulCp.$O
+	$CC -o $genLib/strAry.$O  $coreCFLAGS $CFLAGS $genLib/strAry.c
 
 $genLib/numToStr.$O: $genLib/numToStr.c $genLib/numToStr.h
-	$CC -o $genLib/numToStr.$O  $CFLAGS $genLib/numToStr.c
+	$CC -o $genLib/numToStr.$O  $coreCFLAGS $CFLAGS $genLib/numToStr.c
 
-$genBio/seqST.$O: $genBio/seqST.c $genBio/seqST.h $genLib/ulCp.$O $genLib/dataTypeShortHand.h
-	$CC -o $genBio/seqST.$O  $CFLAGS $genBio/seqST.c
+$genBio/seqST.$O: $genBio/seqST.c $genBio/seqST.h $genLib/ulCp.$O
+	$CC -o $genBio/seqST.$O  $coreCFLAGS $CFLAGS $genBio/seqST.c
 
 $genLib/charCp.$O: $genLib/charCp.c $genLib/charCp.h
-	$CC -o $genLib/charCp.$O  $CFLAGS $genLib/charCp.c
+	$CC -o $genLib/charCp.$O  $coreCFLAGS $CFLAGS $genLib/charCp.c
 
 $genBio/kmerCnt.$O: $genBio/kmerCnt.c $genBio/kmerCnt.h $genBio/seqST.$O $genBio/ntTo2Bit.h $genLib/genMath.h
-	$CC -o $genBio/kmerCnt.$O  $CFLAGS $genBio/kmerCnt.c
+	$CC -o $genBio/kmerCnt.$O  $coreCFLAGS $CFLAGS $genBio/kmerCnt.c
 
 install:
-	cp $(NAME) $(PREFIX)
+	mv $(NAME) $(PREFIX)
 	chmod a+x $(PREFIX)/$(NAME)
 
 clean:

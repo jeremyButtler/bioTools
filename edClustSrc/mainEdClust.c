@@ -44,7 +44,7 @@
 #include "../genClust/edClust.h"
 
 /*.h files only (no .c files)*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../genBio/tbConDefs.h"
 #include "../bioTools.h"
 
@@ -73,10 +73,11 @@ pversion_mainEdClust(
 ){
    fprintf(
       (FILE *) outFILE,
-      "edClust from bioTools version: %i-%02i-%02i\n",
+      "edClust from bioTools version: %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
-      def_day_bioTools
+      def_day_bioTools,
+      str_endLine
    );
 } /*pversion_mainEdClust*/
 
@@ -111,12 +112,14 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "edClust -sam reads.sam -prefix \"out\"\n"
+      "edClust -sam reads.sam -prefix \"out\"%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - clusters reads using edit distance (edDist)\n"
+      "  - clusters reads using edit distance (edDist)%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -147,7 +150,8 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "Input:\n"
+      "Input:%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -157,51 +161,60 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "  FILE IO:\n"
+      "  FILE IO:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    -sam reads.sam: [Required]\n"
+      "    -sam reads.sam: [Required]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o sam file with reads to cluster\n"
-   );
-
-
-   fprintf(
-      (FILE *) outFILE,
-      "    -prefix out: [Optional; out]\n"
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "      o prefix for output file names\n"
+      "      o sam file with reads to cluster%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -report %li: [Optional; %li]\n",
-      (slong) def_repInterval_mainEdClust,
-      (slong) def_repInterval_mainEdClust
+      "    -prefix out: [Optional; out]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o how often to report progress in number\n"
+      "      o prefix for output file names%s",
+      str_endLine
+   );
+
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -report %li: [Optional; %li]%s",
+      (signed long) def_repInterval_mainEdClust,
+      (signed long) def_repInterval_mainEdClust,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "        of reads clustered or discarded\n"
+      "      o how often to report progress in number%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o use \"-report 0\" for no reports\n"
+      "        of reads clustered or discarded%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o use \"-report 0\" for no reports%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -211,102 +224,119 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "  Cluster Filtering:\n"
+      "  Cluster Filtering:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    -clust-depth %i: [Optional; %i]\n",
+      "    -clust-depth %i: [Optional; %i]%s",
       def_minDepth_clustST,
-      def_minDepth_clustST
+      def_minDepth_clustST,
+      str_endLine
    );
 
    fprintf(
-      (FILE *) outFILE,
-      "      o min cluster read depth to keep a cluster\n"
+     (FILE *) outFILE,
+     "      o min cluster read depth to keep a cluster%s",
+     str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -clust-perc-depth %.04f: [Optional; %.04f]\n",
+      "    -clust-perc-depth %.04f: [Optional; %.04f]%s",
       def_minPercDepth_clustST,
-      def_minPercDepth_clustST
+      def_minPercDepth_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o minimum percent read depth need to keep\n"
+      "      o minimum percent read depth need to keep%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "        a cluster\n"
+      "        a cluster%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    -read-err %0.3f: [Optional; %0.3f]\n",
+      "    -read-err %0.3f: [Optional; %0.3f]%s",
       def_readErrRate_clustST,
-      def_readErrRate_clustST
+      def_readErrRate_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o error rate for read to read mapping\n"
+      "      o error rate for read to read mapping%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -con-err %0.3f: [Optional; %0.3f]\n",
+      "    -con-err %0.3f: [Optional; %0.3f]%s",
       def_conErrRate_clustST,
-      def_conErrRate_clustST
+      def_conErrRate_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o consensus to read mapping error rate\n"
+      "      o consensus to read mapping error rate%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -con-sim %0.4f: [Optional; %0.4f]\n",
+      "    -con-sim %0.4f: [Optional; %0.4f]%s",
       def_maxConSim_clustST,
-      def_maxConSim_clustST
+      def_maxConSim_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o maximum simularity between consensuses\n"
+      "      o maximum simularity between consensuses%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "        to not merge clusters\n"
+      "        to not merge clusters%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    -overlap %0.2f: [Optional; %0.2f]\n",
+      "    -overlap %0.2f: [Optional; %0.2f]%s",
       def_percOverlap_clustST,
-      def_percOverlap_clustST
+      def_percOverlap_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o minimum percentage of overlap needed to\n"
+      "      o minimum percentage of overlap needed to%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "     merge clusters (start comparision)\n"
+      "     merge clusters (start comparision)%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o used in final consensus comparison\n"
+      "      o used in final consensus comparison%s",
+      str_endLine
    );
 
 
@@ -318,39 +348,46 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "  Read Scoring:\n"
+      "  Read Scoring:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    -len-weight %0.2f: [Optional; %0.2f]\n",
+      "    -len-weight %0.2f: [Optional; %0.2f]%s",
       def_lenWeight_clustST,
-      def_lenWeight_clustST
+      def_lenWeight_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o how much to increase lengths impact on\n"
+      "      o how much to increase lengths impact on%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "        read scoring\n"
+      "        read scoring%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o log_length = floor[log10(length)]\n"
+      "      o log_length = floor[log10(length)]%s",
+      str_endLine
+   );
+
+   fprintf(
+     (FILE *) outFILE,
+     "      o length_score= floor[weigth * log_length]%s",
+     str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o length_score= floor[weigth * log_length]\n"
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "      o score = length_score + floor[median Q]\n"
+      "      o score = length_score + floor[median Q]%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -360,58 +397,67 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "  Read Filtering:\n"
+      "  Read Filtering:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    -min-len %i: [Optional; %i]\n",
+      "    -min-len %i: [Optional; %i]%s",
       def_minLen_clustST,
-      def_minLen_clustST
+      def_minLen_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o minimum aligned length to keep read\n"
+      "      o minimum aligned length to keep read%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -mapq %i: [Optional; %i]\n",
+      "    -min-mapq %i: [Optional; %i]%s",
       def_minMapq_clustST,
-      def_minMapq_clustST
+      def_minMapq_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o minimum mapping quality to keep read\n"
+      "      o minimum mapping quality to keep read%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -min-med-q %i: [Optional; %i]\n",
+      "    -min-med-q %i: [Optional; %i]%s",
       def_minMedQ_clustST,
-      def_minMedQ_clustST
+      def_minMedQ_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o minimum median q-score to keep read\n"
+      "      o minimum median q-score to keep read%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -min-mean-q %i: [Optional; %i]\n",
+      "    -min-mean-q %i: [Optional; %i]%s",
       def_minAvgQ_clustST,
-      def_minAvgQ_clustST
+      def_minAvgQ_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o minimum mean q-score to keep read\n"
+      "      o minimum mean q-score to keep read%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -421,120 +467,140 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "  Edit Distance:\n"
+      "  Edit Distance:%s",
+      str_endLine
    );
 
    if(def_depthProfile_clustST)
       fprintf(
          (FILE *) outFILE,
-         "    -depth-prof: [Optional; Yes]\n"
+         "    -depth-prof: [Optional; Yes]%s",
+         str_endLine
       );
    else
       fprintf(
          (FILE *) outFILE,
-         "    -depth-prof: [Optional; No]\n"
+         "    -depth-prof: [Optional; No]%s",
+         str_endLine
       );
 
    fprintf(
       (FILE *) outFILE,
-      "      o -clust-depth to remove low read depth\n"
+      "      o -clust-depth to remove low read depth%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "        variants from edit distance\n"
+      "        variants from edit distance%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o disable with \"no-depth-prof\"\n"
+      "      o disable with \"no-depth-prof\"%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -err-to-var %i: [Optional; %i]\n",
+      "    -err-to-var %i: [Optional; %i]%s",
       def_maxVarErrRatio_clustST,
-      def_maxVarErrRatio_clustST
+      def_maxVarErrRatio_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o maximum variant to error ratio to add\n"
+      "      o maximum variant to error ratio to add%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "        read to a cluster (whole number)\n"
+      "        read to a cluster (whole number)%s",
+      str_endLine
    );
 
    fprintf(
-      (FILE *) outFILE,
-      "      o 100 * (# variants)/(error rate * length)\n"
+     (FILE *) outFILE,
+     "      o 100 * (# variants)/(error rate * length)%s",
+     str_endLine
    );
 
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -win-len %i: [Optional; %i]\n",
+      "    -win-len %i: [Optional; %i]%s",
       def_window_clustST,
-      def_window_clustST
+      def_window_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o size of window for window scanning\n"
+      "      o size of window for window scanning%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o idea is to detect regions of high\n"
+      "      o idea is to detect regions of high%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "        difference in very long reads\n"
+      "        difference in very long reads%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -win-err %i: [Optional; %i]\n",
+      "    -win-err %i: [Optional; %i]%s",
       def_windowError_clustST,
-      def_windowError_clustST
+      def_windowError_clustST,
+      str_endLine
    );
 
    fprintf(
-      (FILE *) outFILE,
-      "      o maximum variant to error ratio in window\n"
+     (FILE *) outFILE,
+     "      o maximum variant to error ratio in window%s",
+     str_endLine
    );
 
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -indel-len %i: [Optional; %i]\n",
+      "    -indel-len %i: [Optional; %i]%s",
       def_indelLen_clustST,
-      def_indelLen_clustST
+      def_indelLen_clustST,
+      str_endLine
    );
 
    fprintf(
-      (FILE *) outFILE,
-      "      o min length to add indel to edit distance\n"
+     (FILE *) outFILE,
+     "      o min length to add indel to edit distance%s",
+     str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -clust-q-snp %i: [Optional; %i]\n",
+      "    -clust-q-snp %i: [Optional; %i]%s",
       def_minSnpQ_clustST,
-      def_minSnpQ_clustST
+      def_minSnpQ_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o minimum q-score to keep snp (edit dist)\n"
+      "      o minimum q-score to keep snp (edit dist)%s",
+      str_endLine
    ); /*edit distance min snp q-score*/
 
 
@@ -545,115 +611,133 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "  Consensus Filtering + Building:\n"
+      "  Consensus Filtering + Building:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    -con-iter %i: [Optional; %i]\n",
+      "    -con-iter %i: [Optional; %i]%s",
       def_conRebuild_clustST,
-      def_conRebuild_clustST
+      def_conRebuild_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o number of consensus rebuilds and remaps\n"
+      "      o number of consensus rebuilds and remaps%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -perc-n %0.4f: [Optional; %0.4f]\n",
+      "    -perc-n %0.4f: [Optional; %0.4f]%s",
       def_maxNPerc_clustST,
-      def_maxNPerc_clustST
+      def_maxNPerc_clustST,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o maximum percent masked consnesus bases\n"
+      "      o maximum percent masked consnesus bases%s",
+      str_endLine
    ); /*both consensus and edit distance*/
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -con-depth %i: [Optional; %i]\n",
+      "    -con-depth %i: [Optional; %i]%s",
       def_minDepth_tbConDefs,
-      def_minDepth_tbConDefs
+      def_minDepth_tbConDefs,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o minimum read depth to not mask\n"
+      "      o minimum read depth to not mask%s",
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -con-q-snp %i: [Optional; %i]\n",
+      "    -con-q-snp %i: [Optional; %i]%s",
       def_minSnpQ_clustST,
-      def_minSnpQ_clustST
+      def_minSnpQ_clustST,
+      str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "      o minimum q-score for snp in consensus\n"
+      "      o minimum q-score for snp in consensus%s",
+      str_endLine
    ); /*both consensus and edit distance*/
 
    fprintf(
       (FILE *) outFILE,
-      "    -q-ins %i: [Optional; %i]\n",
+      "    -q-ins %i: [Optional; %i]%s",
       def_minInsQ_tbConDefs,
-      def_minInsQ_tbConDefs
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "      o minimum q-score for ins (consensus only)\n"
-   );
-
-
-   fprintf(
-      (FILE *) outFILE,
-      "    -snp %0.2f: [Optional; %0.2f]\n",
-      def_minSnpPerc_tbConDefs,
-      def_minSnpPerc_tbConDefs
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "      o minimum percent support to keep SNP\n"
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "        or a match\n"
-   );
-
-
-   fprintf(
-      (FILE *) outFILE,
-      "    -ins %0.2f: [Optional; %0.2f]\n",
-      def_minInsPerc_tbConDefs,
-      def_minInsPerc_tbConDefs
+      def_minInsQ_tbConDefs,
+      str_endLine
    );
 
    fprintf(
      (FILE *) outFILE,
-     "      o minimum percent support to keep insertion\n"
+     "      o minimum q-score for ins (consensus only)%s",
+     str_endLine
    );
 
 
    fprintf(
       (FILE *) outFILE,
-      "    -del %0.2f: [Optional; %0.2f]\n",
+      "    -snp %0.2f: [Optional; %0.2f]%s",
+      def_minSnpPerc_tbConDefs,
+      def_minSnpPerc_tbConDefs,
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o minimum percent support to keep SNP%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "        or a match%s",
+      str_endLine
+   );
+
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -ins %0.2f: [Optional; %0.2f]%s",
+      def_minInsPerc_tbConDefs,
+      def_minInsPerc_tbConDefs,
+      str_endLine
+   );
+
+   fprintf(
+    (FILE *) outFILE,
+    "      o minimum percent support to keep insertion%s",
+    str_endLine
+   );
+
+
+   fprintf(
+      (FILE *) outFILE,
+      "    -del %0.2f: [Optional; %0.2f]%s",
       def_minDelPerc_tbConDefs,
-      def_minDelPerc_tbConDefs
+      def_minDelPerc_tbConDefs,
+      str_endLine
    );
 
    fprintf(
-      (FILE *) outFILE,
-      "      o minimum percent support to keep deletion\n"
+     (FILE *) outFILE,
+     "      o minimum percent support to keep deletion%s",
+     str_endLine
    );
 
    /*****************************************************\
@@ -663,17 +747,20 @@ phelp_mainEdClust(
 
    fprintf(
       (FILE *) outFILE,
-      "  Misc:\n"
+      "  Misc:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    -h: print this help message and exit\n"
+      "    -h: print this help message and exit%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    -v: print version number and exit\n"
+      "    -v: print version number and exit%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -683,17 +770,20 @@ phelp_mainEdClust(
 
    fprintf(
        (FILE *) outFILE,
-       "Output:\n"
+       "Output:%s",
+       str_endLine
    );
 
    fprintf(
-      (FILE *) outFILE,
-      "   - reads in cluster to prefix-ref-cluster.sam\n"
+     (FILE *) outFILE,
+     "   - reads in cluster to prefix-ref-cluster.sam%s",
+     str_endLine
    );
 
    fprintf(
-      (FILE *) outFILE,
-      "   - consenseuses as prefix-ref-cluster-con.sam\n"
+     (FILE *) outFILE,
+     "   - consenseuses as prefix-ref-cluster-con.sam%s",
+     str_endLine
    );
 } /*phelp_mainEdClust*/
 
@@ -753,9 +843,9 @@ input_mainEdClust(
    ^   - varaible declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   sint siArg = 1;
-   schar errSC = 0;
-   schar *tmpStr = 0;
+   signed int siArg = 1;
+   signed char errSC = 0;
+   signed char *tmpStr = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun03 Sec02:
@@ -794,36 +884,38 @@ input_mainEdClust(
    { /*Loop: get input*/
       if(
          ! eql_charCp(
-            (schar *) "-sam",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-sam",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*If: sam file input*/
          ++siArg;
-         *samFileStrPtr = (schar *) argAryStr[siArg];
+         *samFileStrPtr =
+            (signed char *) argAryStr[siArg];
       } /*If: sam file input*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-prefix",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-prefix",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: prefix input*/
          ++siArg;
-         *prefixStrPtr = (schar *) argAryStr[siArg];
+         *prefixStrPtr =
+             (signed  char *) argAryStr[siArg];
       } /*Else If: prefix input*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-report",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-report",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: progress report interval*/
          ++siArg;
 
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToSL_base10str(
@@ -835,8 +927,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-report %s; non-numeric/to large\n",
-               argAryStr[siArg]
+               "-report %s; non-numeric/to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -850,29 +943,29 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-depth-prof",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-depth-prof",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) setSTPtr->depthProfBl = 1;
 
       else if(
          ! eql_charCp(
-            (schar *) "-no-depth-prof",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-no-depth-prof",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) setSTPtr->depthProfBl = 0;
 
       else if(
          ! eql_charCp(
-            (schar *) "-clust-depth",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-clust-depth",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: min cluster read depth*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
@@ -884,8 +977,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-clust-depth %s; non-numeric/to large\n",
-               argAryStr[siArg]
+               "-clust-depth %s; non-numeric/to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -895,9 +989,9 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-clust-perc-depth",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-clust-perc-depth",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: cluster min percent read depth*/
          ++siArg;
@@ -906,9 +1000,9 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-read-err",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-read-err",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: error rate for read to read map*/
          ++siArg;
@@ -920,9 +1014,9 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-con-err",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-con-err",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
         )
      ){ /*Else If: error rate for con to read map*/
         ++siArg;
@@ -932,9 +1026,9 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-con-sim",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-con-sim",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: maximum similarity between cons*/
          ++siArg;
@@ -948,9 +1042,9 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-len-weight",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-len-weight",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: how much length influces score*/
          ++siArg;
@@ -977,13 +1071,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-len",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-len",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum read length*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
@@ -995,8 +1089,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-min-len %s; non-numeric or to large\n",
-               argAryStr[siArg]
+               "-min-len %s; non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1012,13 +1107,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-mapq",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-mapq",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum mapping quality*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUC_base10str(
@@ -1030,8 +1125,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-min-mapq %s; non-numeric or to large\n",
-               argAryStr[siArg]
+               "-min-mapq %s; non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1047,13 +1143,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-med-q",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-med-q",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum median q-score*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
@@ -1065,8 +1161,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-min-med-q %s; non-numeric / to large\n",
-               argAryStr[siArg]
+               "-min-med-q %s; non-numeric / to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1080,13 +1177,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-mean-q",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-mean-q",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimu mean q-score*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
@@ -1098,8 +1195,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-min-mean-q %s; non-numeric / to large\n",
-               argAryStr[siArg]
+               "-min-mean-q %s; non-numeric / to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1128,13 +1226,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-err-to-var",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-err-to-var",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: maximum error to variant ratio*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
@@ -1146,8 +1244,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-err-to-var %s; non-numeric / to large\n",
-               argAryStr[siArg]
+               "-err-to-var %s; non-numeric / to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1161,9 +1260,9 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-overlap",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-overlap",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum overlap*/
          ++siArg;
@@ -1175,8 +1274,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-overlap %s goes to 0; invalid input\n",
-               argAryStr[siArg]
+               "-overlap %s goes to 0; invalid input%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1190,13 +1290,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-win-len",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-win-len",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: window length for window scanning*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
@@ -1208,8 +1308,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-win-len %s; non-numeric / to large\n",
-               argAryStr[siArg]
+               "-win-len %s; non-numeric / to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1223,13 +1324,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-win-err",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-win-err",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: window error to varaint ratio*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
@@ -1241,8 +1342,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-win-err %s; non-numeric / to large\n",
-               argAryStr[siArg]
+               "-win-err %s; non-numeric / to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1256,13 +1358,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-indel-len",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-indel-len",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: min indel length*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
@@ -1274,8 +1376,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-indel-len %s; non-numeric / to large\n",
-               argAryStr[siArg]
+               "-indel-len %s; non-numeric / to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1289,13 +1392,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-indel-len",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-indel-len",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: min indel length*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUI_base10str(
@@ -1307,8 +1410,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-indel-len %s; non-numeric / to large\n",
-               argAryStr[siArg]
+               "-indel-len %s; non-numeric / to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1322,13 +1426,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-clust-q-snp",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-clust-q-snp",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: min snp q-score*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUC_base10str(
@@ -1340,8 +1444,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-q-snp %s; non-numeric or to large\n",
-               argAryStr[siArg]
+               "-q-snp %s; non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1355,9 +1460,9 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-perc-n",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-perc-n",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: maximum % masking*/
          ++siArg;
@@ -1384,13 +1489,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-con-iter",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-con-iter",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: number times to rebuild consensus*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToUC_base10str(
@@ -1402,8 +1507,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-con-iter %s; non-numeric / to large\n",
-               argAryStr[siArg]
+               "-con-iter %s; non-numeric / to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1417,13 +1523,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-con-depth",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-con-depth",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: min consnesus read depth*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToSI_base10str(
@@ -1435,8 +1541,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-con-depth %s; non-numeric / to large\n",
-               argAryStr[siArg]
+               "-con-depth %s; non-numeric / to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1450,13 +1557,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-con-q-snp",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-con-q-snp",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: min snp q-score*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToSI_base10str(
@@ -1468,8 +1575,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-con-q-snp %s; non-numeric or to large\n",
-               argAryStr[siArg]
+               "-con-q-snp %s; non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1484,13 +1592,13 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-q-ins",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-q-ins",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: min insetion q-score*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
 
          tmpStr +=
             strToSI_base10str(
@@ -1502,8 +1610,9 @@ input_mainEdClust(
          { /*If: invalid input*/
             fprintf(
                stderr,
-               "-q-ins %s; non-numeric or to large\n",
-               argAryStr[siArg]
+               "-q-ins %s; non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec03;
@@ -1517,9 +1626,9 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-snp",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-snp",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: min snp support (as percent)*/
          ++siArg;
@@ -1530,9 +1639,9 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-ins",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-ins",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: min ins support (as percent)*/
          ++siArg;
@@ -1543,9 +1652,9 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-del",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-del",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: min del support (as percent)*/
          ++siArg;
@@ -1561,41 +1670,41 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-h",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-h",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) goto phelp_fun03_sec03;
 
       else if(
          ! eql_charCp(
-            (schar *) "--h",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--h",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) goto phelp_fun03_sec03;
 
       else if(
          ! eql_charCp(
-            (schar *) "help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) goto phelp_fun03_sec03;
 
       else if(
          ! eql_charCp(
-            (schar *) "-help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) goto phelp_fun03_sec03;
 
       else if(
          ! eql_charCp(
-            (schar *) "--help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) goto phelp_fun03_sec03;
 
@@ -1606,41 +1715,41 @@ input_mainEdClust(
 
       else if(
          ! eql_charCp(
-            (schar *) "-v",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-v",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) goto pversion_fun03_sec03;
 
       else if(
          ! eql_charCp(
-            (schar *) "--v",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--v",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) goto pversion_fun03_sec03;
 
       else if(
          ! eql_charCp(
-            (schar *) "version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) goto pversion_fun03_sec03;
 
       else if(
          ! eql_charCp(
-            (schar *) "-version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) goto pversion_fun03_sec03;
 
       else if(
          ! eql_charCp(
-            (schar *) "--version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) goto pversion_fun03_sec03;
 
@@ -1653,8 +1762,9 @@ input_mainEdClust(
       { /*Else: invalid input*/
          fprintf(
             stderr,
-            "%s is not recoginized\n",
-            argAryStr[siArg]
+            "%s is not recoginized%s",
+            argAryStr[siArg],
+            str_endLine
          );
 
          goto err_fun03_sec03;
@@ -1728,8 +1838,8 @@ pgHead_mainEdClust(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar *tmpStr = 0;
-   sint siArg = 0;
+   signed char *tmpStr = 0;
+   signed int siArg = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun04 Sec02:
@@ -1750,7 +1860,7 @@ pgHead_mainEdClust(
    tmpStr +=
       cpDelim_ulCp(
          tmpStr,
-         (schar *)
+         (signed char *)
             "@PG\tID:edClust\tPN:edClust\tVN:bioTools_",
          0,
          0
@@ -1824,12 +1934,15 @@ pgHead_mainEdClust(
       tmpStr +=
          cpDelim_charCp(
             tmpStr,
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          ); /*copy user input*/
    } /*Loop: copy user input*/
 
-   *tmpStr++ = '\n';
+   *tmpStr++ = str_endLine[0];
+
+   if(str_endLine[1] != '\0')
+      *tmpStr++ = str_endLine[1];
    *tmpStr = '\0';
 } /*pgHead_mainEdClust*/
 
@@ -1869,20 +1982,20 @@ main(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar errSC = 0;
+   signed char errSC = 0;
 
-   schar *samFileStr = 0;
-   schar *prefixStr = (schar *) "out";
+   signed char *samFileStr = 0;
+   signed char *prefixStr = (signed char *) "out";
 
-   schar *tmpStr = 0;         /*for editing strings*/
-   schar *samHeadHeapStr = 0; /*holds sam file header*/
+   signed char *tmpStr = 0;        /*for editing strings*/
+   signed char *samHeadHeapStr = 0;/*get sam file header*/
 
-   schar pgHeadStr[4096]; /*program header*/
+   signed char pgHeadStr[4096]; /*program header*/
 
    /*for sam file reading functions*/
    struct samEntry samStackST;
-   schar *buffHeapStr = 0;
-   ulong lenBuffUL = 0;
+   signed char *buffHeapStr = 0;
+   unsigned long lenBuffUL = 0;
 
    /*settings for edClust*/
    struct set_clustST clustSetStackST;
@@ -1894,7 +2007,7 @@ main(
 
    FILE *samFILE = 0;
 
-   schar fileNameStr[4096];
+   signed char fileNameStr[4096];
    FILE *logFILE = 0;
    FILE *conFILE = 0;
 
@@ -1964,7 +2077,8 @@ main(
    { /*If: memory error*/
       fprintf(
          stderr,
-         "memory error setting up sam entry struct\n"
+         "memory error setting up sam entry struct%s",
+         str_endLine
       );
 
       goto err_main_sec0x;
@@ -1979,7 +2093,8 @@ main(
    { /*If: nothing input*/
       fprintf(
          stderr,
-         "no sam input with -sam\n"
+         "no sam input with -sam%s",
+         str_endLine
        );
 
       goto err_main_sec0x;
@@ -1996,13 +2111,15 @@ main(
       if(! samFileStr)
          fprintf(
             stderr,
-            "no sam input with -sam\n"
+            "no sam input with -sam%s",
+            str_endLine
           );
        else
          fprintf(
             stderr,
-            "could not open -sam %s\n",
-            samFileStr
+            "could not open -sam %s%s",
+            samFileStr,
+            str_endLine
           );
 
       goto err_main_sec0x;
@@ -2043,9 +2160,10 @@ main(
     { /*If: could not open log file*/
        fprintf(
           stderr,
-          "could not open %s; %s missing permission\n",
+          "could not open %s; %s missing permission%s",
           fileNameStr,
-          prefixStr
+          prefixStr,
+          str_endLine
        );
 
        goto err_main_sec0x;
@@ -2088,9 +2206,10 @@ main(
     { /*If: could not open consensus file*/
        fprintf(
           stderr,
-          "could not open %s; %s missing permission\n",
+          "could not open %s; %s missing permission%s",
           fileNameStr,
-          prefixStr
+          prefixStr,
+          str_endLine
        );
 
        goto err_main_sec0x;
@@ -2122,12 +2241,14 @@ main(
    { /*If: memory error*/
       fprintf(
          logFILE,
-         "memory error geting sam file header\n"
+         "memory error geting sam file header%s",
+         str_endLine
       );
 
       fprintf(
          stderr,
-         "memory error geting sam file header\n"
+         "memory error geting sam file header%s",
+         str_endLine
       );
 
       goto err_main_sec0x;
@@ -2163,8 +2284,10 @@ main(
 
    fprintf(
       logFILE,
-      "%s\n\n",
-      tmpStr
+      "%s%s%s",
+      tmpStr,
+      str_endLine,
+      str_endLine
    ); /*print command to log file*/
  
    fflush(logFILE);
@@ -2199,12 +2322,14 @@ main(
       { /*If: memory error*/
          fprintf(
             logFILE,
-            "memory error clustering reads\n"
+            "memory error clustering reads%s",
+            str_endLine
          );
 
          fprintf(
             stderr,
-            "memory error clustering reads\n"
+            "memory error clustering reads%s",
+            str_endLine
          );
       } /*If: memory error*/
 
@@ -2212,12 +2337,14 @@ main(
       { /*Else: file error*/
          fprintf(
             logFILE,
-            "file error clustering reads\n"
+            "file error clustering reads%s",
+            str_endLine
          );
 
          fprintf(
             stderr,
-            "file error clustering reads\n"
+            "file error clustering reads%s",
+            str_endLine
          );
       } /*Else: file error*/
 
@@ -2243,12 +2370,14 @@ main(
    { /*If: memory error (very unlikely)*/
       fprintf(
          logFILE,
-         "memory error printing consensuses\n"
+         "memory error printing consensuses%s",
+         str_endLine
       );
 
       fprintf(
          stderr,
-         "memory error printing consensuses\n"
+         "memory error printing consensuses%s",
+         str_endLine
       );
 
       goto err_main_sec0x;
@@ -2286,12 +2415,14 @@ main(
       { /*If: memory error*/
          fprintf(
             stderr,
-            "memory error while printing clusters\n"
+            "memory error while printing clusters%s",
+            str_endLine
          );
 
          fprintf(
             logFILE,
-            "memory error while printing clusters\n"
+            "memory error while printing clusters%s",
+            str_endLine
          );
       } /*If: memory error*/
 
@@ -2299,12 +2430,14 @@ main(
       { /*Else: file error*/
          fprintf(
             stderr,
-            "file error while printing clusters\n"
+            "file error while printing clusters%s",
+            str_endLine
          );
 
          fprintf(
             logFILE,
-            "file error while printing clusters\n"
+            "file error while printing clusters%s",
+            str_endLine
          );
       } /*Else: file error*/
 

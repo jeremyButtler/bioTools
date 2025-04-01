@@ -139,7 +139,7 @@
 #include "../genBio/tbCon.h"
 
 /*.h files only (no .c files)*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../genLib/genMath.h" /*only using .h min macro*/
 #include "../genBio/tbConDefs.h"
 
@@ -442,7 +442,7 @@ setup_index_clustST(
    indexSTPtr->scoreArySC =
       malloc(
          sizeUL *
-         sizeof(schar)
+         sizeof(signed char)
       );
 
    if(! indexSTPtr->scoreArySC)
@@ -456,7 +456,7 @@ setup_index_clustST(
    indexSTPtr->startAryUI =
       malloc(
          sizeUL *
-         sizeof(uint)
+         sizeof(unsigned int)
       );
 
    if(! indexSTPtr->startAryUI)
@@ -470,7 +470,7 @@ setup_index_clustST(
    indexSTPtr->refAryUI =
       malloc(
          sizeUL *
-         sizeof(uint)
+         sizeof(unsigned int)
       );
 
    if(! indexSTPtr->refAryUI)
@@ -484,7 +484,7 @@ setup_index_clustST(
    indexSTPtr->endAryUI =
       malloc(
          sizeUL *
-         sizeof(uint)
+         sizeof(unsigned int)
       );
 
    if(! indexSTPtr->endAryUI)
@@ -502,7 +502,7 @@ setup_index_clustST(
    indexSTPtr->clustArySI =
       malloc(
          sizeUL *
-         sizeof(uint)
+         sizeof(unsigned int)
       );
 
    if(! indexSTPtr->clustArySI)
@@ -520,7 +520,7 @@ setup_index_clustST(
    indexSTPtr->indexAryUL =
       malloc(
          sizeUL *
-         sizeof(ulong)
+         sizeof(unsigned long)
       );
 
    if(! indexSTPtr->indexAryUL)
@@ -534,7 +534,7 @@ setup_index_clustST(
    indexSTPtr->lenLineAryUI =
       malloc(
          sizeUL *
-         sizeof(uint)
+         sizeof(unsigned int)
       );
 
    if(! indexSTPtr->lenLineAryUI)
@@ -559,7 +559,8 @@ setup_index_clustST(
       free(indexSTPtr->refNumAryUI);
    indexSTPtr->refNumAryUI = 0;
 
-   indexSTPtr->refNumAryUI = malloc(16 * sizeof(uint));
+   indexSTPtr->refNumAryUI =
+      malloc(16 * sizeof(unsigned int));
 
    if(! indexSTPtr->refNumAryUI)
       goto memErr_fun10_sec06;
@@ -635,23 +636,23 @@ realloc_index_clustST(
    if(sizeUL != indexSTPtr->lenUL)
    { /*If: need to resize arrays*/
       tmpUIPtr =
-         (uint *)
+         (unsigned int *)
          realloc(
             indexSTPtr->scoreArySC,
-            sizeUL * sizeof(schar)
+            sizeUL * sizeof(signed char)
          );
 
       if(! tmpUIPtr)
          goto memErr_fun11_sec06;
 
-      indexSTPtr->scoreArySC = (schar *) tmpUIPtr;
+      indexSTPtr->scoreArySC = (signed char *) tmpUIPtr;
 
 
 
       tmpUIPtr =
          realloc(
             indexSTPtr->startAryUI,
-            sizeUL * sizeof(uint)
+            sizeUL * sizeof(unsigned int)
          );
 
       if(! tmpUIPtr)
@@ -663,7 +664,7 @@ realloc_index_clustST(
       tmpUIPtr =
          realloc(
             indexSTPtr->endAryUI,
-            sizeUL * sizeof(uint)
+            sizeUL * sizeof(unsigned int)
          );
 
       if(! tmpUIPtr)
@@ -675,7 +676,7 @@ realloc_index_clustST(
       tmpUIPtr =
          realloc(
             indexSTPtr->refAryUI,
-            sizeUL * sizeof(uint)
+            sizeUL * sizeof(unsigned int)
          );
 
       if(! tmpUIPtr)
@@ -689,16 +690,16 @@ realloc_index_clustST(
       \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
       tmpUIPtr =
-         (uint *)
+         (unsigned int *)
          realloc(
             indexSTPtr->clustArySI,
-            sizeUL * sizeof(sint)
+            sizeUL * sizeof(signed int)
          );
 
       if(! tmpUIPtr)
          goto memErr_fun11_sec06;
 
-      indexSTPtr->clustArySI = (sint *) tmpUIPtr;
+      indexSTPtr->clustArySI = (signed int *) tmpUIPtr;
 
 
       indexSTPtr->lenUL = sizeUL;
@@ -709,22 +710,22 @@ realloc_index_clustST(
       \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
       tmpUIPtr =
-         (uint *)
+         (unsigned int *)
          realloc(
             indexSTPtr->indexAryUL,
-            sizeUL * sizeof(ulong)
+            sizeUL * sizeof(unsigned long)
          );
 
       if(! tmpUIPtr)
          goto memErr_fun11_sec06;
 
-      indexSTPtr->indexAryUL = (ulong *) tmpUIPtr;
+      indexSTPtr->indexAryUL = (unsigned long *) tmpUIPtr;
 
 
       tmpUIPtr =
          realloc(
             indexSTPtr->lenLineAryUI,
-            sizeUL * sizeof(uint)
+            sizeUL * sizeof(unsigned int)
          );
 
       if(! tmpUIPtr)
@@ -756,7 +757,7 @@ realloc_index_clustST(
       tmpUIPtr =
          realloc(
             indexSTPtr->refNumAryUI,
-            numRefUI
+            numRefUI * sizeof(unsigned int)
          );
 
       if(! tmpUIPtr)
@@ -997,9 +998,9 @@ swap_con_clustST(
    firstSTPtr->typeArySC = secSTPtr->typeArySC;
    secSTPtr->typeArySC = swapSCPtr;
 
-   swapSCPtr = (schar *) firstSTPtr->posAryUI;
+   swapSCPtr = (signed char *) firstSTPtr->posAryUI;
    firstSTPtr->posAryUI = secSTPtr->posAryUI;
-   secSTPtr->posAryUI = (uint *) swapSCPtr;
+   secSTPtr->posAryUI = (unsigned int *) swapSCPtr;
 
    firstSTPtr->numVarUI ^= secSTPtr->numVarUI;
    secSTPtr->numVarUI ^= firstSTPtr->numVarUI;
@@ -1027,15 +1028,15 @@ getNumLines_clustST(
    void *inFILE
 ){
    #define len_fun18 4096
-   schar buffStr[len_fun18 + 1];
-   schar *tmpStr = 0;
-   ulong bytesUL = 0;
-   ulong lineUL = 0;
+   signed char buffStr[len_fun18 + 1];
+   signed char *tmpStr = 0;
+   unsigned long bytesUL = 0;
+   unsigned long lineUL = 0;
 
    bytesUL =
       fread(
          buffStr,
-         sizeof(schar),
+         sizeof(signed char),
          len_fun18,
          inFILE
       ); /*read first line*/
@@ -1047,18 +1048,18 @@ getNumLines_clustST(
          bytesUL
       || *tmpStr != '\0'
    ){ /*Loop: find number of new lines*/
-      if(*tmpStr == '\n')
-      { /*If: have new line*/
-         ++lineUL;
+      if(*tmpStr == '\r')
          ++tmpStr;
-      } /*If: have new line*/
+
+      else if(*tmpStr == '\n')
+         ++lineUL;
 
       else if(*tmpStr == '\0')
       { /*Else: read in more file*/
          bytesUL =
             fread(
                buffStr,
-               sizeof(schar),
+               sizeof(signed char),
                len_fun18,
                inFILE
             ); /*read first line*/
@@ -1069,11 +1070,18 @@ getNumLines_clustST(
          tmpStr = buffStr;
       } /*Else: read in more file*/
 
-      tmpStr += endLineUnix_ulCp(tmpStr);
+      while(
+            *tmpStr == '\r'
+         || *tmpStr == '\n'
+      ) ++tmpStr;
+
+      tmpStr += endLine_ulCp(tmpStr);
          /*in this case do not care about '\r'*/
    } /*Loop: find number of new lines*/
 
-   if(*(tmpStr - 1) != '\n')
+   if(*(tmpStr - 1) != '\r')
+      ++lineUL; /*account for last line being '\0'*/
+   else if(*(tmpStr - 1) != '\n')
       ++lineUL; /*account for last line being '\0'*/
 
    fseek(
@@ -1145,15 +1153,17 @@ mk_index_clustST(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   ulong lineUL = 0;
-   schar errSC = 0;
-   uchar scoreUC = 0;  /*used in scoring step*/
-   uint lenUI = 0;     /*used in scoring (log10) step*/
+   unsigned long lineUL = 0;
+   signed char errSC = 0;
+   unsigned char scoreUC = 0;  /*used in scoring step*/
+   unsigned int lenUI = 0;/*used in scoring (log10) step*/
+   signed int lenLineSI = 0;
+   signed char eofBl = 0;
 
-   slong filePosSL = 0; /*position at in file*/
+   signed long filePosSL = 0; /*position at in file*/
 
-   slong indexSL = 0;        /*find reads reference*/
-   slong slCnt = 0;          /*shifting indexs*/
+   signed long indexSL = 0;       /*find reads reference*/
+   signed long slCnt = 0;         /*shifting indexs*/
 
    struct index_clustST *retHeapST = 0;
 
@@ -1209,10 +1219,10 @@ mk_index_clustST(
    \*****************************************************/
 
    errSC =
-      get_samEntry(
-         samSTPtr,
+      getLine_samEntry(
          buffStrPtr,
          lenBuffUL,
+         &lenLineSI, /*gets length of buffer*/
          samFILE
       );
 
@@ -1221,6 +1231,15 @@ mk_index_clustST(
 
    else if(errSC)
       goto noReads_fun20_sec04;
+
+
+   lineTo_samEntry(
+      samSTPtr,
+      *buffStrPtr
+   );
+
+   if(errSC == def_memErr_samEntry)
+      goto memErr_fun20_sec04;
 
    /*****************************************************\
    * Fun20 Sec03 Sub02:
@@ -1255,7 +1274,8 @@ mk_index_clustST(
          retHeapST->clustArySI[lineUL] =
             def_header_clustST;
 
-         retHeapST->indexAryUL[lineUL] =(ulong) filePosSL;
+         retHeapST->indexAryUL[lineUL] =
+            (unsigned long) filePosSL;
 
          retHeapST->startAryUI[lineUL] = 0;
          retHeapST->endAryUI[lineUL] = 0;
@@ -1270,7 +1290,8 @@ mk_index_clustST(
          retHeapST->clustArySI[lineUL] =
             def_discard_clustST;
 
-         retHeapST->indexAryUL[lineUL] =(ulong) filePosSL;
+         retHeapST->indexAryUL[lineUL] =
+            (unsigned long) filePosSL;
 
          retHeapST->startAryUI[lineUL] = 0;
          retHeapST->endAryUI[lineUL] = 0;
@@ -1285,7 +1306,8 @@ mk_index_clustST(
          retHeapST->clustArySI[lineUL] =
             def_discard_clustST;
 
-         retHeapST->indexAryUL[lineUL] =(ulong) filePosSL;
+         retHeapST->indexAryUL[lineUL] =
+            (unsigned long) filePosSL;
 
          retHeapST->startAryUI[lineUL] = 0;
          retHeapST->endAryUI[lineUL] = 0;
@@ -1301,7 +1323,8 @@ mk_index_clustST(
          retHeapST->clustArySI[lineUL] =
             def_discard_clustST;
 
-         retHeapST->indexAryUL[lineUL] =(ulong) filePosSL;
+         retHeapST->indexAryUL[lineUL] =
+            (unsigned long) filePosSL;
 
          retHeapST->startAryUI[lineUL] = 0;
          retHeapST->endAryUI[lineUL] = 0;
@@ -1320,7 +1343,8 @@ mk_index_clustST(
          retHeapST->refAryUI[lineUL] =
             def_discard_clustST;
 
-         retHeapST->indexAryUL[lineUL] =(ulong) filePosSL;
+         retHeapST->indexAryUL[lineUL] =
+            (unsigned long) filePosSL;
 
          retHeapST->startAryUI[lineUL] = 0;
          retHeapST->endAryUI[lineUL] = 0;
@@ -1335,7 +1359,8 @@ mk_index_clustST(
          retHeapST->clustArySI[lineUL] =
             def_discard_clustST;
 
-         retHeapST->indexAryUL[lineUL] =(ulong) filePosSL;
+         retHeapST->indexAryUL[lineUL] =
+            (unsigned long) filePosSL;
 
          retHeapST->startAryUI[lineUL] = 0;
          retHeapST->endAryUI[lineUL] = 0;
@@ -1429,7 +1454,8 @@ mk_index_clustST(
 
                /*need to account for inserted index*/
                for(
-                  slCnt =(slong) retHeapST->numRefUI;
+                  slCnt = (signed long)
+                          retHeapST->numRefUI;
                   slCnt > indexSL;
                   --slCnt
                ) retHeapST->refNumAryUI[slCnt] =
@@ -1463,7 +1489,7 @@ mk_index_clustST(
          scoreUC *= clustSetSTPtr->lenWeightF;
 
          retHeapST->scoreArySC[lineUL] = 
-            scoreUC + (uchar) samSTPtr->medianQF;
+            scoreUC + (unsigned char) samSTPtr->medianQF;
 
          retHeapST->startAryUI[lineUL] =
             samSTPtr->refStartUI;
@@ -1472,7 +1498,8 @@ mk_index_clustST(
             samSTPtr->refEndUI;
 
          retHeapST->clustArySI[lineUL] = 0;
-         retHeapST->indexAryUL[lineUL] =(ulong) filePosSL;
+         retHeapST->indexAryUL[lineUL] =
+            (unsigned long) filePosSL;
       } /*Else: keep read*/
  
       /**************************************************\
@@ -1480,21 +1507,40 @@ mk_index_clustST(
       *   - get next entry
       \**************************************************/
 
-      /*moving to end of line, so want to skip '\r'*/
-      retHeapST->lenLineAryUI[lineUL] =
-         endLineUnix_ulCp(*buffStrPtr);
-
-      ++retHeapST->lenLineAryUI[lineUL]; /*for '\n'*/
-
+      retHeapST->lenLineAryUI[lineUL] = lenLineSI;
+      ++retHeapST->lenLineAryUI[lineUL];
+         /*need to account for null '\0' at end*/
       filePosSL += retHeapST->lenLineAryUI[lineUL];
 
+      if(eofBl)
+        break; /*last round was the last entry*/
+
       errSC =
-         get_samEntry(
-            samSTPtr,
+         getLine_samEntry(
             buffStrPtr,
             lenBuffUL,
+            &lenLineSI, /*gets length of buffer*/
             samFILE
          );
+
+      if(errSC == def_memErr_samEntry)
+         goto memErr_fun20_sec04;
+
+      else if( (*buffStrPtr)[0] != '\0' )
+      { /*Else If: not end of file*/
+         if(errSC)
+            eofBl = 1;
+
+         errSC =
+            lineTo_samEntry(
+               samSTPtr,
+               *buffStrPtr
+            );
+      } /*Else If: not end of file*/
+
+      if(errSC == def_memErr_samEntry)
+         goto memErr_fun20_sec04;
+
 
       ++lineUL;
    } /*Loop: print out stats*/
@@ -1517,26 +1563,23 @@ mk_index_clustST(
    goto ret_fun20_sec04;
 
    memErr_fun20_sec04:;
-
-   if(retHeapST)
-      freeHeap_index_clustST(retHeapST);
-   retHeapST = 0;
-
-   goto ret_fun20_sec04;
+      if(retHeapST)
+         freeHeap_index_clustST(retHeapST);
+      retHeapST = 0;
+      goto ret_fun20_sec04;
 
    noReads_fun20_sec04:;
-   retHeapST->keptSL = 0;
-   goto ret_fun20_sec04;
+      retHeapST->keptSL = 0;
+      goto ret_fun20_sec04;
 
    ret_fun20_sec04:;
+      fseek(
+         samFILE,
+         0,
+         SEEK_SET
+      );
 
-   fseek(
-      samFILE,
-      0,
-      SEEK_SET
-   );
-
-   return retHeapST;
+      return retHeapST;
 } /*mk_index_clustST*/
 
 /*-------------------------------------------------------\
@@ -1591,7 +1634,7 @@ getRead_clustST(
    offsetUL =
       fread(
          buffStr,
-         sizeof(schar),
+         sizeof(signed char),
          indexSTPtr->lenLineAryUI[lineUL],
          samFILE
       );
@@ -1679,18 +1722,20 @@ getCon_clustST(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar errSC = 0;
-   slong lineSL = 0;
+   signed char errSC = 0;
+   signed long lineSL = 0;
 
    struct samEntry *samHeapST = 0;
    struct conNt_tbCon *conHeapAryST = 0;
-   uint lenConUI = 0;
-   uint numMaskUI = 0; /*number of masked bases in con*/
+   unsigned int lenConUI = 0;
+   unsigned int numMaskUI = 0;
+      /*number of masked bases in con*/
    float percF = 0;
 
-   ulong offsetUL = 0; /*offset to get target read*/
+   unsigned long offsetUL = 0;
+      /*offset to get target read*/
 
-   schar refIdStr[64];
+   signed char refIdStr[64];
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun22 Sec02:
@@ -1731,7 +1776,7 @@ getCon_clustST(
 
    for(
       lineSL = 0;
-      lineSL < (slong) indexSTPtr->lenSamUL;
+      lineSL < (signed long) indexSTPtr->lenSamUL;
       ++lineSL
    ){ /*Loop: add reads to consensus*/
 
@@ -1749,7 +1794,7 @@ getCon_clustST(
       errSC =
          getRead_clustST(
             samSTPtr,
-            (ulong) lineSL,
+            (unsigned long) lineSL,
             offsetUL,
             indexSTPtr,
             buffStr,
@@ -1937,16 +1982,16 @@ cmpCons_clustST(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   slong distSL = 0;
+   signed long distSL = 0;
 
-   schar retSC = 0;
+   signed char retSC = 0;
 
    /*changing cluster numbers*/
-   sint keepClustSI = 0;
-   sint changeClustSI = 0;
+   signed int keepClustSI = 0;
+   signed int changeClustSI = 0;
 
    float distPercF = 0;
-   uint *tmpUIPtr = 0;
+   unsigned int *tmpUIPtr = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun23 Sec02:
@@ -1956,6 +2001,13 @@ cmpCons_clustST(
    /*disable depth profiling for consensuses*/
    tmpUIPtr = edDistResSTPtr->depthAryUI;
    edDistResSTPtr->depthAryUI = 0;
+
+   if(
+      eqlNull_ulCp(
+         firstConSTPtr->samSTPtr->refIdStr,
+         secConSTPtr->samSTPtr->refIdStr
+      )
+   ) return 0; /*different references used*/
 
    if(! noBoundCheckBl)
    { /*If: not doing bounds check*/
@@ -2105,7 +2157,7 @@ cmpCons_clustST(
 
    for(
       distSL = 0;
-      distSL < (slong) indexSTPtr->lenSamUL;
+      distSL < (signed long) indexSTPtr->lenSamUL;
       ++distSL
    ){ /*Loop: merge clusters*/
       if(indexSTPtr->clustArySI[distSL] == changeClustSI)
@@ -2153,8 +2205,8 @@ plist_con_clustST(
    unsigned long *lenBuffULPtr,  /*size of buffStrPtr*/
    void *outFILE                 /*file to print to*/
 ){
-   schar errSC = 0;
-   schar *tmpStr = 0;
+   signed char errSC = 0;
+   signed char *tmpStr = 0;
    struct samEntry *samSTPtr = 0;
 
    if(headerStr)
@@ -2218,8 +2270,9 @@ plist_con_clustST(
 
       fprintf(
          outFILE,
-         "\tclust:i:%i\n",
-         conSTPtr->clustSI
+         "\tclust:i:%i%s",
+         conSTPtr->clustSI,
+         str_endLine
       );
 
       conSTPtr = conSTPtr->nextST;
@@ -2291,11 +2344,11 @@ getClust_clustST(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar errSC = 0;
-   slong lineSL = 0;
-   ulong offsetUL = 0;
+   signed char errSC = 0;
+   signed long lineSL = 0;
+   unsigned long offsetUL = 0;
 
-   schar headBl = 1; /*need to print out header*/
+   signed char headBl = 1; /*need to print out header*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun25 Sec02:
@@ -2326,7 +2379,7 @@ getClust_clustST(
 
    for(
       lineSL = 0;
-      lineSL < (slong) indexSTPtr->lenSamUL;
+      lineSL < (signed long) indexSTPtr->lenSamUL;
       ++lineSL
    ){ /*Loop: find reads assigned to cluster*/
 
@@ -2349,7 +2402,7 @@ getClust_clustST(
       errSC =
          getRead_clustST(
             samSTPtr,
-            (ulong) lineSL,
+            (unsigned long) lineSL,
             offsetUL,
             indexSTPtr,
             *buffStrPtr,
@@ -2370,8 +2423,9 @@ getClust_clustST(
       { /*If: comment*/
          fprintf(
             (FILE *) outFILE,
-            "%s\n",
-            samSTPtr->extraStr
+            "%s%s",
+            samSTPtr->extraStr,
+            str_endLine
          );
 
          continue;
@@ -2383,8 +2437,9 @@ getClust_clustST(
 
          fprintf(
             (FILE *) outFILE,
-            "%s\n",
-            headStr
+            "%s%s",
+            headStr,
+            str_endLine
          );
       } /*If: need to print program header*/
 
@@ -2404,8 +2459,9 @@ getClust_clustST(
 
          fprintf(
             (FILE *) outFILE,
-            "\tclust:i:%i\n",
-            clustSI
+            "\tclust:i:%i%s",
+            clustSI,
+            str_endLine
          );
       } /*Else If: printing read*/
    } /*Loop: find number of matches*/
@@ -2497,20 +2553,21 @@ pbins_clustST(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar errSC = 0;
-   slong lineSL = 0;
+   signed char errSC = 0;
+   signed long lineSL = 0;
 
-   schar *tmpStr = 0;
-   schar *headHeapStr = 0;
-   uint lenHeadUI = 4096;
-   uint bytesUI = 0;
+   signed char *tmpStr = 0;
+   signed char *headHeapStr = 0;
+   unsigned int lenHeadUI = 4096;
+   unsigned int bytesUI = 0;
 
-   schar *clustHeapAryBl = 0;  /*tells if printed header*/
-   schar outFileStr[2048]; /*holds output file name*/
-   uint lenPrefixUI = endStr_ulCp(prefixStr);
+   signed char *clustHeapAryBl = 0;
+      /*tells if printed header*/
+   signed char outFileStr[2048];/*holds output file name*/
+   unsigned int lenPrefixUI = endStr_ulCp(prefixStr);
    FILE *outFILE = 0;
 
-   ulong offsetUL = 0; /*offset to next read*/
+   unsigned long offsetUL = 0; /*offset to next read*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun26 Sec02:
@@ -2526,7 +2583,7 @@ pbins_clustST(
 
    for(
       lineSL = 0;
-      lineSL < (slong) indexSTPtr->lenSamUL;
+      lineSL < (signed long) indexSTPtr->lenSamUL;
       ++lineSL
    ){ /*Loop: get header length*/
       if(
@@ -2538,7 +2595,8 @@ pbins_clustST(
    } /*Loop: get header length*/
 
 
-   headHeapStr = malloc((lenHeadUI + 1) * sizeof(schar));
+   headHeapStr =
+      malloc((lenHeadUI + 1) * sizeof(signed char));
 
    if(! headHeapStr)
       goto memErr_fun26_sec05;
@@ -2547,13 +2605,13 @@ pbins_clustST(
       clustHeapAryBl =
          calloc(
             clustSI + 1,
-            sizeof(schar)
+            sizeof(signed char)
          );
    else
       clustHeapAryBl =
          calloc(
             2,
-            sizeof(schar)
+            sizeof(signed char)
          );
 
    if(! clustHeapAryBl)
@@ -2566,7 +2624,7 @@ pbins_clustST(
 
    for(
       lineSL = 0;
-      lineSL < (slong) indexSTPtr->lenSamUL;
+      lineSL < (signed long) indexSTPtr->lenSamUL;
       ++lineSL
    ){ /*Loop: get header*/
 
@@ -2578,7 +2636,7 @@ pbins_clustST(
       offsetUL =
          fread(
             *buffStrPtr,
-            sizeof(schar),
+            sizeof(signed char),
             indexSTPtr->lenLineAryUI[lineSL],
             samFILE
          );
@@ -2621,7 +2679,7 @@ pbins_clustST(
    *   - filter out non-cluster reads + start loop
    \*****************************************************/
 
-   while(lineSL < (slong) indexSTPtr->lenSamUL)
+   while(lineSL < (signed long) indexSTPtr->lenSamUL)
    { /*Loop: print clusters*/
       if(indexSTPtr->clustArySI[lineSL] <= 0)
       { /*If: not a cluster*/
@@ -2645,7 +2703,7 @@ pbins_clustST(
       errSC =
          getRead_clustST(
             samSTPtr,
-            (ulong) lineSL,
+            (unsigned long) lineSL,
             offsetUL,
             indexSTPtr,
             *buffStrPtr,
@@ -2767,8 +2825,9 @@ pbins_clustST(
 
        fprintf(
           outFILE,
-          "\tclust:i:%i\n",
-          indexSTPtr->clustArySI[lineSL]
+          "\tclust:i:%i%s",
+          indexSTPtr->clustArySI[lineSL],
+          str_endLine
        );
 
       fclose(outFILE);
@@ -3014,7 +3073,8 @@ setupRef_var_clustST(
 
    if(! varSTPtr->aAryUI)
    { /*If: a array needs memory*/
-      varSTPtr->aAryUI = malloc(lenRefUI * sizeof(uint));
+      varSTPtr->aAryUI =
+         malloc(lenRefUI * sizeof(unsigned int));
 
       if(! varSTPtr->aAryUI)
          goto memErr_fun06;
@@ -3022,7 +3082,8 @@ setupRef_var_clustST(
 
    if(! varSTPtr->cAryUI)
    { /*If: c array needs memory*/
-      varSTPtr->cAryUI = malloc(lenRefUI * sizeof(uint));
+      varSTPtr->cAryUI =
+         malloc(lenRefUI * sizeof(unsigned int));
 
       if(! varSTPtr->cAryUI)
          goto memErr_fun06;
@@ -3030,7 +3091,8 @@ setupRef_var_clustST(
 
    if(! varSTPtr->gAryUI)
    { /*If: g array needs memory*/
-      varSTPtr->gAryUI = malloc(lenRefUI * sizeof(uint));
+      varSTPtr->gAryUI =
+         malloc(lenRefUI * sizeof(unsigned int));
 
       if(! varSTPtr->gAryUI)
          goto memErr_fun06;
@@ -3038,7 +3100,8 @@ setupRef_var_clustST(
 
    if(! varSTPtr->tAryUI)
    { /*If: t array needs memory*/
-      varSTPtr->tAryUI = malloc(lenRefUI * sizeof(uint));
+      varSTPtr->tAryUI =
+         malloc(lenRefUI * sizeof(unsigned int));
 
       if(! varSTPtr->tAryUI)
          goto memErr_fun06;
@@ -3046,7 +3109,8 @@ setupRef_var_clustST(
 
    if(! varSTPtr->delAryUI)
    { /*If: del array needs memory*/
-      varSTPtr->delAryUI =malloc(lenRefUI * sizeof(uint));
+      varSTPtr->delAryUI =
+         malloc(lenRefUI * sizeof(unsigned int));
 
       if(! varSTPtr->delAryUI)
          goto memErr_fun06;
@@ -3054,7 +3118,8 @@ setupRef_var_clustST(
 
    if(! varSTPtr->insAryUI)
    { /*If: ins array needs memory*/
-      varSTPtr->insAryUI =malloc(lenRefUI * sizeof(uint));
+      varSTPtr->insAryUI =
+         malloc(lenRefUI * sizeof(unsigned int));
 
       if(! varSTPtr->insAryUI)
          goto memErr_fun06;
@@ -3128,7 +3193,7 @@ void
 blank_hist_clustST(
    struct hist_clustST *histSTPtr
 ){
-   uint uiHist = 0;
+   unsigned int uiHist = 0;
 
    histSTPtr->startUI = 0;
    histSTPtr->endUI = 0;
@@ -3269,7 +3334,7 @@ prob_clustST(
    unsigned long maxDepthUL,
    float errF
 ){
-   uint uiProb = 0;
+   unsigned int uiProb = 0;
    double probDbl = 0;
 
    /*b choose m (variants)*/
@@ -3335,10 +3400,10 @@ roughProb_clustST(
    unsigned long maxDepthUL,
    float errF
 ){
-   uint errDigUI = 0;
-   uint lenDigUI = 0;
-   uint depthDigUI = 0;
-   uint tmpSI = 0;
+   unsigned int errDigUI = 0;
+   unsigned int lenDigUI = 0;
+   unsigned int depthDigUI = 0;
+   unsigned int tmpSI = 0;
 
    do{ /*Loop: find power of error*/
       tmpSI = errF * 10;
@@ -3362,7 +3427,7 @@ roughProb_clustST(
      /*Loop: find power of depth*/
 
    return
-      (slong)
+      (signed long)
         ( (depthDigUI * depthUL) + (lenDigUI * numVarUI) )
       - (errDigUI * numVarUI * depthUL);
       /*this is very rough, but it should give me an idea
@@ -3407,13 +3472,14 @@ findBestProf_hist_clustST(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   uint uiHist = 0;
-   uint lenUI = histSTPtr->endUI - histSTPtr->startUI + 1;
+   unsigned int uiHist = 0;
+   unsigned int lenUI =
+      histSTPtr->endUI - histSTPtr->startUI + 1;
 
    signed long probSL = 0;
    double probDbl = 0;
 
-   schar haveBestProbBl = 0;
+   signed char haveBestProbBl = 0;
 
    unsigned int bestIndexUI = 0;
    signed long bestProbSL = 0;

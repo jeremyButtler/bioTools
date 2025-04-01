@@ -41,7 +41,7 @@
 #include "../genAln/water.h"
 
 /*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../genLib/endLine.h"
 #include "../genAln/alnDefs.h"
 #include "../bioTools.h"
 
@@ -79,10 +79,11 @@ pversion_mainWater(
 ){
    fprintf(
       (FILE *) outFILE,
-      "alnWater from bioTools version: %i-%02i-%02i\n",
+      "alnWater from bioTools version: %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
-      def_day_bioTools
+      def_day_bioTools,
+      str_endLine
    );
 } /*pversion_mainWater*/
 
@@ -117,12 +118,14 @@ phelp_mainWater(
 
    fprintf(
       (FILE *) outFILE,
-      "mainWater -qry query.fa -ref ref.fa > out.aln\n"
+      "mainWater -qry query.fa -ref ref.fa > out.aln%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - does waterman alignment on two sequences\n"
+      "  - does waterman alignment on two sequences%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -149,7 +152,8 @@ phelp_mainWater(
 
    fprintf(
       (FILE *) outFILE,
-      "Input:\n"
+      "Input:%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -159,22 +163,26 @@ phelp_mainWater(
 
    fprintf(
       (FILE *) outFILE,
-      "  -ref reference.fasta: [Required]\n"
+      "  -ref reference.fasta: [Required]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o fasta file with reference sequence\n"
+      "    o fasta file with reference sequence%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -ref-fq reference.fastq: [Replaces -ref]\n"
+      "  -ref-fq reference.fastq: [Replaces -ref]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o fastq file with reference sequence\n"
+      "    o fastq file with reference sequence%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -184,22 +192,26 @@ phelp_mainWater(
 
    fprintf(
       (FILE *) outFILE,
-      "  -qry reference.fasta: [Required]\n"
+      "  -qry reference.fasta: [Required]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o fasta file with query sequence(s)\n"
+      "    o fasta file with query sequence(s)%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -qry-fq query.fastq: [Replaces -qry]\n"
+      "  -qry-fq query.fastq: [Replaces -qry]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o fastq file with query sequence(s)\n"
+      "    o fastq file with query sequence(s)%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -209,17 +221,20 @@ phelp_mainWater(
 
    fprintf(
       (FILE *) outFILE,
-      "  -out out.aln: [stdout]\n"
+      "  -out out.aln: [stdout]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o file to print alignment to\n"
+      "    o file to print alignment to%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o use \"-out -\" for stdout\n"
+      "    o use \"-out -\" for stdout%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -241,33 +256,39 @@ phelp_mainWater(
    if(def_kmerScan_mainWater)
       fprintf(
          (FILE *) outFILE,
-         "  -scan: [Optional; Yes]\n"
+         "  -scan: [Optional; Yes]%s",
+         str_endLine
       );
 
    else
       fprintf(
          (FILE *) outFILE,
-         "  -scan: [Optional; No]\n"
+         "  -scan: [Optional; No]%s",
+         str_endLine
       );
 
    fprintf(
       (FILE *) outFILE,
-      "    o scan for direction using kmers\n"
+      "    o scan for direction using kmers%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o reference and query need to be similar\n"
+      "    o reference and query need to be similar%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      lengths\n"
+      "      lengths%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o disable with \"-no-scan\"\n"
+      "    o disable with \"-no-scan\"%s",
+      str_endLine
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -277,24 +298,28 @@ phelp_mainWater(
 
    fprintf(
       (FILE *) outFILE,
-      "  -gap %i: [Optional]\n",
-      def_gapOpen_alnDefs
+      "  -gap %i: [Optional]%s",
+      def_gapOpen_alnDefs,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o gap opening penalty\n"
+      "    o gap opening penalty%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -extend %i: [Optional]\n",
-      def_gapExtend_alnDefs
+      "  -extend %i: [Optional]%s",
+      def_gapExtend_alnDefs,
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o gap extension penalty\n"
+      "    o gap extension penalty%s",
+      str_endLine
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -304,22 +329,26 @@ phelp_mainWater(
 
    fprintf(
       (FILE *) outFILE,
-      "  -score scoring-matrix.txt: [Optional]\n"
+      "  -score scoring-matrix.txt: [Optional]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o scoring matrix (alnDefs.h has defaults)\n"
+      "    o scoring matrix (alnDefs.h has defaults)%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -score match-matrix.txt: [Optional]\n"
+      "  -score match-matrix.txt: [Optional]%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o match matrix (alnDefs.h has defaults)\n"
+      "    o match matrix (alnDefs.h has defaults)%s",
+      str_endLine
    );
 
    /*****************************************************\
@@ -329,12 +358,14 @@ phelp_mainWater(
 
    fprintf(
       (FILE *) outFILE,
-      "  -h: print this help message and exit\n"
+      "  -h: print this help message and exit%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -v: print version number and exit\n"
+      "  -v: print version number and exit%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -344,12 +375,14 @@ phelp_mainWater(
 
    fprintf(
       (FILE *) outFILE,
-      "Output:\n"
+      "Output:%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  - prints alignment(s) to -out file or stdout\n"
+      "  - prints alignment(s) to -out file or stdout%s",
+     str_endLine
    );
 } /*phelp_mainWater*/
 
@@ -390,16 +423,16 @@ phelp_mainWater(
 |     o 1 for help message/version number
 |     o 2 for unkown input
 \-------------------------------------------------------*/
-schar
+signed char
 input_mainWater(
    int numArgsSI,
    char *argAryStr[],
-   schar **refFileStrPtr,
-   schar *refTypeSCPtr,
-   schar **qryFileStrPtr,
-   schar *qryTypeSCPtr,
-   schar **outFileStrPtr,
-   schar *kmerScanBl,
+   signed char **refFileStrPtr,
+   signed char *refTypeSCPtr,
+   signed char **qryFileStrPtr,
+   signed char *qryTypeSCPtr,
+   signed char **outFileStrPtr,
+   signed char *kmerScanBl,
    struct alnSet *alnSetSTPtr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
@@ -419,10 +452,10 @@ input_mainWater(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   ulong errUL = 0;
-   schar errSC = 0;
-   schar *errStr = 0;
-   sint siArg = 1;
+   unsigned long errUL = 0;
+   signed char errSC = 0;
+   signed char *errStr = 0;
+   signed int siArg = 1;
 
    FILE *matrixFILE = 0;
 
@@ -463,61 +496,66 @@ input_mainWater(
    { /*Loop: get user input*/
       if(
          ! eql_charCp(
-            (schar *) "-ref",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-ref",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*If: is reference (as fasta)*/
          ++siArg;
-         *refFileStrPtr = (schar *) argAryStr[siArg];
+         *refFileStrPtr =
+            (signed char *) argAryStr[siArg];
          *refTypeSCPtr = def_faFile_mainWater;
       } /*If: is reference (as fasta)*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-ref-fq",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-ref-fq",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: is reference (as fastq)*/
          ++siArg;
-         *refFileStrPtr = (schar *) argAryStr[siArg];
+         *refFileStrPtr =
+            (signed char *) argAryStr[siArg];
          *refTypeSCPtr = def_fqFile_mainWater;
       } /*Else If: is reference (as fastq)*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-qry",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-qry",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: is query (as fasta)*/
          ++siArg;
-         *qryFileStrPtr = (schar *) argAryStr[siArg];
+         *qryFileStrPtr =
+            (signed char *) argAryStr[siArg];
          *qryTypeSCPtr = def_faFile_mainWater;
       } /*Else If: is query (as fasta)*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-qry-fq",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-qry-fq",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: is query (as fastq)*/
          ++siArg;
-         *qryFileStrPtr = (schar *) argAryStr[siArg];
+         *qryFileStrPtr =
+            (signed char *) argAryStr[siArg];
          *qryTypeSCPtr = def_fqFile_mainWater;
       } /*Else If: is query (as fastq)*/
 
       else if(
          ! eql_charCp(
-            (schar *)"-out",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *)"-out",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: is output file*/
          ++siArg;
-         *outFileStrPtr = (schar *) argAryStr[siArg];
+         *outFileStrPtr =
+            (signed char *) argAryStr[siArg];
       } /*Else If: is output file*/
 
       /**************************************************\
@@ -538,30 +576,30 @@ input_mainWater(
 
       else if(
          ! eql_charCp(
-            (schar *) "-scan",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-scan",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *kmerScanBl = 1;
 
       else if(
          ! eql_charCp(
-            (schar *) "-no-scan",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-no-scan",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ) *kmerScanBl = 0;
 
       else if(
          ! eql_charCp(
-            (schar *) "-gap",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-gap",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: is gap opening penalty*/
          ++siArg;
 
-         errStr = (schar *) argAryStr[siArg];
+         errStr = (signed char *) argAryStr[siArg];
 
          errStr +=
             strToSS_base10str(
@@ -573,8 +611,9 @@ input_mainWater(
          { /*If: non-numeric*/
             fprintf(
                stderr,
-               "-gap %s is non-numeric\n",
-               argAryStr[siArg]
+               "-gap %s is non-numeric\%s",
+               argAryStr[siArg],
+               str_endLine
             );
                
             goto err_fun03_sec04;     
@@ -589,14 +628,14 @@ input_mainWater(
 
       else if(
          ! eql_charCp(
-            (schar *)"-extend",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *)"-extend",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
       )
       ){ /*Else If: is gap extension penalty*/
          ++siArg;
 
-         errStr = (schar *) argAryStr[siArg];
+         errStr = (signed char *) argAryStr[siArg];
 
          errStr +=
             strToSS_base10str(
@@ -608,8 +647,9 @@ input_mainWater(
          { /*If: non-numeric*/
             fprintf(
                stderr,
-               "-extend %s is non-numeric\n",
-               argAryStr[siArg]
+               "-extend %s is non-numeric%s",
+               argAryStr[siArg],
+               str_endLine
             );
                
             goto err_fun03_sec04;     
@@ -629,9 +669,9 @@ input_mainWater(
 
       else if(
          ! eql_charCp(
-            (schar *) "-score",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-score",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: is scoring matrix*/
          ++siArg;
@@ -646,8 +686,9 @@ input_mainWater(
          { /*If: could not open scoring matrix*/
             fprintf(
                stderr,
-               "unable to open -score %s\n",
-               argAryStr[siArg]
+               "unable to open -score %s%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;     
@@ -666,9 +707,10 @@ input_mainWater(
          { /*If: invalid entry*/
             fprintf(
                stderr,
-               "entry %lu in -score %s is invalid\n",
+               "entry %lu in -score %s is invalid%s",
                errUL,
-               argAryStr[siArg]
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;     
@@ -682,9 +724,9 @@ input_mainWater(
 
       else if(
          ! eql_charCp(
-            (schar *) "-match",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-match",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: is match matrix*/
          ++siArg;
@@ -699,8 +741,9 @@ input_mainWater(
          { /*If: could not open scoring matrix*/
             fprintf(
                stderr,
-               "unable to open -match %s\n",
-               argAryStr[siArg]
+               "unable to open -match %s%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;     
@@ -719,9 +762,10 @@ input_mainWater(
          { /*If: invalid entry*/
             fprintf(
                stderr,
-               "entry %lu in -match %s is invalid\n",
+               "entry %lu in -match %s is invalid%s",
                errUL,
-               argAryStr[siArg]
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;     
@@ -735,9 +779,9 @@ input_mainWater(
       
       else if(
          ! eql_charCp(
-            (schar *) "-h",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-h",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: help message requested*/
          phelp_mainWater(stdout);
@@ -746,9 +790,9 @@ input_mainWater(
 
       else if(
          ! eql_charCp(
-            (schar *) "--h",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--h",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: help message requested*/
          phelp_mainWater(stdout);
@@ -757,9 +801,9 @@ input_mainWater(
 
       else if(
          ! eql_charCp(
-            (schar *) "help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: help message requested*/
          phelp_mainWater(stdout);
@@ -768,9 +812,9 @@ input_mainWater(
 
       else if(
          ! eql_charCp(
-            (schar *) "-help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: help message requested*/
          phelp_mainWater(stdout);
@@ -779,9 +823,9 @@ input_mainWater(
 
       else if(
          ! eql_charCp(
-            (schar *) "--help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: help message requested*/
          phelp_mainWater(stdout);
@@ -795,9 +839,9 @@ input_mainWater(
 
       else if(
          ! eql_charCp(
-            (schar *) "-v",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-v",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: version number requested*/
          pversion_mainWater(stdout);
@@ -806,9 +850,9 @@ input_mainWater(
 
       else if(
          ! eql_charCp(
-            (schar *) "--v",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--v",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: version number requested*/
          pversion_mainWater(stdout);
@@ -817,9 +861,9 @@ input_mainWater(
 
       else if(
          ! eql_charCp(
-            (schar *) "version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: version number requested*/
          pversion_mainWater(stdout);
@@ -828,9 +872,9 @@ input_mainWater(
 
       else if(
          ! eql_charCp(
-            (schar *) "-version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: version number requested*/
          pversion_mainWater(stdout);
@@ -839,9 +883,9 @@ input_mainWater(
 
       else if(
          ! eql_charCp(
-            (schar *) "--version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: version number requested*/
          pversion_mainWater(stdout);
@@ -857,8 +901,9 @@ input_mainWater(
       { /*Else: invalid input*/
          fprintf(
             stderr,
-            "%s is not recognized\n",
-            argAryStr[siArg]
+            "%s is not recognized%s",
+            argAryStr[siArg],
+            str_endLine
          );
 
          goto err_fun03_sec04;     
@@ -939,21 +984,21 @@ main(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar errSC = 0;
-   slong scoreSL = 0;
-   slong seqSL = 0;   /*query sequence on*/
-   uint numAnonUI = 0; /*through away*/
-   schar *tmpStr = 0;
-   schar kmerScanBl = def_kmerScan_mainWater;
+   signed char errSC = 0;
+   signed long scoreSL = 0;
+   signed long seqSL = 0;   /*query sequence on*/
+   unsigned int numAnonUI = 0; /*through away*/
+   signed char *tmpStr = 0;
+   signed char kmerScanBl = def_kmerScan_mainWater;
      /*scan for direction using kmers*/
 
-   schar *qryFileStr = 0;
-   schar qryTypeSC = def_fqFile_mainWater;
+   signed char *qryFileStr = 0;
+   signed char qryTypeSC = def_fqFile_mainWater;
 
-   schar *refFileStr = 0;
-   schar refTypeSC = def_fqFile_mainWater;
+   signed char *refFileStr = 0;
+   signed char refTypeSC = def_fqFile_mainWater;
 
-   schar *outFileStr = 0;
+   signed char *outFileStr = 0;
 
    struct seqST qryStackST;
    struct seqST *refSTPtr = 0;
@@ -961,15 +1006,15 @@ main(
    struct alnSet setStackST;
 
    struct samEntry samStackST;
-   schar *buffHeapStr = 0;
-   ulong lenBuffUL = 0;
+   signed char *buffHeapStr = 0;
+   unsigned long lenBuffUL = 0;
 
    struct kmerCnt kmerStackST;
-   uchar lenKmerUC = def_lenKmer_mainWater;
-   uint maxKmerUI = 0;
-   sint numKmersSI = 0;
-   sint *kmerHeapArySI = 0;
-   sint *cntHeapArySI = 0;
+   unsigned char lenKmerUC = def_lenKmer_mainWater;
+   unsigned int maxKmerUI = 0;
+   signed int numKmersSI = 0;
+   signed int *kmerHeapArySI = 0;
+   signed int *cntHeapArySI = 0;
 
    FILE *seqFILE = 0;
    FILE *outFILE = 0;
@@ -1039,12 +1084,14 @@ main(
    *   - allocate array memory
    \*****************************************************/
 
-   kmerHeapArySI = malloc((maxKmerUI + 1) * sizeof(sint));
+   kmerHeapArySI =
+      malloc((maxKmerUI + 1) * sizeof(signed int));
 
    if(! kmerHeapArySI)
       goto memErr_main_sec04_sub02;
 
-   cntHeapArySI = malloc((maxKmerUI + 1) * sizeof(sint));
+   cntHeapArySI =
+      malloc((maxKmerUI + 1) * sizeof(signed int));
 
    if(! cntHeapArySI)
       goto memErr_main_sec04_sub02;
@@ -1069,7 +1116,8 @@ main(
    { /*If: no reference file input*/
       fprintf(
          stderr,
-         "no reference file provied with -ref\n"
+         "no reference file provied with -ref%s",
+         str_endLine
       );
 
       goto fileErr_main_sec04_sub03;
@@ -1085,14 +1133,16 @@ main(
    { /*If: file error*/
       if(refTypeSC == def_fqFile_mainWater)
          fprintf( stderr,
-            "could not open -ref-fq %s\n",
-            refFileStr
+            "could not open -ref-fq %s%s",
+            refFileStr,
+            str_endLine
          );
 
       else
          fprintf( stderr,
-            "could not open -ref %s\n",
-            refFileStr
+            "could not open -ref %s%s",
+            refFileStr,
+            str_endLine
          );
 
       goto fileErr_main_sec04_sub03;
@@ -1130,7 +1180,9 @@ main(
          ! errSC
       || errSC == def_EOF_seqST
    ){ /*If: had no problems*/
-      tmpStr = (schar *) kmerStackST.forSeqST->idStr;
+      tmpStr =
+         (signed char *) kmerStackST.forSeqST->idStr;
+
       while(*tmpStr++ > 32) ;
       *(tmpStr - 1) = '\0';
 
@@ -1168,15 +1220,17 @@ main(
       if(refTypeSC == def_fqFile_mainWater)
          fprintf(
            stderr,
-           " -ref-fq %s\n",
-           refFileStr
+           " -ref-fq %s%s",
+           refFileStr,
+           str_endLine
          );
 
       else
          fprintf(
            stderr,
-           " -ref %s\n",
-           refFileStr
+           " -ref %s%s",
+           refFileStr,
+           str_endLine
          );
 
       if(errSC & def_memErr_seqST)
@@ -1205,7 +1259,8 @@ main(
    { /*If: no query file input*/
       fprintf(
          stderr,
-         "no query file provied with -qry\n"
+         "no query file provied with -qry%s",
+         str_endLine
       );
 
       goto fileErr_main_sec04_sub03;
@@ -1221,14 +1276,16 @@ main(
    { /*If: file error*/
       if(qryTypeSC == def_fqFile_mainWater)
          fprintf( stderr,
-            "could not open -qry-fq %s\n",
-            qryFileStr
+            "could not open -qry-fq %s%s",
+            qryFileStr,
+            str_endLine
          );
 
       else
          fprintf( stderr,
-            "could not open -qry %s\n",
-            qryFileStr
+            "could not open -qry %s%s",
+            qryFileStr,
+            str_endLine
          );
 
       goto fileErr_main_sec04_sub03;
@@ -1281,15 +1338,17 @@ main(
       if(qryTypeSC == def_fqFile_mainWater)
          fprintf(
            stderr,
-           " -qry-fq %s\n",
-           qryFileStr
+           " -qry-fq %s%s",
+           qryFileStr,
+           str_endLine
          );
 
       else
          fprintf(
            stderr,
-           " -qry %s\n",
-           qryFileStr
+           " -qry %s%s",
+           qryFileStr,
+           str_endLine
          );
 
       if(errSC & def_memErr_seqST)
@@ -1318,8 +1377,9 @@ main(
       { /*If: could not open output file*/
          fprintf(
             stderr,
-            "unable to open -out %s\n",
-            outFileStr
+            "unable to open -out %s%s",
+            outFileStr,
+            str_endLine
          );
 
          goto fileErr_main_sec04_sub03;
@@ -1352,14 +1412,16 @@ main(
    { /*If: printing to sam file*/
       fprintf(
          outFILE,
-         "@HD\tVN:1.6\tSO:unsorted\tGO:none\n"
+         "@HD\tVN:1.6\tSO:unsorted\tGO:none%s",
+         str_endLine
       );
 
       fprintf(
          outFILE,
-         "@SQ\tSN:%s\tLN:%lu\n",
+         "@SQ\tSN:%s\tLN:%lu%s",
          kmerStackST.forSeqST->idStr + 1, /*get off >*/
-         kmerStackST.forSeqST->lenSeqUL
+         kmerStackST.forSeqST->lenSeqUL,
+         str_endLine
       );
 
       fprintf(
@@ -1388,7 +1450,8 @@ main(
 
       fprintf(
          outFILE,
-         "\n"
+         "%s",
+         str_endLine
       );
    } /*If: printing to sam file*/
 
@@ -1446,12 +1509,13 @@ main(
             &setStackST
          );
 
-      if(! scoreSL)
+      if(matrixStackST.errSC == def_memErr_water)
       { /*If: memory error*/
          fprintf(
             stderr,
-            "MEMORY ERROR aligning sequence %li\n",
-            seqSL
+            "MEMORY ERROR aligning sequence %li%s",
+            seqSL,
+            str_endLine
          );
 
          goto memErr_main_sec04_sub02;
@@ -1478,8 +1542,9 @@ main(
       { /*If: memory error*/
          fprintf(
             stderr,
-            "MEMORY ERROR sequence %li\n",
-            seqSL
+            "MEMORY ERROR sequence %li%s",
+            seqSL,
+            str_endLine
          );
 
          goto memErr_main_sec04_sub02;
@@ -1503,8 +1568,9 @@ main(
       { /*If: memory error*/
          fprintf(
             stderr,
-            "MEMORY ERROR sequence %li\n",
-            seqSL
+            "MEMORY ERROR sequence %li%s",
+            seqSL,
+            str_endLine
          );
 
          goto memErr_main_sec04_sub02;
@@ -1544,8 +1610,9 @@ main(
    { /*If: memory error*/
       fprintf(
          stderr,
-         "MEMORY ERROR on %li\n",
-         seqSL
+         "MEMORY ERROR on %li%s",
+         seqSL,
+         str_endLine
       );
 
       goto memErr_main_sec04_sub02;

@@ -214,6 +214,8 @@ As you can guess, this will take some time to run.
 
 # Updates
 
+- 2025-01-09:
+  - fixed multi-rererence crash
 - 2025-01-07:
   - added in clustering logging
   - fixed multi-reference crash issues

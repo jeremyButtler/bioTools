@@ -12,6 +12,14 @@ Primary is unlicense (public domain), but if publice
 
 # Updates:
 
+- 2025-03-30:
+  - corrected line ending step in scalar. So, it shoul now
+    supports the modern and no-longer-used line breask
+    (`\n`, `\r\n`, `\r` [no longer used], `\n\r`
+     [no longer used]).
+- 2025-03-24:
+  - added in support for lines ending in `\r` (old MAC) in
+    the scalar (not SIMD) call.
 - 2024-10-13:
   - removed need for 32 bit flag 
     - found solution to always split id in half that

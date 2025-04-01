@@ -30,7 +30,6 @@
 #include "indexToCoord.h"
 
 /*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
 #include "../genLib/genMath.h" /*only using .h portion*/
 #include "alnDefs.h"
 
@@ -38,6 +37,8 @@
 ! Hidden files
 !   o std #include <stdio.h>
 !   o .c  #include "../genLib/base10str.h"
+!   o .c  #include "../genLib/ulCp.h"
+!   o .h  #include "../genLib/endLine.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*-------------------------------------------------------\
@@ -122,36 +123,34 @@ memwater(
    *    starting positions
    \*****************************************************/
 
-   slong scoreSL = 0;     /*score to return*/
-   ulong bestStartUL = 0; /*records best starting index*/
-   ulong bestEndUL = 0;   /*records best ending index*/
+   signed long scoreSL = 0;     /*score to return*/
+   unsigned long bestStartUL = 0; /*best starting index*/
+   unsigned long bestEndUL = 0;   /*best ending index*/
 
    /*Get start & end of query and reference sequences*/
-   schar *refSeqStr = 0;
-   schar *qrySeqStr = 0;
+   signed char *refSeqStr = 0;
+   signed char *qrySeqStr = 0;
 
-   ulong lenRefUL =
+   unsigned long lenRefUL =
       refSTPtr->endAlnUL - refSTPtr->offsetUL + 1;
 
-   ulong lenQryUL =
+   unsigned long lenQryUL =
       qrySTPtr->endAlnUL - qrySTPtr->offsetUL + 1;
 
    /*Iterators for loops*/
-   ulong ulRef = 0;
-   ulong ulQry = 0;
+   unsigned long ulRef = 0;
+   unsigned long ulQry = 0;
 
    /*****************************************************\
    * Fun01 Sec01 Sub02:
    *  - Variables holding the scores (only two rows)
    \*****************************************************/
 
-   /*slong keepSL = 0; here for unbranched version*/
-
-   slong snpScoreSL = 0;
-   slong insScoreSL = 0;
-   slong delScoreSL = 0;   /*Score for doing an deletion*/
-   slong nextSnpScoreSL = 0;/*Score for next match/snp*/
-   slong *scoreHeapArySL = 0; /*matrix to use in alignment*/
+   signed long snpScoreSL = 0;
+   signed long insScoreSL = 0;
+   signed long delScoreSL = 0;   /*score for deletion*/
+   signed long nextSnpScoreSL = 0;/*next match/snp score*/
+   signed long *scoreHeapArySL = 0; /*alignment matrix*/
 
    /*****************************************************\
    * Fun01 Sec01 Sub03:
@@ -159,14 +158,14 @@ memwater(
    \*****************************************************/
 
    /*Direction matrix (1 cell holds a single direction)*/
-   schar *dirRowHeapSC = 0;  /*Holds directions*/
+   signed char *dirRowHeapSC = 0;  /*Holds directions*/
 
    /*Keeping track of alignment starting positions*/
-   ulong indexUL = 0;      /*Index I am at in the matrix*/
-   ulong snpIndexUL = 0;   /*last snp index*/
-   ulong tmpIndexUL = 0;   /*for getting snp index*/
+   unsigned long indexUL = 0;    /*index at in matrix*/
+   unsigned long snpIndexUL = 0; /*last snp index*/
+   unsigned long tmpIndexUL = 0; /*for getting snp index*/
 
-   ulong *indexHeapUL=0;   /*Row of starting indexes*/
+   unsigned long *indexHeapUL=0; /*row; starting indexes*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun01 Sec02:
@@ -185,7 +184,7 @@ memwater(
    dirRowHeapSC =
       calloc(
          (lenRefUL + 1),
-         sizeof(schar)
+         sizeof(signed char)
       );
 
    if(dirRowHeapSC == 0)
@@ -194,7 +193,7 @@ memwater(
    scoreHeapArySL =
       calloc(
          (lenRefUL + 1),
-          sizeof(slong)
+          sizeof(signed long)
       );
    /*+ 1 is for the indel column*/
 
@@ -210,7 +209,7 @@ memwater(
    indexHeapUL =
       calloc(
          (lenRefUL + 1),
-         sizeof(ulong)
+         sizeof(unsigned long)
       );
 
    if(indexHeapUL == 0)
@@ -332,14 +331,28 @@ memwater(
 
          snpIndexUL = tmpIndexUL;
 
-         /*find direction (4 Op)*/
-         dirRowHeapSC[ulRef] =
-            scoreHeapArySL[ulRef] > delScoreSL;
+         /*find direction (5 Op)*/
+         dirMatrixSC[indexUL] =
+            scoreArySL[ulRef] > delScoreSL;
+         dirMatrixSC[indexUL] +=
+            (
+                 (snpScoreSL <= insScoreSL)
+               & dirMatrixSC[indexUL]
+            );
+         ++dirMatrixSC[indexUL];
 
-         dirRowHeapSC[ulRef] <<=
-            (snpScoreSL < insScoreSL);
-
-         ++dirRowHeapSC[ulRef];
+         /*Logic:
+         `   - noDel: maxSC > delSc:
+         `     o 1 if deletion not max score
+         `     o 0 if deletion is max score
+         `   - type: noDel + ((snpSc < insSc) & noDel):
+         `     o 1 + (1 & 1) = 2 if insertion is maximum
+         `     o 1 + (0 & 1) = 1 if snp is maximum
+         `     o 0 + (0 & 0) = 0 if del is max; snp > ins
+         `     o 0 + (1 & 0) = 0 if del is max, ins >= snp
+         `   - dir: type + 1
+         `     o adds 1 to change from stop to direction
+         */
 
          /*finish finding max's*/
          indexHeapUL[ulRef] =
@@ -370,7 +383,8 @@ memwater(
          }
 
          /* branchless method is slower here
-         keepSL = (slong) -(scoreHeapArySL[ulRef] > 0);
+         keepSL =
+             (signed long) -(scoreHeapArySL[ulRef] > 0);
          dirRowHeapSC[ulRef] &= keepSL;
          scoreHeapArySL[ulRef] &= keepSL;
 
@@ -483,8 +497,8 @@ memwater(
    \*****************************************************/
 
    memErr_fun01_sec05_sub03:;
-   scoreSL = -1;
-   goto cleanUp_fun01_sec05_sub04;
+      scoreSL = -1;
+      goto cleanUp_fun01_sec05_sub04;
 
    /*****************************************************\
    * Fun01 Sec05 Sub04:
@@ -492,17 +506,16 @@ memwater(
    \*****************************************************/
 
    cleanUp_fun01_sec05_sub04:;
+      free(dirRowHeapSC);
+      dirRowHeapSC = 0;
 
-   free(dirRowHeapSC);
-   dirRowHeapSC = 0;
+      free(scoreHeapArySL);
+      scoreHeapArySL = 0;
 
-   free(scoreHeapArySL);
-   scoreHeapArySL = 0;
+      free(indexHeapUL);
+      indexHeapUL = 0;
 
-   free(indexHeapUL);
-   indexHeapUL = 0;
-
-   return scoreSL;
+      return scoreSL;
 } /*memwater*/
 
 /*=======================================================\

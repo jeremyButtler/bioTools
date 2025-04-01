@@ -42,15 +42,14 @@
 #include "samEntry.h"
 #include "../genLib/ulCp.h"
 
-/*Has no .c files*/
-#include "../genLib/dataTypeShortHand.h"
-
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden depenencies
-!   o .c #include "../genLib/base10StrToNum.h"
-!   o .c #include "../genLib/numToStr.h"
-!   o .c #include "../genLib/strAry.h"
-!   o .h #include "../genBio/ntTo5Bit.h"
+!   o .c  #include "../genLib/base10StrToNum.h"
+!   o .c  #include "../genLib/numToStr.h"
+!   o .c  #include "../genLib/strAry.h"
+!   o .h  #include "../genLib/endLine.h"
+!   o .h  #include "../genLib/endLine.h"
+!   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -121,25 +120,25 @@ trimSeq_trimSam(
     ^  - Variable declerations
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-    schar errSC = 0;
+    signed char errSC = 0;
 
     /*Number of bases soft masked at start or end*/
-    uchar qUC = 0;
+    unsigned char qUC = 0;
 
-    sint startPosSI = 0;
-    sint endTrimSI = 0;
-    uint uiCig = 0;
-    uint uiSeq = 0;
+    signed int startPosSI = 0;
+    signed int endTrimSI = 0;
+    unsigned int uiCig = 0;
+    unsigned int uiSeq = 0;
 
-    schar *seqCpStr = 0;
-    schar *seqDupStr = 0;
-    ulong *seqCpUL = 0;
-    ulong *seqDupUL = 0;
+    signed char *seqCpStr = 0;
+    signed char *seqDupStr = 0;
+    unsigned long *seqCpUL = 0;
+    unsigned long *seqDupUL = 0;
 
-    schar *qCpStr = 0;
-    schar *qDupStr = 0;
-    ulong *qCpUL = 0;
-    ulong *qDupUL = 0;
+    signed char *qCpStr = 0;
+    signed char *qDupStr = 0;
+    unsigned long *qCpUL = 0;
+    unsigned long *qDupUL = 0;
         
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun01 Sec02:
@@ -189,8 +188,8 @@ trimSeq_trimSam(
     ); /*Trim the cigar types array*/
 
     cpLen_ulCp(
-       (schar *) samST->cigArySI,
-       (schar *) (samST->cigArySI + uiCig),
+       (signed char *) samST->cigArySI,
+       (signed char *) (samST->cigArySI + uiCig),
        (samST->lenCigUI << def_uiToUC_trimSam)
     ); /*Trim the cigar value (bases per type) array*/
 
@@ -219,13 +218,14 @@ trimSeq_trimSam(
     ' multiple of 8
     */
 
-    seqCpUL = (ulong *) (samST->seqStr + startPosSI);
-    seqDupUL = (ulong *) samST->seqStr;
+    seqCpUL =
+       (unsigned long *) (samST->seqStr + startPosSI);
+    seqDupUL = (unsigned long *) samST->seqStr;
     seqCpStr = samST->seqStr + startPosSI;
     seqDupStr = samST->seqStr;
 
-    qCpUL = (ulong *) (samST->qStr + startPosSI);
-    qDupUL = (ulong *) samST->qStr;
+    qCpUL = (unsigned long *) (samST->qStr + startPosSI);
+    qDupUL = (unsigned long *) samST->qStr;
     qCpStr = samST->qStr + startPosSI;
     qDupStr = samST->qStr;
 
@@ -236,11 +236,12 @@ trimSeq_trimSam(
 
     for(
        uiSeq = 0;
-       uiSeq < (uint) startPosSI;
+       uiSeq < (unsigned int) startPosSI;
       ++uiSeq
     ){ /*Loop: adjust for the timmed starting Q-scores*/
        qUC =
-          (uchar) samST->qStr[uiSeq] - def_adjQ_samEntry;
+          (unsigned char)
+          samST->qStr[uiSeq] - def_adjQ_samEntry;
 
        --(samST->qHistUI[qUC]);
        samST->sumQUL -= qUC;
@@ -287,7 +288,8 @@ trimSeq_trimSam(
     while(qCpStr[uiSeq] != '\0')
     { /*Loop: adjust for the timmed ending Q-scores*/
        qUC =
-          (uchar) samST->qStr[uiSeq] - def_adjQ_samEntry;
+          (unsigned char)
+          samST->qStr[uiSeq] - def_adjQ_samEntry;
 
        --(samST->qHistUI[qUC]);
        samST->sumQUL -= qUC;
@@ -376,15 +378,15 @@ trimCoords_trimSam(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar errSC = 0;
+   signed char errSC = 0;
 
-   uint seqStartUI = 0;
-   sint firstCigSI = 0;
+   unsigned int seqStartUI = 0;
+   signed int firstCigSI = 0;
 
-   sint siCig = 0;
-   sint cigBaseOnSI = 0;
-   sint refPosSI = 0;
-   sint seqPosSI = 0;
+   signed int siCig = 0;
+   signed int cigBaseOnSI = 0;
+   signed int refPosSI = 0;
+   signed int seqPosSI = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun02 Sec02:
@@ -406,14 +408,14 @@ trimCoords_trimSam(
     if(samSTPtr->seqStr[0] == '*')
        goto noSeq_fun02_sec07;
 
-   if(samSTPtr->refStartUI > (uint) endSI)
+   if(samSTPtr->refStartUI > (unsigned int) endSI)
       goto outOfRange_fun02_sec07;
 
-   if(samSTPtr->refEndUI < (uint) startSI)
+   if(samSTPtr->refEndUI < (unsigned int) startSI)
       goto outOfRange_fun02_sec07;
 
    cigBaseOnSI = samSTPtr->cigArySI[0];
-   refPosSI = (sint) samSTPtr->refStartUI;
+   refPosSI = (signed int) samSTPtr->refStartUI;
 
    /*Setting to zero becuase it is easier to recount*/
    samSTPtr->numMaskUI = 0;
@@ -437,9 +439,9 @@ trimCoords_trimSam(
    );
 
    samSTPtr->cigArySI[siCig] = cigBaseOnSI;
-   samSTPtr->refStartUI = (uint) refPosSI;
+   samSTPtr->refStartUI = (unsigned int) refPosSI;
 
-   seqStartUI = (uint) seqPosSI;
+   seqStartUI = (unsigned int) seqPosSI;
    firstCigSI = siCig;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -590,7 +592,7 @@ trimCoords_trimSam(
       *   - move to next cigar entry
       \**************************************************/
 
-      if(siCig >= (sint) samSTPtr->lenCigUI)
+      if(siCig >= (signed int) samSTPtr->lenCigUI)
          break; /*End of the sequence*/
 
       /*This case will be true most of the time, unless
@@ -608,7 +610,8 @@ trimCoords_trimSam(
    samSTPtr->cigArySI[siCig] = cigBaseOnSI;
    samSTPtr->lenCigUI = siCig - firstCigSI;
 
-   samSTPtr->readLenUI = (uint) (seqPosSI - seqStartUI);
+   samSTPtr->readLenUI =
+      (unsigned int) (seqPosSI - seqStartUI);
    samSTPtr->refEndUI = refPosSI;
    samSTPtr->alnReadLenUI = samSTPtr->refEndUI;
    samSTPtr->alnReadLenUI -= samSTPtr->refStartUI;
@@ -641,8 +644,8 @@ trimCoords_trimSam(
    );
 
    cpLen_ulCp(
-      (schar *) samSTPtr->cigArySI,
-      (schar *) &(samSTPtr->cigArySI[firstCigSI]),
+      (signed char *) samSTPtr->cigArySI,
+      (signed char *) &(samSTPtr->cigArySI[firstCigSI]),
       (samSTPtr->lenCigUI << 2)
    );
 
@@ -705,9 +708,9 @@ trimReads_trimSam(
    '    each entry
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
     
-    schar *buffHeapStr = 0;
-    ulong lenBuffUL = 0;
-    schar errSC = 0;  /*Tells if memory error*/
+    signed char *buffHeapStr = 0;
+    unsigned long lenBuffUL = 0;
+    signed char errSC = 0;  /*Tells if memory error*/
     struct samEntry samStackST;
     
     init_samEntry(&samStackST);

@@ -17,31 +17,31 @@ objFiles=\
    seqById$O
 
 all: seqById$O
-	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
+	$(LD) -o $(NAME) $(CFLAGS) $(coreCFLAGS) $(objFiles)
 
 seqById$O: seqById.c idSearch$O $(genLib)/charCp$O
-	$(CC) -o seqById$O -c $(CFLAGS) seqById.c
+	$(CC) -o seqById$O -c $(CFLAGS) $(coreCFLAGS) seqById.c
 
 idSearch$O: idSearch.c idSearch.h getSeq$O searchST$O
-	$(CC) -o idSearch$O -c $(CFLAGS) idSearch.c
+	$(CC) -o idSearch$O -c $(CFLAGS) $(coreCFLAGS) idSearch.c
 
 getSeq$O: getSeq.c getSeq.h vectScan$O $(genLib)/ulCp$O $(genLib)/dataTypeShortHand.h
-	$(CC) -o getSeq$O -c $(CFLAGS) getSeq.c
+	$(CC) -o getSeq$O -c $(CFLAGS) $(coreCFLAGS) getSeq.c
 
 vectScan$O: vectScan.c vectScan.h $(genLib)/ulCp$O
-	$(CC) -o vectScan$O -c $(CFLAGS) vectScan.c
+	$(CC) -o vectScan$O -c $(CFLAGS) $(coreCFLAGS) vectScan.c
 
 searchST$O: searchST.c searchST.h idLkTbl.h $(genLib)/ulCp$O $(genLib)/genMath.h $(genLib)/dataTypeShortHand.h
-	$(CC) -o searchST$O -c $(CFLAGS) searchST.c
+	$(CC) -o searchST$O -c $(CFLAGS) $(coreCFLAGS) searchST.c
 
 $(genLib)/ulCp$O: $(genLib)/ulCp.c $(genLib)/ulCp.h
-	$(CC) -o $(genLib)/ulCp$O -c $(CFLAGS) $(genLib)/ulCp.c
+	$(CC) -o $(genLib)/ulCp$O -c $(CFLAGS) $(coreCFLAGS) $(genLib)/ulCp.c
 
 $(genLib)/charCp$O: $(genLib)/charCp.c $(genLib)/charCp.h
-	$(CC) -o $(genLib)/charCp$O -c $(CFLAGS) $(genLib)/charCp.c
+	$(CC) -o $(genLib)/charCp$O -c $(CFLAGS) $(coreCFLAGS) $(genLib)/charCp.c
 
 install:
-	cp $(NAME) $(PREFIX)
+	mv $(NAME) $(PREFIX)
 	chmod a+x $(PREFIX)/$(NAME)
 
 clean:

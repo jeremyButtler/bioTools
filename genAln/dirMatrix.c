@@ -51,14 +51,13 @@
 #include "indexToCoord.h"
 
 /*.h files only*/
-#include "../genLib/dataTypeShortHand.h"
-
 #include "alnDefs.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
 !   o .c  #include "../genLib/base10str.h"
 !   o .c  #include "../genLib/strAry.h"
+!   o .h  #include "../genLib/endLine.h"
 !   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -230,18 +229,22 @@ getAln_dirMatrix(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   uint qryPosUI = 0;
-   uint refPosUI = 0;
-   uint lenRefUI = matrixSTPtr->lenRefUL;
+   #define expandCig_fun05 256
 
-   schar *qrySeqStr = (schar *) qrySTPtr->seqStr;
-   schar *refSeqStr = (schar *) refSTPtr->seqStr;
+   unsigned int qryPosUI = 0;
+   unsigned int refPosUI = 0;
+   unsigned int lenRefUI = matrixSTPtr->lenRefUL;
+
+   signed char *qrySeqStr =
+               (signed char *) qrySTPtr->seqStr;
+   signed char *refSeqStr =
+               (signed char *) refSTPtr->seqStr;
  
-   schar *tmpStr = 0;
-   uchar tmpUC = 0;
-   schar matchBl = 0; /*check if had match or snp*/
+   signed char *tmpStr = 0;
+   unsigned char tmpUC = 0;
+   signed char matchBl = 0; /*check if had match or snp*/
 
-   schar *dirMatrixSC = matrixSTPtr->dirMatrixSC;
+   signed char *dirMatrixSC = matrixSTPtr->dirMatrixSC;
 
    struct seqST seqDoNotFreeST;
 
@@ -256,16 +259,16 @@ getAln_dirMatrix(
       indexUL = matrixSTPtr->indexUL; /*no index input*/
 
    qryPosUI =
-      (uint)
+      (unsigned int)
       qryCoord_indexToCoord(
-         (ulong) lenRefUI,
+         (unsigned long) lenRefUI,
          indexUL
       );
 
    refPosUI =
-      (uint)
+      (unsigned int)
       refCoord_indexToCoord(
-         (ulong) lenRefUI,
+         (unsigned long) lenRefUI,
          indexUL
       );
 
@@ -277,60 +280,25 @@ getAln_dirMatrix(
    ^ Fun05 Sec03:
    ^   - allocate memroy and copy query
    ^   o fun05 sec03 sub01:
-   ^     - set up memory for cigar entry and blank entry
-   ^   o fun05 sec03 sub02:
    ^     - add ending soft masked bases to cigar
-   ^   o fun05 sec03 sub03:
+   ^   o fun05 sec03 sub02:
    ^     - copy read id
-   ^   o fun05 sec03 sub04:
+   ^   o fun05 sec03 sub03:
    ^     - copy the reference id
-   ^   o fun05 sec03 sub05:
+   ^   o fun05 sec03 sub04:
    ^     - copy query sequence
-   ^   o fun05 sec03 sub06:
+   ^   o fun05 sec03 sub05:
    ^     - copy query q-score entry
-   ^   o fun05 sec03 sub07:
+   ^   o fun05 sec03 sub06:
    ^     - set flag and reference end
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
    * Fun05 Sec03 Sub01:
-   *   - set up memory for cigar entry and blank entry
-   \*****************************************************/
-
-   /*is inefficent, but works*/
-   if(samSTPtr->lenCigBuffUI < qrySTPtr->lenSeqUL)
-   { /*If: want more cigar memory*/
-      free(samSTPtr->cigTypeStr);
-      samSTPtr->cigTypeStr = 0;
-
-      /*cigar entry types*/
-      samSTPtr->cigTypeStr =
-         (schar *)
-         malloc((qrySTPtr->lenSeqUL + 1) * sizeof(schar));
-
-      if(! samSTPtr->cigTypeStr)
-         goto memErr_fun05_sec07;
-
-      /*count for number bases supporting entry*/
-      free(samSTPtr->cigArySI);
-      samSTPtr->cigArySI = 0;
-
-      samSTPtr->cigArySI =
-         (sint *)
-         malloc((qrySTPtr->lenSeqUL + 1) * sizeof(sint));
-
-      if(! samSTPtr->cigArySI)
-         goto memErr_fun05_sec07;
-
-      samSTPtr->lenCigBuffUI = qrySTPtr->lenSeqUL;
-   } /*If: want more cigar memory*/
-
-   blank_samEntry(samSTPtr);
-
-   /*****************************************************\
-   * Fun05 Sec03 Sub02:
    *   - add ending soft masked bases to cigar
    \*****************************************************/
+
+   blank_samEntry(samSTPtr);
 
    if(qryPosUI + 1 < qrySTPtr->lenSeqUL)
    { /*If: need to add ending softmasked bases*/
@@ -348,7 +316,7 @@ getAln_dirMatrix(
    /*else is set to null*/
 
    /*****************************************************\
-   * Fun05 Sec03 Sub03:
+   * Fun05 Sec03 Sub02:
    *   - copy read id
    \*****************************************************/
 
@@ -356,7 +324,7 @@ getAln_dirMatrix(
    tmpUC = (qrySTPtr->idStr[0] == '>');
    tmpUC += (qrySTPtr->idStr[0] == '@');
 
-   tmpStr = (schar *) qrySTPtr->idStr + tmpUC;
+   tmpStr = (signed char *) qrySTPtr->idStr + tmpUC;
 
    while(*tmpStr++ > 32) ;
 
@@ -366,8 +334,8 @@ getAln_dirMatrix(
 
    samSTPtr->lenQryIdUC = 
       cpDelim_ulCp(
-         (schar *) samSTPtr->qryIdStr, 
-         (schar *) qrySTPtr->idStr + tmpUC,
+         (signed char *) samSTPtr->qryIdStr, 
+         (signed char *) qrySTPtr->idStr + tmpUC,
          0,
          0
       ); /*copy read id*/
@@ -375,7 +343,7 @@ getAln_dirMatrix(
    *tmpStr = matchBl;
 
    /*****************************************************\
-   * Fun05 Sec03 Sub04:
+   * Fun05 Sec03 Sub03:
    *   - copy the reference id
    \*****************************************************/
 
@@ -383,7 +351,7 @@ getAln_dirMatrix(
    tmpUC = (refSTPtr->idStr[0] == '>');
    tmpUC += (refSTPtr->idStr[0] == '@');
 
-   tmpStr = (schar *) refSTPtr->idStr;
+   tmpStr = (signed char *) refSTPtr->idStr;
 
    while(*tmpStr++ > 32) ;
 
@@ -393,8 +361,8 @@ getAln_dirMatrix(
 
    samSTPtr->lenRefIdUC = 
       cpDelim_ulCp(
-         (schar *) samSTPtr->refIdStr, 
-         (schar *) refSTPtr->idStr + tmpUC,
+         (signed char *) samSTPtr->refIdStr, 
+         (signed char *) refSTPtr->idStr + tmpUC,
          0,
          0
       ); /*copy read id*/
@@ -402,7 +370,7 @@ getAln_dirMatrix(
    *tmpStr = matchBl;
 
    /*****************************************************\
-   * Fun05 Sec03 Sub05:
+   * Fun05 Sec03 Sub04:
    *   - copy query sequence
    \*****************************************************/
 
@@ -412,8 +380,11 @@ getAln_dirMatrix(
       samSTPtr->seqStr = 0;
 
       samSTPtr->seqStr =
-         (schar *)
-         malloc((qrySTPtr->lenSeqUL+1024)* sizeof(schar));
+         (signed char *)
+         malloc(
+              (qrySTPtr->lenSeqUL+1024)
+            * sizeof(signed char)
+         );
 
       if(! samSTPtr->seqStr)
          goto memErr_fun05_sec07;
@@ -434,7 +405,7 @@ getAln_dirMatrix(
    indexToSeq_alnSet(samSTPtr->seqStr);
 
    /*****************************************************\
-   * Fun05 Sec03 Sub06:
+   * Fun05 Sec03 Sub05:
    *   - copy query q-score entry
    \*****************************************************/
 
@@ -446,8 +417,11 @@ getAln_dirMatrix(
          samSTPtr->qStr = 0;
 
          samSTPtr->qStr =
-            (schar *)
-            malloc((qrySTPtr->lenQUL+1024)*sizeof(schar));
+            (signed char *)
+            malloc(
+                 (qrySTPtr->lenQUL + 1024)
+               * sizeof(signed char)
+            );
 
          if(! samSTPtr->qStr)
             goto memErr_fun05_sec07;
@@ -457,7 +431,7 @@ getAln_dirMatrix(
 
       cpQEntry_samEntry(
          samSTPtr,
-         (schar *) qrySTPtr->qStr,
+         (signed char *) qrySTPtr->qStr,
          1 /*need to make sure histogram is blanked*/
       );
 
@@ -471,7 +445,7 @@ getAln_dirMatrix(
    } /*Else: set the q-score entry to nothing*/
 
    /*****************************************************\
-   * Fun05 Sec03 Sub07:
+   * Fun05 Sec03 Sub06:
    *   - set flag and reference end
    \*****************************************************/
 
@@ -491,9 +465,9 @@ getAln_dirMatrix(
    ^ Fun05 Sec04:
    ^   - get alignment form matrix
    ^   o fun05 sec04 sub01:
-   ^     - find alignment end and start loop
+   ^     - check cig memory + start loop cigar fill loop
    ^   o fun05 sec04 sub02:
-   ^     - insertion cases
+   ^     - insertion cases + cigar switch statment
    ^   o fun05 sec04 sub03:
    ^     - snp or match cases
    ^   o fun05 sec04 sub04:
@@ -504,7 +478,7 @@ getAln_dirMatrix(
 
    /*****************************************************\
    * Fun05 Sec04 Sub01:
-   *   - find alignment end and start loop
+   *   - check cig memory + start loop cigar fill loop
    \*****************************************************/
 
    dirMatrixSC += indexUL;
@@ -512,15 +486,48 @@ getAln_dirMatrix(
    while(*dirMatrixSC != def_mvStop_alnDefs)
    { /*Loop: trace alignment path*/
 
+      /*I do not expect sequence long cigars, so resizing
+      `   in small chunks is prefered, expecially since
+      `   I often keep the same samEntry struct, so
+      `   one resize effects the entire program
+      */
+      if(
+         samSTPtr->lenCigUI + 3 >= samSTPtr->lenCigBuffUI
+      ){ /*If: want more cigar memory*/
+         tmpStr =
+            realloc(
+               samSTPtr->cigTypeStr,
+               (samSTPtr->lenCigUI + expandCig_fun05)
+                  * sizeof(signed char)
+            );
+         if(! tmpStr)
+            goto memErr_fun05_sec07;
+         samSTPtr->cigTypeStr = tmpStr;
+
+         tmpStr =
+            (signed char *)
+            realloc(
+               samSTPtr->cigArySI,
+               (samSTPtr->lenCigUI + expandCig_fun05)
+                  * sizeof(signed int)
+            );
+         if(! tmpStr)
+            goto memErr_fun05_sec07;
+         samSTPtr->cigArySI = (signed int *) tmpStr;
+
+         samSTPtr->lenCigBuffUI = samSTPtr->lenCigUI;
+         samSTPtr->lenCigBuffUI += (expandCig_fun05 - 8);
+      } /*If: want more cigar memory*/
+
+      /**************************************************\
+      * Fun05 Sec04 Sub02:
+      *   - insertion cases + cigar switch statment
+      \**************************************************/
+
       switch(*dirMatrixSC)
       { /*Switch: find direction (snp/del/ins)*/
          case def_mvStop_alnDefs:
             break;
-
-         /***********************************************\
-         * Fun05 Sec04 Sub02:
-         *   - insertion cases
-         \***********************************************/
 
          case def_mvIns_alnDefs:
          /*Case: is a insertion*/
@@ -795,18 +802,18 @@ getAln_dirMatrix(
    *   - add NM (edit distance/number differences) flag
    \*****************************************************/
 
-   tmpStr = (schar *) samSTPtr->extraStr;
+   tmpStr = (signed char *) samSTPtr->extraStr;
 
    samSTPtr->lenExtraUI +=
       cpDelim_charCp(
-         (schar *) &tmpStr[samSTPtr->lenExtraUI],
-         (schar *) "NM:i:",
+         (signed char *) &tmpStr[samSTPtr->lenExtraUI],
+         (signed char *) "NM:i:",
          '\0'
       ); /*copy edit distance*/
 
    samSTPtr->lenExtraUI +=
       numToStr(
-         (schar *) &tmpStr[samSTPtr->lenExtraUI],
+         (signed char *) &tmpStr[samSTPtr->lenExtraUI],
          samSTPtr->numSnpUI
             + samSTPtr->numDelUI
             + samSTPtr->numInsUI
@@ -821,14 +828,14 @@ getAln_dirMatrix(
 
    samSTPtr->lenExtraUI +=
       cpDelim_charCp(
-         (schar *) &tmpStr[samSTPtr->lenExtraUI],
-         (schar *) "AS:i:",
+         (signed char *) &tmpStr[samSTPtr->lenExtraUI],
+         (signed char *) "AS:i:",
           '\0'
       ); /*copy assembler score*/
 
    samSTPtr->lenExtraUI +=
       numToStr(
-         (schar *) &tmpStr[samSTPtr->lenExtraUI],
+         (signed char *) &tmpStr[samSTPtr->lenExtraUI],
          matrixSTPtr->scoreSL /  def_scoreAdj_alnDefs
       ); /*get alignment score*/
 
@@ -841,14 +848,14 @@ getAln_dirMatrix(
 
    samSTPtr->lenExtraUI +=
       cpDelim_charCp(
-         (schar *) &tmpStr[samSTPtr->lenExtraUI],
-         (schar *) "nn:i:",
+         (signed char *) &tmpStr[samSTPtr->lenExtraUI],
+         (signed char *) "nn:i:",
          '\0'
       ); /*copy number anonymous bases*/
 
    samSTPtr->lenExtraUI +=
       numToStr(
-         (schar *) &tmpStr[samSTPtr->lenExtraUI],
+         (signed char *) &tmpStr[samSTPtr->lenExtraUI],
          *numAnonUI
       ); /*get number anonymous bases*/
 
@@ -887,7 +894,7 @@ getAln_dirMatrix(
 |     o pointer to c-string with cigar entry type array
 |   - cigArySI:
 |     o pointer to signed int array with the length of
-|       each cibar entry
+|       each cigar entry
 |   - cigPosUI:
 |     o position at in cigar
 |   - lenCigUI:
@@ -945,7 +952,7 @@ getCig_dirMatrix(
    '   o fun06 sec02:
    '     - find start and ending positions
    '   o fun06 sec03:
-   '     - allocate memroy and copy query
+   '     - add ending soft masked bases to cigar
    '   o fun06 sec04:
    '     - get alignment form matrix
    '   o fun06 sec05:
@@ -961,23 +968,31 @@ getCig_dirMatrix(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   uint qryPosUI = 0;
-   uint refPosUI = 0;
-   uint lenRefUI = matrixSTPtr->lenRefUL;
-   uint startUI = cigPosUI;
+   #define expandCig_fun06 256
 
-   schar *qrySeqStr = (schar *) qrySTPtr->seqStr;
-   schar *refSeqStr = (schar *) refSTPtr->seqStr;
+   unsigned int qryPosUI = 0;
+   unsigned int refPosUI = 0;
+   unsigned int lenRefUI = matrixSTPtr->lenRefUL;
+   unsigned int startUI = cigPosUI;
+
+   signed char *qrySeqStr =
+      (signed char *) qrySTPtr->seqStr;
+   signed char *refSeqStr =
+      (signed char *) refSTPtr->seqStr;
  
-   schar *tmpStr = 0;
-   schar matchBl = 0; /*check if had match or snp*/
+   signed char *tmpStr = 0;
+   signed char matchBl = 0; /*check if had match or snp*/
 
-   schar *dirMatrixSC = matrixSTPtr->dirMatrixSC;
+   signed char *dirMatrixSC = matrixSTPtr->dirMatrixSC;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun06 Sec02:
    ^   - find sequence start and ending positions
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(*refStartUI < matrixSTPtr->refOffsetUL)
+      *refStartUI += matrixSTPtr->refOffsetUL;
+      /*likely user did not account for offset*/
 
    *numAnonUI = 0;
 
@@ -985,16 +1000,16 @@ getCig_dirMatrix(
       indexUL = matrixSTPtr->indexUL; /*no index input*/
 
    qryPosUI =
-      (uint)
+      (unsigned int)
       qryCoord_indexToCoord(
-         (ulong) lenRefUI,
+         (unsigned long) lenRefUI,
          indexUL
       );
 
    refPosUI =
-      (uint)
+      (unsigned int)
       refCoord_indexToCoord(
-         (ulong) lenRefUI,
+         (unsigned long) lenRefUI,
          indexUL
       );
 
@@ -1004,51 +1019,8 @@ getCig_dirMatrix(
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun06 Sec03:
-   ^   - allocate memroy and copy query
-   ^   o fun06 sec03 sub01:
-   ^     - set up memory for cigar entry and blank entry
-   ^   o fun06 sec03 sub02:
-   ^     - add ending soft masked bases to cigar
+   ^   - add ending soft masked bases to cigar
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   /*****************************************************\
-   * Fun06 Sec03 Sub01:
-   *   - set up memory for cigar entry
-   \*****************************************************/
-
-   /*is inefficent, but works*/
-   if(*lenCigUI < matrixSTPtr->qryEndUL)
-   { /*If: want more cigar memory*/
-      tmpStr =
-         realloc(
-            *cigTypeStr,
-             (matrixSTPtr->qryEndUL + 1) * sizeof(schar)
-         );
-
-      if(! tmpStr)
-         goto memErr_fun06_sec07;
-
-      *cigTypeStr = tmpStr;
-
-      tmpStr =
-         (schar *)
-         realloc(
-            *cigArySI,
-            matrixSTPtr->qryEndUL * sizeof(sint)
-         );
-
-      if(! tmpStr)
-         goto memErr_fun06_sec07;
-
-      *cigArySI = (sint *) tmpStr;
-
-      *lenCigUI = matrixSTPtr->qryEndUL;
-   } /*If: want more cigar memory*/
-
-   /*****************************************************\
-   * Fun06 Sec03 Sub02:
-   *   - add ending soft masked bases to cigar
-   \*****************************************************/
 
    if(
          ! revBl
@@ -1059,7 +1031,7 @@ getCig_dirMatrix(
        /*forward sequence mean backwards cigars*/
    } /*If: cigar entry already here*/
 
-   if(refPosUI < matrixSTPtr->refEndUL)
+   if( refPosUI < (matrixSTPtr->lenRefUL - 1) )
    { /*If: missing bases at end*/
       if(revBl)
       { /*If: reverse complement sequence*/
@@ -1100,9 +1072,9 @@ getCig_dirMatrix(
    ^ Fun06 Sec04:
    ^   - get alignment form matrix
    ^   o fun06 sec04 sub01:
-   ^     - find alignment end and start loop
+   ^     - check cig memory + start loop cigar fill loop
    ^   o fun06 sec04 sub02:
-   ^     - insertion cases
+   ^     - insertion cases + cigar switch statment
    ^   o fun06 sec04 sub03:
    ^     - snp or match cases
    ^   o fun06 sec04 sub04:
@@ -1113,7 +1085,7 @@ getCig_dirMatrix(
 
    /*****************************************************\
    * Fun06 Sec04 Sub01:
-   *   - find alignment end and start loop
+   *   - check cig memory + start loop cigar fill loop
    \*****************************************************/
 
    dirMatrixSC += indexUL;
@@ -1121,15 +1093,46 @@ getCig_dirMatrix(
    while(*dirMatrixSC != def_mvStop_alnDefs)
    { /*Loop: trace alignment path*/
 
+      /*I do not expect sequence long cigars, so resizing
+      `   in small chunks is prefered, expecially since
+      `   I often keep the same samEntry struct, so
+      `   one resize effects the entire program
+      */
+      if((cigPosUI + 3) >= *lenCigUI )
+      { /*If: want more cigar memory*/
+         tmpStr =
+            realloc(
+               *cigTypeStr,
+               (cigPosUI + expandCig_fun06)
+                  * sizeof(signed char)
+            );
+         if(! tmpStr)
+            goto memErr_fun06_sec07;
+         *cigTypeStr = tmpStr;
+
+         tmpStr =
+            (signed char *)
+            realloc(
+               *cigArySI,
+               (cigPosUI + expandCig_fun06)
+                  * sizeof(signed int)
+            );
+         if(! tmpStr)
+            goto memErr_fun06_sec07;
+         *cigArySI = (signed int *) tmpStr;
+
+         *lenCigUI += (expandCig_fun06 - 8);
+      } /*If: want more cigar memory*/
+
+      /**************************************************\
+      * Fun06 Sec04 Sub02:
+      *   - insertion cases + cigar switch statment
+      \**************************************************/
+
       switch(*dirMatrixSC)
       { /*Switch: find direction (snp/del/ins)*/
          case def_mvStop_alnDefs:
             break;
-
-         /***********************************************\
-         * Fun06 Sec04 Sub02:
-         *   - insertion cases
-         \***********************************************/
 
          case def_mvIns_alnDefs:
          /*Case: is a insertion*/
@@ -1236,7 +1239,9 @@ getCig_dirMatrix(
 
    if(
          revBl
-      && refPosUI < matrixSTPtr->refEndUL
+      &&
+           (refPosUI + matrixSTPtr->refOffsetUL)
+         < matrixSTPtr->refEndUL
       && delAtEndBl
    ){ /*If: deletions at end*/
       
@@ -1314,57 +1319,75 @@ getCig_dirMatrix(
          ) (*cigArySI)[qryPosUI] += (*cigArySI)[refPosUI];
            /*same entry*/
 
-         else if(
-               (*cigTypeStr)[qryPosUI] == 'S'
-            && (*cigTypeStr)[refPosUI] == 'D'
-         ) (*cigArySI)[qryPosUI] += (*cigArySI)[refPosUI];
-           /*merge deletion into softmask*/
+         else if(! delAtEndBl)
+         { /*Else If: masking wanted*/
+            if(
+                  (*cigTypeStr)[qryPosUI] == 'S'
+               && (*cigTypeStr)[refPosUI] == 'D'
+            ) (*cigArySI)[qryPosUI] +=
+                  (*cigArySI)[refPosUI];
+   
+            else if(
+                  (*cigTypeStr)[qryPosUI] == 'D'
+               && (*cigTypeStr)[refPosUI] == 'S'
+            ){ /*Else If: deletion next to softmasked*/
+               (*cigTypeStr)[qryPosUI] = 'S';
+               (*cigArySI)[qryPosUI] +=
+                  (*cigArySI)[refPosUI];
+            } /*Else If: deletion next to softmasked*/
+   
+            else if(
+                  (*cigTypeStr)[qryPosUI] == 'S'
+               && (*cigTypeStr)[refPosUI] == 'I'
+            ) (*cigArySI)[qryPosUI] +=
+                 (*cigArySI)[refPosUI];
+   
+            else if(
+                  (*cigTypeStr)[qryPosUI] == 'I'
+               && (*cigTypeStr)[refPosUI] == 'S'
+            ){ /*If: softmask next to insertion*/
+               (*cigTypeStr)[qryPosUI] = 'S';
+               (*cigArySI)[qryPosUI] +=
+                  (*cigArySI)[refPosUI];
+            } /*If: softmask next to insertion*/
+   
+            else if(
+                  (*cigTypeStr)[qryPosUI] == 'S'
+               && (*cigTypeStr)[refPosUI] == 'X'
+            ) (*cigArySI)[qryPosUI] +=
+                 (*cigArySI)[refPosUI];
+   
+            else if(
+                  (*cigTypeStr)[qryPosUI] == 'X'
+               && (*cigTypeStr)[refPosUI] == 'S'
+            ){ /*If: softmask next to snp*/
+               (*cigTypeStr)[qryPosUI] = 'S';
+               (*cigArySI)[qryPosUI] +=
+                  (*cigArySI)[refPosUI];
+            } /*If: softmask next to snp*/
 
-         else if(
-               (*cigTypeStr)[qryPosUI] == 'D'
-            && (*cigTypeStr)[refPosUI] == 'S'
-         ){ /*Else If: deletion next to softmasked*/
-            (*cigTypeStr)[qryPosUI] = 'S';
-            (*cigArySI)[qryPosUI] +=(*cigArySI)[refPosUI];
-         } /*Else If: deletion next to softmasked*/
+            else
+            { /*Else: no issues*/
+               ++qryPosUI;
 
-         else if(
-               (*cigTypeStr)[qryPosUI] == 'S'
-            && (*cigTypeStr)[refPosUI] == 'I'
-         ) (*cigArySI)[qryPosUI] += (*cigArySI)[refPosUI];
-           /*merge insertion into softmask*/
+               (*cigTypeStr)[qryPosUI] =
+                  (*cigTypeStr)[refPosUI];
 
-         else if(
-               (*cigTypeStr)[qryPosUI] == 'I'
-            && (*cigTypeStr)[refPosUI] == 'S'
-         ){ /*If: softmask next to insertion*/
-            (*cigTypeStr)[qryPosUI] = 'S';
-            (*cigArySI)[qryPosUI] +=(*cigArySI)[refPosUI];
-         } /*If: softmask next to insertion*/
-
-         else if(
-               (*cigTypeStr)[qryPosUI] == 'S'
-            && (*cigTypeStr)[refPosUI] == 'X'
-         ) (*cigArySI)[qryPosUI] += (*cigArySI)[refPosUI];
-           /*merge snp into softmask*/
-
-         else if(
-               (*cigTypeStr)[qryPosUI] == 'X'
-            && (*cigTypeStr)[refPosUI] == 'S'
-         ){ /*If: softmask next to snp*/
-            (*cigTypeStr)[qryPosUI] = 'S';
-            (*cigArySI)[qryPosUI] +=(*cigArySI)[refPosUI];
-         } /*If: softmask next to snp*/
+               (*cigArySI)[qryPosUI] =
+                  (*cigArySI)[refPosUI];
+            } /*Else: no issues*/
+         } /*Else If: masking wanted*/
 
          else
-         { /*Else: no issues*/
+         { /*Else: not softmasking ends*/
             ++qryPosUI;
 
             (*cigTypeStr)[qryPosUI] =
                (*cigTypeStr)[refPosUI];
 
-            (*cigArySI)[qryPosUI] = (*cigArySI)[refPosUI];
-         } /*Else: no issues*/
+            (*cigArySI)[qryPosUI] =
+               (*cigArySI)[refPosUI];
+         } /*Else: not softmasking ends*/
 
          ++refPosUI;
       } /*Loop: move entries back*/
@@ -1392,8 +1415,7 @@ getCig_dirMatrix(
    return cigPosUI;
 
    memErr_fun06_sec07:;
-
-   return -1;
+      return -1;
 } /*getCig_dirMatrix*/
 
 /*=======================================================\

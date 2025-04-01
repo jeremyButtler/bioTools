@@ -38,10 +38,10 @@
 #include "../genBio/tbCon.h"
 
 /*only using .h file (no .c or not using .c)*/
-#include "../genLib/dataTypeShortHand.h"
+#include "../bioTools.h"
+#include "../genLib/endLine.h"
 #include "../genBio/tbConDefs.h"
 #include "../genLib/genMath.h"
-#include "../bioTools.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden files
@@ -49,6 +49,8 @@
 !   - .c  #include "../genLib/numToStr.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+
+#define def_noFrag_mainTbCon 1 /*do not print fragments*/
 
 /*-------------------------------------------------------\
 | Fun01: pversion_mainTbCon
@@ -66,10 +68,11 @@ pversion_mainTbCon(
 ){
    fprintf(
        (FILE *) outFILE,
-       "tbCon from bioTools Version: %i-%02i-%02i\n",
+       "tbCon from bioTools Version: %i-%02i-%02i%s",
        def_year_bioTools,
        def_month_bioTools,
-       def_day_bioTools
+       def_day_bioTools,
+       str_endLine
    ); /*Version of tbCon*/
 } /*pversion_mainTbCon*/
 
@@ -108,7 +111,8 @@ phelp_mainTbCon(
 
    fprintf(
       (FILE *) outFILE,
-      "Usage: tbCon -sam file.sam\n"
+      "Usage: tbCon -sam file.sam%s",
+      str_endLine
    );
 
    fprintf(
@@ -116,9 +120,9 @@ phelp_mainTbCon(
       "  - Makes an consensus genome from input sam file"
     );
 
-    fprintf((FILE *) outFILE, "\n");
+    fprintf((FILE *) outFILE, "%s", str_endLine);
 
-    fprintf((FILE *) outFILE, "Input:\n");
+    fprintf((FILE *) outFILE, "Input:%s", str_endLine);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun02 Sec02:
@@ -151,7 +155,11 @@ phelp_mainTbCon(
     +   - file IO header
     \+++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-    fprintf((FILE *) outFILE, "  Input and Output:\n");
+    fprintf(
+       (FILE *) outFILE,
+       "  Input and Output:%s",
+       str_endLine
+    );
 
     /*+++++++++++++++++++++++++++++++++++++++++++++++++++\
     + Fun02 Sec02 Sub02 Cat02:
@@ -160,17 +168,20 @@ phelp_mainTbCon(
 
     fprintf(
        (FILE *) outFILE,
-       "    -sam: [Required; stdin]\n"
+       "    -sam: [Required; stdin]%s",
+       str_endLine
     );
 
     fprintf(
        (FILE *) outFILE,
-       "      o Sam file with mapped reads\n"
+       "      o Sam file with mapped reads%s",
+       str_endLine
     );
 
     fprintf(
        (FILE *) outFILE,
-       "      o Use '-' for stdin input\n"
+       "      o Use '-' for stdin input%s",
+       str_endLine
     );
 
     /*+++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -180,27 +191,68 @@ phelp_mainTbCon(
 
     fprintf(
        (FILE *) outFILE,
-       "    -out: [stdout]\n"
+       "    -out: [stdout]%s",
+       str_endLine
     );
 
     fprintf(
        (FILE *) outFILE,
-       "      o Sam file to save output cosnesuses in\n"
+       "      o Sam file to save output cosnesuses in%s",
+       str_endLine
     );
 
     fprintf(
        (FILE *) outFILE,
-       "      o Use '-' for stdout output\n"
+       "      o Use '-' for stdout output%s",
+       str_endLine
     );
 
     /*+++++++++++++++++++++++++++++++++++++++++++++++++++\
     + Fun02 Sec02 Sub02 Cat04:
+    +   - output full length consensus flag
+    \+++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+    if(def_noFrag_mainTbCon)
+       fprintf(
+          (FILE *) outFILE,
+          "    -no-frag: [Optional Yes]%s",
+          str_endLine
+       );
+
+    else
+       fprintf(
+          (FILE *) outFILE,
+          "    -no-frag: [Optional No]%s",
+          str_endLine
+       );
+
+    fprintf(
+       (FILE *) outFILE,
+       "      o do not split low read depth positions%s",
+       str_endLine
+    );
+
+    fprintf(
+       (FILE *) outFILE,
+       "        into separate consensuses (fragments)%s",
+       str_endLine
+    );
+
+    fprintf(
+       (FILE *) outFILE,
+       "      o disable with \"-frag\"%s",
+       str_endLine
+    );
+
+    /*+++++++++++++++++++++++++++++++++++++++++++++++++++\
+    + Fun02 Sec02 Sub02 Cat05:
     +   - output variant tsv parameter
     \+++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
     fprintf(
        (FILE *)outFILE,
-       "    -out-tsv: [Not used]\n"
+       "    -out-tsv: [Not used]%s",
+       str_endLine
     );
 
     fprintf(
@@ -208,7 +260,7 @@ phelp_mainTbCon(
        "      o Name of tsv to save filtered variants to"
     );
 
-    fprintf((FILE *) outFILE, "\n");
+    fprintf((FILE *) outFILE, "%s", str_endLine);
 
    if(! pFullC)
       goto skipExtaSettings_fun02_sec02_sub05;
@@ -243,7 +295,11 @@ phelp_mainTbCon(
    +   - consensus settings header
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   fprintf((FILE *) outFILE, "  Cosensus settings:\n");
+   fprintf(
+      (FILE *) outFILE,
+      "  Cosensus settings:%s",
+      str_endLine
+   );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
    + Fun02 Sec02 Sub03 Cat02:
@@ -252,13 +308,15 @@ phelp_mainTbCon(
 
    fprintf(
       (FILE *) outFILE,
-      "    -min-mapq: [%i]\n",
-      def_minMapq_tbConDefs
+      "    -min-mapq: [%i]%s",
+      def_minMapq_tbConDefs,
+      str_endLine
    );
 
     fprintf(
-       (FILE *) outFILE,
-       "      o Minimum mapping quailty to keep an read\n"
+      (FILE *) outFILE,
+      "      o Minimum mapping quailty to keep an read%s",
+      str_endLine
     );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -268,13 +326,15 @@ phelp_mainTbCon(
    
    fprintf(
       (FILE *) outFILE,
-      "    -min-q: [%i]\n",
-      def_minNtQ_tbConDefs
+      "    -min-q: [%i]\%s",
+      def_minNtQ_tbConDefs,
+      str_endLine
    );
 
     fprintf(
        (FILE *) outFILE,
-       "      o Minimum Q-score to keep an base\n"
+       "      o Minimum Q-score to keep an base%s",
+       str_endLine
     );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -284,13 +344,15 @@ phelp_mainTbCon(
    
    fprintf(
       (FILE *) outFILE,
-      "    -min-q-ins: [%i]\n",
-      def_minInsQ_tbConDefs
+      "    -min-q-ins: [%i]%s",
+      def_minInsQ_tbConDefs,
+      str_endLine
    );
 
     fprintf(
        (FILE *) outFILE,
-       "      o Minimum Q-score to keep an insertion\n"
+       "      o Minimum Q-score to keep an insertion%s",
+       str_endLine
     );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -300,8 +362,9 @@ phelp_mainTbCon(
 
    fprintf(
       (FILE *) outFILE,
-      "    -min-depth: [%i]\n",
-      def_minDepth_tbConDefs
+      "    -min-depth: [%i]%s",
+      def_minDepth_tbConDefs,
+      str_endLine
    );
 
     fprintf(
@@ -311,7 +374,9 @@ phelp_mainTbCon(
 
     fprintf(
        (FILE *) outFILE,
-       "\n        into fragments\n"
+       "%s        into fragments%s",
+       str_endLine,
+       str_endLine
     );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -321,8 +386,9 @@ phelp_mainTbCon(
 
    fprintf(
       (FILE *) outFILE,
-      "    -min-len: [%i]\n",
-      def_minLen_tbConDefs
+      "    -min-len: [%i]%s",
+      def_minLen_tbConDefs,
+      str_endLine
    );
 
     fprintf(
@@ -332,7 +398,9 @@ phelp_mainTbCon(
 
     fprintf(
        (FILE *) outFILE,
-       " needed\n        to keep an fragment\n"
+       " needed%s        to keep an fragment%s",
+       str_endLine,
+       str_endLine
     );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -342,13 +410,15 @@ phelp_mainTbCon(
 
    fprintf(
       (FILE *) outFILE,
-      "    -mask: [%c]\n",
-      def_mask_tbConDefs
+      "    -mask: [%c]%s",
+      def_mask_tbConDefs,
+      str_endLine
    );
 
     fprintf(
-       (FILE *) outFILE,
-       "      o Base to mask unsupported positions with\n"
+      (FILE *) outFILE,
+      "      o Base to mask unsupported positions with%s",
+      str_endLine
     );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -358,8 +428,9 @@ phelp_mainTbCon(
 
    fprintf(
       (FILE *) outFILE,
-      "    -perc-snp-sup: [%.2f]\n",
-      def_minSnpPerc_tbConDefs
+      "    -perc-snp-sup: [%.2f]%s",
+      def_minSnpPerc_tbConDefs,
+      str_endLine
    );
 
     fprintf(
@@ -369,7 +440,9 @@ phelp_mainTbCon(
 
     fprintf(
        (FILE *) outFILE,
-       "\n        mask an SNP/match (range: 0 to 1)\n"
+       "%s        mask an SNP/match (range: 0 to 1)%s",
+       str_endLine,
+       str_endLine
     );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -379,8 +452,9 @@ phelp_mainTbCon(
 
    fprintf(
       (FILE *) outFILE,
-      "    -perc-ins-sup: [%.2f]\n",
-      def_minInsPerc_tbConDefs
+      "    -perc-ins-sup: [%.2f]%s",
+      def_minInsPerc_tbConDefs,
+      str_endLine
    );
 
     fprintf(
@@ -390,12 +464,15 @@ phelp_mainTbCon(
 
     fprintf(
        (FILE *) outFILE,
-       "\n        insertion (range: 0 to 1)\n"
+       "%s        insertion (range: 0 to 1)%s",
+       str_endLine,
+       str_endLine
     );
 
     fprintf(
        (FILE *) outFILE,
-       "      o Unsupported positions are removed\n"
+       "      o Unsupported positions are removed%s",
+       str_endLine
     );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -405,8 +482,9 @@ phelp_mainTbCon(
 
    fprintf(
       (FILE *) outFILE,
-      "    -perc-del-sup: [%.2f]\n",
-      def_minDelPerc_tbConDefs
+      "    -perc-del-sup: [%.2f]%s",
+      def_minDelPerc_tbConDefs,
+      str_endLine
    );
 
     fprintf(
@@ -416,7 +494,9 @@ phelp_mainTbCon(
 
     fprintf(
        (FILE *) outFILE,
-       "\n        deletion (range: 0 to 1)\n"
+       "%s        deletion (range: 0 to 1)%s",
+       str_endLine,
+       str_endLine
     );
 
     fprintf(
@@ -424,7 +504,7 @@ phelp_mainTbCon(
        "      o Unsupported positions are replaced with"
     );
 
-   fprintf((FILE *) outFILE, " -mask\n");
+   fprintf((FILE *) outFILE, " -mask%s", str_endLine);
 
    /****************************************************\
    * Fun02 Sec02 Sub04:
@@ -446,7 +526,11 @@ phelp_mainTbCon(
    +   - consensus settings header
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   fprintf((FILE *) outFILE, "  Print variants:\n");
+   fprintf(
+      (FILE *) outFILE,
+      "  Print variants:%s",
+      str_endLine
+   );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
    + Fun02 Sec02 Sub04 Cat02:
@@ -455,13 +539,15 @@ phelp_mainTbCon(
 
    fprintf(
       (FILE *) outFILE,
-      "    -p-min-depth: [%i]\n",
-      def_minPrintDepth_tbConDefs
+      "    -p-min-depth: [%i]%s",
+      def_minPrintDepth_tbConDefs,
+      str_endLine
    );
 
     fprintf(
-       (FILE *) outFILE,
-       "      o Minimum read depth print out an variant\n"
+      (FILE *) outFILE,
+      "      o Minimum read depth print out an variant%s",
+      str_endLine
     );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -471,8 +557,9 @@ phelp_mainTbCon(
 
    fprintf(
       (FILE *) outFILE,
-      "    -p-perc-snp-sup: [%.2f]\n",
-      def_minSnpPrintPerc_tbConDefs
+      "    -p-perc-snp-sup: [%.2f]%s",
+      def_minSnpPrintPerc_tbConDefs,
+      str_endLine
    );
 
     fprintf(
@@ -482,7 +569,9 @@ phelp_mainTbCon(
 
     fprintf(
        (FILE *) outFILE,
-       "\n        an SNP/match variant (range: 0 to 1)\n"
+       "%s        an SNP/match variant (range: 0 to 1)%s",
+       str_endLine,
+       str_endLine
     );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -492,8 +581,9 @@ phelp_mainTbCon(
 
    fprintf(
       (FILE *) outFILE,
-      "    -p-perc-ins-sup: [%.2f]\n",
-      def_minInsPrintPerc_tbConDefs
+      "    -p-perc-ins-sup: [%.2f]%s",
+      def_minInsPrintPerc_tbConDefs,
+      str_endLine
    );
 
     fprintf(
@@ -503,7 +593,9 @@ phelp_mainTbCon(
 
     fprintf(
        (FILE *) outFILE,
-       " an\n        insertion variant (range: 0 to 1)\n"
+       " an%s        insertion variant (range: 0 to 1)%s",
+       str_endLine,
+       str_endLine
     );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -513,8 +605,9 @@ phelp_mainTbCon(
 
    fprintf(
       (FILE *) outFILE,
-      "    -p-perc-del-sup: [%.2f]\n",
-      def_minDelPrintPerc_tbConDefs
+      "    -p-perc-del-sup: [%.2f]%s",
+      def_minDelPrintPerc_tbConDefs,
+      str_endLine
    );
 
     fprintf(
@@ -524,7 +617,9 @@ phelp_mainTbCon(
 
     fprintf(
        (FILE *) outFILE,
-       " an\n        deletion variant (range: 0 to 1)\n"
+       " an%s        deletion variant (range: 0 to 1)%s",
+       str_endLine,
+       str_endLine
     );
 
    /****************************************************\
@@ -536,17 +631,20 @@ phelp_mainTbCon(
 
    fprintf(
       (FILE *) outFILE,
-      "  -h: Print the shortened help message\n"
+      "  -h: Print the shortened help message%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -h-all: Print the entire help message\n"
+      "  -h-all: Print the entire help message%s",
+      str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "  -v: Print the version number\n"
+      "  -v: Print the version number%s",
+      str_endLine
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -554,16 +652,18 @@ phelp_mainTbCon(
    ^   - print output block
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   fprintf(outFILE, "Output:\n");
+   fprintf(outFILE, "Output:%s", str_endLine);
 
    fprintf(
       outFILE,
-      "  - Prints the consensus to -out as a sam file\n"
+      "  - Prints the consensus to -out as a sam file%s",
+      str_endLine
     );
 
     fprintf(
        outFILE,
-      "  - Prints variants to -out-tsv (if provided)\n"
+       "  - Prints variants to -out-tsv (if provided)%s",
+      str_endLine
     );
 } /*phelp_mainTbCon*/
 
@@ -587,6 +687,11 @@ phelp_mainTbCon(
 |   - refLenUI:
 |     o pointer to unsigned int to hold the reference
 |       length
+|   - noFragBlPtr:
+|     o pointer to signed char
+|       * set to 1 if user wanted complete consensuses
+|       * set to 0 if user wanted to split consensues
+|         by low read depth regions
 |   - tbConhSetSTPtr:
 |     o pointer to tbConSet structure with other settings
 | Output:
@@ -609,6 +714,7 @@ input_mainTbCon(
    signed char **outFileStr, /*File to output to*/
    signed char **tsvFileStr, /*Path to tsv file to pring*/
    unsigned int *refLenUI,   /*Length of reference*/
+   signed char *noFragBlPtr, /*1: do not fragment con*/
    struct set_tbCon *settings
 ){ /*input_mainTbCon*/
    /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
@@ -629,9 +735,9 @@ input_mainTbCon(
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   schar errSC = 0;
-   schar *tmpStr = 0;
-   sint siArg = 0;
+   signed char errSC = 0;
+   signed char *tmpStr = 0;
+   signed int siArg = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun03 Sec02:
@@ -685,37 +791,53 @@ input_mainTbCon(
 
       if(
          ! eql_charCp(
-            (schar *) "-sam",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-sam",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*If: The user input a sam file*/
          ++siArg;
-         *samFileStr = (schar *) argAryStr[siArg];
+         *samFileStr = (signed char *) argAryStr[siArg];
       } /*If: The user input a sam file*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-out",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-out",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: an output file*/
          ++siArg;
-         *outFileStr = (schar *) argAryStr[siArg];
+         *outFileStr = (signed char *) argAryStr[siArg];
       } /*Else If: an output file*/
 
       else if(
          ! eql_charCp(
-            (schar *) "-out-tsv",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-out-tsv",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: variant output file*/
          ++siArg;
-         *tsvFileStr = (schar *) argAryStr[siArg];
+         *tsvFileStr = (signed char *) argAryStr[siArg];
       } /*Else If: variant output file*/
 
+      else if(
+         ! eql_charCp(
+            (signed char *) "-no-frag",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
+         )
+      ) *noFragBlPtr = 1;
+
+      else if(
+         ! eql_charCp(
+            (signed char *) "-frag",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
+         )
+      ) *noFragBlPtr = 0;
+      
       /**************************************************\
       * Fun03 Sec03 Sub02:
       *   - reference data
@@ -723,16 +845,16 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-ref-len",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-ref-len",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: reference length*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
             strToUI_base10str(
-              (schar *) argAryStr[siArg],
+              (signed char *) argAryStr[siArg],
               refLenUI
             );
 
@@ -741,8 +863,9 @@ input_mainTbCon(
          { /*If: non-numeric*/
             fprintf(
                stderr,
-               "-ref-len %s is non-numeric or to large\n",
-               argAryStr[siArg]
+               "-ref-len %s is non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -756,16 +879,16 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-q",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-q",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum q-score*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
             strToSI_base10str(
-              (schar *) argAryStr[siArg],
+              (signed char *) argAryStr[siArg],
               &settings->minQSI
             );
 
@@ -774,8 +897,9 @@ input_mainTbCon(
          { /*If: non-numeric*/
             fprintf(
                stderr,
-               "-min-q %s is non-numeric or to large\n",
-               argAryStr[siArg]
+               "-min-q %s is non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -784,16 +908,16 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-q-ins",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-q-ins",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: insertion q-score*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
             strToSI_base10str(
-              (schar *) argAryStr[siArg],
+              (signed char *) argAryStr[siArg],
               &settings->minInsQSI
             );
 
@@ -802,8 +926,9 @@ input_mainTbCon(
          { /*If: non-numeric*/
             fprintf(
                stderr,
-               "-min-q-ins %s; non-numeric or to large\n",
-               argAryStr[siArg]
+               "-min-q-ins %s; non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -812,16 +937,16 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-mapq",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-mapq",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: mapping quality*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
             strToUC_base10str(
-              (schar *) argAryStr[siArg],
+              (signed char *) argAryStr[siArg],
               &settings->minMapqUC
             );
 
@@ -830,8 +955,9 @@ input_mainTbCon(
          { /*If: non-numeric*/
             fprintf(
                stderr,
-               "-min-mapq %s; non-numeric or to large\n",
-               argAryStr[siArg]
+               "-min-mapq %s; non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -845,16 +971,16 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-len",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-len",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum fragment length*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
             strToSI_base10str(
-              (schar *) argAryStr[siArg],
+              (signed char *) argAryStr[siArg],
               &settings->minLenSI
             );
 
@@ -863,8 +989,9 @@ input_mainTbCon(
          { /*If: non-numeric*/
             fprintf(
                stderr,
-               "-min-len %s is non-numeric or to large\n",
-               argAryStr[siArg]
+               "-min-len %s is non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -873,16 +1000,16 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-min-depth",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-min-depth",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum depth*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
             strToSI_base10str(
-              (schar *) argAryStr[siArg],
+              (signed char *) argAryStr[siArg],
               &settings->minDepthSI
             );
 
@@ -891,8 +1018,9 @@ input_mainTbCon(
          { /*If: non-numeric*/
             fprintf(
                stderr,
-               "-min-depth %s; non-numeric or to large\n",
-               argAryStr[siArg]
+               "-min-depth %s; non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -907,9 +1035,9 @@ input_mainTbCon(
       /*atof reurns 0 for failure*/
       else if(
          ! eql_charCp(
-            (schar *) "-perc-snp-sup",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-perc-snp-sup",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum % snp support*/
          ++siArg;
@@ -918,9 +1046,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-perc-ins-sup",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-perc-ins-sup",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum % ins support*/
          ++siArg;
@@ -929,9 +1057,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-perc-del-sup",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-perc-del-sup",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum % del support*/
          ++siArg;
@@ -945,9 +1073,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-mask",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-mask",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: base to mask with*/
          ++siArg;
@@ -962,16 +1090,16 @@ input_mainTbCon(
       /*Settings for printing out variations*/
       else if(
          ! eql_charCp(
-            (schar *) "-p-min-depth",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-p-min-depth",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum print depth*/
          ++siArg;
-         tmpStr = (schar *) argAryStr[siArg];
+         tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
             strToSI_base10str(
-              (schar *) argAryStr[siArg],
+              (signed char *) argAryStr[siArg],
               &settings->minPrintDepthSI
             );
 
@@ -980,8 +1108,9 @@ input_mainTbCon(
          { /*If: non-numeric*/
             fprintf(
                stderr,
-               "-p-min-depth %s; non-numeric/ to large\n",
-               argAryStr[siArg]
+               "-p-min-depth %s; non-numeric/ to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
 
             goto err_fun03_sec04;
@@ -991,9 +1120,9 @@ input_mainTbCon(
       /*The print percentage depths*/
       else if(
          ! eql_charCp(
-            (schar *) "-p-perc-snp-sup",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-p-perc-snp-sup",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum print % snp support*/
          ++siArg;
@@ -1004,9 +1133,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-p-perc-ins-sup",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-p-perc-ins-sup",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*If: minimum print % ins support*/
          ++siArg;
@@ -1017,9 +1146,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-p-perc-del-sup",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-p-perc-del-sup",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: minimum print % snp support*/
          ++siArg;
@@ -1035,9 +1164,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-h",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-h",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing help message*/
          phelp_mainTbCon(0, stdout);
@@ -1046,9 +1175,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "--h",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--h",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing help message*/
          phelp_mainTbCon(0, stdout);
@@ -1057,9 +1186,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing help message*/
          phelp_mainTbCon(0, stdout);
@@ -1068,9 +1197,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing help message*/
          phelp_mainTbCon(0, stdout);
@@ -1079,9 +1208,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "--help",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--help",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing help message*/
          phelp_mainTbCon(0, stdout);
@@ -1095,9 +1224,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-h-all",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-h-all",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing full help message*/
          phelp_mainTbCon(1, stdout);
@@ -1106,9 +1235,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "--h-all",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--h-all",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing full help message*/
          phelp_mainTbCon(1, stdout);
@@ -1117,9 +1246,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "help-all",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "help-all",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing full help message*/
          phelp_mainTbCon(1, stdout);
@@ -1128,9 +1257,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-help-all",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-help-all",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing full help message*/
          phelp_mainTbCon(1, stdout);
@@ -1139,9 +1268,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "--help-all",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--help-all",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing full help message*/
          phelp_mainTbCon(1, stdout);
@@ -1155,9 +1284,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-v",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-v",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing version number*/
          pversion_mainTbCon(stdout);
@@ -1166,9 +1295,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "--v",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--v",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing version number*/
          pversion_mainTbCon(stdout);
@@ -1177,9 +1306,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing version number*/
          pversion_mainTbCon(stdout);
@@ -1188,9 +1317,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "-version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "-version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing version number*/
          pversion_mainTbCon(stdout);
@@ -1199,9 +1328,9 @@ input_mainTbCon(
 
       else if(
          ! eql_charCp(
-            (schar *) "--version",
-            (schar *) argAryStr[siArg],
-            (schar) '\0'
+            (signed char *) "--version",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
          )
       ){ /*Else If: printing version number*/
          pversion_mainTbCon(stdout);
@@ -1217,8 +1346,9 @@ input_mainTbCon(
       { /*Else: not recognized*/
          fprintf(
             stderr,
-            "%s not recognized\n",
-            argAryStr[siArg]
+            "%s not recognized%s",
+            argAryStr[siArg],
+            str_endLine
          );
  
          goto err_fun03_sec04;
@@ -1241,16 +1371,18 @@ input_mainTbCon(
    goto ret_fun03_sec04;
 
    phelp_fun03_sec04:;
+      errSC = 1;
+      goto ret_fun03_sec04;
    pversion_fun03_sec04:;
-   errSC = 1;
-   goto ret_fun03_sec04;
+      errSC = 1;
+      goto ret_fun03_sec04;
 
    err_fun03_sec04:;
-   errSC = 2;
-   goto ret_fun03_sec04;
+      errSC = 2;
+      goto ret_fun03_sec04;
 
    ret_fun03_sec04:;
-   return errSC;
+      return errSC;
 } /*input_mainTbCon*/
 
 
@@ -1291,17 +1423,20 @@ main(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*files to output to*/
-   schar *samFileStr = 0;
-   schar *outFileStr = 0;
-   schar *tsvFileStr = 0; /*file to print results to*/
+   signed char *samFileStr = 0;
+   signed char *outFileStr = 0;
+      /*file to print consensus to*/
+   signed char *tsvFileStr = 0;
+       /*file to print variants to*/
+   signed char noFragBl = def_noFrag_mainTbCon;
 
-   uint lenRefUI = def_refLen_tbConDefs;
+   unsigned int lenRefUI = def_refLen_tbConDefs;
       /*expected length of reference*/
 
    struct set_tbCon setStackST;
 
    /*Iterators for loops*/
-   sint siIter = 0;
+   signed int siIter = 0;
 
    /*Files for input*/
    FILE *samFILE = 0;
@@ -1309,21 +1444,23 @@ main(
 
    /*Non-user input*/
    /*For the sam file*/
-   schar *buffHeapStr = 0;
-   ulong lenBuffUL = 0;
-   ulong ulRead = 0;
+   signed char *buffHeapStr = 0;
+   unsigned long lenBuffUL = 0;
+   unsigned long ulRead = 0;
    struct samEntry samStackST;
  
    /*For building the consensus*/
    struct conNt_tbCon **conNtHeapAryST = 0;
    struct conNt_tbCon **tmpConNtST = 0; /*for reallocs*/
-   slong indexSL = 0;
+   signed long indexSL = 0;
 
    /*For collapsing the consensus*/
-   schar errSC = 0;
-   sint numFragSI = 0;
+   signed char errSC = 0;
+   signed int numFragSI = 0;
    struct samEntry *samHeapAryST = 0;
    struct refs_samEntry refStackST; /*for ref list*/
+   unsigned int numMaskUI = 0;
+      /*throw away, # masked bases*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec02:
@@ -1358,6 +1495,7 @@ main(
          &outFileStr,
          &tsvFileStr,
          &lenRefUI,
+         &noFragBl,
          &setStackST
       );
 
@@ -1389,8 +1527,9 @@ main(
       { /*If: I could not open the sam file*/
          fprintf(
              stderr,
-             "Could not open -sam %s\n",
-             samFileStr
+             "Could not open -sam %s%s",
+             samFileStr,
+             str_endLine
          );
 
          goto fileErr_main_sec06_sub03;
@@ -1419,8 +1558,9 @@ main(
       { /*If: I could not open the out file*/
          fprintf(
              stderr,
-             "Could not open -out %s\n",
-             outFileStr
+             "Could not open -out %s%s",
+             outFileStr,
+             str_endLine
          );
 
          goto fileErr_main_sec06_sub03;
@@ -1455,7 +1595,8 @@ main(
    { /*If: memory error*/
       fprintf(
          stderr,
-         "memory error setting up samEntry struct\n"
+         "memory error setting up samEntry struct%s",
+         str_endLine
       );
 
       goto memErr_main_sec06_sub02;
@@ -1472,7 +1613,8 @@ main(
    { /*If: memory error*/
       fprintf(
          stderr,
-         "memory error setting up reference structure\n"
+         "memory error setting up reference structure%s",
+         str_endLine
       );
 
       goto memErr_main_sec06_sub02;
@@ -1501,7 +1643,8 @@ main(
       { /*If: memory error*/
          fprintf(
             stderr,
-            "memory error read sam file headers\n"
+            "memory error read sam file headers%s",
+            str_endLine
          );
 
          goto memErr_main_sec06_sub02;
@@ -1511,8 +1654,9 @@ main(
       { /*Else: file error*/
          fprintf(
             stderr,
-            "-sam %s not in proper format\n",
-            samFileStr
+            "-sam %s not in proper format%s",
+            samFileStr,
+            str_endLine
          );
 
          goto memErr_main_sec06_sub02;
@@ -1601,7 +1745,7 @@ main(
      fprintf(outFILE, " -out %s", outFileStr);
 
     
-   fprintf(outFILE, "\n");
+   fprintf(outFILE, "%s", str_endLine);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec04:
@@ -1633,7 +1777,8 @@ main(
    { /*If: had memory error*/
       fprintf(
          stderr,
-         "memory error setting up conensus arrays\n"
+         "memory error setting up conensus arrays%s",
+         str_endLine
       );
 
       goto memErr_main_sec06_sub02;
@@ -1694,7 +1839,8 @@ main(
              { /*If: memory error*/
                 fprintf(
                    stderr,
-                   "memory error adding ref map array\n"
+                   "memory error adding ref map array%s",
+                   str_endLine
                 );
 
                 goto memErr_main_sec06_sub02;
@@ -1704,8 +1850,10 @@ main(
 
              /*initialize new elements*/
              for(
-                indexSL = (slong) refStackST.numRefUI - 1;
-                indexSL < (slong) refStackST.arySizeUI;
+                indexSL =
+                   (signed long) refStackST.numRefUI - 1;
+                indexSL <
+                   (signed long) refStackST.arySizeUI;
                 ++indexSL
              ) conNtHeapAryST[indexSL] = 0;
           } /*If: need to resize reference array*/
@@ -1714,7 +1862,8 @@ main(
           { /*If: had memory error*/
              fprintf(
                 stderr,
-                "memory error adding extra reference\n"
+                "memory error adding extra reference%s",
+                str_endLine
              );
 
              goto memErr_main_sec06_sub02;
@@ -1738,7 +1887,8 @@ main(
        { /*If: I had a memory error*/
           fprintf(
              stderr,
-             "memory error while building consensus\n"
+             "memory error while building consensus%s",
+             str_endLine
           );
 
           goto memErr_main_sec06_sub02;
@@ -1764,9 +1914,10 @@ main(
    { /*If: memory error*/
       fprintf(
          stderr,
-         "memory error for read %lu in -sam %s\n",
+         "memory error for read %lu in -sam %s%s",
          ulRead,
-         samFileStr
+         samFileStr,
+         str_endLine
       );
 
       goto memErr_main_sec06_sub02;
@@ -1827,7 +1978,7 @@ main(
 
       for(
          indexSL = 0;
-         indexSL <= (slong) refStackST.numRefUI;
+         indexSL <= (signed long) refStackST.numRefUI;
          ++indexSL
       ){ /*Loop: print out variants*/
          if(conNtHeapAryST[indexSL])
@@ -1845,8 +1996,9 @@ main(
             { /*If: I had a file error*/
                fprintf(
                  stderr,
-                 "could not open -out-tsv %s; skipping\n",
-                 tsvFileStr
+                 "could not open -out-tsv %s; skipping%s",
+                 tsvFileStr,
+                 str_endLine
                );
             } /*If: I had a file error*/
          } /*If: had reads for varaint file*/
@@ -1861,13 +2013,14 @@ main(
    if(outFILE == stdout)
    { /*If: the ouput file was stdout*/
      if((tsvFileStr && *tsvFileStr == '-'))
-        fprintf(outFILE, "\n");
+        fprintf(outFILE, "%s", str_endLine);
    } /*If: the ouput file was stdout*/
 
    else if(
          tsvFileStr
       && ! eql_charCp(outFileStr, tsvFileStr, '\0')
-   ) fprintf(outFILE, "\n"); /*out and tsv file are same*/
+   ) fprintf(outFILE, "%s", str_endLine);
+     /*out and tsv file are same*/
 
    /*****************************************************\
    * Main Sec05 Sub03:
@@ -1876,21 +2029,40 @@ main(
 
    for(
       indexSL = 0;
-      indexSL <= (slong) refStackST.numRefUI;
+      indexSL <= (signed long) refStackST.numRefUI;
       ++indexSL
    ){ /*Loop: print out consensus*/
 
       if(conNtHeapAryST[indexSL])
       { /*If: have consensus array for reference*/
-         samHeapAryST =
-            collapse_tbCon(
-               conNtHeapAryST[indexSL],
-               refStackST.lenAryUI[indexSL],
-               &numFragSI,
-               get_strAry(refStackST.idAryStr, indexSL),
-               &setStackST,
-               &errSC
-            ); /*Collapse the consensus*/
+
+          if(noFragBl)
+          { /*If: not fragmenting consensus*/
+            samHeapAryST =
+               noFragCollapse_tbCon(
+                 conNtHeapAryST[indexSL],
+                 refStackST.lenAryUI[indexSL],
+                 get_strAry(refStackST.idAryStr, indexSL),
+                 &numMaskUI,
+                 &setStackST,
+                 &errSC
+               ); /*Collapse the consensus*/
+
+             numFragSI = 1; /*no fragments*/
+          } /*If: not fragmenting consensus*/
+
+          else
+          { /*Else: fragmenting consensus at low depth*/
+            samHeapAryST =
+               collapse_tbCon(
+                 conNtHeapAryST[indexSL],
+                 refStackST.lenAryUI[indexSL],
+                 &numFragSI,
+                 get_strAry(refStackST.idAryStr, indexSL),
+                 &setStackST,
+                 &errSC
+               ); /*Collapse the consensus*/
+          } /*Else: fragmenting consensus at low depth*/
 
          freeHeapAry_conNt_tbCon(
             conNtHeapAryST[indexSL],
@@ -1898,6 +2070,9 @@ main(
          );
 
          conNtHeapAryST[indexSL] = 0;
+
+         if(! samHeapAryST)
+            continue; /*no consensus made*/
 
          /*Print the consensuses*/
          for(
@@ -2001,7 +2176,7 @@ main(
       { /*If: have consensus arrays to free*/
          for(
             indexSL = 0;
-            indexSL <= (slong) refStackST.numRefUI;
+            indexSL <= (signed long) refStackST.numRefUI;
             ++indexSL
          ){ /*Loop: free all consensus arrays*/
              freeHeapAry_conNt_tbCon(

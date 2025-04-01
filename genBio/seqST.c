@@ -66,9 +66,6 @@
 
 #include "../genLib/ulCp.h"
 
-/*no .c files*/
-#include "../genLib/dataTypeShortHand.h"
-
 /*-------------------------------------------------------\
 | Fun01: addLine_seqST
 |  - read line of characters into the buffer.If needed
@@ -90,7 +87,6 @@
 |     o buffStr to hold the next line.
 |       - buffStr is resizied if it is to small to hold
 |         the next line.
-|       - buffStr + lenBuffUL - 2 will be '\0' or '\n'
 |       - buffStr set to 0 for memory allocation errors
 |     o curBuffUL: Has the number of chars in the buffer
 |     o lenBuffUL: Has the buffer size
@@ -106,7 +102,6 @@ addLine_seqST(
     unsigned long *lenBuffUL,/*Size of the buffer*/
     unsigned long *curBuffUL,/*Number of chars in buffer*/
     unsigned long resBuffUL, /*How much to resize buff by*/
-    unsigned long *filePosUL, /*position at in file*/
     void *inFILE             /*File to grab data from*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun01 TOC: addLine_seqST
@@ -127,7 +122,7 @@ addLine_seqST(
     ^  - variable declerations
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-    schar *tmpStr = 0;
+    signed char *tmpStr = 0;
     unsigned long spareBuffUL = 0;
     unsigned long tmpUL = 0;
 
@@ -144,13 +139,14 @@ addLine_seqST(
         *lenBuffUL += resBuffUL;
 
         if(*lenBuffUL == 0)
-          tmpStr =malloc(sizeof(schar) * (*lenBuffUL+9));
+          tmpStr =
+             malloc(sizeof(signed char) * (*lenBuffUL+9));
         else
         { /*Else I need to resize the buffer*/
             tmpStr =
               realloc(
                 *buffStr,
-                sizeof(schar) * (*lenBuffUL + 9)
+                sizeof(signed char) * (*lenBuffUL + 9)
             ); /*Resize hte buffer*/
         } /*Else I need to resize the buffer*/
        
@@ -175,15 +171,32 @@ addLine_seqST(
     tmpStr = *buffStr + *curBuffUL;
  
     while(
-       fgets((char *) tmpStr,spareBuffUL,(FILE *) inFILE)
+       fgets(
+          (char *) tmpStr,
+          spareBuffUL,
+          (FILE *) inFILE
+       )
     ){ /*While I have lines to read*/
-        tmpUL = endLine_ulCp(tmpStr);
-           /*will end at '\r' from windows*/
+        tmpUL = endStr_ulCp(tmpStr);
+
+        while(tmpStr[tmpUL] < 33)
+        { /*Loop: clear white space at end of line*/
+           if(! tmpUL)
+              break;
+
+           --tmpUL;
+        } /*Loop: clear white space at end of line*/
 
         *curBuffUL += tmpUL;
-        tmpStr = *buffStr + *curBuffUL;
-        *filePosUL += tmpUL;
+
+        if(tmpStr[tmpUL + 1] == '\r')
+           return 0; /*finshed with line*/
+
+        else if(tmpStr[tmpUL + 1] == '\n')
+           return 0; /*finshed with line*/
+
         spareBuffUL -= tmpUL;
+        tmpStr = *buffStr + *curBuffUL;
 
         if(spareBuffUL < 16)
         { /*If: need to resize buffer*/
@@ -205,10 +218,7 @@ addLine_seqST(
         } /*If: need to resize buffer*/
 
         if(*tmpStr != '\0')
-        { /*If: found end of line*/
-            ++(*filePosUL);
-            return 0; /*finshed with line*/
-        } /*If: found end of line*/
+           return 0; /*finshed with line*/
     } /*While I have lines to read*/
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -264,17 +274,16 @@ getFqSeq_seqST(
     ^  - variable declarations
     \>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
-    schar tmpSC = 'C';         /*initilize sequence loop*/
+    signed char tmpSC = 'C';  /*initilize sequence loop*/
 
     unsigned short extraBuffUS = 1024;
     unsigned long tmpBuffUL = 0;
-    unsigned long filePosUL = 0;
 
     /*Holds number of lines in sequence entry*/
     unsigned char numLinesUC = 0;
 
     unsigned char errUC = 0;
-    schar *oldIterStr = 0;
+    signed char *oldIterStr = 0;
 
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\
     ^ Fun02 Sec02:
@@ -292,17 +301,33 @@ getFqSeq_seqST(
             &seqSTPtr->lenIdBuffUL,/*length header buff*/
             &seqSTPtr->lenIdUL, /*number bytes in buffer*/
             extraBuffUS,        /*amount to increase buf*/
-            &filePosUL,
             (FILE *) fqFILE     /*fq file with header*/
     ); /*get the header (will resize as needed)*/
 
     if(errUC)
        return errUC; /*EOF or memory allocation error*/
 
-    /*Account for the new line*/
-    --seqSTPtr->lenIdUL;
+    if(seqSTPtr->idStr[0] == '@')
+    { /*If: need to remove header symbol*/
+       cpLen_ulCp(
+          seqSTPtr->idStr,
+          &seqSTPtr->idStr[1],
+          seqSTPtr->lenIdUL - 1
+       );
+
+       --seqSTPtr->lenIdUL;
+    } /*If: need to remove header symbol*/
+
+    while(seqSTPtr->idStr[seqSTPtr->lenIdUL - 1] < 33)
+    { /*Loop: remove white space at end*/
+       if(seqSTPtr->idStr[seqSTPtr->lenIdUL - 1] == '\0')
+          break;
+
+       --seqSTPtr->lenIdUL;
+    } /*Loop: remove white space at end*/
+
     seqSTPtr->idStr[seqSTPtr->lenIdUL] = '\0';
-    
+
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\
     ^ Fun02 Sec03:
     ^  - read in the sequence & spacer
@@ -323,13 +348,20 @@ getFqSeq_seqST(
                 &seqSTPtr->lenSeqBuffUL,/*size; buffer*/
                 &seqSTPtr->lenSeqUL,/*length of sequence*/
                 extraBuffUS,     /*resize buff by*/
-                &filePosUL,
                 (FILE *) fqFILE  /*fq file with sequence*/
         ); /*Get the header*/
 
         /*set up new lines to be removed on next read*/
-        oldIterStr =
-           seqSTPtr->seqStr + seqSTPtr->lenSeqUL - 1;
+        ++seqSTPtr->lenSeqUL; /*addLine is index 0*/
+        oldIterStr = seqSTPtr->seqStr;
+        oldIterStr += seqSTPtr->lenSeqUL;
+
+        if(*oldIterStr == '\r')
+           --oldIterStr;
+        if(*oldIterStr == '\n')
+           --oldIterStr;
+        if(*oldIterStr == '\r')
+           --oldIterStr;
 
         while(*oldIterStr < 33)
         { /*While removing new lines*/
@@ -388,7 +420,6 @@ getFqSeq_seqST(
               &seqSTPtr->lenQBuffUL,/*size of buffer*/
               &seqSTPtr->lenQUL, /*length; Q-score entry*/
               extraBuffUS,      /*for reszing buffer*/
-              &filePosUL,
               (FILE *) fqFILE   /*fq file with q-score*/
         ); /*get the header*/
 
@@ -475,13 +506,12 @@ getFaSeq_seqST(
     \>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
     /*Used To initilize the sequence loop*/
-    schar tmpSC = 'C';
+    signed char tmpSC = 'C';
     unsigned long tmpUL = 0;
-    unsigned long filePosUL = 0; /*reset file lengths*/
 
     unsigned short extraBuffUS = 1024;
     signed char errSC = 0;
-    schar *tmpStr= 0;
+    signed char *tmpStr= 0;
 
     /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\
     ^ Fun03 Sec02:
@@ -497,7 +527,6 @@ getFaSeq_seqST(
             &seqSTPtr->lenIdBuffUL,/*length of buffer*/
             &seqSTPtr->lenIdUL, /*length of header*/
             extraBuffUS,        /*resize buff by*/
-            &filePosUL,
             (FILE *) faFILE     /*Fasta file with header*/
     ); /*Get the header (will resize as needed)*/
 
@@ -553,7 +582,7 @@ getFaSeq_seqST(
     else
     { /*Else: allocate memory*/
        seqSTPtr->seqStr =
-          malloc((extraBuffUS + 9) * sizeof(schar));
+          malloc((extraBuffUS + 9) * sizeof(signed char));
 
        seqSTPtr->seqStr[extraBuffUS] = '\0';
        seqSTPtr->seqStr[extraBuffUS + 1] = '\0';
@@ -571,7 +600,7 @@ getFaSeq_seqST(
     while(1 == 1)
     { /*Loop: read in sequence*/
         tmpStr =
-           (schar *)
+           (signed char *)
            fgets(
               (char *)
                  seqSTPtr->seqStr + seqSTPtr->lenSeqUL,
@@ -623,7 +652,7 @@ getFaSeq_seqST(
                       + 9
                       + extraBuffUS
                    )
-                 * sizeof(schar)
+                 * sizeof(signed char)
               );
 
            if(! tmpStr)
@@ -761,13 +790,13 @@ revComp_seqST(
     ^   - variable declarations
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-    schar *seqStr = seqSTPtr->seqStr;
+    signed char *seqStr = seqSTPtr->seqStr;
 
-    schar *endStr =
+    signed char *endStr =
        seqSTPtr->seqStr + seqSTPtr->lenSeqUL - 1;
 
-    schar *qStr = 0;
-    schar *qEndStr = 0;
+    signed char *qStr = 0;
+    signed char *qEndStr = 0;
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun04 Sec02:
@@ -1030,7 +1059,7 @@ freeHeapAry_seqST(
    struct seqST *seqAryST,
    signed long numSeqSL
 ){
-   slong slFree = 0;
+   signed long slFree = 0;
 
    for(
       slFree = 0;
@@ -1075,8 +1104,8 @@ cpIdEndPad_seqST(
    signed char endIdC,   /*padding; id end (0 to skip)*/
    signed int padRI      /*padding; id start*/
 ){
-   sint idCntI = 0;
-   schar *tmpStr = seqSTPtr->idStr;
+   signed int idCntI = 0;
+   signed char *tmpStr = seqSTPtr->idStr;
 
    if(*tmpStr == '>') ++tmpStr; /*Get of header*/
 
@@ -1170,7 +1199,8 @@ cp_seqST(
 
          dupSeqST->qStr =
             malloc(
-               (dupSeqST->lenQBuffUL + 1) * sizeof(schar)
+                 (dupSeqST->lenQBuffUL + 1)
+               * sizeof(signed char)
             );
 
          if(! dupSeqST)
@@ -1206,7 +1236,8 @@ cp_seqST(
 
       dupSeqST->seqStr =
          malloc(
-            (dupSeqST->lenSeqBuffUL + 1) * sizeof(schar)
+              (dupSeqST->lenSeqBuffUL + 1)
+            * sizeof(signed char)
          );
 
       if(! dupSeqST)
@@ -1241,7 +1272,8 @@ cp_seqST(
 
       dupSeqST->idStr =
          malloc(
-            (dupSeqST->lenIdBuffUL + 1) * sizeof(schar)
+              (dupSeqST->lenIdBuffUL + 1)
+            * sizeof(signed char)
          );
 
       if(! dupSeqST)

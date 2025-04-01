@@ -29,7 +29,8 @@
 
 #include "../genLib/ulCp.h"
 #include "../genLib/charCp.h"
-#include "../genLib/samEntry.h"
+
+#include "../genBio/samEntry.h"
 
 #include "../genAln/alnSet.h"
 
@@ -44,12 +45,12 @@
 !   o .c  #include "../genLib/base10str.h"
 !   o .c  #include "../genLib/numToStr.h"
 !   o .c  #include "../genLib/strAry.h"
-!   o .c  #include "../genLib/seqST.h"
+!   o .c  #include "../genBio/seqST.h"
 !   o .c  #include "../genAln/indexToCoord.h"
 !   o .c  #include "../genAln/dirMatrix.h"
 !   o .c  #include "../genAln/needle.h"
 !   o .c  #include "../genAln/water.h"
-!   o .h  #include "../genLib/ntTo5Bit.h"
+!   o .h  #include "../genBio/ntTo5Bit.h"
 !   o .h  #include "../genLib/genMath.h" max/min .h macro
 !   o .h  #include "../genAln/alnDefs.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
