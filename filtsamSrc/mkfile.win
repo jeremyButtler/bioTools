@@ -1,9 +1,8 @@
-LD=link
-CC=cl
+LD=link.exe
 coreCFLAGS= /c /O2 /Ot /Za /Tc
 CFLAGS=/DNONE
 NAME=filtsam.exe
-PREFIX=%localAppData
+PREFIX=%localAppData%
 O=o.win
 
 genBio=..\genBio

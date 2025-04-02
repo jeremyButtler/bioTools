@@ -19,6 +19,52 @@ Primary is unlicense (public domain), but if publice
   domain does not work or is not desired it defaults to
   MIT (alternate).
 
+# Installing
+
+## Unix (Mac/Linux/BSD):
+
+You can build and install the entire repository using
+  `mkfile.unix` or `mkfile.static` (do not use use static
+  on Mac). You can also build and install individual
+  programs. To get instructions for individual programs,
+  read the README.md file in the programs direcotry.
+
+```
+if [ ! -d "/usr/local/bin" ];
+then
+   sudo mkdir -p "/usr/local/bin";
+fi
+
+cd ~/Downloads;
+git clone https://github.com/jeremybuttler/bioTools;
+
+cd bioTools;
+make -f mkfile.unix;
+sudo make -f mkfile.unix install;
+```
+
+For individual programs:
+
+```
+# only need to do this step once
+if [ ! -d "/usr/local/bin" ];
+then
+   sudo mkdir -p "/usr/local/bin";
+fi
+
+cd ~/Downloads;
+git clone https://github.com/jeremybuttler/bioTools;
+
+# this step is done for each program
+cd ~/Downloads/bioTools/<target-program>;
+make -f mkfile.unix;
+sudo make -f mkfile.unix install;
+```
+
+## Windows
+
+Need to test global makefile first.
+
 # Scripts
 
 The mkfileScripts directory has bash scripts to build
@@ -187,6 +233,13 @@ My general libraries.
 
 # Updates:
 
+- 2025-04-01
+  - fixed error were samEntry would remove some bases from
+    the end of a sequence when resizing the buffer during
+    the read from file step
+  - fixed break and complier error in memwater from
+    2025-03-31 update
+  - added in install all programs makefiles
 - 2025-03-31
   - mapReads added
 - 2025-03-24

@@ -17,7 +17,7 @@ objFiles= \
    mainTrimSam.$O
 
 all: mainTrimSam.$O
-	$LD -o $NAME $CFLAGS $objFiles
+	$LD -o $NAME $objFiles
 
 mainTrimSam.$O: mainTrimSam.c $genBio/trimSam.$O ../bioTools.h ../bioTools.h
 	$CC -o mainTrimSam.$O  $coreCFLAGS $CFLAGS mainTrimSam.c

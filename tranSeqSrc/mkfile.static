@@ -1,5 +1,4 @@
 LD=cc
-CC=cc
 coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra
 CFLAGS=-DNONE
 NAME=tranSeq
@@ -17,7 +16,7 @@ objFiles= \
    tranSeq.$O
 
 all: tranSeq.$O
-	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
+	$(LD) -o $(NAME) $(objFiles)
 
 tranSeq.$O: tranSeq.c $(genBio)/seqST.$O $(genBio)/codonFun.$O $(genLib)/base10str.$O ../bioTools.h ../bioTools.h
 	$(CC) -o tranSeq.$O -c $(coreCFLAGS) $(CFLAGS) tranSeq.c

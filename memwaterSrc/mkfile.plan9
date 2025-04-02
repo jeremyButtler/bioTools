@@ -20,7 +20,7 @@ objFiles= \
    mainMemwater.$O
 
 all: mainMemwater.$O
-	$LD -o $NAME $CFLAGS $objFiles
+	$LD -o $NAME $objFiles
 
 mainMemwater.$O: mainMemwater.c $genAln/memwater.$O $genBio/kmerCnt.$O $genLib/charCp.$O ../bioTools.h ../bioTools.h ../bioTools.h
 	$CC -o mainMemwater.$O  $coreCFLAGS $CFLAGS mainMemwater.c

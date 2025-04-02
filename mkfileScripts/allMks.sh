@@ -42,6 +42,10 @@ cd ../k2TaxaIdSrc;
 bash "../$retDirStr/allOSMkfiles.sh" k2TaxaId mainK2TaxaId k2TaxaId ../bioTools.h ../genLib/endLine.h
 cd "../$retDirStr";
 
+cd ../mapReadSrc;
+bash "../$retDirStr/allOSMkfiles.sh" mapRead mainMapRead mapRead ptrAry ../bioTools.h ../genLib/endLine.h ../genAln/defsMapRead.h ../genAln/alnDefs.h
+cd "../$retDirStr";
+
 cd ../maskPrimSrc;
 bash "../$retDirStr/allOSMkfiles.sh" maskPrim mainMaskPrim maskPrim charCp ../bioTools.h ../genLib/endLine.h
 cd "../$retDirStr";

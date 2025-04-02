@@ -19,7 +19,7 @@ objFiles= \
    mainMaskPrim.$O
 
 all: mainMaskPrim.$O
-	$LD -o $NAME $CFLAGS $objFiles
+	$LD -o $NAME $objFiles
 
 mainMaskPrim.$O: mainMaskPrim.c $genBio/maskPrim.$O $genLib/charCp.$O ../bioTools.h ../bioTools.h
 	$CC -o mainMaskPrim.$O  $coreCFLAGS $CFLAGS mainMaskPrim.c

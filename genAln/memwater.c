@@ -332,14 +332,14 @@ memwater(
          snpIndexUL = tmpIndexUL;
 
          /*find direction (5 Op)*/
-         dirMatrixSC[indexUL] =
-            scoreArySL[ulRef] > delScoreSL;
-         dirMatrixSC[indexUL] +=
+         dirRowHeapSC[ulRef] =
+            scoreHeapArySL[ulRef] > delScoreSL;
+         dirRowHeapSC[ulRef] +=
             (
                  (snpScoreSL <= insScoreSL)
-               & dirMatrixSC[indexUL]
+               & dirRowHeapSC[ulRef]
             );
-         ++dirMatrixSC[indexUL];
+         ++dirRowHeapSC[ulRef];
 
          /*Logic:
          `   - noDel: maxSC > delSc:

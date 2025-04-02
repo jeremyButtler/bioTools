@@ -24,7 +24,7 @@ objFiles= \
    mainWater.$O
 
 all: mainWater.$O
-	$LD -o $NAME $CFLAGS $objFiles
+	$LD -o $NAME $objFiles
 
 mainWater.$O: mainWater.c $genAln/water.$O $genBio/kmerCnt.$O ../bioTools.h ../bioTools.h
 	$CC -o mainWater.$O  $coreCFLAGS $CFLAGS mainWater.c

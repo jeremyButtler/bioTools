@@ -1,5 +1,4 @@
 LD=cc
-CC=cc
 coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra
 CFLAGS=-DNONE
 NAME=primFind
@@ -24,7 +23,7 @@ objFiles= \
    mainPrimFind.$O
 
 all: mainPrimFind.$O
-	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
+	$(LD) -o $(NAME) $(objFiles)
 
 mainPrimFind.$O: mainPrimFind.c $(genAln)/kmerFind.$O $(genBio)/kmerCnt.$O $(genLib)/charCp.$O ../bioTools.h ../bioTools.h ../bioTools.h
 	$(CC) -o mainPrimFind.$O -c $(coreCFLAGS) $(CFLAGS) mainPrimFind.c

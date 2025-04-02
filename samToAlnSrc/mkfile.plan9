@@ -21,7 +21,7 @@ objFiles= \
    mainSamToAln.$O
 
 all: mainSamToAln.$O
-	$LD -o $NAME $CFLAGS $objFiles
+	$LD -o $NAME $objFiles
 
 mainSamToAln.$O: mainSamToAln.c $genAln/samToAln.$O $genLib/charCp.$O ../bioTools.h ../bioTools.h
 	$CC -o mainSamToAln.$O  $coreCFLAGS $CFLAGS mainSamToAln.c

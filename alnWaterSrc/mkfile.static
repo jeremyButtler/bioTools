@@ -1,5 +1,4 @@
 LD=cc
-CC=cc
 coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra
 CFLAGS=-DNONE
 NAME=alnWater
@@ -26,7 +25,7 @@ objFiles= \
    mainWater.$O
 
 all: mainWater.$O
-	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
+	$(LD) -o $(NAME) $(objFiles)
 
 mainWater.$O: mainWater.c $(genAln)/water.$O $(genBio)/kmerCnt.$O ../bioTools.h ../bioTools.h
 	$(CC) -o mainWater.$O -c $(coreCFLAGS) $(CFLAGS) mainWater.c

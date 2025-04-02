@@ -1,0 +1,61 @@
+CC=cc
+LD=cc
+MAKE=make
+
+CFLAGS=-DNONE
+PREFIX=/usr/local/bin
+O=o.unix
+
+cmdStr= \
+   PREFIX=$(PREFIX) \
+   CC=$(CC) \
+   LD=$(LD) \
+   CFLAGS=$(CFLAGS) \
+   O=$(O)
+
+all:
+	$(MAKE) $(cmdStr) -f mkfile.unix -C adjCoordsSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C alnNeedleSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C alnWaterSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C ampDepthSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C cigToEqxSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C edClustSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C edDistSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C filtsamSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C illNanoSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C k2TaxaIdSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C mapReadSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C maskPrimSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C memwaterSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C primFindSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C rmHomoSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C samToAlnSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C seqByIdSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C tbConSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C tranSeqSrc
+	$(MAKE) $(cmdStr) -f mkfile.unix -C trimSamSrc
+
+install:
+	$(MAKE) $(cmdStr) -f mkfile.unix -C adjCoordsSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C alnNeedleSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C alnWaterSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C ampDepthSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C cigToEqxSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C edClustSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C edDistSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C filtsamSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C illNanoSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C k2TaxaIdSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C mapReadSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C maskPrimSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C memwaterSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C primFindSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C rmHomoSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C samToAlnSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C seqByIdSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C tbConSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C tranSeqSrc install
+	$(MAKE) $(cmdStr) -f mkfile.unix -C trimSamSrc install
+
+clean:
+	rm */*.$O;

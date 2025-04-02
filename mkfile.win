@@ -1,0 +1,140 @@
+CC=cl.exe
+LD=link.exe
+
+CFLAGS=/DNONE
+PREFIX=%localAppData%
+O=o.win
+
+cmdStr= \
+   PREFIX=$(PREFIX) \
+   CC=$(CC) \
+   LD=$(LD) \
+   CFLAGS=$(CFLAGS) \
+   O=$(O)
+
+all:
+	cd adjCoordsSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd alnNeeldeSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd alnWaterSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd ampDepthSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd cigToEqxSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd edClustSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd edDistSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd filtsamSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd illNanoSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd k2TaxaIdSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd mapReadSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd maskPrimSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd memwaterSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd primFindSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd rmHomoSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd samToAlnSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd seqByIdSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd tbConSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd tranSeqSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+	cd trimSamSrc
+		nmake $(cmdStr) /F mkfile.win
+		cd ..
+
+install:
+	cd adjCoordsSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd alnNeeldeSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd alnWaterSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd ampDepthSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd cigToEqxSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd edClustSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd edDistSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd filtsamSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd illNanoSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd k2TaxaIdSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd mapReadSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd maskPrimSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd memwaterSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd primFindSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd rmHomoSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd samToAlnSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd seqByIdSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd tbConSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd tranSeqSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+	cd trimSamSrc
+		nmake $(cmdStr) /F mkfile.win install
+		cd ..
+
+clean:
+	del */*.$O;

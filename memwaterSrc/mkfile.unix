@@ -1,5 +1,4 @@
 LD=cc
-CC=cc
 coreCFLAGS= -O3 -std=c89 -Wall -Wextra
 CFLAGS=-DNONE
 NAME=memwater
@@ -22,7 +21,7 @@ objFiles= \
    mainMemwater.$O
 
 all: mainMemwater.$O
-	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
+	$(LD) -o $(NAME) $(objFiles)
 
 mainMemwater.$O: mainMemwater.c $(genAln)/memwater.$O $(genBio)/kmerCnt.$O $(genLib)/charCp.$O ../bioTools.h ../bioTools.h ../bioTools.h
 	$(CC) -o mainMemwater.$O -c $(coreCFLAGS) $(CFLAGS) mainMemwater.c

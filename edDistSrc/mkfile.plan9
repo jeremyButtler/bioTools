@@ -19,7 +19,7 @@ objFiles= \
    mainEdDist.$O
 
 all: mainEdDist.$O
-	$LD -o $NAME $CFLAGS $objFiles
+	$LD -o $NAME $objFiles
 
 mainEdDist.$O: mainEdDist.c $genBio/edDist.$O $genLib/charCp.$O ../bioTools.h ../bioTools.h ../bioTools.h
 	$CC -o mainEdDist.$O  $coreCFLAGS $CFLAGS mainEdDist.c

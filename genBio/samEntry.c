@@ -871,18 +871,22 @@ getLine_samEntry(
 
       checkEOL_fun10_sec03_samEntry:;
          oldLenUL += endStr_ulCp(tmpStr);
-         --oldLenUL; /*move off null to last byte*/
-         tmpStr = *buffStr + oldLenUL;
+         tmpStr = *buffStr + oldLenUL - 1;
    } /*Loop: Find the length of  the line*/
 
-   (*buffStr)[oldLenUL] = '\0';
-   *endSIPtr = (signed int) oldLenUL;
+   *endSIPtr = (signed int) oldLenUL - 1;
 
-   while(*tmpStr < 33)
-   { /*Loop: move back to first non-whitespace char*/
+   if(oldLenUL > 0)
+   { /*If: have something*/
+      --oldLenUL; /*get off null*/
 
-      if(tmpStr == *buffStr)
-      { /*If: have empty line*/
+      while(
+            oldLenUL > 0
+         && (*buffStr)[oldLenUL] < 33
+      ) --oldLenUL;
+
+      if(! oldLenUL)
+      { /*If: nothing in buffer*/
          if(eofBl)
             goto eof_fun10_sec04;
          else
@@ -891,20 +895,15 @@ getLine_samEntry(
             tmpStr = *buffStr;
             goto getLine_fun10_sec03;
          } /*Else: more lines*/
-      } /*If: have empty line*/
+      } /*If: nothing in buffer*/
 
-      --tmpStr;
-   } /*Loop: move back to first non-whitespace char*/
+      ++oldLenUL; /*get on last \r, \n, or \0*/
+   } /*If: have something*/
 
-   if(eofBl)
+   (*buffStr)[oldLenUL] = '\0';
+
+   if(eofBl && ! oldLenUL)
       goto eof_fun10_sec04;
-
-   /*Add null in for line end (not end of file)*/
-   else
-   { /*Else: terminate string*/
-      ++tmpStr; /*get onto last white space*/
-      *tmpStr = '\0';
-   } /*Else: terminate string*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun10 Sec04:
@@ -1198,7 +1197,7 @@ lineTo_samEntry(
       } /*Switch: Check the cigar entry type*/
 
       ++buffStr; /*Get off the tab*/
-      ++(samSTPtr)->lenCigUI;
+      ++samSTPtr->lenCigUI;
    } /*Loop: Read in the cigar entry*/
 
    /*****************************************************\

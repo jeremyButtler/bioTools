@@ -1,5 +1,4 @@
 LD=cc
-CC=cc
 coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra
 CFLAGS=-DNONE
 NAME=alnNeedle
@@ -26,7 +25,7 @@ objFiles= \
    mainNeedle.$O
 
 all: mainNeedle.$O
-	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
+	$(LD) -o $(NAME) $(objFiles)
 
 mainNeedle.$O: mainNeedle.c $(genAln)/needle.$O $(genBio)/kmerCnt.$O ../bioTools.h ../bioTools.h
 	$(CC) -o mainNeedle.$O -c $(coreCFLAGS) $(CFLAGS) mainNeedle.c

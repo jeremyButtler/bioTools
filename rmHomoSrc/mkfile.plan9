@@ -18,7 +18,7 @@ objFiles= \
    mainRmHomo.$O
 
 all: mainRmHomo.$O
-	$LD -o $NAME $CFLAGS $objFiles
+	$LD -o $NAME $objFiles
 
 mainRmHomo.$O: mainRmHomo.c $genBio/rmHomo.$O ../bioTools.h ../bioTools.h
 	$CC -o mainRmHomo.$O  $coreCFLAGS $CFLAGS mainRmHomo.c

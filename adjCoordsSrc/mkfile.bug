@@ -1,5 +1,4 @@
 LD=cc
-CC=cc
 coreCFLAGS= -O0 -std=c89 -Wall -Wextra -Werror -ggdb -g
 CFLAGS=-DNONE
 NAME=adjCoordsSrc
@@ -21,7 +20,7 @@ objFiles= \
    mainAdjCoords.$O
 
 all: mainAdjCoords.$O
-	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
+	$(LD) -o $(NAME) $(objFiles)
 
 mainAdjCoords.$O: mainAdjCoords.c $(genBio)/adjCoords.$O ../bioTools.h ../bioTools.h
 	$(CC) -o mainAdjCoords.$O -c $(coreCFLAGS) $(CFLAGS) mainAdjCoords.c

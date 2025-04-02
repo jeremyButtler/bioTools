@@ -19,7 +19,7 @@ objFiles= \
    mainCigToEqx.$O
 
 all: mainCigToEqx.$O
-	$LD -o $NAME $CFLAGS $objFiles
+	$LD -o $NAME $objFiles
 
 mainCigToEqx.$O: mainCigToEqx.c $genBio/cigToEqx.$O $genBio/seqST.$O $genLib/charCp.$O ../bioTools.h ../bioTools.h
 	$CC -o mainCigToEqx.$O  $coreCFLAGS $CFLAGS mainCigToEqx.c

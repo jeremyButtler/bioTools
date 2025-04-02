@@ -1,5 +1,4 @@
 LD=cc
-CC=cc
 coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra
 CFLAGS=-DNONE
 NAME=samToAln
@@ -23,7 +22,7 @@ objFiles= \
    mainSamToAln.$O
 
 all: mainSamToAln.$O
-	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
+	$(LD) -o $(NAME) $(objFiles)
 
 mainSamToAln.$O: mainSamToAln.c $(genAln)/samToAln.$O $(genLib)/charCp.$O ../bioTools.h ../bioTools.h
 	$(CC) -o mainSamToAln.$O -c $(coreCFLAGS) $(CFLAGS) mainSamToAln.c

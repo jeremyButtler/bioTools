@@ -113,7 +113,6 @@
 #include "alnSet.h"
 #include "dirMatrix.h"
 #include "needle.h"
-#include "water.h"
 
 /*.h files only*/
 #include "defsMapRead.h" /*default settings*/
@@ -4013,7 +4012,7 @@ mergeToSam_mapRead(
          settings
       );
 
-      if(matrixSTPtr->errSC == def_memErr_water)
+      if(matrixSTPtr->errSC == def_memErr_needle)
          goto memErr_fun34_sec06;
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\

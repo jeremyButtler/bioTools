@@ -163,8 +163,8 @@ fi
 
 if [[ "$osStr" == "bug" ]];
 then # If: debugging make file
-   headStr="LD=cc";
    headStr="$headStr\nCC=cc";
+   headStr="LD=cc";
    headStr="$headStr\ncoreCFLAGS= -O0 -std=c89 -Wall -Wextra";
    headStr="$headStr -Werror -ggdb -g";
    headStr="$headStr\nCFLAGS=-DNONE";
@@ -192,7 +192,7 @@ then # If: debugging make file
    cleanStr="$cleanStr\n\trm \$(objFiles)";
 
    linkStr="all: $mainFileStr.\$O";
-   linkStr="$linkStr\n\t\$(LD) "$dashOStr"\$(NAME) \$(CFLAGS)";
+   linkStr="$linkStr\n\t\$(LD) "$dashOStr"\$(NAME)";
    linkStr="$linkStr \$(objFiles)";
 
    slashSC="/";
@@ -205,8 +205,8 @@ then # If: debugging make file
 
 elif [[ "$osStr" == "unix" ]];
 then # Else If: general unix make file
-   headStr="LD=cc";
    headStr="$headStr\nCC=cc";
+   headStr="LD=cc";
    headStr="$headStr\ncoreCFLAGS= -O3 -std=c89 -Wall -Wextra";
    headStr="$headStr\nCFLAGS=-DNONE";
    headStr="$headStr\nNAME=$nameStr";
@@ -235,7 +235,7 @@ then # Else If: general unix make file
    cleanStr="$cleanStr\n\trm \$(objFiles)";
 
    linkStr="all: $mainFileStr.\$O";
-   linkStr="$linkStr\n\t\$(LD) "$dashOStr"\$(NAME) \$(CFLAGS)";
+   linkStr="$linkStr\n\t\$(LD) "$dashOStr"\$(NAME)";
    linkStr="$linkStr \$(objFiles)";
 
    slashSC="/";
@@ -248,8 +248,8 @@ then # Else If: general unix make file
 
 elif [[ "$osStr" == "static" ]];
 then # Else If: static unix make file
-   headStr="LD=cc";
    headStr="$headStr\nCC=cc";
+   headStr="LD=cc";
    headStr="$headStr\ncoreCFLAGS= -O3 -std=c89 -static -Wall -Wextra";
    headStr="$headStr\nCFLAGS=-DNONE";
    headStr="$headStr\nNAME=$nameStr";
@@ -278,7 +278,7 @@ then # Else If: static unix make file
    cleanStr="$cleanStr\n\trm \$(objFiles)";
 
    linkStr="all: $mainFileStr.\$O";
-   linkStr="$linkStr\n\t\$(LD) "$dashOStr"\$(NAME) \$(CFLAGS)";
+   linkStr="$linkStr\n\t\$(LD) "$dashOStr"\$(NAME)";
    linkStr="$linkStr \$(objFiles)";
 
    slashSC="/";
@@ -291,12 +291,12 @@ then # Else If: static unix make file
 
 elif [[ "$osStr" == "win" ]];
 then # Else If: windows make file
-   headStr="LD=link";
-   headStr="$headStr\nCC=cl";
+   headStr="$headStr\nCC=cl.exe";
+   headStr="LD=link.exe";
    headStr="$headStr\ncoreCFLAGS= /c /O2 /Ot /Za /Tc";
    headStr="$headStr\nCFLAGS=/DNONE";
    headStr="$headStr\nNAME=$nameStr.exe";
-   headStr="$headStr\nPREFIX=%localAppData";
+   headStr="$headStr\nPREFIX=%localAppData%";
    headStr="$headStr\nO=o.win";
 
    genLibStr="\$(genLib)\\\\";
@@ -361,7 +361,7 @@ then # Else If: plan9 make file
    cleanStr="$cleanStr\n\trm \$(objFiles)";
 
    linkStr="all: $mainFileStr.\$O";
-   linkStr="$linkStr\n\t\$LD "$dashOStr"\$NAME \$CFLAGS";
+   linkStr="$linkStr\n\t\$LD "$dashOStr"\$NAME";
    linkStr="$linkStr \$objFiles";
 
    slashSC="/";
@@ -879,13 +879,13 @@ lenSamToAlnDep=$((1 + lenAlnSetDep + lenSamEntryDep + lenSeqSTDep));
 #   - mapRead
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-mapReadStr=""$genAlnStr"mapRead.\$O: "$genAlnStr"mapRead.c "$genAlnStr"mapRead.h "$genAlnStr"needle.\$O "$genAlnStr"water.\$O "$genAlnStr"dirMatrix.\$O "$genBioStr"kmerFun.\$O "$genAlnStr"defsMapRead.h  "$genLibStr"genMath.h
+mapReadStr=""$genAlnStr"mapRead.\$O: "$genAlnStr"mapRead.c "$genAlnStr"mapRead.h "$genAlnStr"needle.\$O "$genAlnStr"dirMatrix.\$O "$genBioStr"kmerFun.\$O "$genAlnStr"defsMapRead.h  "$genLibStr"genMath.h
 	$ccStr "$dashOStr""$genAlnStr"mapRead.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genAlnStr"mapRead.c";
 
 
 mapReadObj=""$genAlnStr"mapRead.\$O";
-mapReadDep=("needle" ${needleDep[*]} "water" ${waterDep[*]} "dirMatrix" ${dirMatrixDep[*]} "samEntry" ${samEntryDep[*]} "seqST" ${seqSTDep[*]} "kmerFun" ${kmerFunDep[*]});
-lenMapReadDep=$((1 + lenNeedleDep + lenWaterDep + lenDirMatrixDep + lenSamEntryDep + lenSeqSTDep + lenKmerFunDep));
+mapReadDep=("needle" ${needleDep[*]} "dirMatrix" ${dirMatrixDep[*]} "samEntry" ${samEntryDep[*]} "seqST" ${seqSTDep[*]} "kmerFun" ${kmerFunDep[*]});
+lenMapReadDep=$((1 + lenNeedleDep + lenDirMatrixDep + lenSamEntryDep + lenSeqSTDep + lenKmerFunDep));
 
 #*********************************************************
 # Sec03 Sub05:

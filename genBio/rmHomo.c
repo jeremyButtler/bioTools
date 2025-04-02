@@ -182,7 +182,7 @@ indel_rmHomo(
       qBl = 1;
    else if(
          samSTPtr->qStr[0] == '*'
-      && samSTPtr->qStr[0] == '\0'
+      && samSTPtr->qStr[1] == '\0'
    ) ; /*no q-score entry*/
 
    else

@@ -1754,11 +1754,16 @@ pIds_k2TaxaId(
             *tmpStr != '\r'
          && *tmpStr != '\n'
       ){ /*Loop: move past line*/
-         fgets(
-            (char *) buffStr,
-            def_sizeBuff_fun12,
-            (FILE *) inFILE
-          );
+         tmpStr =
+            (signed char *)
+            fgets(
+               (char *) buffStr,
+               def_sizeBuff_fun12,
+               (FILE *) inFILE
+             );
+
+          if(! tmpStr)
+             goto done_fun12_sec04;
 
           tmpStr = buffStr;
           tmpStr += endStr_ulCp(tmpStr);
@@ -1772,8 +1777,9 @@ pIds_k2TaxaId(
    ^   - return and clean up
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   errSC = 0;
-   goto cleanUp_fun12_sec04;
+   done_fun12_sec04:;
+      errSC = 0;
+      goto cleanUp_fun12_sec04;
 
    fileErr_fun12_sec04:;
       errSC = def_fileErr_k2TaxaId;

@@ -20,7 +20,7 @@ objFiles= \
    mainAmpDepth.$O
 
 all: mainAmpDepth.$O
-	$LD -o $NAME $CFLAGS $objFiles
+	$LD -o $NAME $objFiles
 
 mainAmpDepth.$O: mainAmpDepth.c $genBio/ampDepth.$O $genBio/trimSam.$O ampDepthDefs.h ampDepthDefs.h ampDepthDefs.h
 	$CC -o mainAmpDepth.$O  $coreCFLAGS $CFLAGS mainAmpDepth.c

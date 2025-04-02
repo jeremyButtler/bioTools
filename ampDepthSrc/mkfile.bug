@@ -1,5 +1,4 @@
 LD=cc
-CC=cc
 coreCFLAGS= -O0 -std=c89 -Wall -Wextra -Werror -ggdb -g
 CFLAGS=-DNONE
 NAME=ampDepth
@@ -22,7 +21,7 @@ objFiles= \
    mainAmpDepth.$O
 
 all: mainAmpDepth.$O
-	$(LD) -o $(NAME) $(CFLAGS) $(objFiles)
+	$(LD) -o $(NAME) $(objFiles)
 
 mainAmpDepth.$O: mainAmpDepth.c $(genBio)/ampDepth.$O $(genBio)/trimSam.$O ampDepthDefs.h ampDepthDefs.h ampDepthDefs.h
 	$(CC) -o mainAmpDepth.$O -c $(coreCFLAGS) $(CFLAGS) mainAmpDepth.c

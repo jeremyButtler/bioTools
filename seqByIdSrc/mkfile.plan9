@@ -3,7 +3,7 @@
 CFLAGS= -DPLAN9
 NAME=seqById
 genLib=../genLib
-PREFIX=
+PREFIX=$home/bin
 
 objFiles=\
    $genLib/ulCp.$O \

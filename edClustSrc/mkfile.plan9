@@ -23,7 +23,7 @@ objFiles= \
    mainEdClust.$O
 
 all: mainEdClust.$O
-	$LD -o $NAME $CFLAGS $objFiles
+	$LD -o $NAME $objFiles
 
 mainEdClust.$O: mainEdClust.c $genClust/edClust.$O $genLib/charCp.$O ../bioTools.h ../bioTools.h ../bioTools.h
 	$CC -o mainEdClust.$O  $coreCFLAGS $CFLAGS mainEdClust.c

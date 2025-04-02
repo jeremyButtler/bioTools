@@ -22,7 +22,7 @@ objFiles= \
    mainPrimFind.$O
 
 all: mainPrimFind.$O
-	$LD -o $NAME $CFLAGS $objFiles
+	$LD -o $NAME $objFiles
 
 mainPrimFind.$O: mainPrimFind.c $genAln/kmerFind.$O $genBio/kmerCnt.$O $genLib/charCp.$O ../bioTools.h ../bioTools.h ../bioTools.h
 	$CC -o mainPrimFind.$O  $coreCFLAGS $CFLAGS mainPrimFind.c

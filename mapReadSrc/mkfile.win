@@ -1,7 +1,7 @@
 LD=link.exe
 coreCFLAGS= /c /O2 /Ot /Za /Tc
 CFLAGS=/DNONE
-NAME=alnWater.exe
+NAME=mapRead.exe
 PREFIX=%localAppData%
 O=o.win
 
@@ -10,7 +10,8 @@ genLib=..\genLib
 genBio=..\genBio
 
 objFiles= \
-   $(genAln)\water.$O \
+   $(genAln)\mapRead.$O \
+   $(genAln)\needle.$O \
    $(genAln)\dirMatrix.$O \
    $(genAln)\alnSet.$O \
    $(genLib)\base10str.$O \
@@ -21,17 +22,21 @@ objFiles= \
    $(genLib)\numToStr.$O \
    $(genBio)\seqST.$O \
    $(genLib)\charCp.$O \
-   $(genBio)\kmerCnt.$O \
-   mainWater.$O
+   $(genBio)\kmerFun.$O \
+   $(genLib)\ptrAry.$O \
+   mainMapRead.$O
 
-all: mainWater.$O
+all: mainMapRead.$O
 	$(LD) /out:$(NAME) $(objFiles)
 
-mainWater.$O: mainWater.c $(genAln)\water.$O $(genBio)\kmerCnt.$O ../bioTools.h ../bioTools.h
-	$(CC) /Fo:mainWater.$O  $(coreCFLAGS) $(CFLAGS) mainWater.c
+mainMapRead.$O: mainMapRead.c $(genAln)\mapRead.$O $(genLib)\ptrAry.$O ../bioTools.h ../bioTools.h ../bioTools.h ../bioTools.h
+	$(CC) /Fo:mainMapRead.$O  $(coreCFLAGS) $(CFLAGS) mainMapRead.c
 
-$(genAln)\water.$O: $(genAln)\water.c $(genAln)\dirMatrix.$O $(genLib)\genMath.h
-	$(CC) /Fo:$(genAln)\water.$O  $(coreCFLAGS) $(CFLAGS) $(genAln)\water.c
+$(genAln)\mapRead.$O: $(genAln)\mapRead.c $(genAln)\mapRead.h $(genAln)\needle.$O $(genAln)\dirMatrix.$O $(genBio)\kmerFun.$O $(genAln)\defsMapRead.h  $(genLib)\genMath.h
+	$(CC) /Fo:$(genAln)\mapRead.$O  $(coreCFLAGS) $(CFLAGS) $(genAln)\mapRead.c
+
+$(genAln)\needle.$O: $(genAln)\needle.c $(genAln)\dirMatrix.$O $(genLib)\genMath.h
+	$(CC) /Fo:$(genAln)\needle.$O  $(coreCFLAGS) $(CFLAGS) $(genAln)\needle.c
 
 $(genAln)\dirMatrix.$O: $(genAln)\dirMatrix.c $(genAln)\alnSet.$O $(genAln)\indexToCoord.$O $(genBio)\samEntry.$O $(genBio)\seqST.$O $(genLib)\charCp.$O
 	$(CC) /Fo:$(genAln)\dirMatrix.$O  $(coreCFLAGS) $(CFLAGS) $(genAln)\dirMatrix.c
@@ -63,8 +68,11 @@ $(genBio)\seqST.$O: $(genBio)\seqST.c $(genBio)\seqST.h $(genLib)\ulCp.$O
 $(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
 	$(CC) /Fo:$(genLib)\charCp.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\charCp.c
 
-$(genBio)\kmerCnt.$O: $(genBio)\kmerCnt.c $(genBio)\kmerCnt.h $(genBio)\seqST.$O $(genBio)\ntTo2Bit.h $(genLib)\genMath.h
-	$(CC) /Fo:$(genBio)\kmerCnt.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\kmerCnt.c
+$(genBio)\kmerFun.$O: $(genBio)\kmerFun.c $(genBio)\kmerFun.h $(genBio)\kmerBit.h
+	$(CC) /Fo:$(genBio)\kmerFun.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\kmerFun.c
+
+$(genLib)\ptrAry.$O: $(genLib)\ptrAry.c $(genLib)\ptrAry.h $(genLib)\ulCp.$O
+	$(CC) /Fo:$(genLib)\ptrAry.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\ptrAry.c
 
 install:
 	move $(NAME) $(PREFIX)

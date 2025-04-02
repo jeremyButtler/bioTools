@@ -19,7 +19,7 @@ objFiles= \
    mainAdjCoords.$O
 
 all: mainAdjCoords.$O
-	$LD -o $NAME $CFLAGS $objFiles
+	$LD -o $NAME $objFiles
 
 mainAdjCoords.$O: mainAdjCoords.c $genBio/adjCoords.$O ../bioTools.h ../bioTools.h
 	$CC -o mainAdjCoords.$O  $coreCFLAGS $CFLAGS mainAdjCoords.c

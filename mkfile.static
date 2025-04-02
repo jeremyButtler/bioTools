@@ -1,0 +1,61 @@
+CC=cc
+LD=cc
+MAKE=make
+
+CFLAGS=-DNONE
+PREFIX=/usr/local/bin
+O=o.static
+
+cmdStr= \
+   PREFIX=$(PREFIX) \
+   CC=$(CC) \
+   LD=$(LD) \
+   CFLAGS=$(CFLAGS) \
+   O=$(O)
+
+all:
+	$(MAKE) $(cmdStr) -f mkfile.static -C adjCoordsSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C alnNeedleSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C alnWaterSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C ampDepthSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C cigToEqxSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C edClustSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C edDistSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C filtsamSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C illNanoSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C k2TaxaIdSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C mapReadSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C maskPrimSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C memwaterSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C primFindSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C rmHomoSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C samToAlnSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C seqByIdSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C tbConSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C tranSeqSrc
+	$(MAKE) $(cmdStr) -f mkfile.static -C trimSamSrc
+
+install:
+	$(MAKE) $(cmdStr) -f mkfile.static -C adjCoordsSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C alnNeedleSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C alnWaterSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C ampDepthSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C cigToEqxSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C edClustSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C edDistSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C filtsamSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C illNanoSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C k2TaxaIdSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C mapReadSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C maskPrimSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C memwaterSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C primFindSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C rmHomoSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C samToAlnSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C seqByIdSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C tbConSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C tranSeqSrc install
+	$(MAKE) $(cmdStr) -f mkfile.static -C trimSamSrc install
+
+clean:
+	rm */*.$O;
