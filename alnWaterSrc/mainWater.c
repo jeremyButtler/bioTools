@@ -611,7 +611,7 @@ input_mainWater(
          { /*If: non-numeric*/
             fprintf(
                stderr,
-               "-gap %s is non-numeric\%s",
+               "-gap %s is non-numeric%s",
                argAryStr[siArg],
                str_endLine
             );

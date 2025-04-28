@@ -14,35 +14,37 @@
 '     - reads a fastq sequence from a fastq file
 '   o fun03 getFaSeq_seqST:
 '     - grabs the next read in the fasta file
-'   o fun04 revComp_seqST:
+'   o fun04: get_seqST
+'     - gets a sequence from a fastx/fastx.gz file
+'   o fun05 revComp_seqST:
 '     - reverse complement a sequence
-'   o fun05 blank_seqST:
+'   o fun06 blank_seqST:
 '     - sets values in seqST to zero
-'   o fun06 init_seqST:
+'   o fun07 init_seqST:
 '     - sets values in seqST to blank values
-'   o fun07 freeStack_seqST:
+'   o fun08 freeStack_seqST:
 '     - frees variables in an seqST (calls blank_seqST)
-'   o fun08 freeHeap_seqST:
+'   o fun09 freeHeap_seqST:
 '     - frees an seqST strucuter (calls fredSeqSTStack)
-'   o fun09: freeHeapAry_seqST
+'   o fun10: freeHeapAry_seqST
 '     - frees an array of seqST's
-'   o fun10 cpIdEndPad_seqST:
+'   o fun11 cpIdEndPad_seqST:
 '      - copies read id to a buffer and adds in endIdC to
 '        the end. If needed, this function will add right
 '        padding of spaces to the end.
-'   o fun11: cp_seqST
+'   o fun12: cp_seqST
 '     - copies an seqST structure
-'   o fun12: swap_seqST
+'   o fun13: swap_seqST
 '     - swaps values in two seqST structs
-'   o fun13: sort_seqST
+'   o fun14: sort_seqST
 '     - sorts an array of seqST structs
-'   o fun14: search_seqST
+'   o fun15: search_seqST
 '     - searchs for sequence in seqST struct array
-'   o fun15: mkAry_seqST
+'   o fun16: mkAry_seqST
 '     - makes a seqST struct array
-'   o fun16: realloc_seqST
+'   o fun17: realloc_seqST
 '     - add more memory to a seqST struct array
-'   o fun17: readFaFile_seqST
+'   o fun18: readFaFile_seqST
 '     - get all sequences from a fasta file
 '   o license:
 '     - licensing for this code (public domain / mit)
@@ -61,10 +63,17 @@
 #define def_badLine_seqST 16 /*invald fastx entry*/
 #define def_memErr_seqST 4
 
-/*--------------------------------------------------------\
+#define def_noType_seqST 0
+#define def_faType_seqST 1
+#define def_fqType_seqST 2
+#define def_gzType_seqST 4
+
+struct file_inflate;
+
+/*-------------------------------------------------------\
 | ST01: seqST
 |  - holds an single sequence (fasta/fastq)
-\--------------------------------------------------------*/
+\-------------------------------------------------------*/
 typedef struct seqST
 {
   signed char *idStr;         /*sequence id*/
@@ -142,7 +151,52 @@ getFaSeq_seqST(
 );
 
 /*-------------------------------------------------------\
-| Fun04: revComp_seqST
+| Fun04: get_seqST
+|   - gets a sequence from a fastx/fastx.gz file
+| Input:
+|   - fileSTPtr:
+|     o file_inflate struct to use in uncompression
+|   - typeSCPtr:
+|     o is set to or has the correct file type
+|   - seqSTPtr:
+|     o seqST struct pointer to add new sequence to
+|   - inFILE:
+|     o FILE pointer to file to add (new file)
+|     o 0 if already called get_seqST for this file
+|     o you should set inFILE to 0/null after calling,
+|       because freeStack_file_inflate 
+|       freeHeap_file_inflate will close inFILE for you
+| Output:
+|   - Modifies:
+|     o if have inFILE, sets fileSTPtr be blanked and then
+|       have inFILE
+|     o if have inFILE, typeSCPtr to have file type 
+|       o def_noType_seqST if end of file
+|       o def_faType_seqST if fasta file
+|       o def_faType_seqST | def_gzType_seqST if fasta.gz
+|       o def_fqType_seqST if fastq file
+|       o def_fqType_seqST | def_gzType_seqST if fasta.gz
+|     o fileSTPtr to be on next read/sequence
+|     o seqSTPtr to have next read/sequence
+|   - Returns:
+|     o 0 for no errors
+|     o def_EOF_seqST if at end of file
+|     o def_memErr_seqST for memory errors
+|     o def_badLine_seqST | def_fileErr_seqST for invalid
+|       file entries
+|     o def_fileErr_seqST for file errors (including gzip
+|       checks)
+\-------------------------------------------------------*/
+signed char
+get_seqST(
+   struct file_inflate *fileSTPtr, /*has file to extract*/
+   signed char *typeSCPtr,         /*gets/has file type*/
+   struct seqST *seqSTPtr,         /*gets sequence*/
+   void *inFILE
+);
+
+/*-------------------------------------------------------\
+| Fun05: revComp_seqST
 |  - reverse complement a sequence
 | Input:
 |  - seqST:
@@ -160,7 +214,7 @@ revComp_seqST(
 
 
 /*-------------------------------------------------------\
-| Fun05: blank_seqST
+| Fun06: blank_seqST
 |  - sets values in seqST to blank values
 | Input:
 |  - seqSTPtr:
@@ -177,7 +231,7 @@ blank_seqST(
 );
 
 /*-------------------------------------------------------\
-| Fun06: init_seqST
+| Fun07: init_seqST
 |  - sets vlues in seqST to zero
 | Input:
 |  - seqSTPtr:
@@ -192,7 +246,7 @@ init_seqST(
 );
 
 /*-------------------------------------------------------\
-| Fun07: freeStack_seqST
+| Fun08: freeStack_seqST
 |  - frees the variables in an seqST strucuter
 | Input:
 |  - seqSTPtr:
@@ -210,7 +264,7 @@ freeStack_seqST(
 );
 
 /*-------------------------------------------------------\
-| Fun08: freeHeap_seqST
+| Fun09: freeHeap_seqST
 |  - frees the seqST strucuter
 | Input:
 |  - seqSTPtr:
@@ -225,7 +279,7 @@ freeHeap_seqST(
 );
 
 /*-------------------------------------------------------\
-| Fun09: freeHeapAry_seqST
+| Fun10: freeHeapAry_seqST
 |  - frees an array of seqST's
 | Input:
 |  - seqAryST:
@@ -244,7 +298,7 @@ freeHeapAry_seqST(
 );
 
 /*-------------------------------------------------------\
-| Fun10: cpIdEndPad_seqST
+| Fun11: cpIdEndPad_seqST
 |  - copies read id to a buffer and adds in endIdC to
 |    the end. If needed, this function will add right
 |    padding of spaces to the end.
@@ -277,7 +331,7 @@ cpIdEndPad_seqST(
 );
 
 /*-------------------------------------------------------\
-| Fun11: cp_seqST
+| Fun12: cp_seqST
 |   - Copies an seqST structure
 | Input:
 |   - dupSeqST:
@@ -298,7 +352,7 @@ cp_seqST(
 );
 
 /*-------------------------------------------------------\
-| Fun12: swap_seqST
+| Fun13: swap_seqST
 |   - swaps values in two seqST structs
 | Input:
 |   - firstSTPtr:
@@ -317,7 +371,7 @@ swap_seqST(
 );
 
 /*-------------------------------------------------------\
-| Fun13: sort_seqST
+| Fun14: sort_seqST
 |   - sorts an array of seqST structs
 | Input:
 |   - arySTPtr:
@@ -335,7 +389,7 @@ sort_seqST(
 );
 
 /*-------------------------------------------------------\
-| Fun14: search_seqST
+| Fun15: search_seqST
 |  - searchs for sequence in seqST struct array
 | Input:
 |  - seqArySTPtr:
@@ -357,7 +411,7 @@ search_seqST(
 );
 
 /*-------------------------------------------------------\
-| Fun15: mkAry_seqST
+| Fun16: mkAry_seqST
 |  - makes a seqST struct array
 | Input:
 |  - sizeSL:
@@ -373,7 +427,7 @@ mkAry_seqST(
 );
 
 /*-------------------------------------------------------\
-| Fun16: realloc_seqST
+| Fun17: realloc_seqST
 |  - add more memory to a seqST struct array
 | Input:
 |  - seqArySTPtr:
@@ -396,7 +450,7 @@ realloc_seqST(
 );
 
 /*-------------------------------------------------------\
-| Fun17: readFaFile_seqST
+| Fun18: readFaFile_seqST
 |   - get all sequences from a fasta file
 | Input:
 |   - faFILE:
@@ -432,3 +486,74 @@ readFaFile_seqST(
 );
 
 #endif
+
+/*=======================================================\
+: License:
+: 
+: This code is under the unlicense (public domain).
+:   However, for cases were the public domain is not
+:   suitable, such as countries that do not respect the
+:   public domain or were working with the public domain
+:   is inconvient / not possible, this code is under the
+:   MIT license.
+: 
+: Public domain:
+: 
+: This is free and unencumbered software released into the
+:   public domain.
+: 
+: Anyone is free to copy, modify, publish, use, compile,
+:   sell, or distribute this software, either in source
+:   code form or as a compiled binary, for any purpose,
+:   commercial or non-commercial, and by any means.
+: 
+: In jurisdictions that recognize copyright laws, the
+:   author or authors of this software dedicate any and
+:   all copyright interest in the software to the public
+:   domain. We make this dedication for the benefit of the
+:   public at large and to the detriment of our heirs and
+:   successors. We intend this dedication to be an overt
+:   act of relinquishment in perpetuity of all present and
+:   future rights to this software under copyright law.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICSLAR PURPOSE AND NONINFRINGEMENT.  IN NO
+:   EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM,
+:   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+:   CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+:   IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+:   DEALINGS IN THE SOFTWARE.
+: 
+: For more information, please refer to
+:   <https://unlicense.org>
+: 
+: MIT License:
+: 
+: Copyright (c) 2024 jeremyButtler
+: 
+: Permission is hereby granted, free of charge, to any
+:   person obtaining a copy of this software and
+:   associated documentation files (the "Software"), to
+:   deal in the Software without restriction, including
+:   without limitation the rights to use, copy, modify,
+:   merge, publish, distribute, sublicense, and/or sell
+:   copies of the Software, and to permit persons to whom
+:   the Software is furnished to do so, subject to the
+:   following conditions:
+: 
+: The above copyright notice and this permission notice
+:   shall be included in all copies or substantial
+:   portions of the Software.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICSLAR PURPOSE AND NONINFRINGEMENT. IN NO
+:   EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+:   FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+:   AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+:   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+:   USE OR OTHER DEALINGS IN THE SOFTWARE.
+\=======================================================*/

@@ -1,6 +1,6 @@
 LD=cc
 CC=cc
-coreCFLAGS= -O0 -Wall -Wextra -static -Werror -ggdb -g
+coreCFLAGS= -O0 -g -Wall -Wextra -Werror -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wcast-align -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
 CFLAGS=-DNONE
 NAME=seqById
 PREFIX=/usr/local/bin

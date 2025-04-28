@@ -1,0 +1,37 @@
+#b unGz.c:237
+#b inflate.c:1027 if fileSTPtr->posSL >= 117070
+b inflate.c:2198 if fileSTPtr->posSL == 215604
+
+r del.fa.gz > del.fa
+
+define phex
+   set $byte = $arg0
+
+   printf "hex:"
+
+   while($byte < $arg1)
+      printf " %x", fileSTPtr->zipAryUC[$byte]
+      set $byte = $byte + 1
+   end
+
+   printf "\n"
+end
+
+define poffbuff
+   set $index = 0
+   while($index < fileSTPtr->buffSizeUS)
+      if(fileSTPtr->buffStr[$index] < 9)
+         printf "%i\t%i\n", $index, fileSTPtr->buffStr[$index]
+      end
+
+      if(fileSTPtr->buffStr[$index] > 10 && fileSTPtr->buffStr[$index] < 32)
+         printf "%i\t%i\n", $index, fileSTPtr->buffStr[$index]
+      end
+
+      if(fileSTPtr->buffStr[$index] > 126)
+         printf "%i\t%i\n", $index, fileSTPtr->buffStr[$index]
+      end
+
+      set $index = $index + 1
+   end
+end

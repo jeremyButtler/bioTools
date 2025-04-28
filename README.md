@@ -21,6 +21,23 @@ Primary is unlicense (public domain), but if publice
 
 # Installing
 
+## Linux:
+
+For X86 64 bit (amd/intel CPUs) Linux I have compiled
+  static binaries with the musel libarary
+  in `bin/x86_64_Linux`. Thanks to musl, these will be a
+  bit smaller then what you can make.
+
+Any binary ending in `AVX512`, `AVX2`, or `SSE` are
+  SIMD versions of the program (currently only seqById).
+  These will be faster then the regular version. However, 
+  your CPU needs to support them. The fastest is `AVX512`,
+  but that is the least likely to have any support. The
+  next is `AVX2`, which your computer will likely support.
+  If all else fails, then `SSE` will very likely work. If
+  that fails, then the regular version should work or you
+  are not using an `x86` 64 bit cpu.
+
 ## Unix (Mac/Linux/BSD):
 
 You can build and install the entire repository using
@@ -39,8 +56,12 @@ cd ~/Downloads;
 git clone https://github.com/jeremybuttler/bioTools;
 
 cd bioTools;
-make -f mkfile.unix;
-sudo make -f mkfile.unix install;
+
+for strMk in */mkfile.unix;
+do
+   make -f $(basename "$strMk") -C $(dirname "$strMk");
+   sudo make -f $(basename "$strMk") -C $(dirname "$strMk") install;
+done
 ```
 
 For individual programs:
@@ -63,7 +84,8 @@ sudo make -f mkfile.unix install;
 
 ## Windows
 
-Need to test global makefile first.
+Need to test global makefile first or figure out shell
+  commands. You will have to install these individually.
 
 # Scripts
 
@@ -111,13 +133,6 @@ The programs are built and debugged on Linux and then
 # List of tools
 
 - re-inventing the wheel:
-  - filtsam (freezeTB):
-    - filter sam files by flag, length, median/mean
-      q-scores, and coordinates
-      - for coordiantes use `-coords start,end -in-range`
-    - also supports read soft mask removal
-    - samtools view nock off, with an odd twist
-    - works on linux and plan9
   - alnNeedle (find-co--infections/alnSeq/fluDI):
     - needleman alignment with gap extension penalties
     - works on linux and plan9
@@ -126,6 +141,22 @@ The programs are built and debugged on Linux and then
     - slower than striped watermans
     - Watermans are a dime a dozen
     - works on linux and plan9
+  - filtsam (freezeTB):
+    - filter sam files by flag, length, median/mean
+      q-scores, and coordinates
+      - for coordiantes use `-coords start,end -in-range`
+    - also supports read soft mask removal
+    - samtools view nock off, with an odd twist
+    - works on linux and plan9
+  - k2TaxaId (just wanted it):
+    - split up kraken reads by taxa id using the kraken
+      report
+    - found out their is a similar tool to extract
+      sequences instead of read ids (probably better) at
+      [https://github.com/jenniferlu717/KrakenTools](
+       https://github.com/jenniferlu717/KrakenTools
+     )
+    - works on linux complies on plan9
   - mapReads (freezeTB and maybe fluDI):
     - read mapper, slower than minimap2
     - main reason is I wanted a read mapper for freezeTB
@@ -141,6 +172,9 @@ The programs are built and debugged on Linux and then
     - find primers in sequence(s)
     - emboss primer finder program nock off (forgot name)
     - works on linux and plan9
+  - revCmp (annoateASFV)
+    - reverse complements sequences in fasta file
+    - emboss nock off and who knows what else
   - seqById (fqGetIds/find-co--infections):
     - extract sequences by read id from fastq files and
       sam files
@@ -156,19 +190,15 @@ The programs are built and debugged on Linux and then
     - positions of low confidence are replaced with a 'N',
       (no other anoymous bases are used)
     - works on linux and plan9
-  - k2TaxaId (just wanted it):
-    - split up kraken reads by taxa id using the kraken
-      report
-    - found out their is a similar tool to extract
-      sequences instead of read ids (probably better) at
-      [https://github.com/jenniferlu717/KrakenTools](
-       https://github.com/jenniferlu717/KrakenTools
-     )
-    - works on linux complies on plan9
   - tranSeq (converted from asfv annotation)
     - translate fasta sequences to amino acids
     - emboss program knock of (think similar name) also,
       many of these exist already, 
+  - unGz (freezeTB; for mapReads)
+    - unzip .gz files (not .tar.gz), use gunzip -c instead
+    - this is slower than gunzip, but is here to support
+      mapRead
+    - tested on linux only
 - niche or odd programs
   - adjCoords (freezeTB):
     - adjust mapping coordinates from genes to entire
@@ -233,6 +263,19 @@ My general libraries.
 
 # Updates:
 
+- 2025-04-28
+  - added gz file support to mapRead and removed the `-fq`
+    option
+  - added `get_seqST` function to ../genBio/seqST.c for
+    reading in fastx and fastx.gz files
+  - removed global make files (not intended, but happened)
+- 2025-04-24
+  - changed ampDepth to print only hit genes in tables
+    instead of first gene to last gene
+  - added revCmp
+  - added unGz
+  - added in better line break support (maybe)
+  - mkFileScripts are now sh complinent
 - 2025-04-01
   - fixed error were samEntry would remove some bases from
     the end of a sequence when resizing the buffer during

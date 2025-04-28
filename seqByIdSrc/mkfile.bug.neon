@@ -1,6 +1,6 @@
 LD=cc
 CC=cc
-CFLAGS= -DNEON -flax-vector-conversions -O0 -Wall -Wextra -static -Werror -ggdb -g
+CFLAGS= -DNEON -flax-vector-conversions -O0 -g -Wall -Wextra -Werror -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wcast-align -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
 NAME=seqById
 PREFIX=/usr/local/bin
 genLib=../genLib

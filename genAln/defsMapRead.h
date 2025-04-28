@@ -25,30 +25,30 @@
 /*kmer scan defaults*/
 #define def_minLen_defsMapRead 0
 #define def_secLen_defsMapRead 100
-#define def_thirdLen_defsMapRead 10000
+#define def_thirdLen_defsMapRead 1000
 
 #define def_minKmer_defsMapRead 5
 #define def_secKmer_defsMapRead 10
-#define def_thirdKmer_defsMapRead 15
+#define def_thirdKmer_defsMapRead 13
 
 #define def_minChain_defsMapRead 1
 #define def_secChain_defsMapRead 1
-#define def_thirdChain_defsMapRead 3
+#define def_thirdChain_defsMapRead 1
 
 
 /* What these defaults mean:
 ` - my logic is keep is small for small references, then
 `   expand it large for larger references
-` - min: < 100
+` - one: reference is < 100 bases
 `   - 5mers; kmer space is 1024
 `   - chains are one kmer long
-` - two: 100 to 399:
+` - two: reference is between 100 to 1000 bases
 `   - 10mers, which should reduce matches, but might still
 `     hit regions with high matches
 `   - chains are at least 1 kmer (10 bases) long
-` - third: > 399
-`   - 15mers
-`   - chains are at least 1 kmer (15 bases) long
+` - third: reference is over 1000 bases
+`   - 13mers (bit slower, but probably better job)
+`   - chains are at least 1 kmer (13 bases) long
 */
 
 /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\

@@ -423,7 +423,7 @@ freeHeap_tblST_kmerFind(
    struct tblST_kmerFind *tblSTPtr
 ){
    if(! tblSTPtr)
-      return
+      return;
 
    freeStack_tblST_kmerFind(tblSTPtr);
    free(tblSTPtr);
@@ -1114,7 +1114,7 @@ addSeqToRefST_kmerFind(
       { /*If: no anymous bases or errors*/
          ++lenRevKmerUL;
 
-         if(lenForKmerUL < refSTPtr->lenKmerUC)
+         if(lenRevKmerUL < refSTPtr->lenKmerUC)
             ;
          else
          { /*Else: have a complete kmer*/

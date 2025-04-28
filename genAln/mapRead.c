@@ -105,6 +105,7 @@
 
 #include "../genLib/numToStr.h"
 #include "../genLib/ulCp.h"
+#include "../genLib/shellSort.h"
 
 #include "../genBio/kmerFun.h"
 #include "../genBio/seqST.h"
@@ -961,6 +962,7 @@ addRef_ref_mapRead(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    signed int siKmer = 0;
+   signed int siPos = 0;
 
    if(! refSTPtr)
       goto noStruct_fun17_sec06;
@@ -1040,19 +1042,44 @@ addRef_ref_mapRead(
       refSTPtr->sizeIndexSI = refSTPtr->lenSI;
    } /*If: need more memory*/
 
+   for(
+      siPos = 0;
+      siPos < (signed int) seqSTPtr->lenSeqUL;
+      ++siPos
+   ) refSTPtr->indexArySI[siPos] = siPos;
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun17 Sec05:
    ^   - copy kmers into sorted array and sort kmers
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   sortKmerIndex_mapRead(
+   /*this older method is much slower, due to accessing
+   ` index's every time
+   */
+   /*sortKmerIndex_mapRead(
       refSTPtr->kmerArySI,
       refSTPtr->indexArySI,
       refSTPtr->lenSI
-   ); /*makes indexArySI into creates an index array that is
+   );*/ /*makes indexArySI into an index array that is
       `  sorted by kmer (uses kmerArySI as a guide [does
       `  nothing to it])
       */
+
+   uiTwinSort_shellSort(
+      (unsigned int *) refSTPtr->kmerArySI,
+      (unsigned int *) refSTPtr->indexArySI,
+      0,
+      refSTPtr->lenSI
+   ); /*using unsigned int to force -1's to end of array*/
+
+   refSTPtr->lenSI =
+      seqToKmer_kmerFun(
+         seqSTPtr->seqStr,
+         (signed int) seqSTPtr->lenSeqUL,
+         &refSTPtr->kmerArySI,
+         &refSTPtr->sizeKmerSI,
+         refSTPtr->lenKmerUC
+      );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun17 Sec06:
@@ -2076,6 +2103,7 @@ setup_aln_mapRead(
 \-------------------------------------------------------*/
 struct aln_mapRead *
 mk_aln_mapRead(
+   void
 ){
    struct aln_mapRead *retSTPtr = 0;
 
@@ -3964,9 +3992,9 @@ mergeToSam_mapRead(
 
 
       /*check if both sequences have softmasking*/
-      if(refEndSI - refStartSI <= 0)
+      if(refEndSI <= refStartSI)
          goto skipStartMask_fun34_sec04_sub02;
-      else if (qryEndSI - qryStartSI <= 0)
+      else if (qryEndSI <= qryStartSI)
          goto skipStartMask_fun34_sec04_sub02;
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -3994,7 +4022,7 @@ mergeToSam_mapRead(
             /*ref length + 25% query length (for indels)*/
 
          if(bestScoreSL < qryLastEndSI)
-            qryStartSI = qryEndSI + bestScoreSL;
+            qryStartSI = qryEndSI - bestScoreSL;
             /*ref is much shorter than query*/
       } /*Else: need to check if query is longer*/
 
@@ -4291,11 +4319,11 @@ mergeToSam_mapRead(
       if(qryEndSI >= (signed int) qrySTPtr->lenSeqUL)
          qryEndSI = (signed int) qrySTPtr->lenSeqUL - 1;
 
-      if(
-            refEndSI == refStartSI
-         || qryEndSI == refStartSI
-      ) goto skipEndMask_fun34_sec05;
-        /*at least on position has no softmasking*/
+      /*check if have sequence to align*/
+      if(refEndSI <= refStartSI)
+        goto skipEndMask_fun34_sec05;
+      if(qryEndSI <= refStartSI)
+        goto skipEndMask_fun34_sec05;
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
       + Fun34 Sec04 Sub02 Cat02:

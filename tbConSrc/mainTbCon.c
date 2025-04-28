@@ -326,7 +326,7 @@ phelp_mainTbCon(
    
    fprintf(
       (FILE *) outFILE,
-      "    -min-q: [%i]\%s",
+      "    -min-q: [%i]%s",
       def_minNtQ_tbConDefs,
       str_endLine
    );

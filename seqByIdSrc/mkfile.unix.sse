@@ -1,6 +1,6 @@
 LD=cc
 CC=cc
-CFLAGS= -DSSE -O3 -std=c89 -Wall -Wextra
+CFLAGS= -msse2 -DSSE -O3 -std=c89 -Wall -Wextra
 NAME=seqById
 PREFIX=/usr/local/bin
 genLib=../genLib

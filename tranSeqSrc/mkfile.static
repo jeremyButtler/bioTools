@@ -1,5 +1,5 @@
 LD=cc
-coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra
+coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wcast-align -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
 CFLAGS=-DNONE
 NAME=tranSeq
 PREFIX=/usr/local/bin
@@ -10,28 +10,83 @@ genLib=../genLib
 
 objFiles= \
    $(genBio)/seqST.$O \
-   $(genLib)/ulCp.$O \
    $(genBio)/codonFun.$O \
    $(genLib)/base10str.$O \
+   $(genLib)/inflate.$O \
+   $(genLib)/checkSum.$O \
+   $(genLib)/endin.$O \
+   $(genLib)/genMath.$O \
+   $(genLib)/ulCp.$O \
    tranSeq.$O
 
-all: tranSeq.$O
+$(NAME): tranSeq.$O
 	$(LD) -o $(NAME) $(objFiles)
 
-tranSeq.$O: tranSeq.c $(genBio)/seqST.$O $(genBio)/codonFun.$O $(genLib)/base10str.$O ../bioTools.h ../bioTools.h
-	$(CC) -o tranSeq.$O -c $(coreCFLAGS) $(CFLAGS) tranSeq.c
+tranSeq.$O: \
+	tranSeq.c \
+	$(genBio)/seqST.$O \
+	$(genBio)/codonFun.$O \
+	$(genLib)/base10str.$O \
+	../bioTools.h \
+	../genLib/endLine.h
+		$(CC) -o tranSeq.$O -c \
+			$(coreCFLAGS) $(CFLAGS) tranSeq.c
 
-$(genBio)/seqST.$O: $(genBio)/seqST.c $(genBio)/seqST.h $(genLib)/ulCp.$O
-	$(CC) -o $(genBio)/seqST.$O -c $(coreCFLAGS) $(CFLAGS) $(genBio)/seqST.c
+$(genBio)/seqST.$O: \
+	$(genBio)/seqST.c $(genBio)/seqST.h \
+	$(genLib)/ulCp.$O $(genLib)/inflate.$O
+		$(CC) -o $(genBio)/seqST.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genBio)/seqST.c
 
-$(genLib)/ulCp.$O: $(genLib)/ulCp.c $(genLib)/ulCp.h
-	$(CC) -o $(genLib)/ulCp.$O -c $(coreCFLAGS) $(CFLAGS) $(genLib)/ulCp.c
+$(genBio)/codonFun.$O: \
+	$(genBio)/codonFun.c $(genBio)/codonFun.h \
+	$(genBio)/codonTbl.h $(genBio)/ntTo2Bit.h \
+	$(genBio)/revNtTo2Bit.h
+		$(CC) -o $(genBio)/codonFun.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genBio)/codonFun.c
 
-$(genBio)/codonFun.$O: $(genBio)/codonFun.c $(genBio)/codonFun.h $(genBio)/codonTbl.h $(genBio)/ntTo2Bit.h $(genBio)/revNtTo2Bit.h $(genLib)/dataTypeShortHand.h
-	$(CC) -o $(genBio)/codonFun.$O -c $(coreCFLAGS) $(CFLAGS) $(genBio)/codonFun.c
+$(genLib)/base10str.$O: \
+	$(genLib)/base10str.c $(genLib)/base10str.h
+		$(CC) -o $(genLib)/base10str.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/base10str.c
 
-$(genLib)/base10str.$O: $(genLib)/base10str.c $(genLib)/base10str.h
-	$(CC) -o $(genLib)/base10str.$O -c $(coreCFLAGS) $(CFLAGS) $(genLib)/base10str.c
+
+$(genLib)/inflate.$O: \
+	$(genLib)/inflate.c $(genLib)/inflate.h \
+	$(genLib)/checkSum.$O $(genLib)/ulCp.$O \
+	$(genLib)/genMath.$O $(genLib)/endLine.h
+		$(CC) -o $(genLib)/inflate.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/inflate.c
+
+$(genLib)/checkSum.$O: \
+	$(genLib)/checkSum.c $(genLib)/checkSum.h \
+	$(genLib)/endin.$O
+	$(CC) -o $(genLib)/checkSum.$O \
+		-c $(coreCFLAGS) $(CFLAGS) \
+		$(genLib)/checkSum.c
+
+$(genLib)/endin.$O: \
+	$(genLib)/endin.c $(genLib)/endin.h
+		$(CC) -o $(genLib)/endin.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/endin.c
+
+$(genLib)/genMath.$O: \
+	$(genLib)/genMath.c $(genLib)/genMath.h
+		$(CC) -o $(genLib)/genMath.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/genMath.c
+
+$(genLib)/ulCp.$O: \
+	$(genLib)/ulCp.c $(genLib)/ulCp.h
+		$(CC) -o $(genLib)/ulCp.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/ulCp.c
+
 
 install:
 	mv $(NAME) $(PREFIX)

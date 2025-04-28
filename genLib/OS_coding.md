@@ -106,6 +106,12 @@ if(bufferStr[index] == '\r')
 
 # Build systems
 
+## CMake
+
+Sounds like this is what cmake was designed for. Maybe
+  the best bet for Unix (Linux/Mac/Bsd) and Windows. No
+  idea if can target plan9.
+
 ## Make
 
 I use a script to build my make files. That way when I
@@ -305,13 +311,10 @@ install:
    chmod a+x $PREFIX/$NAME; # no idea if needed
 ```
 
-## cmake
-
-Have not tried yet. Not on Plan9.
-
 ## my own make
 
-Hopping to get up one of these days.
+Hopping to get up one of these days. Likley cmake will
+  be better.
 
 # C89 differences
 
@@ -736,9 +739,16 @@ for(
 You will need a fallback for SIMD, since not all OS's
   support it. However, in some limited cases you can use
   longs to copy strings, for addition/subtraction, and
-  maybe some basic bitwise operations. Keep in mind, for
-  additon/subtraction, an overflow will mess you up. So,
-  make sure there is no chance of overflow.
+  maybe some basic bitwise (non-shift) operations. Keep in
+  mind, for additon/subtraction, an overflow will mess you
+  up. So, make sure there is no chance of overflow.
+
+Also, this trick only works on CPUs/OSs that can handle
+  odd byte alignments for ints/longs. So, you should
+  always have a byte fallback for those cases (I think
+  it is RISC OS?, I know modern ARM CPUs are not an
+  issue). I use the `-DNOUL` flag to enable byte copying
+  mode.
 
 See ulCp for long string coping.
 

@@ -1,6 +1,6 @@
 LD=cc
 CC=cc
-CFLAGS= -DAVX512 -mavx512bw -O3 -std=c89 -Wall -Wextra -static
+CFLAGS= -mavx512bw -DAVX512 -mavx512bw -O3 -std=c89 -Wall -Wextra -static
 NAME=seqById
 PREFIX=/usr/local/bin
 genLib=../genLib

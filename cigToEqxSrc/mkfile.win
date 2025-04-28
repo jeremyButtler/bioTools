@@ -10,44 +10,115 @@ genLib=..\genLib
 
 objFiles= \
    $(genBio)\cigToEqx.$O \
+   $(genBio)\seqST.$O \
+   $(genLib)\charCp.$O \
    $(genBio)\samEntry.$O \
    $(genLib)\strAry.$O \
    $(genLib)\ulCp.$O \
    $(genLib)\numToStr.$O \
    $(genLib)\base10str.$O \
-   $(genBio)\seqST.$O \
-   $(genLib)\charCp.$O \
+   $(genLib)\inflate.$O \
+   $(genLib)\checkSum.$O \
+   $(genLib)\endin.$O \
+   $(genLib)\genMath.$O \
    mainCigToEqx.$O
 
-all: mainCigToEqx.$O
+$(NAME): mainCigToEqx.$O
 	$(LD) /out:$(NAME) $(objFiles)
 
-mainCigToEqx.$O: mainCigToEqx.c $(genBio)\cigToEqx.$O $(genBio)\seqST.$O $(genLib)\charCp.$O ../bioTools.h ../bioTools.h
-	$(CC) /Fo:mainCigToEqx.$O  $(coreCFLAGS) $(CFLAGS) mainCigToEqx.c
+mainCigToEqx.$O: \
+	mainCigToEqx.c \
+	$(genBio)\cigToEqx.$O \
+	$(genBio)\seqST.$O \
+	$(genLib)\charCp.$O \
+	../bioTools.h \
+	../genLib/endLine.h
+		$(CC) /Fo:mainCigToEqx.$O  \
+			$(coreCFLAGS) $(CFLAGS) mainCigToEqx.c
 
-$(genBio)\cigToEqx.$O: $(genBio)\cigToEqx.c $(genBio)\cigToEqx.h $(genBio)\samEntry.$O
-	$(CC) /Fo:$(genBio)\cigToEqx.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\cigToEqx.c
+$(genBio)\cigToEqx.$O: \
+	$(genBio)\cigToEqx.c $(genBio)\cigToEqx.h \
+	$(genBio)\samEntry.$O
+		$(CC) /Fo:$(genBio)\cigToEqx.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genBio)\cigToEqx.c
 
-$(genBio)\samEntry.$O: $(genBio)\samEntry.c $(genBio)\samEntry.h $(genLib)\strAry.$O $(genLib)\base10str.$O $(genLib)\numToStr.$O $(genBio)\ntTo5Bit.h $(genLib)\endLine.h
-	$(CC) /Fo:$(genBio)\samEntry.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\samEntry.c
+$(genBio)\seqST.$O: \
+	$(genBio)\seqST.c $(genBio)\seqST.h \
+	$(genLib)\ulCp.$O $(genLib)\inflate.$O
+		$(CC) /Fo:$(genBio)\seqST.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genBio)\seqST.c
 
-$(genLib)\strAry.$O: $(genLib)\strAry.c $(genLib)\strAry.h $(genLib)\ulCp.$O
-	$(CC) /Fo:$(genLib)\strAry.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\strAry.c
+$(genLib)\charCp.$O: \
+	$(genLib)\charCp.c $(genLib)\charCp.h
+		$(CC) /Fo:$(genLib)\charCp.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\charCp.c
 
-$(genLib)\ulCp.$O: $(genLib)\ulCp.c $(genLib)\ulCp.h
-	$(CC) /Fo:$(genLib)\ulCp.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\ulCp.c
+$(genBio)\samEntry.$O: \
+	$(genBio)\samEntry.c $(genBio)\samEntry.h \
+	$(genLib)\strAry.$O $(genLib)\base10str.$O \
+	$(genLib)\numToStr.$O $(genBio)\ntTo5Bit.h \
+	$(genLib)\endLine.h
+		$(CC) /Fo:$(genBio)\samEntry.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genBio)\samEntry.c
 
-$(genLib)\numToStr.$O: $(genLib)\numToStr.c $(genLib)\numToStr.h
-	$(CC) /Fo:$(genLib)\numToStr.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\numToStr.c
+$(genLib)\strAry.$O: \
+	$(genLib)\strAry.c $(genLib)\strAry.h \
+	$(genLib)\ulCp.$O
+		$(CC) /Fo:$(genLib)\strAry.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\strAry.c
 
-$(genLib)\base10str.$O: $(genLib)\base10str.c $(genLib)\base10str.h
-	$(CC) /Fo:$(genLib)\base10str.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\base10str.c
+$(genLib)\ulCp.$O: \
+	$(genLib)\ulCp.c $(genLib)\ulCp.h
+		$(CC) /Fo:$(genLib)\ulCp.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\ulCp.c
 
-$(genBio)\seqST.$O: $(genBio)\seqST.c $(genBio)\seqST.h $(genLib)\ulCp.$O
-	$(CC) /Fo:$(genBio)\seqST.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\seqST.c
 
-$(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
-	$(CC) /Fo:$(genLib)\charCp.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\charCp.c
+$(genLib)\numToStr.$O: \
+	$(genLib)\numToStr.c $(genLib)\numToStr.h
+		$(CC) /Fo:$(genLib)\numToStr.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\numToStr.c
+
+
+$(genLib)\base10str.$O: \
+	$(genLib)\base10str.c $(genLib)\base10str.h
+		$(CC) /Fo:$(genLib)\base10str.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\base10str.c
+
+
+$(genLib)\inflate.$O: \
+	$(genLib)\inflate.c $(genLib)\inflate.h \
+	$(genLib)\checkSum.$O $(genLib)\ulCp.$O \
+	$(genLib)\genMath.$O $(genLib)\endLine.h
+		$(CC) /Fo:$(genLib)\inflate.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\inflate.c
+
+$(genLib)\checkSum.$O: \
+	$(genLib)\checkSum.c $(genLib)\checkSum.h \
+	$(genLib)\endin.$O
+	$(CC) /Fo:$(genLib)\checkSum.$O \
+		 $(coreCFLAGS) $(CFLAGS) \
+		$(genLib)\checkSum.c
+
+$(genLib)\endin.$O: \
+	$(genLib)\endin.c $(genLib)\endin.h
+		$(CC) /Fo:$(genLib)\endin.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\endin.c
+
+$(genLib)\genMath.$O: \
+	$(genLib)\genMath.c $(genLib)\genMath.h
+		$(CC) /Fo:$(genLib)\genMath.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\genMath.c
 
 install:
 	move $(NAME) $(PREFIX)

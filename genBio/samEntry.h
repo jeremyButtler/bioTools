@@ -262,7 +262,7 @@ freeHeap_samEntry(
 );
 
 /*-------------------------------------------------------\
-| Fun06: makeSamEntry
+| Fun06: mk_samEntry
 |   - Makes an heap allocated samEntry structure
 | Input:
 | Output:
@@ -271,7 +271,9 @@ freeHeap_samEntry(
 |     o 0 if had an memory error
 \-------------------------------------------------------*/
 struct samEntry *
-makeSamEntry();
+mk_samEntry(
+   void
+);
 
 /*-------------------------------------------------------\
 | Fun07: qhistToMed_samEntry

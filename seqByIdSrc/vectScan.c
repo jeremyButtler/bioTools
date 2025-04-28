@@ -591,8 +591,8 @@ endLine_vectScan(
       */
       /*this is actually slower, odd*/
    #else
-      /*not as fast, but will work even if only a '\r' (mac)
-      `  is present
+      /*not as fast, but will work even if only a '\r'
+      ` (ancient mac) is present
       */
       unsigned long retUL = endLine_ulCp(buffStr);
 

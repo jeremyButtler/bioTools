@@ -16,29 +16,60 @@ objFiles= \
    $genLib/base10str.$O \
    mainTrimSam.$O
 
-all: mainTrimSam.$O
+$(NAME): mainTrimSam.$O
 	$LD -o $NAME $objFiles
 
-mainTrimSam.$O: mainTrimSam.c $genBio/trimSam.$O ../bioTools.h ../bioTools.h
-	$CC -o mainTrimSam.$O  $coreCFLAGS $CFLAGS mainTrimSam.c
+mainTrimSam.$O: \
+	mainTrimSam.c \
+	$genBio/trimSam.$O \
+	../bioTools.h \
+	../genLib/endLine.h
+		$CC -o mainTrimSam.$O  \
+			$coreCFLAGS $CFLAGS mainTrimSam.c
 
-$genBio/trimSam.$O: $genBio/trimSam.c $genBio/trimSam.h $genBio/samEntry.$O
-	$CC -o $genBio/trimSam.$O  $coreCFLAGS $CFLAGS $genBio/trimSam.c
+$genBio/trimSam.$O: \
+	$genBio/trimSam.c $genBio/trimSam.h \
+	$genBio/samEntry.$O
+		$CC -o $genBio/trimSam.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genBio/trimSam.c
 
-$genBio/samEntry.$O: $genBio/samEntry.c $genBio/samEntry.h $genLib/strAry.$O $genLib/base10str.$O $genLib/numToStr.$O $genBio/ntTo5Bit.h $genLib/endLine.h
-	$CC -o $genBio/samEntry.$O  $coreCFLAGS $CFLAGS $genBio/samEntry.c
+$genBio/samEntry.$O: \
+	$genBio/samEntry.c $genBio/samEntry.h \
+	$genLib/strAry.$O $genLib/base10str.$O \
+	$genLib/numToStr.$O $genBio/ntTo5Bit.h \
+	$genLib/endLine.h
+		$CC -o $genBio/samEntry.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genBio/samEntry.c
 
-$genLib/strAry.$O: $genLib/strAry.c $genLib/strAry.h $genLib/ulCp.$O
-	$CC -o $genLib/strAry.$O  $coreCFLAGS $CFLAGS $genLib/strAry.c
+$genLib/strAry.$O: \
+	$genLib/strAry.c $genLib/strAry.h \
+	$genLib/ulCp.$O
+		$CC -o $genLib/strAry.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/strAry.c
 
-$genLib/ulCp.$O: $genLib/ulCp.c $genLib/ulCp.h
-	$CC -o $genLib/ulCp.$O  $coreCFLAGS $CFLAGS $genLib/ulCp.c
+$genLib/ulCp.$O: \
+	$genLib/ulCp.c $genLib/ulCp.h
+		$CC -o $genLib/ulCp.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/ulCp.c
 
-$genLib/numToStr.$O: $genLib/numToStr.c $genLib/numToStr.h
-	$CC -o $genLib/numToStr.$O  $coreCFLAGS $CFLAGS $genLib/numToStr.c
 
-$genLib/base10str.$O: $genLib/base10str.c $genLib/base10str.h
-	$CC -o $genLib/base10str.$O  $coreCFLAGS $CFLAGS $genLib/base10str.c
+$genLib/numToStr.$O: \
+	$genLib/numToStr.c $genLib/numToStr.h
+		$CC -o $genLib/numToStr.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/numToStr.c
+
+
+$genLib/base10str.$O: \
+	$genLib/base10str.c $genLib/base10str.h
+		$CC -o $genLib/base10str.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/base10str.c
+
 
 install:
 	mv $(NAME) $(PREFIX)

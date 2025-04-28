@@ -55,10 +55,11 @@
 |   - samSTPtr:
 |     o pointer to an samEntry structure with a read to
 |       add to the histogram
-|   - startSeqUI:
-|     o first base in target region of reference 
-|   - endSeqUI:
-|     o last base in target region of reference
+|   - coordsSTPtr:
+|     o geneCoord struct pointer with gene/target
+|       coordinates want to extract
+|   - numGenesSI:
+|     o number of genes in coordsSTPtr (index 1)
 |   - depthArySI:
 |     o histogram (int array) to add each base to
 |   - numOffTargSI:
@@ -72,30 +73,54 @@
 void
 addRead_ampDepth(
    struct samEntry *samSTPtr,
-   unsigned int startSeqUI,  /*first reference coorinate*/
-   unsigned int endSeqUI,    /*last reference coordinate*/
-   signed int *depthArySI,
-   signed int *numOffTargSI
+   struct geneCoord *coordsSTPtr, /*list of genes*/
+   signed int numGenesSI,   /*number genes in list*/
+   signed int *depthArySI,  /*depth array to update*/
+   signed int *numOffTargSI /*number reads not in list*/
 ){
    signed int siBase = 0;
+   signed int siIndex = 0;
+   signed int endSI = 0;
 
-   if(samSTPtr->refStartUI > (unsigned int) endSeqUI)
-   { /*If: the read has an offtarget section*/
-        ++(*numOffTargSI);
-        return;
-   } /*If: the read has an offtarget section*/
+   siIndex =
+      findRange_geneCoord(
+         coordsSTPtr,
+         samSTPtr->refStartUI,
+         samSTPtr->refEndUI,
+         numGenesSI
+      );
 
-   if(samSTPtr->refEndUI < (unsigned int) startSeqUI)
-   { /*If: the read has an offtarget section*/
-        ++(*numOffTargSI);
-        return;
-   } /*If: the read has an offtarget section*/
+   if(siIndex < 0)
+      ++*numOffTargSI;
+   else
+   { /*Else: gene has some on target coordiantes*/
+      addBases_fun01:;
+      siBase =
+         max_genMath(
+             (signed int) samSTPtr->refStartUI,
+             (signed int) coordsSTPtr->startAryUI[siIndex]
+         );
 
-   for(
-      siBase = (signed int) samSTPtr->refStartUI;
-      siBase < (signed int) samSTPtr->refEndUI;
-      ++siBase
-   ) ++depthArySI[siBase];
+      endSI =
+         min_genMath(
+             (signed int) samSTPtr->refEndUI,
+             (signed int) coordsSTPtr->endAryUI[siIndex]
+         );
+
+      while(siBase <= endSI)
+         ++depthArySI[siBase++];
+
+
+      /*see if read has muttiple genes*/
+      ++siIndex;
+
+      if(siIndex >= numGenesSI)
+         ; /*end of genes list*/
+      else if(
+           samSTPtr->refEndUI
+         > coordsSTPtr->startAryUI[siIndex]
+      ) goto addBases_fun01; /*have another gene*/
+   } /*Else: gene has some on target coordiantes*/
 } /*addBaseToAmDepth*/
 
 /*-------------------------------------------------------\

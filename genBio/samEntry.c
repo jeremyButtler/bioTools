@@ -459,6 +459,7 @@ void freeHeap_samEntry(
 \-------------------------------------------------------*/
 struct samEntry *
 mk_samEntry(
+  void
 ){
   struct samEntry *samST=malloc(sizeof(struct samEntry));
   unsigned char errUC = 0;
@@ -545,65 +546,68 @@ void
 findQScores_samEntry(
    struct samEntry *samSTPtr
 ){
-    unsigned long qScoresUL = 0;
-    unsigned long *qPtrUL =
-       (unsigned long *)
-       samSTPtr->qStr;
 
-    unsigned char *scoreAryUC = 0;
     unsigned int uiQScore = 0;
     unsigned int uiChar = 0;
+    unsigned char *scoreAryUC = 0;
     
-    ulong_ulCp qAdjustUL =
-       mkDelim_ulCp((signed char) def_adjQ_samEntry);
+    #ifdef NOUL
+    #else
+       unsigned long qScoresUL = 0;
+       ulong_ulCp qAdjustUL =
+          mkDelim_ulCp((signed char) def_adjQ_samEntry);
+       unsigned long *qPtrUL =
+          (unsigned long *) samSTPtr->qStr;
+    #endif
 
-    /*Find the number of q-score characters in buffer*/
-    for(
-       uiQScore = 0;
-       uiQScore <
-          ((samSTPtr)->readLenUI >> def_shiftULBy_ulCp);
-       ++uiQScore
-    ) { /*Loop: Update the q-score historgram and sum*/
-       qScoresUL = qPtrUL[uiQScore] - qAdjustUL;
-
-       scoreAryUC =
-          (unsigned char *)
-          &qScoresUL;
-       
+    #ifdef NOUL
+       scoreAryUC = (unsigned char *) samSTPtr->qStr;
+    #else
+       /*Find the number of q-score characters in buffer*/
        for(
-          uiChar = 0;
-          uiChar < def_charInUL_ulCp;
-          ++uiChar
-       ){ /*Loop: Get the q-score entries*/
+          uiQScore = 0;
+          uiQScore <
+             samSTPtr->readLenUI >> def_shiftULBy_ulCp;
+          ++uiQScore
+       ) { /*Loop: Update the q-score historgram and sum*/
+          qScoresUL = qPtrUL[uiQScore] - qAdjustUL;
+          scoreAryUC = (unsigned char *) &qScoresUL;
 
-         ++samSTPtr->qHistUI[scoreAryUC[uiChar]];
-         samSTPtr->sumQUL +=
-             (unsigned char)
-             scoreAryUC[uiChar];
+          for(
+             uiChar = 0;
+             uiChar < def_charInUL_ulCp;
+             ++uiChar
+          ){ /*Loop: Get the q-score entries*/
 
-       } /*Loop: Get the q-score entries*/
-    } /*Loop: Update the q-score historgram and sum*/
+            ++samSTPtr->qHistUI[scoreAryUC[uiChar]];
+            samSTPtr->sumQUL +=
+                (unsigned char)
+                scoreAryUC[uiChar];
+          } /*Loop: Get the q-score entries*/
+       } /*Loop: Update the q-score historgram and sum*/
     
-    uiQScore = (samSTPtr)->readLenUI;
-    scoreAryUC = (unsigned char *) (samSTPtr)->qStr;
-    
+          uiQScore = (samSTPtr)->readLenUI;
+          scoreAryUC = (unsigned char *) samSTPtr->qStr;
+    #endif
+       
     for(
-       uiQScore -=
-          ((samSTPtr)->readLenUI & def_modUL_ulCp);
-       uiQScore < (samSTPtr)->readLenUI;
+       #ifdef NOUL
+          uiQScore = 0;
+       #else
+          uiQScore -=
+             (samSTPtr->readLenUI & def_modUL_ulCp);
+       #endif
+       uiQScore < samSTPtr->readLenUI;
        ++uiQScore
     ) { /*Loop: Copy the q-score entries*/
-       (samSTPtr)->qStr[uiQScore] = scoreAryUC[uiQScore];
-
-        uiChar = scoreAryUC[uiQScore] - def_adjQ_samEntry;
-       
-       ++(samSTPtr)->qHistUI[uiChar];
-       (samSTPtr)->sumQUL += uiChar;
+        uiChar = scoreAryUC[uiQScore];
+        uiChar -= def_adjQ_samEntry;
+        ++samSTPtr->qHistUI[uiChar];
+        samSTPtr->sumQUL += uiChar;
     } /*Loop: Copy the q-score entries*/
     
-    (samSTPtr)->meanQF =
-       (float) (samSTPtr)->sumQUL /(samSTPtr)->readLenUI;
-    
+    samSTPtr->meanQF =
+       (float) samSTPtr->sumQUL /(samSTPtr)->readLenUI;
     qhistToMed_samEntry((samSTPtr));
 } /*findQScores_samEntry*/
 
@@ -654,18 +658,21 @@ cpQEntry_samEntry(
   ^   - Variable declerations
   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-  unsigned char *tmpStr = 0;
   unsigned int uiQ = 0;
   unsigned int uiChar = 0;
-
-  ulong_ulCp qAdjustUL =
-           mkDelim_ulCp((signed char) def_adjQ_samEntry);
-
-  unsigned long *cpPtrUL = (unsigned long *) cpQStr;
-  unsigned long *dupPtrUL =
-                (unsigned long *) samSTPtr->qStr;
   unsigned long qScoreUL = 0;
-  
+
+  #ifdef NOUL
+  #else
+     unsigned char *tmpStr = 0;
+     unsigned long *cpPtrUL = (unsigned long *) cpQStr;
+     ulong_ulCp
+        qAdjustUL =
+           mkDelim_ulCp((signed char) def_adjQ_samEntry);
+     unsigned long
+        *dupPtrUL = (unsigned long *) samSTPtr->qStr;
+  #endif
+     
   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
   ^ Fun09 Sec02:
   ^   - Check and if asked blank the q-score values
@@ -686,24 +693,26 @@ cpQEntry_samEntry(
   ^   - Copy q-scores using unsigned longs
   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-  for(
-     uiQ = 0;
-     uiQ < (samSTPtr->readLenUI >> def_shiftULBy_ulCp);
-     ++uiQ
-  ) { /*Loop: Copy the q-score entries*/
-     dupPtrUL[uiQ] = cpPtrUL[uiQ];
-     qScoreUL = dupPtrUL[uiQ] - qAdjustUL;
-     tmpStr = (unsigned char *) &qScoreUL;
-     
+  #ifndef NOUL
      for(
-        uiChar = 0;
-        uiChar < def_charInUL_ulCp;
-        ++uiChar
-     ) { /*Loop: Get the q-score entries*/
-        ++samSTPtr->qHistUI[tmpStr[uiChar]];
-        samSTPtr->sumQUL += tmpStr[uiChar];
-     } /*Loop: Get the q-score entries*/
-  } /*Loop: Copy the q-score entries*/
+        uiQ = 0;
+        uiQ < (samSTPtr->readLenUI >> def_shiftULBy_ulCp);
+        ++uiQ
+     ) { /*Loop: Copy the q-score entries*/
+        dupPtrUL[uiQ] = cpPtrUL[uiQ];
+        qScoreUL = dupPtrUL[uiQ] - qAdjustUL;
+        tmpStr = (unsigned char *) &qScoreUL;
+        
+        for(
+           uiChar = 0;
+           uiChar < def_charInUL_ulCp;
+           ++uiChar
+        ) { /*Loop: Get the q-score entries*/
+           ++samSTPtr->qHistUI[tmpStr[uiChar]];
+           samSTPtr->sumQUL += tmpStr[uiChar];
+        } /*Loop: Get the q-score entries*/
+     } /*Loop: Copy the q-score entries*/
+  #endif
   
   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
   ^ Fun09 Sec04:
@@ -714,15 +723,17 @@ cpQEntry_samEntry(
   uiQ = (samSTPtr)->readLenUI;
   
   for(
-     uiQ -= ((samSTPtr)->readLenUI & def_modUL_ulCp);
-     uiQ < (samSTPtr)->readLenUI;
+     #ifdef NOUL
+        uiQ = 0;
+     #else
+        uiQ -= (samSTPtr->readLenUI & def_modUL_ulCp);
+     #endif
+     uiQ < samSTPtr->readLenUI;
      ++uiQ
   ) { /*Loop: Copy the q-score entries*/
-
      samSTPtr->qStr[uiQ] = cpQStr[uiQ];
-     qScoreUL =
-        (unsigned char)
-        cpQStr[uiQ] - def_adjQ_samEntry;
+     qScoreUL = (unsigned char) cpQStr[uiQ];
+     qScoreUL -= def_adjQ_samEntry;
 
      ++samSTPtr->qHistUI[qScoreUL];
      samSTPtr->sumQUL += qScoreUL;
@@ -880,10 +891,8 @@ getLine_samEntry(
    { /*If: have something*/
       --oldLenUL; /*get off null*/
 
-      while(
-            oldLenUL > 0
-         && (*buffStr)[oldLenUL] < 33
-      ) --oldLenUL;
+      while(oldLenUL && (*buffStr)[oldLenUL] < 33)
+         --oldLenUL;
 
       if(! oldLenUL)
       { /*If: nothing in buffer*/

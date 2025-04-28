@@ -10,6 +10,8 @@ genLib=../genLib
 
 objFiles= \
    $genClust/edClust.$O \
+   $genBio/seqST.$O \
+   $genLib/charCp.$O \
    $genClust/clustST.$O \
    $genBio/samEntry.$O \
    $genLib/strAry.$O \
@@ -18,48 +20,135 @@ objFiles= \
    $genLib/base10str.$O \
    $genBio/tbCon.$O \
    $genBio/edDist.$O \
-   $genBio/seqST.$O \
-   $genLib/charCp.$O \
+   $genLib/inflate.$O \
+   $genLib/checkSum.$O \
+   $genLib/endin.$O \
+   $genLib/genMath.$O \
    mainEdClust.$O
 
-all: mainEdClust.$O
+$(NAME): mainEdClust.$O
 	$LD -o $NAME $objFiles
 
-mainEdClust.$O: mainEdClust.c $genClust/edClust.$O $genLib/charCp.$O ../bioTools.h ../bioTools.h ../bioTools.h
-	$CC -o mainEdClust.$O  $coreCFLAGS $CFLAGS mainEdClust.c
+mainEdClust.$O: \
+	mainEdClust.c \
+	$genClust/edClust.$O \
+	$genBio/seqST.$O \
+	$genLib/charCp.$O \
+	../bioTools.h \
+	../genLib/endLine.h \
+	../genBio/tbConDefs.h
+		$CC -o mainEdClust.$O  \
+			$coreCFLAGS $CFLAGS mainEdClust.c
 
-$genClust/edClust.$O: $genClust/edClust.c $genClust/edClust.h $genClust/clustST.$O
-	$CC -o $genClust/edClust.$O  $coreCFLAGS $CFLAGS $genClust/edClust.c
+$genClust/edClust.$O: \
+	$genClust/edClust.c $genClust/edClust.h \
+	$genClust/clustST.$O
+		$CC -o $genClust/edClust.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genClust/edClust.c
 
-$genClust/clustST.$O: $genClust/clustST.c $genClust/clustST.h $genBio/samEntry.$O $genBio/tbCon.$O $genBio/edDist.$O $genLib/genMath.h
-	$CC -o $genClust/clustST.$O  $coreCFLAGS $CFLAGS $genClust/clustST.c
 
-$genBio/samEntry.$O: $genBio/samEntry.c $genBio/samEntry.h $genLib/strAry.$O $genLib/base10str.$O $genLib/numToStr.$O $genBio/ntTo5Bit.h $genLib/endLine.h
-	$CC -o $genBio/samEntry.$O  $coreCFLAGS $CFLAGS $genBio/samEntry.c
+$genBio/seqST.$O: \
+	$genBio/seqST.c $genBio/seqST.h \
+	$genLib/ulCp.$O $genLib/inflate.$O
+		$CC -o $genBio/seqST.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genBio/seqST.c
 
-$genLib/strAry.$O: $genLib/strAry.c $genLib/strAry.h $genLib/ulCp.$O
-	$CC -o $genLib/strAry.$O  $coreCFLAGS $CFLAGS $genLib/strAry.c
+$genLib/charCp.$O: \
+	$genLib/charCp.c $genLib/charCp.h
+		$CC -o $genLib/charCp.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/charCp.c
 
-$genLib/ulCp.$O: $genLib/ulCp.c $genLib/ulCp.h
-	$CC -o $genLib/ulCp.$O  $coreCFLAGS $CFLAGS $genLib/ulCp.c
+$genClust/clustST.$O: \
+	$genClust/clustST.c $genClust/clustST.h \
+	$genBio/samEntry.$O $genBio/tbCon.$O \
+	$genBio/edDist.$O $genLib/genMath.h
+		$CC -o $genClust/clustST.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genClust/clustST.c
 
-$genLib/numToStr.$O: $genLib/numToStr.c $genLib/numToStr.h
-	$CC -o $genLib/numToStr.$O  $coreCFLAGS $CFLAGS $genLib/numToStr.c
 
-$genLib/base10str.$O: $genLib/base10str.c $genLib/base10str.h
-	$CC -o $genLib/base10str.$O  $coreCFLAGS $CFLAGS $genLib/base10str.c
+$genBio/samEntry.$O: \
+	$genBio/samEntry.c $genBio/samEntry.h \
+	$genLib/strAry.$O $genLib/base10str.$O \
+	$genLib/numToStr.$O $genBio/ntTo5Bit.h \
+	$genLib/endLine.h
+		$CC -o $genBio/samEntry.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genBio/samEntry.c
 
-$genBio/tbCon.$O: $genBio/tbCon.c $genBio/tbCon.h $genBio/samEntry.$O $genBio/tbConDefs.h $genLib/genMath.h $genLib/endLine.h
-	$CC -o $genBio/tbCon.$O  $coreCFLAGS $CFLAGS $genBio/tbCon.c
+$genLib/strAry.$O: \
+	$genLib/strAry.c $genLib/strAry.h \
+	$genLib/ulCp.$O
+		$CC -o $genLib/strAry.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/strAry.c
 
-$genBio/edDist.$O: $genBio/edDist.c $genBio/edDist.h $genBio/samEntry.$O $genBio/seqST.$O $genLib/genMath.h $genLib/endLine.h
-	$CC -o $genBio/edDist.$O  $coreCFLAGS $CFLAGS $genBio/edDist.c
+$genLib/ulCp.$O: \
+	$genLib/ulCp.c $genLib/ulCp.h
+		$CC -o $genLib/ulCp.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/ulCp.c
 
-$genBio/seqST.$O: $genBio/seqST.c $genBio/seqST.h $genLib/ulCp.$O
-	$CC -o $genBio/seqST.$O  $coreCFLAGS $CFLAGS $genBio/seqST.c
 
-$genLib/charCp.$O: $genLib/charCp.c $genLib/charCp.h
-	$CC -o $genLib/charCp.$O  $coreCFLAGS $CFLAGS $genLib/charCp.c
+$genLib/numToStr.$O: \
+	$genLib/numToStr.c $genLib/numToStr.h
+		$CC -o $genLib/numToStr.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/numToStr.c
+
+
+$genLib/base10str.$O: \
+	$genLib/base10str.c $genLib/base10str.h
+		$CC -o $genLib/base10str.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/base10str.c
+
+
+$genBio/tbCon.$O: \
+	$genBio/tbCon.c $genBio/tbCon.h \
+	$genBio/samEntry.$O $genBio/tbConDefs.h \
+	$genLib/genMath.h $genLib/endLine.h
+		$CC -o $genBio/tbCon.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genBio/tbCon.c
+
+$genBio/edDist.$O: \
+	$genBio/edDist.c $genBio/edDist.h \
+	$genBio/samEntry.$O $genBio/seqST.$O \
+	$genLib/genMath.h $genLib/endLine.h
+		$CC -o $genBio/edDist.$O \
+		 $coreCFLAGS $CFLAGS \
+		$genBio/edDist.c
+
+$genLib/inflate.$O: \
+	$genLib/inflate.c $genLib/inflate.h \
+	$genLib/checkSum.$O $genLib/ulCp.$O \
+	$genLib/genMath.$O $genLib/endLine.h
+		$CC -o $genLib/inflate.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/inflate.c
+
+$genLib/checkSum.$O: \
+	$genLib/checkSum.c $genLib/checkSum.h \
+	$genLib/endin.$O
+	$CC -o $genLib/checkSum.$O \
+		 $coreCFLAGS $CFLAGS \
+		$genLib/checkSum.c
+
+$genLib/endin.$O: \
+	$genLib/endin.c $genLib/endin.h
+		$CC -o $genLib/endin.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/endin.c
+
+$genLib/genMath.$O: \
+	$genLib/genMath.c $genLib/genMath.h
+		$CC -o $genLib/genMath.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/genMath.c
 
 install:
 	mv $(NAME) $(PREFIX)

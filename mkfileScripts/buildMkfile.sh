@@ -1,4 +1,4 @@
-#!/usr/bin/evn bash
+#!/usr/bin/sh
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # buildMkfile SOF:
@@ -28,7 +28,7 @@ genBioStr="";
 genAlnStr="";
 genClustStr="";
 genGenoTypeStr="";
-seqByIdStr="";
+#seqByIdStr=""; add in for k2 taxa
 
 # marks if library location was used
 genLibBl=0;
@@ -36,16 +36,16 @@ genBioBl=0;
 genAlnBl=0;
 genClustBl=0;
 genGenoTypeBl=0;
-seqByIdBl=0;
+#seqByIdBl=0; # add in when k2Taxa using seqById
 
 # for building compile calls
 coreFlagsStr=""; # CFLAGS
 ccStr="";     # CC
-ldStr="";     # LD (linker)
 dashOStr="";  # -o
 dashCStr="";  # -c
 spaceStr="   ";  # spacing for objFiles entry
 newLineStr="";# holds new line to add between commands
+warnStr="-Wall -Wextra -Wpedantic"; # warnings
 
 # for printing out make file
 headStr="";     # first part of file
@@ -53,7 +53,6 @@ libPathStr="";  # library paths
 linkStr="";     # link (all:) command
 objFilesStr=""; # object files for copiling (objFiles)
 mainCmdStr="";  # commat to build main .c file
-cmdsStr="";     # commands to build object files
 cleanStr="";    # command to clean up object files
 installStr="";  # install command
 
@@ -61,9 +60,6 @@ osStr="$1";       # OS/mkfile type
 nameStr="$2";       # program name
 mainFileStr="$3"; # main file input by user
 
-depAry=(); # depends needed from libraries
-lenDep=0;  # number of dependencies
-depSI=-1;  # index on in dependency array
 
 helpStr="$(basename "$0") OS program_name main_file libraries ...
    - OS: OS t build mkfile for
@@ -90,7 +86,10 @@ helpStr="$(basename "$0") OS program_name main_file libraries ...
      o Options:
        - base10str (genLib)
        - charCp (genLib)
+       - checkSum (genLib)
+       - endin (genLib)
        - genMath (genLib)
+       - inflate (genLib)
        - numToStr (genLib)
        - ptrAry (genLib)
        - shellSort (genLib)
@@ -115,6 +114,7 @@ helpStr="$(basename "$0") OS program_name main_file libraries ...
        - dirMatrix (genAln)
        - indexToCoord (genAln)
        - kmerFind (genAln)
+       - mapRead (genAln)
        - memwater (genAln)
        - needle (genAln)
        - samToAln (genAln)
@@ -141,32 +141,58 @@ helpStr="$(basename "$0") OS program_name main_file libraries ...
 #     - plan9 mkfiles
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-if [[ "$1" == "" || "$1" == "-h" || "$1" == "--h" ]]; then
+if [ "$1" = "" ]; then
+   printf "%s\n" "$helpStr";
+   exit;
+elif [ "$1" = "-h" ]; then
+   printf "%s\n" "$helpStr";
+   exit;
+elif [ "$1" = "--h" ]; then
+   printf "%s\n" "$helpStr";
+   exit;
+elif [ "$2" = "" ]; then
+   printf "%s\n" "$helpStr";
+   exit;
+elif [ "$2" = "-h" ]; then
+   printf "%s\n" "$helpStr";
+   exit;
+elif [ "$2" = "--h" ]; then
+   printf "%s\n" "$helpStr";
+   exit;
+elif [ "$3" = "" ]; then
+   printf "%s\n" "$helpStr";
+   exit;
+elif [ "$3" = "-h" ]; then
+   printf "%s\n" "$helpStr";
+   exit;
+elif [ "$3" = "--h" ]; then
    printf "%s\n" "$helpStr";
    exit;
 fi
 
-if [[ "$2" == "" || "$2" == "-h" || "$2" == "--h" ]]; then
-   printf "%s\n" "$helpStr";
-   exit;
-fi
-
-if [[ "$3" == "" || "$3" == "-h" || "$3" == "--h" ]]; then
-   printf "%s\n" "$helpStr";
-   exit;
-fi
+# add in some warnings I have seen others use. One or two
+#   are left out because they often send warnings about
+#   things I do (such as pointer casting used in ulCp)
+warnStr="$warnStr -Wundef";
+warnStr="$warnStr -Waggregate-return -Wwrite-strings";
+warnStr="$warnStr -Wstrict-prototypes -Wcast-align";
+warnStr="$warnStr -Wpointer-arith -Wshadow"
+warnStr="$warnStr -Wunreachable-code -Winit-self"
+   # -Wfloat-eqaul messes up numToStr. I am comparing
+   #   floats to see if there is a decimal, so float == 0
+   #   is safe
 
 #*********************************************************
 # Sec02 Sub01:
 #   - debuging mkfiles
 #*********************************************************
 
-if [[ "$osStr" == "bug" ]];
+if [ "$osStr" = "bug" ];
 then # If: debugging make file
    headStr="$headStr\nCC=cc";
    headStr="LD=cc";
-   headStr="$headStr\ncoreCFLAGS= -O0 -std=c89 -Wall -Wextra";
-   headStr="$headStr -Werror -ggdb -g";
+   headStr="$headStr\ncoreCFLAGS= -O0 -std=c89 -g";
+   headStr="$headStr -Werror $warnStr";
    headStr="$headStr\nCFLAGS=-DNONE";
    headStr="$headStr\nNAME=$nameStr";
    headStr="$headStr\nPREFIX=/usr/local/bin";
@@ -177,12 +203,11 @@ then # If: debugging make file
    genAlnStr="\$(genAln)/";
    genClustStr="\$(genClust)/";
    genGenoTypeStr="\$(genGenoType)/";
-   seqByIdStr="\$(seqByIdSrc)/";
+   #seqByIdStr="\$(seqByIdSrc)/"; # adad in for k2Taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
    cFlagsStr="\$(CFLAGS)";
    ccStr="\$(CC)";
-   ldStr="\$(LD)";
    dashOStr="-o ";
    dashCStr="-c";
 
@@ -191,8 +216,8 @@ then # If: debugging make file
    cleanStr="clean:"
    cleanStr="$cleanStr\n\trm \$(objFiles)";
 
-   linkStr="all: $mainFileStr.\$O";
-   linkStr="$linkStr\n\t\$(LD) "$dashOStr"\$(NAME)";
+   linkStr="\$(NAME): $mainFileStr.\$O";
+   linkStr="$linkStr\n\t\$(LD) ${dashOStr}\$(NAME)";
    linkStr="$linkStr \$(objFiles)";
 
    slashSC="/";
@@ -203,11 +228,11 @@ then # If: debugging make file
 #   - unix mkfiles
 #*********************************************************
 
-elif [[ "$osStr" == "unix" ]];
+elif [ "$osStr" = "unix" ];
 then # Else If: general unix make file
    headStr="$headStr\nCC=cc";
    headStr="LD=cc";
-   headStr="$headStr\ncoreCFLAGS= -O3 -std=c89 -Wall -Wextra";
+   headStr="$headStr\ncoreCFLAGS= -O3 -std=c89 $warnStr";
    headStr="$headStr\nCFLAGS=-DNONE";
    headStr="$headStr\nNAME=$nameStr";
    headStr="$headStr\nPREFIX=/usr/local/bin";
@@ -218,24 +243,24 @@ then # Else If: general unix make file
    genAlnStr="\$(genAln)/";
    genClustStr="\$(genClust)/";
    genGenoTypeStr="\$(genGenoType)/";
-   seqByIdStr="\$(seqByIdSrc)/";
+   #seqByIdStr="\$(seqByIdSrc)/"; # add in for k2Taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
    cFlagsStr="\$(CFLAGS)";
    ccStr="\$(CC)";
-   ldStr="\$(LD)";
    dashOStr="-o ";
    dashCStr="-c";
 
    installStr="install:"
    installStr="$installStr\n\tmv \$(NAME) \$(PREFIX)"
-   installStr="$installStr\n\tchmod a+x \$(PREFIX)/\$(NAME)"
+   installStr="$installStr\n\tchmod a+x \$(PREFIX)"
+   installStr="$installStr\/\$(NAME)"
 
    cleanStr="clean:"
    cleanStr="$cleanStr\n\trm \$(objFiles)";
 
-   linkStr="all: $mainFileStr.\$O";
-   linkStr="$linkStr\n\t\$(LD) "$dashOStr"\$(NAME)";
+   linkStr="\$(NAME): $mainFileStr.\$O";
+   linkStr="$linkStr\n\t\$(LD) ${dashOStr}\$(NAME)";
    linkStr="$linkStr \$(objFiles)";
 
    slashSC="/";
@@ -246,11 +271,12 @@ then # Else If: general unix make file
 #   - static (unix) mkfiles
 #*********************************************************
 
-elif [[ "$osStr" == "static" ]];
+elif [ "$osStr" = "static" ];
 then # Else If: static unix make file
    headStr="$headStr\nCC=cc";
    headStr="LD=cc";
-   headStr="$headStr\ncoreCFLAGS= -O3 -std=c89 -static -Wall -Wextra";
+   headStr="$headStr\ncoreCFLAGS= -O3 -std=c89 -static";
+   headStr="$headStr $warnStr";
    headStr="$headStr\nCFLAGS=-DNONE";
    headStr="$headStr\nNAME=$nameStr";
    headStr="$headStr\nPREFIX=/usr/local/bin";
@@ -261,12 +287,11 @@ then # Else If: static unix make file
    genAlnStr="\$(genAln)/";
    genClustStr="\$(genClust)/";
    genGenoTypeStr="\$(genGenoType)/";
-   seqByIdStr="\$(seqByIdSrc)/";
+   #seqByIdStr="\$(seqByIdSrc)/"; add in for k2 taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
    cFlagsStr="\$(CFLAGS)";
    ccStr="\$(CC)";
-   ldStr="\$(LD)";
    dashOStr="-o ";
    dashCStr="-c";
 
@@ -277,8 +302,8 @@ then # Else If: static unix make file
    cleanStr="clean:"
    cleanStr="$cleanStr\n\trm \$(objFiles)";
 
-   linkStr="all: $mainFileStr.\$O";
-   linkStr="$linkStr\n\t\$(LD) "$dashOStr"\$(NAME)";
+   linkStr="\$(NAME): $mainFileStr.\$O";
+   linkStr="$linkStr\n\t\$(LD) ${dashOStr}\$(NAME)";
    linkStr="$linkStr \$(objFiles)";
 
    slashSC="/";
@@ -289,7 +314,7 @@ then # Else If: static unix make file
 #   - windows mkfiles
 #*********************************************************
 
-elif [[ "$osStr" == "win" ]];
+elif [ "$osStr" = "win" ];
 then # Else If: windows make file
    headStr="$headStr\nCC=cl.exe";
    headStr="LD=link.exe";
@@ -304,12 +329,11 @@ then # Else If: windows make file
    genAlnStr="\$(genAln)\\\\";
    genClustStr="\$(genClust)\\\\";
    genGenoTypeStr="\$(genGenoType)\\\\";
-   seqByIdStr="\$(seqByIdSrc)\\\\";
+   #seqByIdStr="\$(seqByIdSrc)\\\\"; # add in for k2Taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
    cFlagsStr="\$(CFLAGS)";
    ccStr="\$(CC)";
-   ldStr="\$(LD)";
    dashOStr="/Fo:";
    #dashCStr="/c";
 
@@ -319,7 +343,7 @@ then # Else If: windows make file
    cleanStr="clean:"
    cleanStr="$cleanStr\n\tdel \$(objFiles)";
 
-   linkStr="all: $mainFileStr.\$O";
+   linkStr="\$(NAME): $mainFileStr.\$O";
    linkStr="$linkStr\n\t\$(LD) /out:\$(NAME)";
    linkStr="$linkStr \$(objFiles)";
 
@@ -331,7 +355,7 @@ then # Else If: windows make file
 #   - plan9 mkfiles
 #*********************************************************
 
-elif [[ "$osStr" == "plan9" ]];
+elif [ "$osStr" = "plan9" ];
 then # Else If: plan9 make file
    headStr="</\$objtype/mkfile";
    headStr="$headStr\ncoreCFLAGS=-DPLAN9";
@@ -344,12 +368,11 @@ then # Else If: plan9 make file
    genAlnStr="\$genAln/";
    genClustStr="\$genClust/";
    genGenoTypeStr="\$(genGenoType)/";
-   seqByIdStr="\$seqByIdSrc/";
+   #seqByIdStr="\$seqByIdSrc/"; # add in when in k2Taxa
 
    coreFlagsStr="\$coreCFLAGS";
    cFlagsStr="\$CFLAGS";
    ccStr="\$CC";
-   ldStr="\$LD";
    dashOStr="-o ";
    dashCStr="";
 
@@ -360,8 +383,8 @@ then # Else If: plan9 make file
    cleanStr="clean:"
    cleanStr="$cleanStr\n\trm \$(objFiles)";
 
-   linkStr="all: $mainFileStr.\$O";
-   linkStr="$linkStr\n\t\$LD "$dashOStr"\$NAME";
+   linkStr="\$(NAME): $mainFileStr.\$O";
+   linkStr="$linkStr\n\t\$LD ${dashOStr}\$NAME";
    linkStr="$linkStr \$objFiles";
 
    slashSC="/";
@@ -406,7 +429,8 @@ fi # check makefile type
 #   - setup start of main file build command
 #*********************************************************
 
-mainCmdStr="$mainFileStr.\$O: $mainFileStr.c"
+mainCmdStr="$mainFileStr.\$O: \\
+	$mainFileStr.c";
 
 #*********************************************************
 # Sec03 Sub02:
@@ -424,10 +448,12 @@ mainCmdStr="$mainFileStr.\$O: $mainFileStr.c"
 #   o sec03 sub02 cat06:
 #     - shellSort
 #   o sec03 sub02 cat07:
-#     - rmBlocks
+#     - endin
 #   o sec03 sub02 cat08:
-#     - strAry
+#     - checkSum
 #   o sec03 sub02 cat09:
+#     - strAry
+#   o sec03 sub02 cat10:
 #     - ptrAry
 #*********************************************************
 
@@ -436,111 +462,167 @@ mainCmdStr="$mainFileStr.\$O: $mainFileStr.c"
 #   - numToStr
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-numToStr=""$genLibStr"numToStr.\$O: "$genLibStr"numToStr.c "$genLibStr"numToStr.h
-	$ccStr "$dashOStr""$genLibStr"numToStr.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genLibStr"numToStr.c"
+numToStr="${genLibStr}numToStr.\$O: \\
+	${genLibStr}numToStr.c ${genLibStr}numToStr.h
+		$ccStr ${dashOStr}${genLibStr}numToStr.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genLibStr}numToStr.c
+"
 
-numToStrObj=""$genLibStr"numToStr.\$O";
-numToStrDep=("");
-lenNumToStrDep=1;
+numToStrObj="${genLibStr}numToStr.\$O";
+numToStrDep="";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub02 Cat02:
 #   - base10str
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-base10Str=""$genLibStr"base10str.\$O: "$genLibStr"base10str.c "$genLibStr"base10str.h
-	$ccStr "$dashOStr""$genLibStr"base10str.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genLibStr"base10str.c"
+base10Str="${genLibStr}base10str.\$O: \\
+	${genLibStr}base10str.c ${genLibStr}base10str.h
+		$ccStr ${dashOStr}${genLibStr}base10str.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genLibStr}base10str.c
+"
 
-base10strObj=""$genLibStr"base10str.\$O";
-
-base10strDep=("");
-lenBase10strDep=1;
+base10strObj="${genLibStr}base10str.\$O";
+base10strDep="";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub02 Cat03:
 #   - ulCp
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-ulCpStr=""$genLibStr"ulCp.\$O: "$genLibStr"ulCp.c "$genLibStr"ulCp.h
-	$ccStr "$dashOStr""$genLibStr"ulCp.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genLibStr"ulCp.c"
+ulCpStr="${genLibStr}ulCp.\$O: \\
+	${genLibStr}ulCp.c ${genLibStr}ulCp.h
+		$ccStr ${dashOStr}${genLibStr}ulCp.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genLibStr}ulCp.c
+"
 
-ulCpObj=""$genLibStr"ulCp.\$O";
-ulCpDep=("");
-lenUlCpDep=1;
+ulCpObj="${genLibStr}ulCp.\$O";
+ulCpDep="";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub02 Cat04:
 #   - charCp
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-charCpStr=""$genLibStr"charCp.\$O: "$genLibStr"charCp.c "$genLibStr"charCp.h
-	$ccStr "$dashOStr""$genLibStr"charCp.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genLibStr"charCp.c"
+charCpStr="${genLibStr}charCp.\$O: \\
+	${genLibStr}charCp.c ${genLibStr}charCp.h
+		$ccStr ${dashOStr}${genLibStr}charCp.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genLibStr}charCp.c"
 
-charCpObj=""$genLibStr"charCp.\$O";
-charCpDep=("");
-lenCharCpDep=1;
+charCpObj="${genLibStr}charCp.\$O";
+charCpDep="";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub02 Cat05:
 #   - genMath
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-genMathStr=""$genLibStr"genMath.\$O: "$genLibStr"genMath.c "$genLibStr"genMath.h
-	$ccStr "$dashOStr""$genLibStr"genMath.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genLibStr"genMath.c"
+genMathStr="${genLibStr}genMath.\$O: \\
+	${genLibStr}genMath.c ${genLibStr}genMath.h
+		$ccStr ${dashOStr}${genLibStr}genMath.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genLibStr}genMath.c"
 
-genMathObj=""$genLibStr"genMath.\$O";
-genMathDep=("");
-lenGenMathDep=1;
+genMathObj="${genLibStr}genMath.\$O";
+genMathDep="";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub02 Cat06:
 #   - shellSort
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-shellSortStr=""$genLibStr"shellSort.\$O: "$genLibStr"shellSort.c "$genLibStr"shellSort.h
-	$ccStr "$dashOStr""$genLibStr"shellSort.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genLibStr"shellSort.c"
+shellSortStr="${genLibStr}shellSort.\$O: \\
+	${genLibStr}shellSort.c ${genLibStr}shellSort.h
+		$ccStr ${dashOStr}${genLibStr}shellSort.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genLibStr}shellSort.c"
 
-shellSortObj=""$genLibStr"shellSort.\$O";
-shellSortDep=("");
-lenShellSortDep=1;
+shellSortObj="${genLibStr}shellSort.\$O";
+shellSortDep="";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub02 Cat07:
-#   - rmBlocks
+#   - endin
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-rmBlocksStr=""$genLibStr"rmBlocks.\$O: "$genLibStr"rmBlocks.c "$genLibStr"rmBlocks.h
-	$ccStr "$dashOStr""$genLibStr"rmBlocks.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genLibStr"rmBlocks.c"
+endinStr="${genLibStr}endin.\$O: \\
+	${genLibStr}endin.c ${genLibStr}endin.h
+		$ccStr ${dashOStr}${genLibStr}endin.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genLibStr}endin.c"
 
-rmBlocksObj=""$genLibStr"rmBlocks.\$O";
-rmBlocksDep=("");
-lenRmBlocksDep=1;
+endinObj="${genLibStr}endin.\$O";
+endinDep="";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub02 Cat08:
-#   - strAry
+#   - checkSum
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-strAryStr=""$genLibStr"strAry.\$O: "$genLibStr"strAry.c "$genLibStr"strAry.h "$genLibStr"ulCp.\$O
-	$ccStr "$dashOStr""$genLibStr"strAry.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genLibStr"strAry.c";
+checkSumStr="${genLibStr}checkSum.\$O: \\
+	${genLibStr}checkSum.c ${genLibStr}checkSum.h \\
+	${genLibStr}endin.\$O
+	$ccStr ${dashOStr}${genLibStr}checkSum.\$O \\
+		$dashCStr $coreFlagsStr $cFlagsStr \\
+		${genLibStr}checkSum.c";
 
 
-strAryObj=""$genLibStr"strAry.\$O";
-strAryDep=("ulCp" ${ulCpDep[0]});
-lenStrAryDep=$((1 + lenUlCpDep));
+checkSumObj="${genLibStr}checkSum.\$O";
+checkSumDep="endin $endinDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub02 Cat09:
+#   - strAry
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+strAryStr="${genLibStr}strAry.\$O: \\
+	${genLibStr}strAry.c ${genLibStr}strAry.h \\
+	${genLibStr}ulCp.\$O
+		$ccStr ${dashOStr}${genLibStr}strAry.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genLibStr}strAry.c";
+
+
+strAryObj="${genLibStr}strAry.\$O";
+strAryDep="ulCp $ulCpDep";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub02 Cat10:
 #   - ptrAry
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-ptrAryStr=""$genLibStr"ptrAry.\$O: "$genLibStr"ptrAry.c "$genLibStr"ptrAry.h "$genLibStr"ulCp.\$O
-	$ccStr "$dashOStr""$genLibStr"ptrAry.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genLibStr"ptrAry.c";
+ptrAryStr="${genLibStr}ptrAry.\$O: \\
+	${genLibStr}ptrAry.c ${genLibStr}ptrAry.h \\
+	${genLibStr}ulCp.\$O
+		$ccStr ${dashOStr}${genLibStr}ptrAry.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genLibStr}ptrAry.c";
 
 
-ptrAryObj=""$genLibStr"ptrAry.\$O";
-ptrAryDep=("ulCp" ${ulCpDep[0]});
-lenPtrAryDep=$((1 + lenUlCpDep));
+ptrAryObj="${genLibStr}ptrAry.\$O";
+ptrAryDep="ulCp $ulCpDep";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub02 Cat11:
+#   - inflate
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+inflateStr="${genLibStr}inflate.\$O: \\
+	${genLibStr}inflate.c ${genLibStr}inflate.h \\
+	${genLibStr}checkSum.\$O ${genLibStr}ulCp.\$O \\
+	${genLibStr}genMath.\$O ${genLibStr}endLine.h
+		$ccStr ${dashOStr}${genLibStr}inflate.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genLibStr}inflate.c";
+
+
+inflateObj="${genLibStr}inflate.\$O";
+inflateDep="checkSum $checkSumDep genMath $genMathDep";
+inflateDep="$inflateDep ulCp $ulCpDep";
 
 #*********************************************************
 # Sec03 Sub03:
@@ -580,172 +662,226 @@ lenPtrAryDep=$((1 + lenUlCpDep));
 #   - codonFun
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-codonFunStr=""$genBioStr"codonFun.\$O: "$genBioStr"codonFun.c "$genBioStr"codonFun.h "$genBioStr"codonTbl.h "$genBioStr"ntTo2Bit.h "$genBioStr"revNtTo2Bit.h "$genLibStr"dataTypeShortHand.h
-	$ccStr "$dashOStr""$genBioStr"codonFun.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"codonFun.c"
+codonFunStr="${genBioStr}codonFun.\$O: \\
+	${genBioStr}codonFun.c ${genBioStr}codonFun.h \\
+	${genBioStr}codonTbl.h ${genBioStr}ntTo2Bit.h \\
+	${genBioStr}revNtTo2Bit.h
+		$ccStr ${dashOStr}${genBioStr}codonFun.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}codonFun.c"
 
-codonFunObj=""$genBioStr"codonFun.\$O";
-codonFunDep=("");
-lenCodonFunDep=1;
+codonFunObj="${genBioStr}codonFun.\$O";
+codonFunDep="";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat02:
 #   - kmerFun
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-kmerFunStr=""$genBioStr"kmerFun.\$O: "$genBioStr"kmerFun.c "$genBioStr"kmerFun.h "$genBioStr"kmerBit.h
-	$ccStr "$dashOStr""$genBioStr"kmerFun.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"kmerFun.c"
+kmerFunStr="${genBioStr}kmerFun.\$O: \\
+	${genBioStr}kmerFun.c ${genBioStr}kmerFun.h \\
+	${genBioStr}kmerBit.h
+		$ccStr ${dashOStr}${genBioStr}kmerFun.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}kmerFun.c"
 
-kmerFunObj=""$genBioStr"kmerFun.\$O";
-kmerFunDep=("");
-lenKmerFunDep=1;
+kmerFunObj="${genBioStr}kmerFun.\$O";
+kmerFunDep="";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat03:
 #   - seqST
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-seqSTStr=""$genBioStr"seqST.\$O: "$genBioStr"seqST.c "$genBioStr"seqST.h "$genLibStr"ulCp.\$O
-	$ccStr "$dashOStr""$genBioStr"seqST.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"seqST.c";
+seqSTStr="${genBioStr}seqST.\$O: \\
+	${genBioStr}seqST.c ${genBioStr}seqST.h \\
+	${genLibStr}ulCp.\$O ${genLibStr}inflate.\$O
+		$ccStr ${dashOStr}${genBioStr}seqST.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}seqST.c";
 
 
-seqSTObj=""$genBioStr"seqST.\$O";
-seqSTDep=("ulCp" ${ulCpDep[*]});
-lenSeqSTDep=$((1 + lenUlCpDep));
+seqSTObj="${genBioStr}seqST.\$O";
+seqSTDep="inflate $inflateDep ulCp $ulCpDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat04:
 #   - kmerCnt
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-kmerCntStr=""$genBioStr"kmerCnt.\$O: "$genBioStr"kmerCnt.c "$genBioStr"kmerCnt.h "$genBioStr"seqST.\$O "$genBioStr"ntTo2Bit.h "$genLibStr"genMath.h
-	$ccStr "$dashOStr""$genBioStr"kmerCnt.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"kmerCnt.c";
+kmerCntStr="${genBioStr}kmerCnt.\$O: \\
+	${genBioStr}kmerCnt.c ${genBioStr}kmerCnt.h \\
+	${genBioStr}seqST.\$O ${genBioStr}ntTo2Bit.h \\
+	${genLibStr}genMath.h
+		$ccStr ${dashOStr}${genBioStr}kmerCnt.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}kmerCnt.c";
 
 
-kmerCntObj=""$genBioStr"kmerCnt.\$O";
-kmerCntDep=("seqST" ${seqSTDep})
-lenKmerCntDep=$((1 + lenSeqSTDep));
+kmerCntObj="${genBioStr}kmerCnt.\$O";
+kmerCntDep="seqST $seqSTDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat05:
 #   - geneCoord
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-geneCoordStr=""$genBioStr"geneCoord.\$O: "$genBioStr"geneCoord.c "$genBioStr"geneCoord.h "$genLibStr"base10str.\$O "$genLibStr"ulCp.\$O "$genLibStr"charCp.\$O "$genLibStr"genMath.h
-	$ccStr "$dashOStr""$genBioStr"geneCoord.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"geneCoord.c";
+geneCoordStr="${genBioStr}geneCoord.\$O: \\
+	${genBioStr}geneCoord.c ${genBioStr}geneCoord.h \\
+	${genLibStr}base10str.\$O ${genLibStr}ulCp.\$O \\
+	${genLibStr}charCp.\$O ${genLibStr}genMath.h
+	$ccStr ${dashOStr}${genBioStr}geneCoord.\$O \\
+		$dashCStr $coreFlagsStr $cFlagsStr \\
+		${genBioStr}geneCoord.c";
 
-geneCoordObj=""$genBioStr"geneCoord.\$O";
-geneCoordDep=("base10str" ${base10strDep[*]} "ulCp" ${ulCpDep[*]} "charCp" ${charCpDep[*]})
-lenGeneCoordDep=$((1 + lenBase10strDep + lenUlCpDep + lenCharCpDep));
+geneCoordObj="${genBioStr}geneCoord.\$O";
+geneCoordDep="base10str $base10strDep ulCp $ulCpDep";
+geneCoordDep="$geneCoordDep $ulCpDep charCp $charCpDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat06:
 #   - samEntry
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-samEntryStr=""$genBioStr"samEntry.\$O: "$genBioStr"samEntry.c "$genBioStr"samEntry.h "$genLibStr"strAry.\$O "$genLibStr"base10str.\$O "$genLibStr"numToStr.\$O "$genBioStr"ntTo5Bit.h "$genLibStr"endLine.h
-	$ccStr "$dashOStr""$genBioStr"samEntry.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"samEntry.c";
+samEntryStr="${genBioStr}samEntry.\$O: \\
+	${genBioStr}samEntry.c ${genBioStr}samEntry.h \\
+	${genLibStr}strAry.\$O ${genLibStr}base10str.\$O \\
+	${genLibStr}numToStr.\$O ${genBioStr}ntTo5Bit.h \\
+	${genLibStr}endLine.h
+		$ccStr ${dashOStr}${genBioStr}samEntry.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}samEntry.c";
 
-samEntryObj=""$genBioStr"samEntry.\$O";
-samEntryDep=("strAry" ${strAryDep[*]} "numToStr" ${numToStrDep[*]} "base10str" ${base10strDep[*]})
-lenSamEntryDep=$((1 + lenStrAryDep + lenNumToStrDep + lenBase10strDep));
+samEntryObj="${genBioStr}samEntry.\$O";
+samEntryDep="strAry $strAryDep numToStr numToStrDep";
+samEntryDep="$samEntryDep base10str $base10strDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat07:
 #   - adjCoords
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-adjCoordsStr=""$genBioStr"adjCoords.\$O: "$genBioStr"adjCoords.c "$genBioStr"adjCoords.h "$genBioStr"geneCoord.\$O "$genBioStr"samEntry.\$O
-	$ccStr "$dashOStr""$genBioStr"adjCoords.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"adjCoords.c";
+adjCoordsStr="${genBioStr}adjCoords.\$O: \\
+	${genBioStr}adjCoords.c ${genBioStr}adjCoords.h \\
+	${genBioStr}geneCoord.\$O ${genBioStr}samEntry.\$O
+		$ccStr ${dashOStr}${genBioStr}adjCoords.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}adjCoords.c";
 
-adjCoordsObj=""$genBioStr"adjCoords.\$O";
-adjCoordsDep=("geneCoord" ${geneCoordDep[*]} "samEntry" ${samEntryDep[*]});
-lenAdjCoordsDep=$((1 + lenGeneCoordDep + lenSamEntryDep));
+adjCoordsObj="${genBioStr}adjCoords.\$O";
+adjCoordsDep="geneCoord $geneCoordDep";
+adjCoordsDep="$adjCoordsDep samEntry $samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat08:
 #   - cigToEqx
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-cigToEqxStr=""$genBioStr"cigToEqx.\$O: "$genBioStr"cigToEqx.c "$genBioStr"cigToEqx.h "$genBioStr"samEntry.\$O
-	$ccStr "$dashOStr""$genBioStr"cigToEqx.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"cigToEqx.c";
+cigToEqxStr="${genBioStr}cigToEqx.\$O: \\
+	${genBioStr}cigToEqx.c ${genBioStr}cigToEqx.h \\
+	${genBioStr}samEntry.\$O
+		$ccStr ${dashOStr}${genBioStr}cigToEqx.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}cigToEqx.c";
 
-cigToEqxObj=""$genBioStr"cigToEqx.\$O";
-cigToEqxDep=("samEntry" ${samEntryDep[*]});
-lenCigToEqxDep=$((1 + lenSamEntryDep));
+cigToEqxObj="${genBioStr}cigToEqx.\$O";
+cigToEqxDep="samEntry $samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat09:
 #   - maskPrim
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-maskPrimStr=""$genBioStr"maskPrim.\$O: "$genBioStr"maskPrim.c "$genBioStr"maskPrim.h "$genBioStr"samEntry.\$O "$genLibStr"shellSort.\$O
-	$ccStr "$dashOStr""$genBioStr"maskPrim.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"maskPrim.c";
+maskPrimStr="${genBioStr}maskPrim.\$O: \\
+	${genBioStr}maskPrim.c ${genBioStr}maskPrim.h \\
+	${genBioStr}samEntry.\$O ${genLibStr}shellSort.\$O
+		$ccStr ${dashOStr}${genBioStr}maskPrim.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}maskPrim.c";
 
-maskPrimObj=""$genBioStr"maskPrim.\$O";
-maskPrimDep=("samEntry" ${samEntryDep[*]} "shellSort" ${shellSortDep[*]});
-lenMaskPrimDep=$((1 + lenSamEntryDep + lenShellSortDep));
+maskPrimObj="${genBioStr}maskPrim.\$O";
+maskPrimDep="samEntry $samEntryDep";
+maskPrimDep="$maskPrimDep shellSort shellSortDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat10:
 #   - trimSam
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-trimSamStr=""$genBioStr"trimSam.\$O: "$genBioStr"trimSam.c "$genBioStr"trimSam.h "$genBioStr"samEntry.\$O
-	$ccStr "$dashOStr""$genBioStr"trimSam.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"trimSam.c";
+trimSamStr="${genBioStr}trimSam.\$O: \\
+	${genBioStr}trimSam.c ${genBioStr}trimSam.h \\
+	${genBioStr}samEntry.\$O
+		$ccStr ${dashOStr}${genBioStr}trimSam.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}trimSam.c";
 
-trimSamObj=""$genBioStr"trimSam.\$O";
-trimSamDep=("samEntry" ${samEntryDep[*]});
-lenTrimSamDep=$((1 + lenSamEntryDep));
+trimSamObj="${genBioStr}trimSam.\$O";
+trimSamDep="samEntry samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat11:
 #   - ampDepth
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-ampDepthStr=""$genBioStr"ampDepth.\$O: "$genBioStr"ampDepth.c "$genBioStr"ampDepth.h "$genBioStr"geneCoord.\$O "$genBioStr"samEntry.\$O
-	$ccStr "$dashOStr""$genBioStr"ampDepth.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"ampDepth.c";
+ampDepthStr="${genBioStr}ampDepth.\$O: \\
+	${genBioStr}ampDepth.c ${genBioStr}ampDepth.h \\
+	${genBioStr}geneCoord.\$O ${genBioStr}samEntry.\$O
+		$ccStr ${dashOStr}${genBioStr}ampDepth.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}ampDepth.c";
 
-ampDepthObj=""$genBioStr"ampDepth.\$O";
-ampDepthDep=("geneCoord" ${geneCoordDep[*]} "samEntry" ${samEntryDep[*]});
-lenAmpDepthDep=$((1 + lenGeneCoordDep + lenSamEntryDep));
+ampDepthObj="${genBioStr}ampDepth.\$O";
+ampDepthDep="geneCoord $geneCoordDep";
+ampDepthDep="$ampDepthDep samEntry $samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat12:
 #   - tbCon
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-tbConStr=""$genBioStr"tbCon.\$O: "$genBioStr"tbCon.c "$genBioStr"tbCon.h "$genBioStr"samEntry.\$O "$genBioStr"tbConDefs.h "$genLibStr"genMath.h "$genLibStr"endLine.h
-	$ccStr "$dashOStr""$genBioStr"tbCon.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"tbCon.c";
+tbConStr="${genBioStr}tbCon.\$O: \\
+	${genBioStr}tbCon.c ${genBioStr}tbCon.h \\
+	${genBioStr}samEntry.\$O ${genBioStr}tbConDefs.h \\
+	${genLibStr}genMath.h ${genLibStr}endLine.h
+		$ccStr ${dashOStr}${genBioStr}tbCon.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}tbCon.c";
 
-tbConObj=""$genBioStr"tbCon.\$O";
-tbConDep=("samEntry" ${samEntryDep[*]});
-lenTbConDep=$((1 + lenSamEntryDep));
+tbConObj="${genBioStr}tbCon.\$O";
+tbConDep="samEntry $samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat13:
 #   - edDist
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-edDistStr=""$genBioStr"edDist.\$O: "$genBioStr"edDist.c "$genBioStr"edDist.h "$genBioStr"samEntry.\$O "$genBioStr"seqST.\$O "$genLibStr"genMath.h "$genLibStr"endLine.h
-	$ccStr "$dashOStr""$genBioStr"edDist.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"edDist.c";
+edDistStr="${genBioStr}edDist.\$O: \\
+	${genBioStr}edDist.c ${genBioStr}edDist.h \\
+	${genBioStr}samEntry.\$O ${genBioStr}seqST.\$O \\
+	${genLibStr}genMath.h ${genLibStr}endLine.h
+		$ccStr ${dashOStr}${genBioStr}edDist.\$O \\
+		$dashCStr $coreFlagsStr $cFlagsStr \\
+		${genBioStr}edDist.c";
 
 
-edDistObj=""$genBioStr"edDist.\$O";
-edDistDep=("samEntry" ${samEntryDep[*]} "seqST" ${seqSTDep[*]});
-lenEdDistDep=$((1 + lenSamEntryDep + lenSeqSTDep));
+edDistObj="${genBioStr}edDist.\$O";
+edDistDep="samEntry $samEntryDep seqST $seqSTDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat14:
 #   - rmHomo
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-rmHomoStr=""$genBioStr"rmHomo.\$O: "$genBioStr"rmHomo.c "$genBioStr"rmHomo.h "$genBioStr"samEntry.\$O "$genBioStr"seqST.\$O
-	$ccStr "$dashOStr""$genBioStr"rmHomo.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genBioStr"rmHomo.c";
+rmHomoStr="${genBioStr}rmHomo.\$O: \\
+	${genBioStr}rmHomo.c ${genBioStr}rmHomo.h \\
+	${genBioStr}samEntry.\$O ${genBioStr}seqST.\$O
+		$ccStr ${dashOStr}${genBioStr}rmHomo.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}rmHomo.c";
 
 
-rmHomoObj=""$genBioStr"rmHomo.\$O";
-rmHomoDep=("samEntry" ${samEntryDep[*]} "seqST" ${seqSTDep[*]});
-lenRmHomoDep=$((1 + lenSamEntryDep + lenSeqSTDep));
+rmHomoObj="${genBioStr}rmHomo.\$O";
+rmHomoDep="samEntry $samEntryDep seqST $seqSTDep";
 
 #*********************************************************
 # Sec03 Sub04:
@@ -775,117 +911,163 @@ lenRmHomoDep=$((1 + lenSamEntryDep + lenSeqSTDep));
 #   - indexToCoord
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-indexToCoordStr=""$genAlnStr"indexToCoord.\$O: "$genAlnStr"indexToCoord.c
-	$ccStr "$dashOStr""$genAlnStr"indexToCoord.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genAlnStr"indexToCoord.c";
+indexToCoordStr="${genAlnStr}indexToCoord.\$O: \\
+	${genAlnStr}indexToCoord.c ${genAlnStr}indexToCoord.h
+		$ccStr ${dashOStr}${genAlnStr}indexToCoord.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genAlnStr}indexToCoord.c";
 
 
-indexToCoordObj=""$genAlnStr"indexToCoord.\$O";
-indexToCoordDep=("");
-lenIndexToCoordDep=0;
+indexToCoordObj="${genAlnStr}indexToCoord.\$O";
+indexToCoordDep="";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub04 Cat02:
 #   - alnSet
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-alnSetStr=""$genAlnStr"alnSet.\$O: "$genAlnStr"alnSet.c "$genAlnStr"alnDefs.h "$genLibStr"ulCp.\$O "$genLibStr"base10str.\$O "$genLibStr"endLine.h
-	$ccStr "$dashOStr""$genAlnStr"alnSet.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genAlnStr"alnSet.c";
+alnSetStr="${genAlnStr}alnSet.\$O: \\
+	${genAlnStr}alnSet.c ${genAlnStr}alnDefs.h \\
+	${genLibStr}ulCp.\$O ${genLibStr}base10str.\$O \\
+	${genAlnStr}alnDefs.h ${genLibStr}endLine.h
+		$ccStr ${dashOStr}${genAlnStr}alnSet.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genAlnStr}alnSet.c";
 
 
-alnSetObj=""$genAlnStr"alnSet.\$O";
-alnSetDep=("base10str" ${base10strDep[*]} "ulCp" ${ulCpDep[*]});
-lenAlnSetDep=$((1 + lenBase10strDep + lenUlCpDep));
+alnSetObj="${genAlnStr}alnSet.\$O";
+alnSetDep="base10str $base10strDep ulCp $ulCpDep"
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub04 Cat03:
 #   - dirMatrix
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-dirMatrixStr=""$genAlnStr"dirMatrix.\$O: "$genAlnStr"dirMatrix.c "$genAlnStr"alnSet.\$O "$genAlnStr"indexToCoord.\$O "$genBioStr"samEntry.\$O "$genBioStr"seqST.\$O "$genLibStr"charCp.\$O
-	$ccStr "$dashOStr""$genAlnStr"dirMatrix.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genAlnStr"dirMatrix.c";
+dirMatrixStr="${genAlnStr}dirMatrix.\$O: \\
+	${genAlnStr}dirMatrix.c ${genAlnStr}alnSet.\$O \\
+	${genAlnStr}indexToCoord.\$O \\
+	${genBioStr}samEntry.\$O ${genBioStr}seqST.\$O \\
+	${genLibStr}charCp.\$O
+		$ccStr ${dashOStr}${genAlnStr}dirMatrix.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genAlnStr}dirMatrix.c";
 
 
-dirMatrixObj=""$genAlnStr"dirMatrix.\$O";
-dirMatrixDep=("alnSet" ${alnSetDep[*]} "indexToCoord" ${indexToCoordDep[*]} "samEntry" ${samEntryDep[*]} "seqST" ${seqSTDep[*]} "charCp" ${charCpDep[*]});
-lenDirMatrixDep=$((1 + lenAlnSetDep + lenIndexToCoordDep + lenSamEntryDep + lenSeqSTDep + lenCharCpDep));
+dirMatrixObj="${genAlnStr}dirMatrix.\$O";
+dirMatrixDep="alnSet $alnSetDep";
+dirMatrixDep="$dirMatrixDep indexToCoord";
+dirMatrixDep="$dirMatrixDep $indexToCoordDep";
+dirMatrixDep="$dirMatrixDep samEntry $samEntryDep";
+dirMatrixDep="$dirMatrixDep seqST $seqSTDep";
+dirMatrixDep="$dirMatrixDep charCp $charCpDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub04 Cat04:
 #   - water
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-waterStr=""$genAlnStr"water.\$O: "$genAlnStr"water.c "$genAlnStr"dirMatrix.\$O "$genLibStr"genMath.h
-	$ccStr "$dashOStr""$genAlnStr"water.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genAlnStr"water.c";
+waterStr="${genAlnStr}water.\$O: ${genAlnStr}water.c \\
+	${genAlnStr}dirMatrix.\$O ${genLibStr}genMath.h
+		$ccStr ${dashOStr}${genAlnStr}water.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genAlnStr}water.c";
 
 
-waterObj=""$genAlnStr"water.\$O";
-waterDep=("dirMatrix" ${dirMatrixDep[*]});
-lenWaterDep=$((1 + lenDirMatrixDep));
+waterObj="${genAlnStr}water.\$O";
+waterDep="dirMatrix $dirMatrixDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub04 Cat05:
 #   - needle
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-needleStr=""$genAlnStr"needle.\$O: "$genAlnStr"needle.c "$genAlnStr"dirMatrix.\$O "$genLibStr"genMath.h
-	$ccStr "$dashOStr""$genAlnStr"needle.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genAlnStr"needle.c";
+needleStr="${genAlnStr}needle.\$O: \\
+	${genAlnStr}needle.c ${genAlnStr}dirMatrix.\$O \\
+	${genLibStr}genMath.h
+		$ccStr ${dashOStr}${genAlnStr}needle.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genAlnStr}needle.c";
 
 
-needleObj=""$genAlnStr"needle.\$O";
-needleDep=("dirMatrix" ${dirMatrixDep[*]});
-lenNeedleDep=$((1 + lenDirMatrixDep));
+needleObj="${genAlnStr}needle.\$O";
+needleDep="dirMatrix $dirMatrixDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub04 Cat06:
 #   - memwater
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-memwaterStr=""$genAlnStr"memwater.\$O: "$genAlnStr"memwater.c "$genAlnStr"alnSet.\$O "$genAlnStr"indexToCoord.\$O "$genBioStr"seqST.\$O "$genLibStr"genMath.h
-	$ccStr "$dashOStr""$genAlnStr"memwater.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genAlnStr"memwater.c";
+memwaterStr="${genAlnStr}memwater.\$O: \\
+	${genAlnStr}memwater.c ${genAlnStr}alnSet.\$O \\
+	${genAlnStr}indexToCoord.\$O ${genBioStr}seqST.\$O \\
+	${genLibStr}genMath.h
+		$ccStr ${dashOStr}${genAlnStr}memwater.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genAlnStr}memwater.c";
 
 
-memwaterObj=""$genAlnStr"memwater.\$O";
-memwaterDep=("alnSet" ${alnSetDep[*]} "indexToCoord" ${indexToCoordDep[*]} "seqST" ${seqSTDep[*]});
-lenMemwaterDep=$((1 + lenAlnSetDep + lenIndexToCoordDep + lenSeqSTDep));
+memwaterObj="${genAlnStr}memwater.\$O";
+memwaterDep="alnSet $alnSetDep indexToCoord";
+memwaterDep="$memwaterDep $indexToCoordDep";
+memwaterDep="$memwaterDep seqST $seqSTDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub04 Cat07:
 #   - kmerFind
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-kmerFindStr=""$genAlnStr"kmerFind.\$O: "$genAlnStr"kmerFind.c "$genAlnStr"memwater.\$O "$genBioStr"seqST.\$O  "$genLibStr"shellSort.\$O "$genLibStr"genMath.h "$genBioStr"kmerBit.h
-	$ccStr "$dashOStr""$genAlnStr"kmerFind.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genAlnStr"kmerFind.c";
+kmerFindStr="${genAlnStr}kmerFind.\$O: \\
+	${genAlnStr}kmerFind.c ${genAlnStr}memwater.\$O \\
+	${genLibStr}shellSort.\$O ${genLibStr}genMath.h \\
+	${genBioStr}kmerBit.h
+		$ccStr ${dashOStr}${genAlnStr}kmerFind.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genAlnStr}kmerFind.c";
 
 
-kmerFindObj=""$genAlnStr"kmerFind.\$O";
-kmerFindDep=("memwater" ${memwaterDep[*]} "shellSort" ${shellSortDep[*]});
-lenKmerFindDep=$((1 + lenMemwaterDep + lenShellShortDep));
+kmerFindObj="${genAlnStr}kmerFind.\$O";
+kmerFindDep="memwater $memwaterDep";
+kmerFindDep="$kmerFindDep shellSort $shellSortDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub04 Cat08:
 #   - samToAln
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-samToAlnStr=""$genAlnStr"samToAln.\$O: "$genAlnStr"samToAln.c "$genAlnStr"samToAln.h "$genBioStr"samEntry.\$O "$genBioStr"seqST.\$O "$genAlnStr"alnSet.\$O
-	$ccStr "$dashOStr""$genAlnStr"samToAln.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genAlnStr"samToAln.c";
+samToAlnStr="${genAlnStr}samToAln.\$O: \\
+	${genAlnStr}samToAln.c ${genAlnStr}samToAln.h \\
+	${genBioStr}samEntry.\$O ${genBioStr}seqST.\$O \\
+	${genAlnStr}alnSet.\$O
+		$ccStr ${dashOStr}${genAlnStr}samToAln.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genAlnStr}samToAln.c";
 
 
-samToAlnObj=""$genAlnStr"samToAln.\$O";
-samToAlnDep=("alnSet" ${alnSetDep[*]} "samEntry" ${samEntryDep[*]} "seqST" ${seqSTDep[*]});
-lenSamToAlnDep=$((1 + lenAlnSetDep + lenSamEntryDep + lenSeqSTDep));
+samToAlnObj="${genAlnStr}samToAln.\$O";
+samToAlnDep="alnSet $alnSetDep samEntry $samEntryDep";
+samToAlnDep="$samToAlnDep seqST $seqSTDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub04 Cat09:
 #   - mapRead
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-mapReadStr=""$genAlnStr"mapRead.\$O: "$genAlnStr"mapRead.c "$genAlnStr"mapRead.h "$genAlnStr"needle.\$O "$genAlnStr"dirMatrix.\$O "$genBioStr"kmerFun.\$O "$genAlnStr"defsMapRead.h  "$genLibStr"genMath.h
-	$ccStr "$dashOStr""$genAlnStr"mapRead.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genAlnStr"mapRead.c";
+mapReadStr="${genAlnStr}mapRead.\$O: \\
+	${genAlnStr}mapRead.c ${genAlnStr}mapRead.h \\
+	${genAlnStr}needle.\$O ${genAlnStr}dirMatrix.\$O \\
+	${genBioStr}kmerFun.\$O ${genLibStr}shellSort.\$O \\
+	${genAlnStr}defsMapRead.h  ${genLibStr}genMath.h
+	 	$ccStr ${dashOStr}${genAlnStr}mapRead.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genAlnStr}mapRead.c";
 
 
-mapReadObj=""$genAlnStr"mapRead.\$O";
-mapReadDep=("needle" ${needleDep[*]} "dirMatrix" ${dirMatrixDep[*]} "samEntry" ${samEntryDep[*]} "seqST" ${seqSTDep[*]} "kmerFun" ${kmerFunDep[*]});
-lenMapReadDep=$((1 + lenNeedleDep + lenDirMatrixDep + lenSamEntryDep + lenSeqSTDep + lenKmerFunDep));
+mapReadObj="${genAlnStr}mapRead.\$O";
+mapReadDep="needle $needleDep dirMatrix $dirMatrixDep";
+mapReadDep="$mapReadDep samEntry $samEntryDep";
+mapReadDep="$mapReadDep seqST $seqSTDep";
+mapReadDep="$mapReadDep kmerFun $kmerFunDep";
+mapReadDep="$mapReadDep shellSort $shellSortDep";
 
 #*********************************************************
 # Sec03 Sub05:
@@ -903,37 +1085,51 @@ lenMapReadDep=$((1 + lenNeedleDep + lenDirMatrixDep + lenSamEntryDep + lenSeqSTD
 #   - illNano
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-illNanoStr=""$genClustStr"illNano.\$O: "$genClustStr"illNano.c "$genClustStr"illNano.h "$genBioStr"samEntry.\$O
-	$ccStr "$dashOStr""$genClustStr"illNano.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genClustStr"illNano.c";
+illNanoStr="${genClustStr}illNano.\$O: \\
+	${genClustStr}illNano.c ${genClustStr}illNano.h \\
+	${genBioStr}samEntry.\$O
+		$ccStr ${dashOStr}${genClustStr}illNano.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genClustStr}illNano.c;
+";
 
 
-illNanoObj=""$genClustStr"illNano.\$O";
-illNanoDep=("samEntry" ${samEntryDep[*]});
-lenIllNanoDep=$((1 + lenSamEntryDep));
+illNanoObj="${genClustStr}illNano.\$O";
+illNanoDep="samEntry $samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub05 Cat02:
 #   - clustST
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-clustSTStr=""$genClustStr"clustST.\$O: "$genClustStr"clustST.c "$genClustStr"clustST.h "$genBioStr"samEntry.\$O "$genBioStr"tbCon.\$O "$genBioStr"edDist.\$O "$genLibStr"genMath.h
-	$ccStr "$dashOStr""$genClustStr"clustST.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genClustStr"clustST.c";
+clustSTStr="${genClustStr}clustST.\$O: \\
+	${genClustStr}clustST.c ${genClustStr}clustST.h \\
+	${genBioStr}samEntry.\$O ${genBioStr}tbCon.\$O \\
+	${genBioStr}edDist.\$O ${genLibStr}genMath.h
+		$ccStr ${dashOStr}${genClustStr}clustST.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genClustStr}clustST.c
+";
 
-clustSTObj=""$genClustStr"clustST.\$O";
-clustSTDep=("samEntry" ${samEntryDep[*]} "tbCon" ${tbConDep[*]} "edDist" ${edDistDep[*]});
-lenClustSTDep=$((1 + lenSamEntryDep + lenTbConDep + lenEdDistDep));
+clustSTObj="${genClustStr}clustST.\$O";
+clustSTDep="samEntry $samEntryDep tbCon $tbConDep";
+clustSTDep="$clustSTDep edDist $edDistDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub05 Cat03:
 #   - edClust
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-edClustStr=""$genClustStr"edClust.\$O: "$genClustStr"edClust.c "$genClustStr"edClust.h "$genClustStr"clustST.\$O
-	$ccStr "$dashOStr""$genClustStr"edClust.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genClustStr"edClust.c";
+edClustStr="${genClustStr}edClust.\$O: \\
+	${genClustStr}edClust.c ${genClustStr}edClust.h \\
+	${genClustStr}clustST.\$O
+		$ccStr ${dashOStr}${genClustStr}edClust.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genClustStr}edClust.c
+";
 
-edClustObj=""$genClustStr"edClust.\$O";
-edClustDep=("clustST" ${clustSTDep[*]});
-lenEdClustDep=$((1 + lenClustSTDep));
+edClustObj="${genClustStr}edClust.\$O";
+edClustDep="clustST $clustSTDep";
 
 #*********************************************************
 # Sec03 Sub06:
@@ -947,12 +1143,16 @@ lenEdClustDep=$((1 + lenClustSTDep));
 #   - cgMLST
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-cgMLSTStr=""$genGenoTypeStr"cgMLST.\$O: "$genGenoTypeStr"cgMLST.c "$genGenoTypeStr"cgMLST.h "$genBioStr"edDist.\$O "$genLibStr"ptrAry.\$O
-	$ccStr "$dashOStr""$genGenoTypeStr"cgMLST.\$O "$dashCStr" $coreFlagsStr $cFlagsStr "$genGenoTypeStr"cgMLST.c";
+cgMLSTStr="${genGenoTypeStr}cgMLST.\$O: \\
+	${genGenoTypeStr}cgMLST.c ${genGenoTypeStr}cgMLST.h \\
+	${genBioStr}edDist.\$O ${genLibStr}ptrAry.\$O
+		$ccStr ${dashOStr}${genGenoTypeStr}cgMLST.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genGenoTypeStr}cgMLST.c
+";
 
-cgMLSTObj=""$genGenoTypeStr"cgMLST.\$O";
-cgMLSTDep=("edDist" ${edDistDep[*]} "ptrAry" ${ptrAryDep[*]});
-lenCgMLSTDep=$((1 + lenEdDistDep + lenPtrAryDep));
+cgMLSTObj="${genGenoTypeStr}cgMLST.\$O";
+cgMLSTDep="edDist $edDistDep ptrAry $ptrAryDep";
 
 #*********************************************************
 # Sec03 Sub07:
@@ -967,50 +1167,81 @@ lenCgMLSTDep=$((1 + lenEdDistDep + lenPtrAryDep));
 #   - k2TaxaId
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-tmpStr=".."$slashSC"k2TaxaIdSrc"$slashSC"k2TaxaId";
-k2TaxaIdStr="$tmpStr.\$O: $tmpStr.c $tmpStr.h "$genLibStr"ptrAry.\$O "$genLibStr"shellSort.\$O "$genLibStr"numToStr.\$O "$genLibStr"base10str.\$O "$genLibStr"genMath.\$O
-	$ccStr $dashOStr$tmpStr.\$O "$dashCStr" $coreFlagsStr $cFlagsStr $tmpStr.c";
+tmpStr="..${slashSC}k2TaxaIdSrc${slashSC}k2TaxaId";
+k2TaxaIdStr="$tmpStr.\$O: \\
+	$tmpStr.c $tmpStr.h ${genLibStr}ptrAry.\$O \\
+	${genLibStr}shellSort.\$O ${genLibStr}numToStr.\$O \\
+	${genLibStr}base10str.\$O ${genLibStr}genMath.\$O
+		$ccStr $dashOStr$tmpStr.\$O $dashCStr \\
+			$coreFlagsStr $cFlagsStr $tmpStr.c";
 
 k2TaxaIdObj="$tmpStr.\$O";
-k2TaxaIdDep=("ptrAry" ${ptrAryDep[*]} "base10str" ${base10strDep[*]} "numToStr" ${numToStrDep[*]} "genMath" ${genMathDep[*]} "shellSort" ${shellSortDep[*]} );
-lenK2TaxaIdDep=$((1 + lenPtrAryDep + lenBase10strDep + lenNumToStrDep + lenGenMathDep + lenShellShortDep));
+k2TaxaIdDep="ptrAry $ptrAryDep base10str $base10strDep";
+k2TaxaIdDep="$k2TaxaIdDep numToStr $numToStrDep";
+k2TaxaIdDep="$k2TaxaIdDep genMath $genMathDep";
+k2TaxaIdDep="$k2TaxaIdDep shellSort $shellSortDep";
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # Sec04:
 #   - build make file command
 #   o sec04 sub01:
-#     o move past name and OS + start loop
+#     o move past name and OS and get user arguments
 #   o sec04 sub02:
-#     - genLib libraries
+#     - deal with .h files and spacing + start mkfile loop
 #   o sec04 sub03:
-#     - genBio libraries
+#     - genLib libraries + start makefile loop
 #   o sec04 sub04:
-#     - genAln libraries
+#     - genBio libraries
 #   o sec04 sub05:
+#     - genAln libraries
+#   o sec04 sub07:
 #     - genClust libraries
 #   o sec04 sub07:
 #     - non-general library files
-#   o sec04 sub07:
+#   o sec04 sub08:
 #     - move to next library or dependency
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 #*********************************************************
 # Sec04 Sub01:
-#   o move past name and OS + start loop
+#   o move past name and OS and get user arguments
 #*********************************************************
 
 objFilesStr="objFiles=";
-depSI=0;
-lenDep=0;
+mainCntSI=0;
+libCntSI=0;
 
 # move past header
-shift; # program name
-shift; # os type
+shift; # move past os type
+shift; # move past program name
+shift; # move past main file
 
-libStr="$1";
-genLibBl=0;
+while [ $# -gt 0 ];
+do   # Loop: get dependencies
+   depStr="$depStr $1";
+   mainCntSI="$((mainCntSI + 1))";
+   shift;
+done # Loop: get dependencies
 
-while [[ $# -gt 0 || "$depSI" -lt "$lenDep" ]]; do
+
+depStr="${depStr#"${depStr%%[![:space:]]*}"}";
+   # clear leading spaces
+libStr="${depStr%% *}";
+   # get first argument
+depStr="${depStr#"${depStr%%[[:space:]]*}"}";
+   # pop off first arugment
+depStr="${depStr#"${depStr%%[![:space:]]*}"}";
+   # clear leading spaces
+
+#*********************************************************
+# Sec04 Sub02:
+#   - deal with .h files and spacing + start mkfile loop
+#*********************************************************
+
+firstBl="";
+
+while [ "$libStr" != "" ];
+do # Loop: get dependencies
 
    if [ "$firstBl" = "" ]; then
       newLineStr="";
@@ -1022,988 +1253,1028 @@ while [[ $# -gt 0 || "$depSI" -lt "$lenDep" ]]; do
    # this step is to save any .h files the user provided
    #   that way they are included in the command
    hFileBl="$(\
-      printf "%s" "$1" | sed 's/.*\.h$/\.h/' \
+      printf "%s" "$libStr" | sed 's/.*\.h$/\.h/' \
    )";
 
    if [ "$hFileBl" = ".h" ];
    then # If: is a .h file
-      mainCmdStr="$mainCmdStr $libStr";
-      shift;
+      mainCmdStr="$mainCmdStr \\
+	$libStr";
+      libCntSI="$((libCntSI + 1))";
+
+      libStr="${depStr%% *}";
+         # get first argument
+      depStr="${depStr#"${depStr%%[[:space:]]*}"}";
+         # pop off first arugment
+      depStr="${depStr#"${depStr%%[![:space:]]*}"}";
+         # clear leading spaces
+
       continue;
    fi
 
    #******************************************************
-   # Sec04 Sub02:
+   # Sec04 Sub03:
    #   - genLib libraries
-   #   o sec04 sub02 cat01:
+   #   o sec04 sub03 cat01:
    #     - numToStr
-   #   o sec04 sub02 cat02:
+   #   o sec04 sub03 cat02:
    #     - base10str
-   #   o sec04 sub02 cat03:
+   #   o sec04 sub03 cat03:
    #     - ulCp
-   #   o sec04 sub02 cat04:
+   #   o sec04 sub03 cat04:
    #     - charCp
-   #   o sec04 sub02 cat05:
+   #   o sec04 sub03 cat05:
    #     - genMath
-   #   o sec04 sub02 cat06:
+   #   o sec04 sub03 cat06:
    #     - shellSort
-   #   o sec04 sub02 cat07:
-   #     - rmBlocks
-   #   o sec04 sub02 cat08:
+   #   o sec04 sub03 cat07:
+   #     - endin
+   #   o sec04 sub03 cat08:
+   #     - checkSum
+   #   o sec04 sub03 cat09:
    #     - strAry
-   #   o sec04 sub02 cat09:
+   #   o sec04 sub03 cat10:
    #     - ptrAry
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub02 Cat01:
+   # Sec04 Sub03 Cat01:
    #   - numToStr
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   if [[ "$libStr" == "numToStr" ]]; then
+   if [ "$libStr" = "numToStr" ]; then
    # If: numToStr library
-      if [[ "$numToStrBl" == "" ]]; then
+      if [ "$numToStrBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$numToStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$numToStrObj"";
+         objFilesStr="${objFilesStr}$numToStrObj";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $numToStrObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\\n	$numToStrObj";
          fi
 
          numToStrBl=1;
-
-         depAry+=(${numToStrDep[*]});
-         lenDep=$((lenDep + lenNumToStrDep));
+         depStr="$depStr $numToStrDep";
       fi
 
-      if [[ "$genLibBl" -lt 1 ]]; then
+      if [ "$genLibBl" -lt 1 ]; then
          genLibBl=1;
-         libPathStr="$libPathStr\ngenLib=.."$slashSC"genLib";
+         libPathStr="$libPathStr\ngenLib=..${slashSC}genLib";
       fi
    # If: numToStr library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub02 Cat02:
+   # Sec04 Sub03 Cat02:
    #   - base10str
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "base10str" ]]; then
+   elif [ "$libStr" = "base10str" ]; then
    # Else If: base10str library
-      if [[ "$base10strBl" == "" ]]; then
+      if [ "$base10strBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$base10Str";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$base10strObj"";
+         objFilesStr="${objFilesStr}$base10strObj";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $base10strObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$base10strObj";
          fi
 
          base10strBl=1;
 
-         depAry+=(${base10strDep[*]});
-         lenDep=$((lenDep + lenBase10strDep));
+         depStr="$depStr $base10strDep";
       fi
 
-      if [[ "$genLibBl" -lt 1 ]]; then
+      if [ "$genLibBl" -lt 1 ]; then
          genLibBl=1;
-         libPathStr="$libPathStr\ngenLib=.."$slashSC"genLib";
+         libPathStr="$libPathStr\ngenLib=..${slashSC}genLib";
       fi
    # Else If: base10str library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub02 Cat03:
+   # Sec04 Sub03 Cat03:
    #   - ulCp
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "ulCp" ]]; then
+   elif [ "$libStr" = "ulCp" ]; then
    # Else If: ulCp library
-      if [[ "$ulCpBl" == "" ]]; then
+      if [ "$ulCpBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$ulCpStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$ulCpObj"";
+         objFilesStr="${objFilesStr}$ulCpObj";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $ulCpObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$ulCpObj";
          fi
 
          ulCpBl=1;
-
-         depAry+=(${ulCpDep[*]});
-         lenDep=$((lenDep + lenUlCpDep));
+         depStr="$depStr $ulCpDep";
       fi
 
-      if [[ "$genLibBl" -lt 1 ]]; then
+      if [ "$genLibBl" -lt 1 ]; then
          genLibBl=1;
-         libPathStr="$libPathStr\ngenLib=.."$slashSC"genLib";
+         libPathStr="$libPathStr\ngenLib=..${slashSC}genLib";
       fi
    # Else If: ulCp library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub02 Cat04:
+   # Sec04 Sub03 Cat04:
    #   - charCp
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "charCp" ]]; then
+   elif [ "$libStr" = "charCp" ]; then
    # Else If: charCp library
-      if [[ "$charCpBl" == "" ]]; then
+      if [ "$charCpBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$charCpStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$charCpObj"";
+         objFilesStr="${objFilesStr}$charCpObj";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $charCpObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$charCpObj";
          fi
 
          charCpBl=1;
-
-         depAry+=(${charCpDep[*]});
-         lenDep=$((lenDep + lenCharCpDep));
+         depStr="$depStr $charCpDep";
       fi
 
-      if [[ "$genLibBl" -lt 1 ]]; then
+      if [ "$genLibBl" -lt 1 ]; then
          genLibBl=1;
-         libPathStr="$libPathStr\ngenLib=.."$slashSC"genLib";
+         libPathStr="$libPathStr\ngenLib=..${slashSC}genLib";
       fi
    # Else If: charCp library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub02 Cat05:
+   # Sec04 Sub03 Cat05:
    #   - genMath
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "genMath" ]]; then
+   elif [ "$libStr" = "genMath" ]; then
    # Else If: genMath library
-      if [[ "$genMathBl" == "" ]]; then
+      if [ "$genMathBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$genMathStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$genMathObj"";
+         objFilesStr="${objFilesStr}$genMathObj";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $genMathObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$genMathObj";
          fi
 
          genMathBl=1;
-
-         depAry+=(${genMathDep[*]});
-         lenDep=$((lenDep + lenGenMathDep));
+         depStr="$depStr $genMathDep";
       fi
 
-      if [[ "$genLibBl" -lt 1 ]]; then
+      if [ "$genLibBl" -lt 1 ]; then
          genLibBl=1;
-         libPathStr="$libPathStr\ngenLib=.."$slashSC"genLib";
+         libPathStr="$libPathStr\ngenLib=..${slashSC}genLib";
       fi
    # Else If: genMath library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub02 Cat06:
+   # Sec04 Sub03 Cat06:
    #   - shellSort
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "shellSort" ]]; then
+   elif [ "$libStr" = "shellSort" ]; then
    # Else If: shellSort library
-      if [[ "$shellSortBl" == "" ]]; then
+      if [ "$shellSortBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$shellSortStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$shellSortObj"";
+         objFilesStr="${objFilesStr}$shellSortObj";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $shellSortObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$shellSortObj";
          fi
 
          shellSortBl=1;
-
-         depAry+=(${shellSortDep[*]});
-         lenDep=$((lenDep + lenShellSortDep));
+         depStr="$depStr $shellSortDep";
       fi
 
-      if [[ "$genLibBl" -lt 1 ]]; then
+      if [ "$genLibBl" -lt 1 ]; then
          genLibBl=1;
-         libPathStr="$libPathStr\ngenLib=.."$slashSC"genLib";
+         libPathStr="$libPathStr\ngenLib=..${slashSC}genLib";
       fi
    # Else If: shellSort library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub02 Cat07:
-   #   - rmBlocks
+   # Sec04 Sub03 Cat07:
+   #   - endin
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "rmBlocks" ]]; then
-   # Else If: rmBlocks library
-      if [[ "$rmBlocksBl" == "" ]]; then
-         cmdStr="$cmdStr$newLineStr$rmBlocksStr";
+   elif [ "$libStr" = "endin" ]; then
+   # Else If: endin library
+      if [ "$endinBl" = "" ]; then
+         cmdStr="$cmdStr$newLineStr$endinStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$rmBlocksObj"";
+         objFilesStr="${objFilesStr}${endinObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $rmBlocksObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$endinObj";
          fi
 
-         rmBlocksBl=1;
-
-         depAry+=(${rmBlocksDep[*]});
-         lenDep=$((lenDep + lenRmBlocksDep));
+         endinBl=1;
+         depStr="$depStr $endinDep";
       fi
 
-      if [[ "$genLibBl" -lt 1 ]]; then
+      if [ "$genLibBl" -lt 1 ]; then
          genLibBl=1;
-         libPathStr="$libPathStr\ngenLib=.."$slashSC"genLib";
+         libPathStr="$libPathStr\ngenLib=..${slashSC}genLib";
       fi
-   # Else If: rmBlocks library
+   # Else If: endin library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub02 Cat08:
+   # Sec04 Sub03 Cat08:
+   #   - checkSum
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "checkSum" ]; then
+   # Else If: checkSum library
+      if [ "$checkSumBl" = "" ]; then
+         cmdStr="$cmdStr$newLineStr$checkSumStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}${checkSumObj}";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$checkSumObj";
+         fi
+
+         checkSumBl=1;
+         depStr="$depStr $checkSumDep";
+      fi
+
+      if [ "$genLibBl" -lt 1 ]; then
+         genLibBl=1;
+         libPathStr="$libPathStr\ngenLib=..${slashSC}genLib";
+      fi
+   # Else If: checkSum library
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub03 Cat09:
    #   - strAry
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "strAry" ]]; then
+   elif [ "$libStr" = "strAry" ]; then
    # Else If: strAry library
-      if [[ "$strAryBl" == "" ]]; then
+      if [ "$strAryBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$strAryStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$strAryObj"";
+         objFilesStr="${objFilesStr}${strAryObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $strAryObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$strAryObj";
          fi
 
          strAryBl=1;
-
-         depAry+=(${strAryDep[*]});
-         lenDep=$((lenDep + lenStrAryDep));
+         depStr="$depStr $strAryDep";
       fi
 
-      if [[ "$genLibBl" -lt 1 ]]; then
+      if [ "$genLibBl" -lt 1 ]; then
          genLibBl=1;
-         libPathStr="$libPathStr\ngenLib=.."$slashSC"genLib";
+         libPathStr="$libPathStr\ngenLib=..${slashSC}genLib";
       fi
    # Else If: strAry library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub02 Cat09:
+   # Sec04 Sub03 Cat10:
    #   - ptrAry
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "ptrAry" ]]; then
+   elif [ "$libStr" = "ptrAry" ]; then
    # Else If: ptrAry library
-      if [[ "$ptrAryBl" == "" ]]; then
+      if [ "$ptrAryBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$ptrAryStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$ptrAryObj"";
+         objFilesStr="${objFilesStr}${ptrAryObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $ptrAryObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$ptrAryObj";
          fi
 
          ptrAryBl=1;
-
-         depAry+=(${ptrAryDep[*]});
-         lenDep=$((lenDep + lenPtrAryDep));
+         depStr="$depStr $ptrAryDep";
       fi
 
-      if [[ "$genLibBl" -lt 1 ]]; then
+      if [ "$genLibBl" -lt 1 ]; then
          genLibBl=1;
-         libPathStr="$libPathStr\ngenLib=.."$slashSC"genLib";
+         libPathStr="$libPathStr\ngenLib=..${slashSC}genLib";
       fi
    # Else If: ptrAry library
 
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub03 Cat11:
+   #   - inflate
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "inflate" ]; then
+   # Else If: inflate library
+      if [ "$inflateBl" = "" ]; then
+         cmdStr="$cmdStr$newLineStr$inflateStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}${inflateObj}";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$inflateObj";
+         fi
+
+         inflateBl=1;
+         depStr="$depStr $inflateDep";
+      fi
+
+      if [ "$genLibBl" -lt 1 ]; then
+         genLibBl=1;
+         libPathStr="$libPathStr\ngenLib=..${slashSC}genLib";
+      fi
+   # Else If: inflate library
+
    #******************************************************
-   # Sec04 Sub03:
+   # Sec04 Sub04:
    #   - genBio libraries
-   #   o sec04 sub03 cat01:
+   #   o sec04 sub04 cat01:
    #     - codonFun
-   #   o sec04 sub03 cat02:
+   #   o sec04 sub04 cat02:
    #     - kmerFun
-   #   o sec04 sub03 cat03:
+   #   o sec04 sub04 cat03:
    #     - seqST
-   #   o sec04 sub03 cat04:
+   #   o sec04 sub04 cat04:
    #     - kmerCnt
-   #   o sec04 sub03 cat05:
+   #   o sec04 sub04 cat05:
    #     - geneCoord
-   #   o sec04 sub03 cat06:
+   #   o sec04 sub04 cat06:
    #     - samEntry
-   #   o sec04 sub03 cat07:
+   #   o sec04 sub04 cat07:
    #     - adjCoords
-   #   o sec04 sub03 cat08:
+   #   o sec04 sub04 cat08:
    #     - cigToEqx
-   #   o sec04 sub03 cat09:
+   #   o sec04 sub04 cat09:
    #     - maskPrim
-   #   o sec04 sub03 cat10:
+   #   o sec04 sub04 cat10:
    #     - trimSam
-   #   o sec04 sub03 cat11:
+   #   o sec04 sub04 cat11:
    #     - ampDepth
-   #   o sec04 sub03 cat12:
+   #   o sec04 sub04 cat12:
    #     - tbCon
-	#   o sec04 sub03 cat13:
+	#   o sec04 sub04 cat13:
    #     - edDist
-	#   o sec04 sub03 cat14:
+	#   o sec04 sub04 cat14:
    #     - rmHomo
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat01:
+   # Sec04 Sub04 Cat01:
    #   - codonFun
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "codonFun" ]]; then
+   elif [ "$libStr" = "codonFun" ]; then
    # Else If: codonFun library
-      if [[ "$codonFunBl" == "" ]]; then
+      if [ "$codonFunBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$codonFunStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$codonFunObj"";
+         objFilesStr="${objFilesStr}${codonFunObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $codonFunObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$codonFunObj";
          fi
 
          codonFunBl=1;
-
-         depAry+=(${codonFunDep[*]});
-         lenDep=$((lenDep + lenCodonFunDep));
+         depStr="$depStr $codonFunDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # Else If: codonFun library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat02:
+   # Sec04 Sub04 Cat02:
    #   - kmerFun
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "kmerFun" ]]; then
+   elif [ "$libStr" = "kmerFun" ]; then
    # Else If: kmerFun library
-      if [[ "$kmerFunBl" == "" ]]; then
+      if [ "$kmerFunBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$kmerFunStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$kmerFunObj"";
+         objFilesStr="${objFilesStr}${kmerFunObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $kmerFunObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$kmerFunObj";
          fi
 
          kmerFunBl=1;
-
-         depAry+=(${kmerFunDep[*]});
-         lenDep=$((lenDep + lenKmerFunDep));
+         depStr="$depStr $kmerFunDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # Else If: kmerFun library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat03:
+   # Sec04 Sub04 Cat03:
    #   - seqST
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "seqST" ]]; then
+   elif [ "$libStr" = "seqST" ]; then
    # Else If: seqST library
-      if [[ "$seqSTBl" == "" ]]; then
+      if [ "$seqSTBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$seqSTStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$seqSTObj"";
+         objFilesStr="${objFilesStr}${seqSTObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $seqSTObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$seqSTObj";
          fi
 
          seqSTBl=1;
 
-         depAry+=(${seqSTDep[*]});
-         lenDep=$((lenDep + lenSeqSTDep));
+         depStr="$depStr $seqSTDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # Else If: seqST library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat04:
+   # Sec04 Sub04 Cat04:
    #   - kmerCnt
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "kmerCnt" ]]; then
+   elif [ "$libStr" = "kmerCnt" ]; then
    # Else If: kmerCnt library
-      if [[ "$kmerCntBl" == "" ]]; then
+      if [ "$kmerCntBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$kmerCntStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$kmerCntObj"";
+         objFilesStr="${objFilesStr}${kmerCntObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $kmerCntObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$kmerCntObj";
          fi
 
          kmerCntBl=1;
-
-         depAry+=(${kmerCntDep[*]});
-         lenDep=$((lenDep + lenKmerCntDep));
+         depStr="$depStr $kmerCntDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # Else If: kmerCnt library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat05:
+   # Sec04 Sub04 Cat05:
    #   - geneCoord
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "geneCoord" ]]; then
+   elif [ "$libStr" = "geneCoord" ]; then
    # Else If: geneCoord library
-      if [[ "$geneCoordBl" == "" ]]; then
+      if [ "$geneCoordBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$geneCoordStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$geneCoordObj"";
+         objFilesStr="${objFilesStr}${geneCoordObj}";
 
          geneCoordBl=1;
-
-         depAry+=(${geneCoordDep[*]});
-         lenDep=$((lenDep + lenGeneCoordDep));
+         depStr="$depStr $geneCoordDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # Else If: geneCoord library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat06:
+   # Sec04 Sub04 Cat06:
    #   - samEntry
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "samEntry" ]]; then
+   elif [ "$libStr" = "samEntry" ]; then
    # Else If: samEntry library
-      if [[ "$samEntryBl" == "" ]]; then
+      if [ "$samEntryBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$samEntryStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$samEntryObj"";
+         objFilesStr="${objFilesStr}${samEntryObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $samEntryObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$samEntryObj";
          fi
 
          samEntryBl=1;
-
-         depAry+=(${samEntryDep[*]});
-         lenDep=$((lenDep + lenSamEntryDep));
+         depStr="$depStr $samEntryDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # Else If: samEntry library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat07:
+   # Sec04 Sub04 Cat07:
    #   - adjCoords
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "adjCoords" ]]; then
+   elif [ "$libStr" = "adjCoords" ]; then
    # Else If: adjCoords library
-      if [[ "$adjCoordsBl" == "" ]]; then
+      if [ "$adjCoordsBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$adjCoordsStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$adjCoordsObj"";
+         objFilesStr="${objFilesStr}${adjCoordsObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $adjCoordsObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$adjCoordsObj";
          fi
 
          adjCoordsBl=1;
-
-         depAry+=(${adjCoordsDep[*]});
-         lenDep=$((lenDep + lenAdjCoordsDep));
+         depStr="$depStr $adjCoordsDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # Else If: adjCoords library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat08:
+   # Sec04 Sub04 Cat08:
    #   - cigToEqx
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "cigToEqx" ]]; then
+   elif [ "$libStr" = "cigToEqx" ]; then
    # Else If: cigToEqx library
-      if [[ "$cigToEqxBl" == "" ]]; then
+      if [ "$cigToEqxBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$cigToEqxStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$cigToEqxObj"";
+         objFilesStr="${objFilesStr}${cigToEqxObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $cigToEqxObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$cigToEqxObj";
          fi
 
          cigToEqxBl=1;
 
-         depAry+=(${cigToEqxDep[*]});
-         lenDep=$((lenDep + lenCigToEqxDep));
+         depStr="$depStr $cigToEqxDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # Else If: cigToEqx library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat09:
+   # Sec04 Sub04 Cat09:
    #   - maskPrim
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "maskPrim" ]]; then
+   elif [ "$libStr" = "maskPrim" ]; then
    # Else If: maskPrim library
-      if [[ "$maskPrimBl" == "" ]]; then
+      if [ "$maskPrimBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$maskPrimStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$maskPrimObj"";
+         objFilesStr="${objFilesStr}${maskPrimObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $maskPrimObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$maskPrimObj";
          fi
 
          maskPrimBl=1;
-
-         depAry+=(${maskPrimDep[*]});
-         lenDep=$((lenDep + lenMaskPrimDep));
+         depStr="$depStr $maskPrimDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # Else If: maskPrim library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat10:
+   # Sec04 Sub04 Cat10:
    #   - trimSam
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "trimSam" ]]; then
+   elif [ "$libStr" = "trimSam" ]; then
    # Else If: trimSam library
-      if [[ "$trimSamBl" == "" ]]; then
+      if [ "$trimSamBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$trimSamStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$trimSamObj"";
+         objFilesStr="${objFilesStr}${trimSamObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $trimSamObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$trimSamObj";
          fi
 
          trimSamBl=1;
 
-         depAry+=(${trimSamDep[*]});
-         lenDep=$((lenDep + lenTrimSamDep));
+         depStr="$depStr $trimSamDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # Else If: trimSam library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat11:
+   # Sec04 Sub04 Cat11:
    #   - ampDepth
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "ampDepth" ]]; then
+   elif [ "$libStr" = "ampDepth" ]; then
    # If: ampDepth library
-      if [[ "$ampDepthBl" == "" ]]; then
+      if [ "$ampDepthBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$ampDepthStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$ampDepthObj"";
+         objFilesStr="${objFilesStr}${ampDepthObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $ampDepthObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$ampDepthObj";
          fi
 
          ampDepthBl=1;
-
-         depAry+=(${ampDepthDep[*]});
-         lenDep=$((lenDep + lenAmpDepthDep));
+         depStr="$depStr $ampDepthDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # If: ampDepth library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat12:
+   # Sec04 Sub04 Cat12:
    #   - tbCon
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "tbCon" ]]; then
+   elif [ "$libStr" = "tbCon" ]; then
    # If: tbCon library
-      if [[ "$tbConBl" == "" ]]; then
+      if [ "$tbConBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$tbConStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$tbConObj"";
+         objFilesStr="${objFilesStr}${tbConObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $tbConObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$tbConObj";
          fi
 
          tbConBl=1;
 
-         depAry+=(${tbConDep[*]});
-         lenDep=$((lenDep + lenTbConDep));
+         depStr="$depStr $tbConDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # If: tbCon library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat13:
+   # Sec04 Sub04 Cat13:
    #   - edDist
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "edDist" ]]; then
+   elif [ "$libStr" = "edDist" ]; then
    # If: edDist library
-      if [[ "$edDistBl" == "" ]]; then
+      if [ "$edDistBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$edDistStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$edDistObj"";
+         objFilesStr="${objFilesStr}${edDistObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $edDistObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$edDistObj";
          fi
 
          edDistBl=1;
-
-         depAry+=(${edDistDep[*]});
-         lenDep=$((lenDep + lenEdDistDep));
+         depStr="$depStr $edDistDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # If: edDist library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub03 Cat14:
+   # Sec04 Sub04 Cat14:
    #   - rmHomo
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "rmHomo" ]]; then
+   elif [ "$libStr" = "rmHomo" ]; then
    # If: rmHomo library
-      if [[ "$rmHomoBl" == "" ]]; then
+      if [ "$rmHomoBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$rmHomoStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$rmHomoObj"";
+         objFilesStr="${objFilesStr}${rmHomoObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $rmHomoObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$rmHomoObj";
          fi
 
          rmHomoBl=1;
-
-         depAry+=(${rmHomoDep[*]});
-         lenDep=$((lenDep + lenRmHomoDep));
+         depStr="$depStr $rmHomoDep";
       fi
 
-      if [[ "$genBioBl" -lt 1 ]]; then
+      if [ "$genBioBl" -lt 1 ]; then
          genBioBl=1;
-         libPathStr="$libPathStr\ngenBio=.."$slashSC"genBio";
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
       fi
    # If: rmHomo library
 
    #******************************************************
-   # Sec04 Sub04:
+   # Sec04 Sub05:
    #   - genAln libraries
-   #   o sec04 sub04 cat01:
+   #   o sec04 sub05 cat01:
    #     - indexToCoord
-   #   o sec04 sub04 cat02:
+   #   o sec04 sub05 cat02:
    #     - alnSet
-   #   o sec04 sub04 cat03:
+   #   o sec04 sub05 cat03:
    #     - dirMatrix
-   #   o sec04 sub04 cat04:
+   #   o sec04 sub05 cat04:
    #     - water
-   #   o sec04 sub04 cat05:
+   #   o sec04 sub05 cat05:
    #     - needle
-   #   o sec04 sub04 cat06:
+   #   o sec04 sub05 cat06:
    #     - memwater
-   #   o sec04 sub04 cat07:
+   #   o sec04 sub05 cat07:
    #     - kmerFind
-   #   o sec04 sub04 cat08:
+   #   o sec04 sub05 cat08:
    #     - samToAln
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat01:
+   # Sec04 Sub05 Cat01:
    #   - indexToCoord
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "indexToCoord" ]]; then
+   elif [ "$libStr" = "indexToCoord" ]; then
    # Else If: indexToCoord library
-      if [[ "$indexToCoordBl" == "" ]]; then
+      if [ "$indexToCoordBl" = "" ]; then
         cmdStr="$cmdStr$newLineStr$indexToCoordStr";
         objFilesStr="$objFilesStr \\\\\n$spaceStr";
-        objFilesStr=""$objFilesStr""$indexToCoordObj"";
+        objFilesStr="${objFilesStr}${indexToCoordObj}";
 
-        if [[ "$mainLibBl" == "" ]]; then
-           mainCmdStr="$mainCmdStr $indexToCoordObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+           mainCmdStr="$mainCmdStr \\
+	$indexToCoordObj";
         fi
 
         indexToCoordBl=1;
-
-        depAry+=(${indexToCoord[*]});
-        lenDep=$((lenDep + lenIndexToCoordDep));
+        depStr="$depStr $indexToCoordDep";
       fi
 
-      if [[ "$genAlnBl" -lt 1 ]]; then
+      if [ "$genAlnBl" -lt 1 ]; then
          genAlnBl=1;
-         libPathStr="$libPathStr\ngenAln=.."$slashSC"genAln";
+         libPathStr="$libPathStr\ngenAln=..${slashSC}genAln";
       fi
    # Else If: indexToCoord library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat02:
+   # Sec04 Sub05 Cat02:
    #   - alnSet
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "alnSet" ]]; then
+   elif [ "$libStr" = "alnSet" ]; then
    # Else If: alnSet library
-      if [[ "$alnSetBl" == "" ]]; then
+      if [ "$alnSetBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$alnSetStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$alnSetObj"";
+         objFilesStr="${objFilesStr}${alnSetObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $alnSetObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$alnSetObj";
          fi
 
          alnSetBl=1;
 
-         depAry+=(${alnSetDep[*]});
-         lenDep=$((lenDep + lenAlnSetDep));
+         depStr="$depStr $alnSetDep";
       fi
 
-      if [[ "$genAlnBl" -lt 1 ]]; then
+      if [ "$genAlnBl" -lt 1 ]; then
          genAlnBl=1;
-         libPathStr="$libPathStr\ngenAln=.."$slashSC"genAln";
+         libPathStr="$libPathStr\ngenAln=..${slashSC}genAln";
       fi
    # Else If: alnSet library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat03:
+   # Sec04 Sub05 Cat03:
    #   - dirMatrix
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "dirMatrix" ]]; then
+   elif [ "$libStr" = "dirMatrix" ]; then
    # Else If: dirMatrix library
-      if [[ "$dirMatrixBl" == "" ]]; then
+      if [ "$dirMatrixBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$dirMatrixStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$dirMatrixObj"";
+         objFilesStr="${objFilesStr}${dirMatrixObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $dirMatrixObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$dirMatrixObj";
          fi
 
          dirMatrixBl=1;
-
-         depAry+=(${dirMatrixDep[*]});
-         lenDep=$((lenDep + lenDirMatrixDep));
+         depStr="$depStr $dirMatrixDep";
       fi
 
-      if [[ "$genAlnBl" -lt 1 ]]; then
+      if [ "$genAlnBl" -lt 1 ]; then
          genAlnBl=1;
-         libPathStr="$libPathStr\ngenAln=.."$slashSC"genAln";
+         libPathStr="$libPathStr\ngenAln=..${slashSC}genAln";
       fi
    # Else If: dirMatrix library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat04:
+   # Sec04 Sub05 Cat04:
    #   - water
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "water" ]]; then
+   elif [ "$libStr" = "water" ]; then
    # Else If: water library
-      if [[ "$waterBl" == "" ]]; then
+      if [ "$waterBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$waterStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$waterObj"";
+         objFilesStr="${objFilesStr}${waterObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $waterObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$waterObj";
          fi
 
          waterBl=1;
 
-         depAry+=(${waterDep[*]});
-         lenDep=$((lenDep + lenWaterDep));
+         depStr="$depStr $waterDep";
       fi
 
-      if [[ "$genAlnBl" -lt 1 ]]; then
+      if [ "$genAlnBl" -lt 1 ]; then
          genAlnBl=1;
-         libPathStr="$libPathStr\ngenAln=.."$slashSC"genAln";
+         libPathStr="$libPathStr\ngenAln=..${slashSC}genAln";
       fi
    # Else If: water library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat05:
+   # Sec04 Sub05 Cat05:
    #   - needle
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "needle" ]]; then
+   elif [ "$libStr" = "needle" ]; then
    # Else If: needle library
-      if [[ "$needleBl" == "" ]]; then
+      if [ "$needleBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$needleStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$needleObj"";
+         objFilesStr="${objFilesStr}${needleObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $needleObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$needleObj";
          fi
 
          needleBl=1;
-
-         depAry+=(${needleDep[*]});
-         lenDep=$((lenDep + lenNeedleDep));
+         depStr="$depStr $needleDep";
       fi
 
-      if [[ "$genAlnBl" -lt 1 ]]; then
+      if [ "$genAlnBl" -lt 1 ]; then
          genAlnBl=1;
-         libPathStr="$libPathStr\ngenAln=.."$slashSC"genAln";
+         libPathStr="$libPathStr\ngenAln=..${slashSC}genAln";
       fi
    # Else If: needle library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat06:
+   # Sec04 Sub05 Cat06:
    #   - memwater
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "memwater" ]]; then
+   elif [ "$libStr" = "memwater" ]; then
    # Else If: memwater library
-      if [[ "$memwaterBl" == "" ]]; then
+      if [ "$memwaterBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$memwaterStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$memwaterObj"";
+         objFilesStr="${objFilesStr}${memwaterObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $memwaterObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$memwaterObj";
          fi
 
          memwaterBl=1;
-
-         depAry+=(${memwaterDep[*]});
-         lenDep=$((lenDep + lenMemwaterDep));
+         depStr="$depStr $memwaterDep";
       fi
 
-      if [[ "$genAlnBl" -lt 1 ]]; then
+      if [ "$genAlnBl" -lt 1 ]; then
          genAlnBl=1;
-         libPathStr="$libPathStr\ngenAln=.."$slashSC"genAln";
+         libPathStr="$libPathStr\ngenAln=..${slashSC}genAln";
       fi
    # Else If: memwater library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat07:
+   # Sec04 Sub05 Cat07:
    #   - kmerFind
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "kmerFind" ]]; then
+   elif [ "$libStr" = "kmerFind" ]; then
    # Else If: kmerFind library
-      if [[ "$kmerFindBl" == "" ]]; then
+      if [ "$kmerFindBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$kmerFindStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$kmerFindObj"";
+         objFilesStr="${objFilesStr}${kmerFindObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $kmerFindObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$kmerFindObj";
          fi
 
          kmerFindBl=1;
 
-         depAry+=(${kmerFindDep[*]});
-         lenDep=$((lenDep + lenKmerFindDep));
+         depStr="$depStr $kmerFindDep";
       fi
 
-      if [[ "$genAlnBl" -lt 1 ]]; then
+      if [ "$genAlnBl" -lt 1 ]; then
          genAlnBl=1;
-         libPathStr="$libPathStr\ngenAln=.."$slashSC"genAln";
+         libPathStr="$libPathStr\ngenAln=..${slashSC}genAln";
       fi
    # Else If: kmerFin library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat08:
+   # Sec04 Sub05 Cat08:
    #   - samToAln
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "samToAln" ]]; then
+   elif [ "$libStr" = "samToAln" ]; then
    # Else If: samToAln library
-      if [[ "$samToAlnBl" == "" ]]; then
+      if [ "$samToAlnBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$samToAlnStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$samToAlnObj"";
+         objFilesStr="${objFilesStr}${samToAlnObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $samToAlnObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$samToAlnObj";
          fi
 
          samToAlnBl=1;
-
-         depAry+=(${samToAlnDep[*]});
-         lenDep=$((lenDep + lenSamToAlnDep));
+         depStr="$depStr $samToAlnDep";
       fi
 
-      if [[ "$genAlnBl" -lt 1 ]]; then
+      if [ "$genAlnBl" -lt 1 ]; then
          genAlnBl=1;
-         libPathStr="$libPathStr\ngenAln=.."$slashSC"genAln";
+         libPathStr="$libPathStr\ngenAln=..${slashSC}genAln";
       fi
    # Else If: samToAln library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat09:
+   # Sec04 Sub05 Cat09:
    #   - mapRead
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "mapRead" ]]; then
+   elif [ "$libStr" = "mapRead" ]; then
    # Else If: mapRead library
-      if [[ "$mapReadBl" == "" ]]; then
+      if [ "$mapReadBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$mapReadStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$mapReadObj"";
+         objFilesStr="${objFilesStr}${mapReadObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $mapReadObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$mapReadObj";
          fi
 
          mapReadBl=1;
 
-         depAry+=(${mapReadDep[*]});
-         lenDep=$((lenDep + lenMapReadDep));
+         depStr="$depStr $mapReadDep";
       fi
 
-      if [[ "$genAlnBl" -lt 1 ]]; then
-         genAlnBl=1;
-         libPathStr="$libPathStr\ngenAln=.."$slashSC"genAln";
+      if [ "$genClustBl" -lt 1 ]; then
+         genClustBl=1;
+         libPathStr="$libPathStr\ngenClust=..${slashSC}genClust";
       fi
    # Else If: mapRead library
 
    #******************************************************
-   # Sec04 Sub05:
-   #   - genClust
+   # Sec04 Sub06:
+   #   - genAln libraries
    #   o sec04 sub05 cat01:
    #     - illNano
    #   o sec04 sub05 cat02:
@@ -2013,151 +2284,146 @@ while [[ $# -gt 0 || "$depSI" -lt "$lenDep" ]]; do
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub05 Cat01:
+   # Sec04 Sub06 Cat01:
    #   - illNano
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "illNano" ]]; then
+   elif [ "$libStr" = "illNano" ]; then
    # Else If: illNano library
-      if [[ "$illNanoBl" == "" ]]; then
+      if [ "$illNanoBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$illNanoStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$illNanoObj"";
+         objFilesStr="${objFilesStr}${illNanoObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $illNanoObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$illNanoObj";
          fi
 
          illNanoBl=1;
-
-         depAry+=(${illNanoDep[*]});
-         lenDep=$((lenDep + lenIllNanoDep));
+         depStr="$depStr $illNanoDep";
       fi
 
-      if [[ "$genClustBl" -lt 1 ]]; then
+      if [ "$genClustBl" -lt 1 ]; then
          genClustBl=1;
-         libPathStr="$libPathStr\ngenClust=.."$slashSC"genClust";
+         libPathStr="$libPathStr\ngenClust=..${slashSC}genClust";
       fi
    # Else If: illNano library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub05 Cat02:
+   # Sec04 Sub06 Cat02:
    #   - clustST
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "clustST" ]]; then
+   elif [ "$libStr" = "clustST" ]; then
    # Else If: clustST library
-      if [[ "$clustSTBl" == "" ]]; then
+      if [ "$clustSTBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$clustSTStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$clustSTObj"";
+         objFilesStr="${objFilesStr}${clustSTObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $clustSTObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$clustSTObj";
          fi
 
          clustSTBl=1;
-
-         depAry+=(${clustSTDep[*]});
-         lenDep=$((lenDep + lenClustSTDep));
+         depStr="$depStr $clustSTDep";
       fi
 
-      if [[ "$genClustBl" -lt 1 ]]; then
+      if [ "$genClustBl" -lt 1 ]; then
          genClustBl=1;
-         libPathStr="$libPathStr\ngenClust=.."$slashSC"genClust";
+         libPathStr="$libPathStr\ngenClust=..${slashSC}genClust";
       fi
    # Else If: clustST library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub05 Cat03:
+   # Sec04 Sub06 Cat03:
    #   - edClust
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "edClust" ]]; then
+   elif [ "$libStr" = "edClust" ]; then
    # Else If: edClust library
-      if [[ "$edClustBl" == "" ]]; then
+      if [ "$edClustBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$edClustStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$edClustObj"";
+         objFilesStr="${objFilesStr}${edClustObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $edClustObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$edClustObj";
          fi
 
          edClustBl=1;
-
-         depAry+=(${edClustDep[*]});
-         lenDep=$((lenDep + lenEdClustDep));
+         depStr="$depStr $edClustDep";
       fi
 
-      if [[ "$genClustBl" -lt 1 ]]; then
+      if [ "$genClustBl" -lt 1 ]; then
          genClustBl=1;
-         libPathStr="$libPathStr\ngenClust=.."$slashSC"genClust";
+         libPathStr="$libPathStr\ngenClust=..${slashSC}genClust";
       fi
    # Else If: edClust library
 
    #******************************************************
-   # Sec04 Sub06:
+   # Sec04 Sub07:
    #   - genGenoType library files
-   #   o sec04 sub06 cat01:
+   #   o sec04 sub07 cat01:
    #     - cgMLST
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub06 Cat01:
+   # Sec04 Sub07 Cat01:
    #   - cgMLST
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "cgMLST" ]]; then
+   elif [ "$libStr" = "cgMLST" ]; then
    # Else If: cgMLST program
-      if [[ "$cgMLSTBl" == "" ]]; then
+      if [ "$cgMLSTBl" = "" ]; then
          cmdStr="$cmdStr$newLineStr$cgMLSTStr";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$cgMLSTObj"";
+         objFilesStr="${objFilesStr}${cgMLSTObj}";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $cgMLSTObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$cgMLSTObj";
          fi
 
          cgMLSTBl=1;
+         depStr="$depStr $cgMLSTDep";
 
-         depAry+=(${cgMLSTDep[*]});
-         lenDep=$((lenDep + lenCgMLSTDep));
-
-         if [[ "$genGenoTypeBl" -lt 1 ]]; then
+         if [ "$genGenoTypeBl" -lt 1 ]; then
             genGenoTypeBl=1;
-            libPathStr="$libPathStr\ngenGenoType=.."$slashSC"genGenoType";
+            libPathStr="$libPathStr\ngenGenoType=..${slashSC}genGenoType";
          fi
       fi
    # Else If: cgMLST program
 
    #******************************************************
-   # Sec04 Sub07:
+   # Sec04 Sub08:
    #   - non-general library files
-   #   o sec04 sub07 cat01:
+   #   o sec04 sub08 cat01:
    #     - k2TaxaId
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub07 Cat01:
+   # Sec04 Sub08 Cat01:
    #   - k2TaxaId
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   elif [[ "$libStr" == "k2TaxaId" ]]; then
+   elif [ "$libStr" = "k2TaxaId" ]; then
    # Else If: k2TaxaId program
-      if [[ "$k2TaxaIdBl" == "" ]]; then
-         cmdStr="$cmdStr$newLineStr$k2TaxaIdStr";
+      if [ "$k2TaxaIdBl" = "" ]; then
+         cmdStr="${cmdStr}${newLineStr}${k2TaxaIdStr}";
          objFilesStr="$objFilesStr \\\\\n$spaceStr";
-         objFilesStr=""$objFilesStr""$k2TaxaIdObj"";
+         objFilesStr="${objFilesStr}$k2TaxaIdObj";
 
-         if [[ "$mainLibBl" == "" ]]; then
-            mainCmdStr="$mainCmdStr $k2TaxaIdObj";
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$k2TaxaIdObj";
          fi
 
          k2TaxaIdBl=1;
-
-         depAry+=(${k2TaxaIdDep[*]});
-         lenDep=$((lenDep + lenK2TaxaIdDep));
+         depStr="$depStr $k2TaxaIdDep";
       fi
    # Else If: k2TaxaId program
 
@@ -2165,41 +2431,17 @@ while [[ $# -gt 0 || "$depSI" -lt "$lenDep" ]]; do
    fi # check librarys called
 
    #******************************************************
-   # Sec04 Sub07:
+   # Sec04 Sub08:
    #   - move to next library or dependency
    #******************************************************
 
-   if [ "$depSI" -ge "$lenDep" ]; then
-   # If: no other dependencies
-      shift;
-      libStr="$1"
-      mainLibBl="";
-   # If: no other dependencies
-
-   else
-   # Else: on library dependency
-      libStr="";
-      libStr="${depAry[depSI]}";
-      depSI="$((depSI + 1))";
-      mainLibBl=1;
-
-      # in some cases my count will be off
-      while [[ "$libStr" == "" && "$depSI" -lt "$lenDep" ]]; do
-      # Loop: move past emtpy libs
-         libStr="${depAry[depSI]}";
-         depSI="$((depSI + 1))";
-      done # Loop: move past empty libs
-
-      # make sure no blank endings
-      if [[ "$depSI" -ge "$lenDep" ]]; then
-      # If: no other dependencies
-         shift;
-         libStr="$1"
-         mainLibBl="";
-      fi # If: no other dependencies
-   # Else: on library dependency
-
-   fi # check if library has dependencies
+   libCntSI="$((libCntSI + 1))";
+   libStr="${depStr%% *}";
+      # get first argument
+   depStr="${depStr#"${depStr%%[[:space:]]*}"}";
+      # pop off first arugment
+   depStr="${depStr#"${depStr%%[![:space:]]*}"}";
+      # clear leading spaces
 done
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -2212,14 +2454,16 @@ objFilesStr="$objFilesStr \\\\\n$spaceStr$mainFileStr.\$O";
 
 # need to complete compiler part of main file command
 mainCmdStr="$mainCmdStr
-	$ccStr "$dashOStr"$mainFileStr.\$O "$dashCStr" $coreFlagsStr $cFlagsStr $mainFileStr.c"
+		$ccStr ${dashOStr}$mainFileStr.\$O $dashCStr \\
+			$coreFlagsStr $cFlagsStr $mainFileStr.c
+"
 
 {
    printf "%b\n" "$headStr"
    printf "%b\n\n" "$libPathStr"
    printf "%b\n\n" "$objFilesStr"
    printf "%b\n\n" "$linkStr"
-   printf "%b" "$mainCmdStr" # cmdStr has newlines
+   printf "%b\n" "$mainCmdStr" # cmdStr has newlines
    printf "%b\n\n" "$cmdStr"
    printf "%b\n\n" "$installStr"
    printf "%b\n" "$cleanStr"

@@ -14,35 +14,37 @@
 '     - reads a fastq sequence from a fastq file
 '   o fun03 getFaSeq_seqST:
 '     - grabs the next read in the fasta file
-'   o fun04 revComp_seqST:
+'   o fun04: get_seqST
+'     - gets a sequence from a fastx/fastx.gz file
+'   o fun05 revComp_seqST:
 '     - reverse complement a sequence
-'   o fun05 blank_seqST:
+'   o fun06 blank_seqST:
 '     - sets values in seqST to zero
-'   O fun06 init_seqST:
+'   O fun07 init_seqST:
 '     - sets values in seqST to blank values
-'   o fun07 freeStack_seqST:
+'   o fun08 freeStack_seqST:
 '     - frees variables in an seqST (calls blank_seqST)
-'   o fun08 freeHeap_seqST:
+'   o fun09 freeHeap_seqST:
 '     - frees an seqST strucuter (calls fredSeqSTStack)
-'   o fun09: freeHeapAry_seqST
+'   o fun10: freeHeapAry_seqST
 '     - frees an array of seqST's
-'   o fun10 cpIdEndPad_seqST:
+'   o fun11 cpIdEndPad_seqST:
 '      - copies read id to a buffer and adds in endIdC to
 '        the end. If needed, this function will add right
 '        padding of spaces to the end.
-'   o fun11: cp_seqST
+'   o fun12: cp_seqST
 '     - copies an seqST structure
-'   o fun12: swap_seqST
+'   o fun13: swap_seqST
 '     - swaps values in two seqST structs
-'   o fun13: sort_seqST
+'   o fun14: sort_seqST
 '     - sorts an array of seqST structs
-'   o fun14: search_seqST
+'   o fun15: search_seqST
 '     - searchs for sequence in seqST struct array
-'   o fun15: mkAry_seqST
+'   o fun16: mkAry_seqST
 '     - makes a seqST struct array
-'   o fun16: realloc_seqST
+'   o fun17: realloc_seqST
 '     - add more memory to a seqST struct array
-'   o fun17: readFaFile_seqST
+'   o fun18: readFaFile_seqST
 '     - get all sequences from a fasta file
 '   o license:
 '     - licensing for this code (public domain / mit)
@@ -60,11 +62,20 @@
    #include <stdlib.h>
 #endif
 
-#include "seqST.h"
-
 #include <stdio.h>
-
+#include "seqST.h"
 #include "../genLib/ulCp.h"
+#include "../genLib/inflate.h"
+
+/*.h files only or I only use the .h file*/
+#include "../genLib/endLine.h"
+
+/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
+! Hidden Libraries:
+!   - .c  #include "../genLib/checkSum.h"
+!   - .c  #include "../genLib/genMath.h"
+!   - .c  #include "../genLib/endin.h"
+\%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*-------------------------------------------------------\
 | Fun01: addLine_seqST
@@ -759,7 +770,877 @@ getFaSeq_seqST(
 } /*getFaSeq_seqST*/
 
 /*-------------------------------------------------------\
-| Fun04: revComp_seqST
+| Fun04: get_seqST
+|   - gets a sequence from a fastx/fastx.gz file
+| Input:
+|   - fileSTPtr:
+|     o file_inflate struct to use in uncompression
+|   - typeSCPtr:
+|     o is set to or has the correct file type
+|   - seqSTPtr:
+|     o seqST struct pointer to add new sequence to
+|   - inFILE:
+|     o FILE pointer to file to add (new file)
+|     o 0 if already called get_seqST for this file
+|     o you should set inFILE to 0/null after calling,
+|       because freeStack_file_inflate 
+|       freeHeap_file_inflate will close inFILE for you
+| Output:
+|   - Modifies:
+|     o if have inFILE, sets fileSTPtr be blanked and then
+|       have inFILE
+|     o if have inFILE, typeSCPtr to have file type 
+|       o def_noType_seqST if end of file
+|       o def_faType_seqST if fasta file
+|       o def_faType_seqST | def_gzType_seqST if fasta.gz
+|       o def_fqType_seqST if fastq file
+|       o def_fqType_seqST | def_gzType_seqST if fasta.gz
+|     o fileSTPtr to be on next read/sequence
+|     o seqSTPtr to have next read/sequence
+|   - Returns:
+|     o 0 for no errors
+|     o def_EOF_seqST if at end of file
+|     o def_memErr_seqST for memory errors
+|     o def_badLine_seqST | def_fileErr_seqST for invalid
+|       file entries
+|     o def_fileErr_seqST for file errors (including gzip
+|       checks)
+\-------------------------------------------------------*/
+signed char
+get_seqST(
+   struct file_inflate *fileSTPtr, /*has file to extract*/
+   signed char *typeSCPtr,         /*gets/has file type*/
+   struct seqST *seqSTPtr,         /*gets sequence*/
+   void *inFILE
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun04 TOC:
+   '   - gets a sequence from a fastx/fastx.gz file
+   '   o fun04 sec01:
+   '     - variable declarations
+   '   o fun04 sec02:
+   '     - add input file (if one) to file_inflate struct
+   '   o fun04 sec03:
+   '     - get read id
+   '   o fun04 sec04:
+   '     - get sequence
+   '   o fun04 sec05:
+   '     - get q-score entry (fastq only)
+   '   o fun04 sec06:
+   '     - return
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun04 Sec01:
+   ^   - variable declarations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   #define extraBytes_fun04 1024;
+   signed char errSC = 0;
+   signed char *tmpStr = 0;
+   signed char tmpSC = 0;
+   signed char tmpArySC[4];
+
+   unsigned long oldLenUL = 0;
+   ulong_ulCp fqSeqDelimUL = mkDelim_ulCp('+');
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun04 Sec02:
+   ^   - add input file (if one) to file_inflate struct
+   ^   o fun04 sec02 sub01:
+   ^     - get memory for id (if no memory)
+   ^   o fun04 sec02 sub02:
+   ^     - if file input; get file type and id
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Fun04 Sec02 Sub01:
+   *   - get memory for id (if no memory)
+   \*****************************************************/
+
+   if(! seqSTPtr->idStr)
+   { /*If: need memory for read id*/
+      seqSTPtr->idStr = malloc(136 * sizeof(signed char));
+      if(! seqSTPtr)
+         goto memErr_fun04_sec06;
+      seqSTPtr->lenIdBuffUL = 128;
+   } /*If: need memory for read id*/
+
+   blank_seqST(seqSTPtr);
+
+   /*****************************************************\
+   * Fun04 Sec02 Sub02:
+   *   - if file input; get file type and id
+   *   o fun04 sec02 sub02 cat01:
+   *     - find if .gz file and get first line
+   *   o fun04 sec02 sub02 cat02:
+   *     - check if .fastq file .fasta
+   *   o fun04 sec02 sub02 cat03:
+   *     - first line empty, scan for fasta header
+   \*****************************************************/
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun04 Sec02 Sub02 Cat01:
+   +   - find if .gz file and get first line
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(inFILE)
+   { /*If: user is starting new file*/
+      *typeSCPtr = 0;
+
+      if(
+        ! fread(
+           (char *) seqSTPtr->idStr,
+           sizeof(signed char),
+           2,
+           inFILE
+         )
+      ) goto fileErr_fun04_sec06;
+
+      if(seqSTPtr->idStr[0] == 0x1f) /*0x1f = 31*/
+      { /*If: gz file or invalid file*/
+         *typeSCPtr = def_gzType_seqST;
+
+         errSC =
+           add_file_inflate(
+              inFILE,
+              fileSTPtr,
+              seqSTPtr->idStr
+           );
+
+         if(errSC == def_memErr_inflate)
+            goto memErr_fun04_sec06;
+         else if(errSC)
+            goto fileErr_fun04_sec06;
+
+         seqSTPtr->lenIdUL =
+            get_inflate(
+               fileSTPtr,
+               (signed long) seqSTPtr->lenIdBuffUL,
+               1, /*till line ends or buffer is full*/
+               seqSTPtr->idStr,
+               &errSC
+            ); /*get first line or first 128 characters*/
+
+         if(errSC == def_memErr_inflate)
+            goto memErr_fun04_sec06;
+         else if(errSC)
+            goto fileErr_fun04_sec06;
+      } /*If: gz file or invalid file*/
+
+      else if(
+         fgets(
+            (char *) &seqSTPtr->idStr[2],
+            seqSTPtr->lenIdBuffUL - 2,
+            inFILE
+         ) /*get first line into buffer*/
+      ){ /*Else If: not gzipped, get line*/
+         blank_file_inflate(fileSTPtr, 2);
+         seqSTPtr->lenIdUL = endStr_ulCp(seqSTPtr->idStr);
+         fileSTPtr->zipFILE = inFILE;
+      }  /*Else If: not gzipped, get line*/
+
+      else
+         goto fileErr_fun04_sec06;
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun04 Sec02 Sub02 Cat02:
+      +   - check if .fastq file .fasta
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      if(seqSTPtr->idStr[0] == '@')
+         *typeSCPtr |= def_fqType_seqST;
+      else if(seqSTPtr->idStr[0] == '>')
+         *typeSCPtr |= def_faType_seqST;
+      else if(seqSTPtr->idStr[1] == '>')
+         *typeSCPtr |= def_faType_seqST;
+      else if(seqSTPtr->idStr[2] == '>')
+         *typeSCPtr |= def_faType_seqST;
+      else
+      { /*Else: may need to get past blank lines*/
+         if(seqSTPtr->idStr[0] > 32)
+            goto fileErr_fun04_sec06; /*unkown file*/
+         else if(seqSTPtr->idStr[1] > 32)
+            goto fileErr_fun04_sec06; /*unkown file*/
+         else if(seqSTPtr->idStr[2] > 32)
+            goto fileErr_fun04_sec06; /*unkown file*/
+
+         if(seqSTPtr->lenIdUL > 3)
+         { /*If: have something to copy*/
+            seqSTPtr->lenIdUL -= 3;
+            cpLen_ulCp(
+               seqSTPtr->idStr,
+               &seqSTPtr->idStr[3],
+               seqSTPtr->lenIdUL
+            );
+         } /*If: have something to copy*/
+
+         else
+            seqSTPtr->lenIdUL = 0;
+
+         /*++++++++++++++++++++++++++++++++++++++++++++++\
+         + Fun04 Sec02 Sub02 Cat03:
+         +   - first line empty, scan for fasta header
+         \++++++++++++++++++++++++++++++++++++++++++++++*/
+
+         while(! (*typeSCPtr & def_faType_seqST) )
+         { /*Loop: check if fasta or invalid file*/
+            tmpStr = seqSTPtr->idStr;
+            while(*tmpStr < 33 && *tmpStr)
+               ++tmpStr; /*find first non-white space*/
+                
+            if(*tmpStr == '>')
+            { /*If: found file type*/
+               *typeSCPtr |= def_faType_seqST;
+               break;
+            } /*If: found file type*/
+
+            else if(*tmpStr)
+               goto fileErr_fun04_sec06; /*not .fasta*/
+            else
+               seqSTPtr->lenIdUL = 0; /*only white space*/
+
+            if(*typeSCPtr & def_gzType_seqST)
+            { /*If: reading gz file*/
+               seqSTPtr->lenIdUL =
+                  get_inflate(
+                     fileSTPtr,
+                     (signed long) seqSTPtr->lenIdBuffUL,
+                     1, /*one line or full buffer*/
+                     seqSTPtr->idStr,
+                     &errSC
+                  );
+
+               if(errSC == def_memErr_inflate)
+                  goto memErr_fun04_sec06;
+               else if(errSC)
+                  goto fileErr_fun04_sec06;
+            } /*If: reading gz file*/
+
+            else if(
+               fgets(
+                  (char *) seqSTPtr->idStr,
+                  seqSTPtr->lenIdBuffUL,
+                  inFILE
+               ) /*get first line into buffer*/
+            ) seqSTPtr->lenIdUL =
+                 endStr_ulCp(seqSTPtr->idStr);
+            else
+               goto fileErr_fun04_sec06;
+         } /*Loop: check if fasta or invalid file*/
+      } /*Else: may need to get past blank lines*/
+   } /*If: user is starting new file*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun04 Sec03:
+   ^   - get read id
+   ^   o fun04 sec03 sub01:
+   ^     - get first line of read id (if no input file)
+   ^   o fun04 sec03 sub02:
+   ^     - get read id
+   ^   o fun04 sec03 sub03:
+   ^     - remove line break and header marker from id
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Fun04 Sec03 Sub01:
+   *   - get first line of read id (if no input file)
+   \*****************************************************/
+
+   if(! inFILE)
+   { /*If: need to get the first line still*/
+
+      if(*typeSCPtr & def_gzType_seqST)
+      { /*If: is gz file*/
+         errSC = 0;
+
+         while(! errSC)
+         { /*Loop: get next line*/
+            seqSTPtr->lenIdUL =
+               get_inflate(
+                  fileSTPtr,
+                  (signed long) seqSTPtr->lenIdBuffUL,
+                  1, /*till line ends or buffer is full*/
+                  seqSTPtr->idStr,
+                  &errSC
+               ); /*get first line*/
+
+            if(errSC == def_memErr_inflate)
+               goto memErr_fun04_sec06;
+
+            else if(errSC == def_eof_inflate)
+            { /*Else If: at end of gz file or entry*/
+               errSC = next_file_inflate(fileSTPtr, 0, 0);
+
+               if(errSC == def_eof_inflate)
+                  goto eof_fun04_sec06;
+               else if(errSC)
+                  goto fileErr_fun04_sec06;
+            } /*Else If: at end of gz file or entry*/
+
+            else
+               break; /*got one line*/
+         } /*Loop: get next line*/
+      } /*If: is gz file*/
+
+      else if(
+        fgets(
+           (char *) seqSTPtr->idStr,
+           seqSTPtr->lenIdBuffUL,
+           fileSTPtr->zipFILE
+        ) /*get first line into buffer*/
+      ) seqSTPtr->lenIdUL = endStr_ulCp(seqSTPtr->idStr);
+
+      else
+         goto eof_fun04_sec06;
+   } /*If: need to get the first line still*/
+
+   /*****************************************************\
+   * Fun04 Sec03 Sub02:
+   *   - get read id
+   \*****************************************************/
+
+   while(
+         seqSTPtr->idStr[seqSTPtr->lenIdUL - 1] != '\n'
+      && seqSTPtr->idStr[seqSTPtr->lenIdUL - 1] != '\r'
+   ){ /*Loop: get read id*/
+      tmpStr =
+         realloc(
+            seqSTPtr->idStr,
+            (seqSTPtr->lenIdUL + 136)
+               * sizeof(signed char)
+         );
+
+      if(! tmpStr)
+         goto memErr_fun04_sec06;
+      seqSTPtr->idStr = tmpStr;
+      seqSTPtr->lenIdBuffUL += 128;
+
+      if(*typeSCPtr & def_gzType_seqST)
+      { /*If: is gz file*/
+         seqSTPtr->lenIdUL +=
+            get_inflate(
+               fileSTPtr,
+               (signed long) 128,
+               1, /*till line ends or buffer is full*/
+               &seqSTPtr->idStr[seqSTPtr->lenIdUL],
+               &errSC
+            );
+
+            if(errSC == def_memErr_inflate)
+               goto memErr_fun04_sec06;
+            else if(errSC == def_eof_inflate)
+               goto badLine_fun04_sec06;
+            else if(errSC)
+               goto fileErr_fun04_sec06;
+      } /*If: is gz file*/
+
+      else if(
+         fgets(
+            (char *) &seqSTPtr->idStr[seqSTPtr->lenIdUL],
+            128,
+            fileSTPtr->zipFILE
+         )
+      ) seqSTPtr->lenIdUL +=
+         endStr_ulCp(&seqSTPtr->idStr[seqSTPtr->lenIdUL]);
+
+      else
+         goto badLine_fun04_sec06;
+   } /*Loop: get read id*/
+
+   /*****************************************************\
+   * Fun04 Sec03 Sub03:
+   *   - remove line break and header marker from id
+   \*****************************************************/
+
+   while(
+         seqSTPtr->idStr[seqSTPtr->lenIdUL - 1] == '\n'
+      || seqSTPtr->idStr[seqSTPtr->lenIdUL - 1] == '\r'
+   ) --seqSTPtr->lenIdUL;
+
+   if(seqSTPtr->idStr[0] == '@')
+      tmpSC = 1;
+   else if(seqSTPtr->idStr[0] == '>')
+      tmpSC = 1;
+
+   cpLen_ulCp(
+      seqSTPtr->idStr,
+      &seqSTPtr->idStr[tmpSC], /*move past header symbol*/
+      seqSTPtr->lenIdUL - tmpSC 
+   );
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun04 Sec04:
+   ^   - get sequence
+   ^   o fun04 sec04 sub01:
+   ^     - get first line or part of line in sequence
+   ^   o fun04 sec04 sub02:
+   ^     - check if reached end of fastq sequence
+   ^   o fun04 sec04 sub03:
+   ^     - check if reached end of fasta sequence
+   ^   o fun04 sec04 sub04:
+   ^     - make sure have memory for next line
+   ^   o fun04 sec04 sub05:
+   ^     - read in next line or part of line
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Fun04 Sec04 Sub01:
+   *   - get first line or part of line in sequence
+   \*****************************************************/
+
+   if(! seqSTPtr->seqStr)
+   { /*If: need to get memory for sequence*/
+      seqSTPtr->seqStr =
+         malloc(1032 * sizeof(signed char));
+      if(! seqSTPtr->seqStr)
+         goto memErr_fun04_sec06;
+      seqSTPtr->lenSeqBuffUL = 1024;
+   } /*If: need to get memory for sequence*/
+
+   oldLenUL = 0;
+
+   if(*typeSCPtr & def_gzType_seqST)
+   { /*If: reading gz file*/
+      seqSTPtr->lenSeqUL =
+            get_inflate(
+               fileSTPtr,
+               (signed long) seqSTPtr->lenSeqBuffUL,
+               1, /*till line ends or buffer is full*/
+               seqSTPtr->seqStr,
+               &errSC
+            ); /*get first sequence line*/
+
+      if(errSC == def_memErr_inflate)
+         goto memErr_fun04_sec06;
+      else if(errSC == def_eof_inflate)
+         goto badLine_fun04_sec06;
+      else if(errSC)
+         goto fileErr_fun04_sec06;
+   } /*If: reading gz file*/
+
+   else if(
+      fgets(
+         (char *) seqSTPtr->seqStr,
+         seqSTPtr->lenSeqBuffUL,
+         fileSTPtr->zipFILE
+      )
+   ) seqSTPtr->lenSeqUL +=
+      endStr_ulCp(&seqSTPtr->seqStr[seqSTPtr->lenSeqUL]);
+
+   else
+      goto badLine_fun04_sec06;
+
+   /*****************************************************\
+   * Fun04 Sec04 Sub02:
+   *   - check if reached end of fastq sequence
+   \*****************************************************/
+
+   while(1 == 1)
+   { /*Loop: read in sequence*/
+      tmpSC = 0;
+      tmpArySC[0] = 0;
+
+      if(*typeSCPtr & def_fqType_seqST)
+      { /*If: looking for fastq file ending*/
+         tmpStr = &seqSTPtr->seqStr[oldLenUL];
+         tmpStr +=
+            lenStrNull_ulCp(
+               tmpStr, 
+               fqSeqDelimUL,
+               '+'
+            );
+
+         if(*tmpStr == '+')
+         { /*If: found end of .fastq sequence entry*/
+            oldLenUL = tmpStr - seqSTPtr->seqStr;
+            break; /*found end of fastq sequence*/
+         } /*If: found end of .fastq sequence entry*/
+      } /*If: looking for fastq file ending*/
+
+      /**************************************************\
+      * Fun04 Sec04 Sub03:
+      *   - check if reached end of fasta sequence
+      *   o  fun04 sec04 sub03 cat01:
+      *     - next fasta char from .gz file + .fa* check
+      *   o fun04 sec04 sub03 cat02:
+      *     - get next fasta char from .fa file
+      \**************************************************/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun04 Sec04 Sub03 Cat01:
+      +   - get next fasta char from .gz file + .fa* check
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(*typeSCPtr & def_faType_seqST)
+      { /*Else If: fasta file*/
+         if(*typeSCPtr & def_gzType_seqST)
+         { /*If: reading from gz file*/
+            while(! errSC)
+            { /*Loop: find if next line is header*/
+               if(
+                  ! get_inflate(
+                     fileSTPtr,
+                     1,
+                     0,
+                     &tmpSC,
+                     &errSC
+                  )
+               ){ /*If: at line ending or EOF*/
+                  if(errSC == def_memErr_inflate)
+                     goto memErr_fun04_sec06;
+                  else if(errSC == def_eof_inflate)
+                     goto eof_fun04_sec06;
+                  else if(errSC)
+                     goto fileErr_fun04_sec06;
+
+                  if(str_endLine[1])
+                     tmpSC = 3;
+                  else
+                     tmpSC = 2;
+
+                  get_inflate(
+                     fileSTPtr,
+                     tmpSC,
+                     0,
+                     tmpArySC,
+                     &errSC
+                  ); /*get past line ending*/
+
+                  tmpSC = tmpArySC[tmpSC - 1];
+               }  /*If: at line ending or EOF*/
+
+               if(errSC == def_memErr_inflate)
+                  goto memErr_fun04_sec06;
+               else if(errSC == def_eof_inflate)
+                  goto eof_fun04_sec06;
+               else if(errSC)
+                  goto fileErr_fun04_sec06;
+
+               if(tmpSC > 32)
+                  break;
+            } /*Loop: find if next line is header*/
+
+
+            if(tmpSC == '>')
+               goto done_fun04_sec06;
+            else if( (tmpSC & ~32) > 90 )
+               goto fileErr_fun04_sec06; /*non a-z*/
+            else if( (tmpSC & ~32) > 64 )
+               ; /*a-z*/
+            else if(tmpSC == '-')
+               ; /*gap*/
+            else
+               goto badLine_fun04_sec06;
+               /*not part of sequence*/
+         } /*If: reading from gz file*/
+
+         /*++++++++++++++++++++++++++++++++++++++++++++++\
+         + Fun04 Sec04 Sub03 Cat02:
+         +   - get next fasta char from .fa file
+         \++++++++++++++++++++++++++++++++++++++++++++++*/
+
+         else
+         { /*Else: need to check if next line has header*/
+            tmpSC  = 0;
+
+            while(
+               fread(
+                  (char *) &tmpSC,
+                  sizeof(signed char),
+                  1,
+                  fileSTPtr->zipFILE
+               )
+            ){ /*Loop: find first non-white space*/
+               if(tmpSC > 32)
+                  break;
+            }  /*Loop: find first non-white space*/
+
+            if(tmpSC < 33)
+               goto eof_fun04_sec06;
+
+            if(tmpSC == '>')
+               goto done_fun04_sec06;
+            else if( (tmpSC & ~32) > 90 )
+               goto fileErr_fun04_sec06; /*non a-z*/
+            else if( (tmpSC & ~32) > 64 )
+               ; /*a-z*/
+            else if(tmpSC == '-')
+               ; /*gap*/
+            else
+               goto badLine_fun04_sec06;
+               /*not part of sequence*/
+         } /*Else: need to check if next line has header*/
+      } /*Else If: fasta file*/
+
+      /**************************************************\
+      * Fun04 Sec04 Sub04:
+      *   - make sure have memory for next line
+      \**************************************************/
+
+      oldLenUL = seqSTPtr->lenSeqUL;
+
+      if(
+            seqSTPtr->lenSeqUL
+         >= seqSTPtr->lenSeqBuffUL - 128
+      ){ /*If: need more memory*/
+         seqSTPtr->lenSeqBuffUL +=
+            (seqSTPtr->lenSeqBuffUL >> 1);
+
+         tmpStr =
+            realloc(
+               seqSTPtr->seqStr,
+               (seqSTPtr->lenSeqBuffUL + 8)
+                  * sizeof(signed char)
+            );
+         if(! tmpStr)
+            goto memErr_fun04_sec06;
+         seqSTPtr->seqStr = tmpStr;
+      } /*If: need more memory*/
+
+      /**************************************************\
+      * Fun04 Sec04 Sub05:
+      *   - read in next line or part of line
+      \**************************************************/
+
+      if(tmpSC)
+         seqSTPtr->seqStr[seqSTPtr->lenSeqUL++] = tmpSC;
+
+
+      if(*typeSCPtr & def_gzType_seqST)
+      { /*If: reading gz file*/
+         seqSTPtr->lenSeqUL +=
+               get_inflate(
+                  fileSTPtr,
+                  (signed long)
+                       seqSTPtr->lenSeqBuffUL
+                     - seqSTPtr->lenSeqUL,
+                  1, /*till line ends or buffer is full*/
+                  &seqSTPtr->seqStr[seqSTPtr->lenSeqUL],
+                  &errSC
+               );
+
+         if(errSC == def_memErr_inflate)
+            goto memErr_fun04_sec06;
+         else if(errSC == def_eof_inflate)
+            goto eof_fun04_sec06;
+         else if(errSC)
+            goto fileErr_fun04_sec06;
+      } /*If: reading gz file*/
+
+      else if(
+         fgets(
+           (char *) &seqSTPtr->seqStr[seqSTPtr->lenSeqUL],
+           seqSTPtr->lenSeqBuffUL - seqSTPtr->lenSeqUL,
+           fileSTPtr->zipFILE
+         )
+      ) seqSTPtr->lenSeqUL +=
+           endStr_ulCp(
+              &seqSTPtr->seqStr[seqSTPtr->lenSeqUL]
+           );
+   } /*Loop: read in sequence*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun04 Sec05:
+   ^   - get q-score entry (fastq only)
+   ^   o fun04 sec05 sub01:
+   ^     - find length of q-score entry from sequence
+   ^   o fun04 sec05 sub02:
+   ^     - make sure have fastq spacer line read in
+   ^   o fun04 sec05 sub03:
+   ^     - get q-score entry
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Fun04 Sec05 Sub01:
+   *   - find length of q-score entry from sequence entry
+   \*****************************************************/
+
+   tmpSC = 0;
+
+   if(
+         seqSTPtr->seqStr[seqSTPtr->lenSeqUL - 1] != '\n'
+      && seqSTPtr->seqStr[seqSTPtr->lenSeqUL - 1] != '\r'
+   ) tmpSC = 1; /*mark for later end detection*/
+
+   seqSTPtr->seqStr[oldLenUL - 1] = '\0';
+   seqSTPtr->lenSeqUL = oldLenUL - 1;
+
+   if(! seqSTPtr->qStr)
+      ;
+   else if(seqSTPtr->lenQBuffUL < oldLenUL + 1)
+   { /*If: q-score buffer is to small*/
+      free(seqSTPtr->qStr);
+      seqSTPtr->qStr = 0;
+   } /*If: q-score buffer is to small*/
+
+   if(! seqSTPtr->qStr)
+   { /*If: need to get memory for sequence*/
+      seqSTPtr->qStr =
+         malloc((oldLenUL + 11) * sizeof(signed char));
+      if(! seqSTPtr->qStr)
+         goto memErr_fun04_sec06;
+      seqSTPtr->lenQBuffUL = oldLenUL + 2;
+      /*adding 1 to account for the newline*/
+   } /*If: need to get memory for sequence*/
+
+   /*****************************************************\
+   * Fun04 Sec05 Sub02:
+   *   - make sure have fastq spacer line read in
+   \*****************************************************/
+
+   if(tmpSC)
+   { /*If: need to finish reading in + entry*/
+      do{ /*Loop: get full + line*/
+         if(*typeSCPtr & def_gzType_seqST)
+         { /*If: reading gz file*/
+            get_inflate(
+               fileSTPtr,
+               (signed long) seqSTPtr->lenQBuffUL,
+               1, /*get line*/
+               seqSTPtr->qStr,
+               &errSC
+            ); /*get first line*/
+
+            if(errSC == def_memErr_inflate)
+               goto memErr_fun04_sec06;
+            if(errSC == def_eof_inflate)
+               goto badLine_fun04_sec06;
+            else if(errSC)
+               goto fileErr_fun04_sec06;
+         } /*If: reading gz file*/
+
+         else if(
+            ! fgets(
+              (char *) seqSTPtr->qStr,
+              seqSTPtr->lenQBuffUL,
+              fileSTPtr->zipFILE
+            )
+         ) goto badLine_fun04_sec06;
+
+         tmpStr = seqSTPtr->qStr;
+         tmpStr += endLine_ulCp(tmpStr);
+      } while(! *tmpStr);
+        /*Loop: get full + line*/
+   } /*If: need to finish reading in + entry*/
+
+   /*****************************************************\
+   * Fun04 Sec05 Sub03:
+   *   - get q-score entry
+   \*****************************************************/
+
+   if(*typeSCPtr & def_gzType_seqST)
+   { /*If: reading gz file*/
+      seqSTPtr->lenQUL +=
+         get_inflate(
+            fileSTPtr,
+            (signed long) oldLenUL,
+            4, /*till line ends or buffer is full*/
+            seqSTPtr->qStr,
+            &errSC
+         ); /*get first sequence line*/
+
+      if(errSC == def_memErr_inflate)
+         goto memErr_fun04_sec06;
+      else if(errSC == def_eof_inflate)
+         goto eof_fun04_sec06;
+      else if(errSC)
+         goto fileErr_fun04_sec06;
+
+      if(seqSTPtr->qStr[seqSTPtr->lenQUL - 1] == '\n')
+         ;
+      else if(
+         seqSTPtr->qStr[seqSTPtr->lenQUL - 1] != '\r'
+      ){ /*Else If: need to get line ending*/
+         seqSTPtr->lenQUL +=
+            get_inflate(
+               fileSTPtr,
+               (signed long) oldLenUL - seqSTPtr->lenQUL,
+               4, /*till line ends or buffer is full*/
+               &seqSTPtr->qStr[seqSTPtr->lenQUL],
+               &errSC
+            ); /*get first sequence line*/
+
+         if(errSC == def_memErr_inflate)
+            goto memErr_fun04_sec06;
+         else if(errSC == def_eof_inflate)
+            goto eof_fun04_sec06;
+         else if(errSC)
+            goto fileErr_fun04_sec06;
+      }  /*Else If: need to get line ending*/
+   } /*If: reading gz file*/
+
+   else
+   { /*Else: reading text fastq file*/
+      seqSTPtr->lenQUL =
+         fread(
+            (char *) seqSTPtr->qStr,
+            sizeof(signed char),
+            oldLenUL,
+            fileSTPtr->zipFILE
+         );
+
+      seqSTPtr->qStr[seqSTPtr->lenQUL] = '\0';
+      if(seqSTPtr->lenQUL < seqSTPtr->lenSeqUL)
+         goto fileErr_fun04_sec06;
+   } /*Else: reading text fastq file*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun04 Sec06:
+   ^   - return
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   done_fun04_sec06:;
+      errSC = 0;
+      goto noErr_fun04_sec06;
+
+   eof_fun04_sec06:;
+      errSC = def_EOF_seqST;
+      if(*typeSCPtr & def_gzType_seqST)
+      { /*If: gz file, might have more entries*/
+         errSC = next_file_inflate(fileSTPtr, 0, 0);
+         if(! errSC)
+            goto done_fun04_sec06;
+         else if(errSC != def_eof_inflate)
+            goto fileErr_fun04_sec06;
+         else
+            errSC = def_EOF_seqST;
+      } /*If: gz file, might have more entries*/
+
+      goto noErr_fun04_sec06;
+
+   noErr_fun04_sec06:;
+      seqSTPtr->lenSeqUL = rmWhite_ulCp(seqSTPtr->seqStr);
+
+      if(*typeSCPtr & def_fqType_seqST)
+      { /*If: fastq file*/
+         seqSTPtr->lenQUL = rmWhite_ulCp(seqSTPtr->qStr);
+
+         if(seqSTPtr->lenQUL < seqSTPtr->lenSeqUL)
+            goto badLine_fun04_sec06;
+      } /*If: fastq file*/
+
+      goto ret_fun04_sec06;
+
+   memErr_fun04_sec06:;
+      errSC = def_memErr_seqST;
+      goto ret_fun04_sec06;
+
+   fileErr_fun04_sec06:;
+      errSC = def_fileErr_seqST;
+      goto ret_fun04_sec06;
+
+   badLine_fun04_sec06:;
+      errSC = def_badLine_seqST;
+      errSC |= def_fileErr_seqST;
+      goto ret_fun04_sec06;
+
+   ret_fun04_sec06:;
+      return errSC;
+} /*get_seqST*/
+
+
+/*-------------------------------------------------------\
+| Fun05: revComp_seqST
 |  - reverse complement a sequence
 | Input:
 |  - seqSTPtr:
@@ -775,18 +1656,18 @@ revComp_seqST(
   struct seqST *seqSTPtr  /*sequence to reverse comp*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
     ' SOF: Start Of File
-    '   o fun04 sec01:
+    '   o fun05 sec01:
     '     - variable declarations
-    '   o fun04 sec02:
+    '   o fun05 sec02:
     '     - check if have q-score entry
-    '   o fun04 sec03:
+    '   o fun05 sec03:
     '     - reverse complement sequence
-    '   o fun04 sec04:
+    '   o fun05 sec04:
     '     - reverse complement final base and return
     \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-    ^ Fun04 Sec01:
+    ^ Fun05 Sec01:
     ^   - variable declarations
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -799,7 +1680,7 @@ revComp_seqST(
     signed char *qEndStr = 0;
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-    ^ Fun04 Sec02:
+    ^ Fun05 Sec02:
     ^   - check if have q-score entry
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -810,18 +1691,18 @@ revComp_seqST(
     } /*If have a Q-score entry*/
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-    ^ Fun04 Sec03:
+    ^ Fun05 Sec03:
     ^   - reverse complement sequence
-    ^   o fun04 sec03 sub01:
+    ^   o fun05 sec03 sub01:
     ^     - reverse complement start base + start loop
-    ^   o fun04 sec03 sub02:
+    ^   o fun05 sec03 sub02:
     ^     - reverse complement end base
-    ^   o fun04 sec03 sub03:
+    ^   o fun05 sec03 sub03:
     ^     - swap start and end bases
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
     /****************************************************\
-    * Fun04 Sec03 Sub01:
+    * Fun05 Sec03 Sub01:
     *   - reverse complement start base + start loop
     \****************************************************/
 
@@ -849,7 +1730,7 @@ revComp_seqST(
        } /*switch, reverse complement*/
 
        /*************************************************\
-       * Fun04 Sec03 Sub02:
+       * Fun05 Sec03 Sub02:
        *   - reverse complement end base
        \*************************************************/
 
@@ -875,7 +1756,7 @@ revComp_seqST(
        } /*switch, reverse complement*/
 
        /*************************************************\
-       * Fun04 Sec03 Sub03:
+       * Fun05 Sec03 Sub03:
        *   - swap start and end bases
        \*************************************************/
 
@@ -898,7 +1779,7 @@ revComp_seqST(
     } /*While I have bases to reverse complement*/
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-    ^ Fun04 Sec04:
+    ^ Fun05 Sec04:
     ^   - reverse complement final base and return
     \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -931,7 +1812,7 @@ revComp_seqST(
 } /*revComp_seqST*/
 
 /*-------------------------------------------------------\
-| Fun05: blank_seqST
+| Fun06: blank_seqST
 |  - sets values in seqST to blank values
 | Input:
 |  - seqSTPtr:
@@ -966,7 +1847,7 @@ blank_seqST(
 } /*blank_seqST*/
 
 /*-------------------------------------------------------\
-| Fun06: init_seqST
+| Fun07: init_seqST
 |  - sets vlues in seqST to zero
 | Input:
 |  - seqSTPtr:
@@ -992,7 +1873,7 @@ init_seqST(
 } /*init_seqST*/
 
 /*-------------------------------------------------------\
-| Fun07: freeStack_seqST
+| Fun08: freeStack_seqST
 |  - frees the variables in an seqST strucuter
 | Input:
 |  - seqSTPtr:
@@ -1024,7 +1905,7 @@ freeStack_seqST(
 } /*freeStack_seqST*/
 
 /*-------------------------------------------------------\
-| Fun08: freeHeap_seqST
+| Fun09: freeHeap_seqST
 |  - frees the seqST strucuter
 | Input:
 |  - seqSTPtr:
@@ -1042,7 +1923,7 @@ freeHeap_seqST(
 } /*freeHeap_seqST*/
 
 /*-------------------------------------------------------\
-| Fun09: freeHeapAry_seqST
+| Fun10: freeHeapAry_seqST
 |  - frees an array of seqST's
 | Input:
 |  - seqAryST:
@@ -1073,7 +1954,7 @@ freeHeapAry_seqST(
 } /*freeHeapAry_seqST*/
 
 /*-------------------------------------------------------\
-| Fun10: cpIdEndPad_seqST
+| Fun11: cpIdEndPad_seqST
 |  - copies read id to a buffer and adds in endIdC to
 |    the end. If needed, this function will add right
 |    padding of spaces to the end.
@@ -1135,7 +2016,7 @@ cpIdEndPad_seqST(
 } /*cpIdEndPad_seqST*/
 
 /*-------------------------------------------------------\
-| Fun11: cp_seqST
+| Fun12: cp_seqST
 |   - copies an seqST structure
 | Input:
 |   - dupSeqST:
@@ -1154,22 +2035,22 @@ cp_seqST(
    struct seqST *dupSeqST, /*copy to (duplicate)*/
    struct seqST *cpSeqST   /*seqST to copy*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun11 TOC:
+   ' Fun12 TOC:
    '   - copies an seqST structure
-   '   o fun11 sec01:
+   '   o fun12 sec01:
    '     - blank and copy aligment settings
-   '   o fun11 sec02:
+   '   o fun12 sec02:
    '     - copy q-score entry
-   '   o fun11 sec03:
+   '   o fun12 sec03:
    '     - copy sequence entry
-   '   o fun11 sec04:
+   '   o fun12 sec04:
    '     - copy read id
-   '   o fun11 sec04:
+   '   o fun12 sec04:
    '     - return result
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec01:
+   ^ Fun12 Sec01:
    ^   - blank and copy aligment settings
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1178,7 +2059,7 @@ cp_seqST(
    dupSeqST->endAlnUL = cpSeqST->endAlnUL;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec02:
+   ^ Fun12 Sec02:
    ^   - copy q-score entry
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
@@ -1204,7 +2085,7 @@ cp_seqST(
             );
 
          if(! dupSeqST)
-            goto memErr_fun11;
+            goto memErr_fun12;
       } /*If: have to resize buffer*/
       
       dupSeqST->lenQUL = cpSeqST->lenQUL;
@@ -1217,7 +2098,7 @@ cp_seqST(
    } /*If: have q-score entry*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec03:
+   ^ Fun12 Sec03:
    ^   - copy sequence entry
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1241,7 +2122,7 @@ cp_seqST(
          );
 
       if(! dupSeqST)
-         goto memErr_fun11;
+         goto memErr_fun12;
    } /*If: have to resize buffer*/
 
    dupSeqST->lenSeqUL = cpSeqST->lenSeqUL;
@@ -1253,7 +2134,7 @@ cp_seqST(
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec04:
+   ^ Fun12 Sec04:
    ^   - copy read id
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1277,7 +2158,7 @@ cp_seqST(
          );
 
       if(! dupSeqST)
-         goto memErr_fun11;
+         goto memErr_fun12;
    } /*If: have to resize buffer*/
    
    dupSeqST->lenIdUL = cpSeqST->lenIdUL;
@@ -1289,18 +2170,18 @@ cp_seqST(
    );
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec05:
+   ^ Fun12 Sec05:
    ^   - return result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    return 0;
 
-   memErr_fun11:;
+   memErr_fun12:;
    return def_memErr_seqST;
 } /*cp_seqST*/
 
 /*-------------------------------------------------------\
-| Fun12: swap_seqST
+| Fun13: swap_seqST
 |   - swaps values in two seqST structs
 | Input:
 |   - firstSTPtr:
@@ -1372,7 +2253,7 @@ swap_seqST(
 } /*swap_seqST*/
 
 /*-------------------------------------------------------\
-| Fun13: sort_seqST
+| Fun14: sort_seqST
 |   - sorts an array of seqST structs
 | Input:
 |   - arySTPtr:
@@ -1388,18 +2269,18 @@ sort_seqST(
    struct seqST *arySTPtr, /*array to sort*/
    signed long lenSL       /*length of array*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun13 TOC:
+   ' Fun14 TOC:
    '   - sorts an array of seqST structs
-   '   o fun13 sec01:
+   '   o fun14 sec01:
    '     - variable declerations
-   '   o fun13 sec02:
+   '   o fun14 sec02:
    '     - find the number of rounds to sort for
-   '   o fun13 sec03:
+   '   o fun14 sec03:
    '     - sort the arrays
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun13 Sec01:
+   ^ Fun14 Sec01:
    ^   - variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1416,7 +2297,7 @@ sort_seqST(
    signed long slElm = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun13 Sec02:
+   ^ Fun14 Sec02:
    ^   - find the max search value (number rounds to sort)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1430,7 +2311,7 @@ sort_seqST(
       subSL = (3 * subSL) + 1;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun13 Sec03:
+   ^ Fun14 Sec03:
    ^   - sort arrays
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1495,7 +2376,7 @@ sort_seqST(
 } /*sort_seqST*/
 
 /*-------------------------------------------------------\
-| Fun14: search_seqST
+| Fun15: search_seqST
 |  - searchs for sequence in seqST struct array
 | Input:
 |  - seqArySTPtr:
@@ -1544,7 +2425,7 @@ search_seqST(
 } /*search_seqST*/
 
 /*-------------------------------------------------------\
-| Fun15: mkAry_seqST
+| Fun16: mkAry_seqST
 |  - makes a seqST struct array
 | Input:
 |  - sizeSL:
@@ -1563,7 +2444,7 @@ mkAry_seqST(
    retHeapAryST = malloc(sizeSL * sizeof(struct seqST));
 
    if(! retHeapAryST)
-      goto memErr_fun15;
+      goto memErr_fun16;
 
    while(sizeSL > 0)
    { /*Loop: initialize structs*/
@@ -1573,12 +2454,12 @@ mkAry_seqST(
 
    return retHeapAryST;
 
-   memErr_fun15:;
+   memErr_fun16:;
       return 0;
 } /*mkAry_seqST*/
 
 /*-------------------------------------------------------\
-| Fun16: realloc_seqST
+| Fun17: realloc_seqST
 |  - add more memory to a seqST struct array
 | Input:
 |  - seqArySTPtr:
@@ -1608,7 +2489,7 @@ realloc_seqST(
       );
 
    if(! tmpSTPtr)
-      goto memErr_fun15;
+      goto memErr_fun16;
 
    *seqArySTPtr = tmpSTPtr;
 
@@ -1620,12 +2501,12 @@ realloc_seqST(
 
    return 0;
 
-   memErr_fun15:;
+   memErr_fun16:;
       return def_memErr_seqST;
 } /*realloc_seqST*/
 
 /*-------------------------------------------------------\
-| Fun17: readFaFile_seqST
+| Fun18: readFaFile_seqST
 |   - get all sequences from a fasta file
 | Input:
 |   - faFILE:
@@ -1659,34 +2540,34 @@ readFaFile_seqST(
    signed long *sizeSLPtr, /*length of array*/
    signed char *errSCPtr   /*holds error values*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun17 TOC:
+   ' Fun18 TOC:
    '   - get all sequences from a fasta file
-   '   o fun17 sec01:
+   '   o fun18 sec01:
    '     - variable declarations
-   '   o fun17 sec02:
+   '   o fun18 sec02:
    '     - allocate memory and get first sequence
-   '   o fun17 sec03:
+   '   o fun18 sec03:
    '     - read rest of fasta file
-   '   o fun17 sec04:
+   '   o fun18 sec04:
    '     - return results
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun17 Sec01:
+   ^ Fun18 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    struct seqST *retHeapAryST = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun17 Sec02:
+   ^ Fun18 Sec02:
    ^   - allocate memory and get first sequence
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    retHeapAryST = mkAry_seqST(16);
 
    if(! retHeapAryST)
-      goto memErr_fun17_sec04;
+      goto memErr_fun18_sec04;
 
    *sizeSLPtr = 16;
 
@@ -1697,10 +2578,10 @@ readFaFile_seqST(
       );
 
    if(*errSCPtr == def_EOF_seqST)
-      goto fileErr_fun17_sec04; /*no sequences in file*/
+      goto fileErr_fun18_sec04; /*no sequences in file*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun17 Sec03:
+   ^ Fun18 Sec03:
    ^   - read rest of fasta file
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1719,7 +2600,7 @@ readFaFile_seqST(
             );
 
          if(*errSCPtr)
-            goto memErr_fun17_sec04;
+            goto memErr_fun18_sec04;
 
          *sizeSLPtr <<= 1;
       } /*If: need more memory*/
@@ -1742,39 +2623,38 @@ readFaFile_seqST(
 
 
    if(*errSCPtr != def_EOF_seqST)
-      goto errClean_fun17_sec04;
+      goto errClean_fun18_sec04;
       /*error reading file; already corect value*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun17 Sec04:
+   ^ Fun18 Sec04:
    ^   - return results
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    *errSCPtr = 0;
-   goto ret_fun17_sec04;
+   goto ret_fun18_sec04;
 
-   memErr_fun17_sec04:;
+   memErr_fun18_sec04:;
       *errSCPtr = def_memErr_seqST;
-      goto errClean_fun17_sec04;
+      goto errClean_fun18_sec04;
 
-   fileErr_fun17_sec04:;
+   fileErr_fun18_sec04:;
       *errSCPtr = def_fileErr_seqST;
-      goto errClean_fun17_sec04;
+      goto errClean_fun18_sec04;
 
-   errClean_fun17_sec04:;
+   errClean_fun18_sec04:;
       if(retHeapAryST)
          freeHeapAry_seqST(
             retHeapAryST,
             *sizeSLPtr
          );
       retHeapAryST = 0;
-      goto ret_fun17_sec04;
+      goto ret_fun18_sec04;
 
-   ret_fun17_sec04:;
+   ret_fun18_sec04:;
       return retHeapAryST;
 } /*readFaFile_seqST*/
 
-  
 /*=======================================================\
 : License:
 : 

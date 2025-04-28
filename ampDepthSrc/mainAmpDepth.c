@@ -35,7 +35,6 @@
 
 #include "../genBio/geneCoord.h"
 #include "../genBio/samEntry.h"
-#include "../genBio/trimSam.h"
 #include "../genBio/ampDepth.h"
 
 /*No .c files*/
@@ -291,7 +290,6 @@ void phelp_mainAmpDepth(
      "    o You can use \"-\" to specify stdout output%s",
      str_endLine
    );
-
 
    /*****************************************************\
    * Fun02 Sec02 Sub04:
@@ -1062,7 +1060,7 @@ main(
    ^  o main sec04 sub01:
    ^    - skip headers, alternative alignments, & unmapped
    ^  o main sec04 sub02:
-   ^    - trim reads, add to histogram, & get next read
+   ^    - add to histogram, & get next read
    ^  o main sec04 sub03:
    ^    - check for errors and clean up uneeded variables
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
@@ -1099,16 +1097,13 @@ main(
 
       /**************************************************\
       * Main Sec04 Sub02:
-      *   - trim reads, add to histogram, & get next read
+      *   - add to histogram, & get next read
       \**************************************************/
-
-      trimSeq_trimSam(&samStackST);
-         /*trim off masked bases*/
 
       addRead_ampDepth(
          &samStackST,
-         (signed int) genesHeapST->startAryUI[0],
-         (signed int) genesHeapST->endAryUI[numGenesSI],
+         genesHeapST,
+         numGenesSI,
          readMapHeapArySI,
          &offTargSI
       ); /*Add in the coverd bases to the histogram*/

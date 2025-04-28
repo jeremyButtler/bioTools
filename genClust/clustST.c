@@ -1032,6 +1032,7 @@ getNumLines_clustST(
    signed char *tmpStr = 0;
    unsigned long bytesUL = 0;
    unsigned long lineUL = 0;
+   unsigned char missBreakBl = 0;
 
    bytesUL =
       fread(
@@ -1044,44 +1045,75 @@ getNumLines_clustST(
    buffStr[bytesUL] = '\0';
    tmpStr = buffStr;
 
-   while(
-         bytesUL
-      || *tmpStr != '\0'
-   ){ /*Loop: find number of new lines*/
-      if(*tmpStr == '\r')
+   while(bytesUL || *tmpStr)
+   { /*Loop: find number of new lines*/
+      tmpStr += endLine_ulCp(tmpStr);
+
+      if(*tmpStr == '\n')
+      { /*If: on new line*/
+         if(tmpStr[1] == '\0')
+         { /*If: not enough to detect full line break*/
+            missBreakBl = 1;
+            goto getBytes_fun19;
+         } /*If: not enough to detect full line break*/
+
          ++tmpStr;
+         if(*tmpStr == '\r')
+            ++tmpStr;
+         ++lineUL;
+
+         while(*tmpStr == '\r' || *tmpStr == '\n')
+            ++tmpStr; /*move past blank lines*/
+      } /*If: on new line*/
 
       else if(*tmpStr == '\n')
+      { /*If: on new line*/
+         if(tmpStr[1] == '\0')
+         { /*If: not enough to detect full line break*/
+            missBreakBl = 1;
+            goto getBytes_fun19;
+         } /*If: not enough to detect full line break*/
+
+         ++tmpStr;
+         if(*tmpStr == '\n')
+            ++tmpStr;
          ++lineUL;
+
+         while(*tmpStr == '\r' || *tmpStr == '\n')
+            ++tmpStr; /*move past blank lines*/
+      } /*If: on new line*/
+
 
       else if(*tmpStr == '\0')
       { /*Else: read in more file*/
+         getBytes_fun19:;
+
+         if(missBreakBl)
+            buffStr[0] = *tmpStr; 
+
          bytesUL =
             fread(
-               buffStr,
+               (char *) &buffStr[missBreakBl],
                sizeof(signed char),
-               len_fun18,
+               len_fun18 - missBreakBl,
                inFILE
             ); /*read first line*/
 
-         if(bytesUL > 0)
-            buffStr[bytesUL] = '\0';
-
+         buffStr[bytesUL + missBreakBl] = '\0';
          tmpStr = buffStr;
+
+         if(! bytesUL && missBreakBl)
+            break; /*only \n in buffer*/
+         missBreakBl = 0;
       } /*Else: read in more file*/
-
-      while(
-            *tmpStr == '\r'
-         || *tmpStr == '\n'
-      ) ++tmpStr;
-
-      tmpStr += endLine_ulCp(tmpStr);
-         /*in this case do not care about '\r'*/
    } /*Loop: find number of new lines*/
 
-   if(*(tmpStr - 1) != '\r')
-      ++lineUL; /*account for last line being '\0'*/
-   else if(*(tmpStr - 1) != '\n')
+   if(tmpStr != buffStr)
+      --tmpStr;
+
+   if(missBreakBl)
+      ++lineUL;
+   else if(*tmpStr != '\n' && *tmpStr != '\r')
       ++lineUL; /*account for last line being '\0'*/
 
    fseek(

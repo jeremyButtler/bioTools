@@ -115,6 +115,7 @@ init_insBase_tbCon(
 \-------------------------------------------------------*/
 struct ins_tbCon *
 mkIns_tbCon(
+   void
 ){
    struct ins_tbCon *retMacST =
       malloc(sizeof(struct ins_tbCon));
@@ -212,6 +213,7 @@ init_conNt_tbCon(
 \-------------------------------------------------------*/
 struct conNt_tbCon *
 mk_conBase_tbCon(
+   void
 ){
    struct conNt_tbCon *retST =
       malloc(sizeof(struct conNt_tbCon));
@@ -358,7 +360,7 @@ void
 freeStack_set_tbCon(
    struct set_tbCon *setSTPtr
 ){
-   setSTPtr = setSTPtr;
+   init_set_tbCon(setSTPtr);
 } /*freeStack_set_tbCon*/
 
 /*-------------------------------------------------------\

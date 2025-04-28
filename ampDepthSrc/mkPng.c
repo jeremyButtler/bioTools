@@ -1362,10 +1362,10 @@ unsigned int bigendInt_mkPng(valUI)
 {
    unsigned int tmpUI = 0;
 
-   tmpUI = ((((unsigned int) (valUI)) >> 24) & 0xff );
    tmpUI |= ( (((unsigned int) (valUI)) << 8) & 0xff0000 );
    tmpUI |= ((( (unsigned int) (valUI) ) >> 8) & 0xff00 );
    tmpUI |= ( (((unsigned int) (valUI)) << 24) & 0xff000000 );
+   tmpUI = ((((unsigned int) (valUI)) >> 24) & 0xff );
    return tmpUI;
 }
 /*Logic

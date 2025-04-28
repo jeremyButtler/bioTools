@@ -3,13 +3,7 @@
 #b mapRead.c:4943
 #b mainMapRead.c:2378 if seqSL == 22
 
-#r -ref-index ref.index -fq qry.fq
-#r -ref-index ref.index -fq test.fq
-#r -ref-index ref.index -fq gyr.fq
-#r -ref-index ref.index -fq miss.fq
-r -ref-index ref.index -fq ~/files/testing/tb/BC33.fq
-#r -ref ref.fa -fq miss.fq -kmer-val 0,15,10
-#r -ref-index ref.index -fq ~/files/testing/tb/bar49-gid--sample29.fastq
+r -ref-index ref.index ~/files/testing/spoligoTest/*
 
 # Notes:
 #   figure out why chain merging is sloppy if chain length

@@ -34,7 +34,7 @@
 
 #include "../genLib/base10str.h"
 #include "../genLib/ulCp.h"
-#include "../genLib/ptrAry.h"
+#include "../genLib/inflate.h"
 
 #include "../genBio/seqST.h"
 #include "../genBio/samEntry.h"
@@ -54,13 +54,15 @@
 !   - .c  #include "../genLib/base10Str.h"
 !   - .c  #include "../genLib/numToStr.h"
 !   - .c  #include "../genLib/charCp.h"
+!   - .c  #include "../genLib/genMath.h"
 !   - .c  #include "../genLib/shellSort.h"
+!   - .c  #include "../genLib/endin.h"
+!   - .c  #include "../genLib/checkSum.h"
 !   - .c  #include "../genLib/strAry.h"
 !   - .c  #include "../genBio/kmerFun.h"
 !   - .c  #include "../genAln/indexToCoord.h"
 !   - .c  #include "../genAln/dirMatrix.h"
 !   - .c  #include "../genAln/needle.h"
-!   - .c  #include "../genAln/water.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
 !   - .h  #include "../genBio/kmerBit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -130,7 +132,7 @@ phelp_mainMapRead(
 
    fprintf(
       (FILE *) outFILE,
-      "mapRead -fq reads.fq -ref ref.fa > out.sam%s",
+      "mapRead -ref ref.fa read_1.fq read_2.fq ... > out.sam%s",
       str_endLine
    );
 
@@ -170,143 +172,36 @@ phelp_mainMapRead(
 
    /*****************************************************\
    * Fun02 Sec02 Sub02:
-   *   - fastq query file
-   *   o fun02 sec02 sub02 cat01:
-   *     - fastq entry header
-   *   o fun02 sec02 sub02 cat02:
-   *     - fastq query file
-   *   o fun02 sec02 sub02 cat03:
-   *     - fastq.gz query file
-   *   o fun02 sec02 sub02 cat04:
-   *     - fasta query file
-   *   o fun02 sec02 sub02 cat05:
-   *     - fasta.gz query file
+   *   - query input
    \*****************************************************/
 
-   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub02 Cat01:
-   +   - fastq entry header
-   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
    fprintf(
       (FILE *) outFILE,
-      "  Query input:%s",
-      str_endLine
-   );
-
-   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub02 Cat02:
-   +   - fastq query file
-   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-   fprintf(
-      (FILE *) outFILE,
-      "    -fq reads.fq: [Default: \"-fq -\"]%s",
+      "  - read_1.fq read_2.fq ...: [one Required]%s",
       str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o fastq file with reads to map%s",
+      "    o fasta, fastq, fasta.gz or fastq.gz files%s",
       str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o can add multiple times%s",
+      "      with reads to map to reference%s",
       str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o use \"-fq -\" for stdin input%s",
-      str_endLine
-   );
-
-   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub02 Cat03:
-   +   - fastq.gz query file
-   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-   fprintf(
-      (FILE *) outFILE,
-      "    -fq-gz reads.fq.gz: [Default: \"-fq -\"]%s",
+      "    o must come at end of command%s",
       str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "      o (TODO) fastq.gz file with reads to map%s",
-      str_endLine
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "      o can add multiple times%s",
-      str_endLine
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "      o use \"-fq-gz -\" for stdin input%s",
-      str_endLine
-   );
-
-   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub02 Cat04:
-   +   - fasta query file
-   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-   fprintf(
-      (FILE *) outFILE,
-      "    -fa query.fa: [Default: \"-fq -\"]%s",
-      str_endLine
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "      o fasta file with query to map%s",
-      str_endLine
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "      o can add multiple times%s",
-      str_endLine
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "      o use \"-fa -\" for stdin input%s",
-      str_endLine
-   );
-
-   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub02 Cat05:
-   +   - fasta.gz query file
-   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-   fprintf(
-      (FILE *) outFILE,
-      "    -fa-gz query.fa.gz: [Default: \"-fq -\"]%s",
-      str_endLine
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "      o (TODO) fasta.gz file with query to map%s",
-      str_endLine
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "      o can add multiple times%s",
-      str_endLine
-   );
-
-   fprintf(
-      (FILE *) outFILE,
-      "      o use \"-fa-gz -\" for stdin input%s",
+      "    o use `-` for stdin input%s",
       str_endLine
    );
 
@@ -922,18 +817,6 @@ phelp_mainMapRead(
 |     o number arugments user input
 |   - argAryStr:
 |     o c-string array with user input
-|   - qryFileStrPtr:
-|     o str_ptrAry struct to hold fastq files, will need
-|       to free
-|   - qryFlagSCPtr:
-|     o signed char pointer to hold file type, will need
-|       to free
-|       * def_fqQry_mainMapRead if fastq file
-|       * def_fqQry_mainMapRead | def_gzQry_mainMapRead if
-|         fastq.gz file
-|       * def_faQry_mainMapRead if fasta file
-|       * def_faQry_mainMapRead | def_gzQry_mainMapRead if
-|         fasta.gz file
 |   - refFileStrPtr:
 |     o c-string pointer to get ref file (do not free)
 |   - refFlagSCPtr:
@@ -945,6 +828,9 @@ phelp_mainMapRead(
 |     o if doing quick or slower mapping
 |       * 1: quicker mapping
 |       * 0: slower mapping
+|   - fxPosSIPtr:
+|     o signed int pointer to get index of first fastx
+|       file in arguments
 |   - setSTPtr:
 |     o set_mapRead pointer with settings to modify
 | Output:
@@ -962,12 +848,10 @@ signed char
 input_mainMapRead(
    int numArgsSI,               /*number arguments input*/
    char *argAryStr[],           /*input argument array*/
-   struct str_ptrAry *qryFileSTPtr, /*gets query files*/
-   signed char **qryFlagSCPtr,  /*query file type flag*/
-   signed long *sizeFlagSL,     /*size of qryFlagSCPtr*/
    signed char **refFileStrPtr, /*gets reference file*/
    signed char *refFlagSCPtr,   /*reference file type*/
    signed char **outFileStrPtr, /*gets output file*/
+   signed int *fxPosSIPtr,      /*fastx file position*/
    struct set_mapRead *setSTPtr /*gets settings*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
@@ -1012,227 +896,51 @@ input_mainMapRead(
    signed int refNtSI = 0;
    signed int qryNtSI = 0;
   
+   FILE *testFILE = 0;
 
    if(numArgsSI <= 1)
       goto phelp_fun03_sec03; /*nothing input*/
-
-
-   if(! qryFileSTPtr->lenSL)
-   { /*If: need more memory*/
-      if(
-         resize_str_ptrAry(
-            qryFileSTPtr,
-            15
-         )
-      ){ /*If: had memory error during resize*/
-         fprintf(
-            stderr,
-            "memory error setting up input memory%s",
-            str_endLine
-         ); 
-
-         goto err_fun03_sec03;
-      } /*If: had memory error during resize*/
-   }  /*If: had memory error*/
-
-   if(! *qryFlagSCPtr)
-   { /*If: need memory*/
-      *qryFlagSCPtr = malloc(16 * sizeof(signed char));
-
-      if(! *qryFlagSCPtr)
-      { /*If: had memory error*/
-         fprintf(
-            stderr,
-            "memory error reading input%s",
-            str_endLine
-         );
-
-         goto err_fun03_sec03;
-      } /*If: had memory error*/
-
-      *sizeFlagSL = 15;
-   } /*If: need memory*/
+   *fxPosSIPtr = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun03 Sec02:
    ^   - get input
    ^   o fun03 sec02 sub01:
-   ^     - fastq file array memory allaction + start loop
+   ^     - file IO by flags (reference and output)
    ^   o fun03 sec02 sub02:
-   ^     - check for fastq files
-   ^   o fun03 sec02 sub03:
-   ^     - reference and output file
-   ^   o fun03 sec02 sub04:
    ^     - kmerScan variables
-   ^   o fun03 sec02 sub05:
+   ^   o fun03 sec02 sub03:
    ^     - chaing and scoring variables
-   ^   o fun03 sec02 sub06:
+   ^   o fun03 sec02 sub04:
    ^     - help message
-   ^   o fun03 sec02 sub07:
+   ^   o fun03 sec02 sub05:
    ^     - version number
-   ^   o fun03 sec02 sub08:
+   ^   o fun03 sec02 sub06:
+   ^     - check if query fastx files
+   ^   o fun03 sec02 sub07:
    ^     - unkown input case
+   ^   o fun03 sec02 sub08:
    ^   o fun03 sec02 sub09:
    ^     - move to next arugment
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
    * Fun03 Sec02 Sub01:
-   *   - fastq file array memory allaction + start loop
+   *   - file IO by flags (reference and output)
    \*****************************************************/
 
    while(siArg < numArgsSI)
    { /*Loop: get user input*/
 
-      if(qryFileSTPtr->lenSL >= qryFileSTPtr->sizeSL - 1)
-      { /*If: need more memory*/
-         if(! qryFileSTPtr->lenSL)
-            qryFileSTPtr->lenSL = 4;
-
-         if(
-            resize_str_ptrAry(
-               qryFileSTPtr,
-               (qryFileSTPtr->lenSL << 1)
-            )
-         ){ /*If: had memory error during resize*/
-            fprintf(
-               stderr,
-               "memory error adding fastq file %s%s",
-               argAryStr[siArg],
-               str_endLine
-            ); 
-
-            goto err_fun03_sec03;
-         } /*If: had memory error during resize*/
-      }  /*If: had memory error*/
-
-
-      if(qryFileSTPtr->lenSL >= *sizeFlagSL - 1)
-      { /*If: need more memory*/
-         tmpStr =
-            realloc(
-               *qryFlagSCPtr,
-               (*sizeFlagSL << 1)
-            );
-         if(! tmpStr)
-         { /*If: had memory error*/
-            fprintf(
-               stderr,
-               "memory error adding fastq file %s flag%s",
-               argAryStr[siArg],
-               str_endLine
-            ); 
-
-            goto err_fun03_sec03;
-         } /*If: had memory error*/
-
-         *qryFlagSCPtr = tmpStr;
-         tmpStr = 0;
-         (*sizeFlagSL) <<= 1;
-      } /*If: need more memory*/
-
-      /**************************************************\
-      * Fun03 Sec02 Sub02:
-      *   - check for fastq files
-      *   o fun03 sec02 sub02 cat01:
-      *     - find query file type
-      *   o fun03 sec02 sub02 cat02:
-      *     - add query (fastq/fasta) to input array
-      \**************************************************/
-
-      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub02 Cat01:
-      +   - find query file type
-      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
-
       if(
-         ! eqlNull_ulCp(
-            (signed char *) "-fq",
-            (signed char *) argAryStr[siArg]
-         )
-      ){ /*If: fastq file input*/
-         (*qryFlagSCPtr)[qryFileSTPtr->lenSL] =
-             def_fqQry_mainMapRead;
-         goto addQry_fun03_sec02_sub02_cat02;
-      }  /*If: fastq file input*/
-
-      else if(
-         ! eqlNull_ulCp(
-            (signed char *) "-fq-gz",
-            (signed char *) argAryStr[siArg]
-         )
-      ){ /*else If: fastq.gz file input*/
-         (*qryFlagSCPtr)[qryFileSTPtr->lenSL] =
-             def_fqQry_mainMapRead;
-         (*qryFlagSCPtr)[qryFileSTPtr->lenSL] =
-            def_gzQry_mainMapRead;
-         goto addQry_fun03_sec02_sub02_cat02;
-      }  /*Else If: fastq.gz file input*/
-
-      else if(
-         ! eqlNull_ulCp(
-            (signed char *) "-fa",
-            (signed char *) argAryStr[siArg]
-         )
-      ){ /*else If: fasta file input*/
-         (*qryFlagSCPtr)[qryFileSTPtr->lenSL] =
-             def_faQry_mainMapRead;
-         goto addQry_fun03_sec02_sub02_cat02;
-      }  /*Else If: fasta file input*/
-
-      else if(
-         ! eqlNull_ulCp(
-            (signed char *) "-fa-gz",
-            (signed char *) argAryStr[siArg]
-         )
-      ){ /*else If: fasta.gz file input*/
-         (*qryFlagSCPtr)[qryFileSTPtr->lenSL] =
-             def_faQry_mainMapRead;
-         (*qryFlagSCPtr)[qryFileSTPtr->lenSL] =
-            def_gzQry_mainMapRead;
-         goto addQry_fun03_sec02_sub02_cat02;
-      }  /*Else If: fasta.gz file input*/
-
-      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub02 Cat02:
-      +   - add query (fastq/fasta) to input array
-      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-      else if(1 == 0)
-      { /*Else If: add input file (goto jump only)*/
-         addQry_fun03_sec02_sub02_cat02:;
-
-         ++siArg;
-
-         if(
-            add_str_ptrAry(
-               (signed char *) argAryStr[siArg],
-               qryFileSTPtr,
-               qryFileSTPtr->lenSL
-            )
-         ){ /*If: had memory error*/
-            fprintf(
-               stderr,
-               "memory error adding fastq file %s%s",
-               argAryStr[siArg],
-               str_endLine
-            ); 
-
-            goto err_fun03_sec03;
-         }  /*If: had memory error*/
-      } /*Else If: add input file (goto jump only)*/
-
-      /**************************************************\
-      * Fun03 Sec02 Sub03:
-      *   - reference, output file, and mapping type
-      \**************************************************/
-
-      else if(
          ! eqlNull_ulCp(
             (signed char *) "-ref",
             (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: reference fasta input*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          *refFileStrPtr = (signed char *) argAryStr[siArg];
          *refFlagSCPtr = def_refInFa_mainMapRead;
@@ -1244,6 +952,9 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: reference index input*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          *refFileStrPtr = (signed char *) argAryStr[siArg];
          *refFlagSCPtr = def_refInIndex_mainMapRead;
@@ -1255,6 +966,9 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: want indexed referencde ouput*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          *refFileStrPtr = (signed char *) argAryStr[siArg];
          *refFlagSCPtr = def_refOutIndex_mainMapRead;
@@ -1267,12 +981,15 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: output file input*/
-         ++siArg;
-         *outFileStrPtr = (signed char *) argAryStr[siArg];
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
+        ++siArg;
+        *outFileStrPtr = (signed char *) argAryStr[siArg];
       }  /*Else If: output file input*/
 
       /**************************************************\
-      * Fun03 Sec02 Sub04:
+      * Fun03 Sec02 Sub02:
       *   - kmer-val query length, kmer size, and % kmer
       \**************************************************/
 
@@ -1282,6 +999,8 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){  /*Else If: query length settings*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
 
          if(setSTPtr->lenKmersUC >= 16)
          { /*If: overlfow*/
@@ -1395,36 +1114,36 @@ input_mainMapRead(
       }  /*Else If: query length settings*/
 
       /**************************************************\
-      * Fun03 Sec02 Sub05:
+      * Fun03 Sec02 Sub03:
       *   - chaing and scoring variables
-      *   o fun03 sec02 sub05 cat01:
+      *   o fun03 sec02 sub03 cat01:
       *     - align ends boolean
-      *   o fun03 sec02 sub05 cat02:
+      *   o fun03 sec02 sub03 cat02:
       *     - sub alignment boolean
-      *   o fun03 sec02 sub05 cat03:
+      *   o fun03 sec02 sub03 cat03:
       *     - max percent length to merge chains
-      *   o fun03 sec02 sub05 cat04:
+      *   o fun03 sec02 sub03 cat04:
       *     - match score
-      *   o fun03 sec02 sub05 cat05:
+      *   o fun03 sec02 sub03 cat05:
       *     - snp score
-      *   o fun03 sec02 sub05 cat06:
+      *   o fun03 sec02 sub03 cat06:
       *     - gap opening penalty
-      *   o fun03 sec02 sub05 cat07:
+      *   o fun03 sec02 sub03 cat07:
       *     - gap extension penalty
-      *   o fun03 sec02 sub05 cat08:
+      *   o fun03 sec02 sub03 cat08:
       *     - two anonymous bases score
-      *   o fun03 sec02 sub05 cat09:
+      *   o fun03 sec02 sub03 cat09:
       *     - three anonymous bases score
-      *   o fun03 sec02 sub05 cat10:
+      *   o fun03 sec02 sub03 cat10:
       *     - four anonymous bases score
-      *   o fun03 sec02 sub05 cat11:
+      *   o fun03 sec02 sub03 cat11:
       *     - min percent score
-      *   o fun03 sec02 sub05 cat12:
+      *   o fun03 sec02 sub03 cat12:
       *     - min percent length
       \**************************************************/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat01:
+      + Fun03 Sec02 Sub03 Cat01:
       +   - align ends boolean
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1433,17 +1152,25 @@ input_mainMapRead(
             (signed char *) "-aln-ends",
             (signed char *) argAryStr[siArg]
          )
-      ) setSTPtr->alnEndsBl = 1;
+      ){ /*Else If: alining ends*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+         setSTPtr->alnEndsBl = 1;
+      }  /*Else If: alining ends*/
 
       else if(
          ! eqlNull_ulCp(
             (signed char *) "-no-aln-ends",
             (signed char *) argAryStr[siArg]
          )
-      ) setSTPtr->alnEndsBl = 0;
+      ){ /*Else If: not aligining ends*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+         setSTPtr->alnEndsBl = 0;
+      }  /*Else If: not aligining ends*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat02:
+      + Fun03 Sec02 Sub03 Cat02:
       +   - sub-alignment boolean
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1452,17 +1179,25 @@ input_mainMapRead(
             (signed char *) "-sub-aln",
             (signed char *) argAryStr[siArg]
          )
-      ) setSTPtr->subBl = 1;
+      ){ /*Else If: getting best sub-alignment*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+         setSTPtr->subBl = 1;
+      }  /*Else If: getting best sub-alignment*/
 
       else if(
          ! eqlNull_ulCp(
             (signed char *) "-no-sub-aln",
             (signed char *) argAryStr[siArg]
          )
-      ) setSTPtr->subBl = 0;
+      ){ /*Else If: not getting best sub-alignment*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+         setSTPtr->subBl = 0;
+      }  /*Else If: not getting best sub-alignment*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat03:
+      + Fun03 Sec02 Sub03 Cat03:
       +   - max percent length to merge chains
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1471,7 +1206,10 @@ input_mainMapRead(
             (signed char *) "-max-perc-len",
             (signed char *) argAryStr[siArg]
          )
-      ){ /*Else If: match score*/
+      ){ /*Else If: maximum percent length*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
@@ -1504,10 +1242,10 @@ input_mainMapRead(
             goto err_fun03_sec03;
          }  /*If: out of bounds*/
  
-      }  /*Else If: match score*/
+      }  /*Else If: maximum percent length*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat04:
+      + Fun03 Sec02 Sub03 Cat04:
       +   - match score
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1517,6 +1255,9 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: match score*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
@@ -1554,7 +1295,7 @@ input_mainMapRead(
       }  /*Else If: match score*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat05:
+      + Fun03 Sec02 Sub03 Cat05:
       +   - snp score
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1564,6 +1305,9 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: snp score*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
@@ -1606,7 +1350,7 @@ input_mainMapRead(
       }  /*Else If: snp score*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat06:
+      + Fun03 Sec02 Sub03 Cat06:
       +   - gap opening penalty
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1616,6 +1360,9 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: gap opening penalty*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
@@ -1644,7 +1391,7 @@ input_mainMapRead(
       }  /*Else If: gap opening penalty*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat07:
+      + Fun03 Sec02 Sub03 Cat07:
       +   - gap extension penalty
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1654,6 +1401,9 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: gap extension penalty*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
@@ -1684,7 +1434,7 @@ input_mainMapRead(
       }  /*Else If: gap extension penalty*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat08:
+      + Fun03 Sec02 Sub03 Cat08:
       +   - two anonyous bases score
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1694,6 +1444,9 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){  /*Else If: score for 2 base anonymous base*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
@@ -1729,7 +1482,7 @@ input_mainMapRead(
       }  /*Else If: score for 2 base anonymous base*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat09:
+      + Fun03 Sec02 Sub03 Cat09:
       +   - three anonyous bases score
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1739,6 +1492,9 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){  /*Else If: score for 3 base anonymous base*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
@@ -1774,7 +1530,7 @@ input_mainMapRead(
       }  /*Else If: score for 3 base anonymous base*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat10:
+      + Fun03 Sec02 Sub03 Cat10:
       +   - four anonyous bases score
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1784,6 +1540,9 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){  /*Else If: score for 4 base anonymous base*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
@@ -1819,7 +1578,7 @@ input_mainMapRead(
       }  /*Else If: score for 4 base anonymous base*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat11:
+      + Fun03 Sec02 Sub03 Cat11:
       +   - min percent score
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1829,6 +1588,9 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){  /*Else If: min percent score*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
@@ -1904,7 +1666,7 @@ input_mainMapRead(
       }  /*Else If: min percent score*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat12:
+      + Fun03 Sec02 Sub03 Cat12:
       +   - min percent length
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1914,6 +1676,9 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){  /*Else If: min percent lenth*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
@@ -1950,7 +1715,7 @@ input_mainMapRead(
       }  /*Else If: min percent length*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun03 Sec02 Sub05 Cat13:
+      + Fun03 Sec02 Sub03 Cat13:
       +   - chain minimum percent query bases
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -1960,6 +1725,9 @@ input_mainMapRead(
             (signed char *) argAryStr[siArg]
          )
       ){  /*Else If: min percent lenth*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
          ++siArg;
          tmpStr = (signed char *) argAryStr[siArg];
          tmpStr +=
@@ -1996,7 +1764,7 @@ input_mainMapRead(
       }  /*Else If: min percent length*/
 
       /**************************************************\
-      * Fun03 Sec02 Sub06:
+      * Fun03 Sec02 Sub04:
       *   - help message
       \**************************************************/
 
@@ -2036,7 +1804,7 @@ input_mainMapRead(
       ) goto phelp_fun03_sec03;
 
       /**************************************************\
-      * Fun03 Sec02 Sub07:
+      * Fun03 Sec02 Sub05:
       *   - version number
       \**************************************************/
 
@@ -2073,7 +1841,35 @@ input_mainMapRead(
       ) goto pversion_fun03_sec03;
 
       /**************************************************\
-      * Fun03 Sec02 Sub08:
+      * Fun03 Sec02 Sub06:
+      *   - check if query fastx files
+      \**************************************************/
+
+      else if(argAryStr[siArg][0] != '-')
+      { /*Else If: likely query fastx files*/
+         if(! *fxPosSIPtr)
+            *fxPosSIPtr = siArg;
+
+         if(argAryStr[siArg][0] == '>')
+            goto done_fun03_sec03;
+            /*at stdout redirect to file*/
+
+         testFILE = fopen(argAryStr[siArg], "r");
+
+         if(! testFILE)
+            goto invalidFile_fun03_sec03;
+         fclose(testFILE);
+         testFILE = 0;
+      } /*Else If: likely query fastx files*/
+
+      else if(! argAryStr[siArg][1])
+      { /*Else If: standard input*/
+         if(! *fxPosSIPtr)
+            *fxPosSIPtr = siArg; /*stdin input*/
+      } /*Else If: standard input*/
+
+      /**************************************************\
+      * Fun03 Sec02 Sub07:
       *   - unkown input case
       \**************************************************/
 
@@ -2090,7 +1886,7 @@ input_mainMapRead(
       } /*Else: unkown input*/
 
       /**************************************************\
-      * Fun03 Sec02 Sub09:
+      * Fun03 Sec02 Sub08:
       *   - move to next arugment
       \**************************************************/
 
@@ -2102,22 +1898,50 @@ input_mainMapRead(
    ^   - return result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   errSC = 0;
-   goto ret_fun03_sec03;
+   done_fun03_sec03:;
+      errSC = 0;
+      goto ret_fun03_sec03;
 
    phelp_fun03_sec03:;
       errSC = 1;
       phelp_mainMapRead(stdout);
       goto ret_fun03_sec03;
+
    pversion_fun03_sec03:;
       errSC = 1;
       pversion_mainMapRead(stdout);
       goto ret_fun03_sec03;
+
+   qryNotEndErr_fun03_sec03:;
+      fprintf(
+         stderr,
+         "query fastx files must be at end of input%s",
+         str_endLine
+      );
+      goto err_fun03_sec03;
+
+   invalidFile_fun03_sec03:;
+      fprintf(
+         stderr,
+         "could not open %s%s",
+         argAryStr[siArg],
+         str_endLine
+      );
+      goto err_fun03_sec03;
+
    err_fun03_sec03:;
       errSC = 2;
       goto ret_fun03_sec03;
 
    ret_fun03_sec03:;
+      if(! testFILE) ;
+      else if(testFILE == stdin) ;
+      else if(testFILE == stdout) ;
+      else if(testFILE == stderr) ;
+      else
+         fclose(testFILE);
+      testFILE = 0;
+
       return errSC;
 } /*input_mainMapRead*/
 
@@ -2156,14 +1980,11 @@ main(
    signed char forErrSC = 0;
    signed char revErrSC = 0;
 
-   struct str_ptrAry qryFilesStackST; /*query files*/
-   signed char *qryFlagHeapArySC = 0;/*query file types*/
-   signed long sizeFlagSL = 0;       /*size of qry flags*/
+   signed int qryFileIndexSI = 0;    /*first query file*/
 
    signed char *refFileStr = 0;
    signed char refFlagSC = def_refInFa_mainMapRead;
    signed char *outFileStr = 0;
-   signed char lastSeqBl = 0;
 
    signed long seqSL = 0;
 
@@ -2186,6 +2007,10 @@ main(
    signed char *buffHeapStr = 0;
    signed long lenBuffSL = 0;
 
+   struct file_inflate inFileStackST;
+   signed char fileTypeSC = 0;
+   signed char stdinBl = 0;
+   
    FILE *seqFILE = 0;
    FILE *outFILE = 0;
 
@@ -2221,7 +2046,7 @@ main(
    init_aln_mapRead(&alnStackST);
    init_set_mapRead(&setStackST);
 
-   init_str_ptrAry(&qryFilesStackST);
+   init_file_inflate(&inFileStackST);
 
    /*this needs to be setup early to get alnSet struct*/
    if(setup_set_mapRead(&setStackST) )
@@ -2244,12 +2069,10 @@ main(
       input_mainMapRead(
          numArgsSI,
          argAryStr,
-         &qryFilesStackST,   /*fastx files*/
-         &qryFlagHeapArySC, /*flags for file types*/
-         &sizeFlagSL,       /*flag array size*/
          &refFileStr,       /*reference file path*/
          &refFlagSC,        /*tells if indexed reference*/
          &outFileStr,       /*output file path*/
+         &qryFileIndexSI,
          &setStackST        /*settings for mapping*/
       ); /*get user input*/
 
@@ -2374,11 +2197,6 @@ main(
    +   - get fasta reference sequence
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   /*currently setting this up for single reference,
-   `  TODO: set up for multi-reference, fastq input, and
-   `  gz support
-   */
-
    if(refFlagSC & def_refInFa_mainMapRead)
    { /*If: reading reference from fasta file*/
       errSC =
@@ -2494,302 +2312,205 @@ main(
       goto noErr_main_sec04;
    } /*If: printing reference index to file*/
 
-   /*****************************************************\
-   * Main Sec02 Sub06:
-   *   - open query file
-   \*****************************************************/
-
-   /*TODO: this is for single query file support, add in
-   `   mutli-file support later, also in fun03, add in
-   `   multi-file input by one flag
-   `  for testing, I am keep it simple
-   */
-
-   if(
-         ! qryFilesStackST.lenSL
-      || qryFilesStackST.strAry[0][0] == '-'
-   ) seqFILE = stdin;
-
-   else
-   { /*Else: user input a file*/
-      seqFILE =
-         fopen(
-            (char *) qryFilesStackST.strAry[0],
-            "r"
-         );
-
-      if(! seqFILE)
-      { /*If: could not open query file*/
-         fprintf(
-            stderr,
-            "could not open %s%s",
-            qryFilesStackST.strAry[0],
-            str_endLine
-         );
- 
-         goto err_main_sec04;
-      } /*If: could not open query file*/
-   } /*Else: user input a file*/
-
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec03:
-   ^   - map reads
+   ^   - map reads to reference
    ^   o main sec03 sub01:
-   ^     - get first entry
+   ^     - open query files
    ^   o main sec03 sub02:
-   ^     - deal with EOF errors (others caught after loop)
-   ^   o main sec03 sub03:
-   ^     - map reads
+   ^     - map reads in one file
    ^   o main sec03 sub04:
    ^     - handel errors before cleanup
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
    * Main Sec03 Sub01:
-   *   - get first entry
+   *   - open query files
    \*****************************************************/
 
-   if(qryFlagHeapArySC[0] == def_fqQry_mainMapRead)
-      errSC =
-         getFqSeq_seqST(
-            seqFILE,
-            &qryStackST
-         );
-   else if(qryFlagHeapArySC[0] == def_faQry_mainMapRead)
-      errSC =
-         getFaSeq_seqST(
-            seqFILE,
-            &qryStackST
-         );
-   else
-   { /*Else: unsupported flag*/
-      fprintf(
-         stderr,
-         ".gz currently not supported (future plans)%s",
-         str_endLine
-      );
-      goto err_main_sec04;
-   } /*Else: unsupported flag*/
+   for( ; qryFileIndexSI < numArgsSI; ++qryFileIndexSI)
+   { /*Loop: for each file; map reads*/
+      if(argAryStr[qryFileIndexSI][0] == '-')
+      { /*If: reading stdin input*/
+         if(stdinBl)
+            continue; /*already read stdin input*/
+         else
+            seqFILE = stdin;
+      } /*If: reading stdin input*/
 
-   /*****************************************************\
-   * Main Sec03 Sub02:
-   *   - deal with EOF errors (others caught after loop)
-   \*****************************************************/
+      else
+      { /*Else: getting input from file*/
+         seqFILE = fopen(argAryStr[qryFileIndexSI], "r");
 
-   if(errSC == def_EOF_seqST)
-   { /*If: end of file*/
-      if(qryStackST.seqStr[0] != '\0')
-      { /*If: one sequence in file*/
-         lastSeqBl = 1;
+         if(! seqFILE)
+            goto noFile_main_sec04;
+      } /*Else: getting input from file*/
+         
+
+      errSC =
+         get_seqST(
+            &inFileStackST,
+            &fileTypeSC,
+            &qryStackST,
+            seqFILE
+         );
+
+      seqSL = 0;
+      seqFILE = 0; /*this will get cleaned up by inflate*/
+
+      if(errSC == def_EOF_seqST)
+      { /*If: nothing in file*/
+         fprintf(
+            stderr,
+            "no reads in %s%s",
+            argAryStr[qryFileIndexSI],
+            str_endLine
+         );
+         fflush(stderr);
+         continue; /*nothing in file*/
+      } /*If: nothing in file*/
+
+      else if(errSC == def_memErr_seqST)
+         goto memErr_main_sec04;
+
+      else if(errSC)
+         goto fileErr_main_sec04;
+
+      else
+      { /*Else: valid file*/
+         fprintf(
+            stderr,
+            "mapping reads in %s%s",
+            argAryStr[qryFileIndexSI],
+            str_endLine
+         );
+         fflush(stderr);
+      } /*Else: valid file*/
+
+      /**************************************************\
+      * Main Sec03 Sub02:
+      *   - map reads in one file
+      *   o main sec03 sub02 cat01:
+      *     - map forward read + start loop
+      *   o main sec03 sub02 cat02:
+      *     - map reverse read
+	   *   o main sec03 sub02 cat03:
+      *     - print read
+	   *   o main sec03 sub02 cat04:
+      *     - get next read
+      \**************************************************/
+      
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Main Sec03 Sub02 Cat01:
+      +   - map forward read + start loop
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      while(! errSC)
+      { /*Loop: map reads in one file*/
+         ++seqSL;
+         forScoreSL = 0;
+         revScoreSL = 0;
+
+         forScoreSL =
+            align_mapRead(
+               &qryStackST,   /*has read to map*/
+               &refStackST,   /*has reference sequence*/
+               &chainSI,      /*index of mapped chain*/
+               &forSamStackST,/*gets alignments*/
+               &alnStackST,   /*buffers for alignment*/
+               &setStackST,   /*has alignment settings*/
+               &forErrSC      /*gets error value*/
+            );
+
+         if(forErrSC == def_memErr_mapRead)
+            goto memErr_main_sec04;
+
+         /*++++++++++++++++++++++++++++++++++++++++++++++\
+         + Main Sec03 Sub03 Cat02:
+         +   - map reverse read
+         \++++++++++++++++++++++++++++++++++++++++++++++*/
+
+         revCmpIndex_alnSet(
+            qryStackST.seqStr,
+            qryStackST.qStr,
+            qryStackST.lenSeqUL
+         );
+
+         revScoreSL =
+            align_mapRead(
+               &qryStackST,   /*read to map*/
+               &refStackST,   /*reference sequence*/
+               &chainSI,      /*index of mapped chain*/
+               &revSamStackST,/*gets alignments*/
+               &alnStackST,   /*buffers for alignment*/
+               &setStackST,   /*has alignment settings*/
+               &revErrSC      /*gets error value*/
+            );
+
+         revSamStackST.flagUS = 16;
+
+         if(revErrSC == def_memErr_mapRead)
+            goto memErr_main_sec04;
+
+         /*++++++++++++++++++++++++++++++++++++++++++++++\
+         + Main Sec03 Sub03 Cat03:
+         +   - print read
+         \++++++++++++++++++++++++++++++++++++++++++++++*/
+
          errSC = 0;
-         goto mapRead_main_sec03_sub02_cat01;
-      } /*If: one sequence in file*/
 
-      else
-      { /*Else: nothing in file*/
-         fprintf(
-            stderr,
-            "query %s has no seqeunce%s",
-            qryFilesStackST.strAry[0],
-            str_endLine
-         );
+         /*trying to avoid secondary alignments*/
+         if(forScoreSL >= revScoreSL)
+            revSamStackST.flagUS |= 256;
+         else
+            forSamStackST.flagUS |= 256;
 
-         goto err_main_sec04;
-      } /*Else: nothing in file*/
-   } /*If: end of file*/
+         if(! forErrSC && forScoreSL > revScoreSL)
+           errSC =
+              p_samEntry(
+                 &forSamStackST,
+                 &buffHeapStr,
+                 (unsigned long *) &lenBuffSL,
+                 0, /*want newline*/
+                 outFILE
+              );
+         else if(! revErrSC && revScoreSL > forScoreSL)
+            errSC =
+               p_samEntry(
+                  &revSamStackST,
+                  &buffHeapStr,
+                  (unsigned long *) &lenBuffSL,
+                  0, /*want newline*/
+                  outFILE
+               );
 
-   /*****************************************************\
-   * Main Sec03 Sub03:
-   *   - map reads
-   *   o main sec03 sub03 cat01:
-   *     - map forward read + start loop
-   *   o main sec03 sub03 cat02:
-   *     - map reverse read
-	*   o main sec03 sub03 cat03:
-   *     - print read
-	*   o main sec03 sub03 cat04:
-   *     - get next read
-   \*****************************************************/
-   
-   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Main Sec03 Sub03 Cat01:
-   +   - map forward read + start loop
-   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+         if(errSC)
+            goto memErr_main_sec04;
 
-   while(! errSC)
-   { /*Loop: map reads*/
-      mapRead_main_sec03_sub02_cat01:;
+         /*++++++++++++++++++++++++++++++++++++++++++++++\
+         + Main Sec03 Sub03 Cat04:
+         +   - get next read
+         \++++++++++++++++++++++++++++++++++++++++++++++*/
 
-      ++seqSL;
-      forScoreSL = 0;
-      revScoreSL = 0;
-
-      forScoreSL =
-         align_mapRead(
-            &qryStackST,   /*has read to map*/
-            &refStackST,   /*has reference sequence*/
-            &chainSI,      /*index of chain used to map*/
-            &forSamStackST,/*gets alignments*/
-            &alnStackST,   /*holds buffers for alignment*/
-            &setStackST,   /*has alignment settings*/
-            &forErrSC         /*gets error value*/
-         );
-
-      if(forErrSC == def_memErr_mapRead)
-      { /*If: memory error*/
-         fprintf(
-            stderr,
-            "memory error on sequence %li in %s%s",
-            seqSL,
-            qryFilesStackST.strAry[0],
-            str_endLine
-         );
-
-         goto err_main_sec04;
-      } /*If: memory error*/
-
-      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Main Sec03 Sub03 Cat02:
-      +   - map reverse read
-      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-      revCmpIndex_alnSet(
-         qryStackST.seqStr,
-         qryStackST.qStr,
-         qryStackST.lenSeqUL
-      );
-
-      revScoreSL =
-         align_mapRead(
-            &qryStackST,   /*has read to map*/
-            &refStackST,   /*has reference sequence*/
-            &chainSI,      /*index of chain used to map*/
-            &revSamStackST,/*gets alignments*/
-            &alnStackST,   /*holds buffers for alignment*/
-            &setStackST,   /*has alignment settings*/
-            &revErrSC      /*gets error value*/
-         );
-
-      revSamStackST.flagUS = 16;
-
-      if(revErrSC == def_memErr_mapRead)
-      {
-         fprintf(
-            stderr,
-            "memory error on sequence %li in %s%s",
-            seqSL,
-            qryFilesStackST.strAry[0],
-            str_endLine
-         );
-
-         goto err_main_sec04;
-      }
-
-      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Main Sec03 Sub03 Cat03:
-      +   - print read
-      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-      errSC = 0;
-
-      if(forScoreSL >= revScoreSL)
-         revSamStackST.flagUS |= 256;
-      else
-         forSamStackST.flagUS |= 256;
-
-      if(! forErrSC)
-        errSC =
-           p_samEntry(
-              &forSamStackST,
-              &buffHeapStr,
-              (unsigned long *) &lenBuffSL,
-              0, /*want newline*/
-              outFILE
-           );
-      if(! revErrSC)
          errSC =
-            p_samEntry(
-               &revSamStackST,
-               &buffHeapStr,
-               (unsigned long *) &lenBuffSL,
-               0, /*want newline*/
-               outFILE
+            get_seqST(
+               &inFileStackST,
+               &fileTypeSC,
+               &qryStackST,
+               seqFILE
             );
+      } /*Loop: map reads in one file*/
 
-      if(errSC)
-      { /*If: memory error*/
-         fprintf(
-            stderr,
-            "memory error printing seq %li in %s%s",
-            seqSL,
-            qryFilesStackST.strAry[0],
-            str_endLine
-         );
+      /**************************************************\
+      * Main Sec03 Sub04:
+      *   - handel errors before cleanup
+      \**************************************************/
 
-         goto err_main_sec04;
-      } /*If: memory error*/
-
-      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Main Sec03 Sub03 Cat04:
-      +   - get next read
-      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-      blank_seqST(&qryStackST);
-
-      if(qryFlagHeapArySC[0] == def_fqQry_mainMapRead)
-         errSC =
-            getFqSeq_seqST(
-               seqFILE,
-               &qryStackST
-            );
-
-      else if(
-         qryFlagHeapArySC[0] == def_faQry_mainMapRead
-      ) errSC =
-            getFaSeq_seqST(
-               seqFILE,
-               &qryStackST
-            );
-   } /*Loop: map reads*/
-
-
-   /*****************************************************\
-   * Main Sec03 Sub04:
-   *   - handel errors before cleanup
-   \*****************************************************/
-
-   if(errSC == def_EOF_seqST)
-   { /*If: end of file*/
-      if(
-            qryStackST.seqStr[0] != '\0'
-         && ! lastSeqBl
-      ){ /*If: on last sequence*/
-         lastSeqBl = 1;
-         goto mapRead_main_sec03_sub02_cat01;
-      }  /*If: on last sequence*/
-   } /*If: end of file*/
-
-   else if(errSC == def_memErr_seqST)
-   { /*Else If: memory error*/
-      fprintf(
-         stderr,
-         "memory error on sequence %li in %s%s",
-         seqSL,
-         qryFilesStackST.strAry[0],
-         str_endLine
-      );
-   } /*Else If: memory error*/
-  
-   else if(errSC)
-   { /*Else If: file error*/
-      fprintf(
-         stderr,
-         "file error on sequence %li in %s%s",
-         seqSL,
-         qryFilesStackST.strAry[0],
-         str_endLine
-      );
-   } /*Else If: file error*/
+      if(errSC == def_memErr_seqST)
+         goto memErr_main_sec04;
+      else if(errSC != def_EOF_seqST)
+         goto fileErr_main_sec04;
+   } /*Loop: for each file; map reads*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec04:
@@ -2806,20 +2527,58 @@ main(
       errSC = 1;
       goto ret_main_sec04;
 
+   memErr_main_sec04:;
+      errSC = 2;
+      if(seqSL)
+         fprintf(
+            stderr,
+            "memory error while mapping read %li in %s%s",
+            seqSL,
+            argAryStr[qryFileIndexSI],
+            str_endLine
+         );
+      else
+         fprintf(
+            stderr,
+            "memory error setting up to map reads%s",
+            str_endLine
+         );
+      goto ret_main_sec04;
+
+   noFile_main_sec04:;
+      errSC = 3;
+      fprintf(
+         stderr,
+         "could not open file %s%s",
+         argAryStr[qryFileIndexSI],
+         str_endLine
+      );
+      goto ret_main_sec04;
+
+   fileErr_main_sec04:;
+      errSC = 4;
+      fprintf(
+         stderr,
+         "%s is likely not a fasta or fastq file%s",
+         argAryStr[qryFileIndexSI],
+         str_endLine
+      );
+      fprintf(
+         stderr,
+         "problem is at line %li%s",
+         seqSL,
+         str_endLine
+      );
+      goto ret_main_sec04;
+
    ret_main_sec04:;
-      freeStack_str_ptrAry(&qryFilesStackST);
-
-      if(qryFlagHeapArySC)
-         free(qryFlagHeapArySC);
-      qryFlagHeapArySC = 0;
-
-
       freeStack_samEntry(&forSamStackST);
       freeStack_samEntry(&revSamStackST);
       freeStack_seqST(&qryStackST);
       freeStack_ref_mapRead(&refStackST);
       freeStack_set_mapRead(&setStackST);
       freeStack_aln_mapRead(&alnStackST);
+      freeStack_file_inflate(&inFileStackST);
 
       if(buffHeapStr)
          free(buffHeapStr);

@@ -5,12 +5,14 @@ NAME=mapRead.exe
 PREFIX=%localAppData%
 O=o.win
 
-genAln=..\genAln
+genClust=..\genClust
 genLib=..\genLib
+genAln=..\genAln
 genBio=..\genBio
 
 objFiles= \
    $(genAln)\mapRead.$O \
+   $(genLib)\ptrAry.$O \
    $(genAln)\needle.$O \
    $(genAln)\dirMatrix.$O \
    $(genAln)\alnSet.$O \
@@ -21,58 +23,164 @@ objFiles= \
    $(genLib)\strAry.$O \
    $(genLib)\numToStr.$O \
    $(genBio)\seqST.$O \
+   $(genLib)\inflate.$O \
+   $(genLib)\checkSum.$O \
+   $(genLib)\endin.$O \
+   $(genLib)\genMath.$O \
    $(genLib)\charCp.$O \
    $(genBio)\kmerFun.$O \
-   $(genLib)\ptrAry.$O \
+   $(genLib)\shellSort.$O \
    mainMapRead.$O
 
-all: mainMapRead.$O
+$(NAME): mainMapRead.$O
 	$(LD) /out:$(NAME) $(objFiles)
 
-mainMapRead.$O: mainMapRead.c $(genAln)\mapRead.$O $(genLib)\ptrAry.$O ../bioTools.h ../bioTools.h ../bioTools.h ../bioTools.h
-	$(CC) /Fo:mainMapRead.$O  $(coreCFLAGS) $(CFLAGS) mainMapRead.c
+mainMapRead.$O: \
+	mainMapRead.c \
+	$(genAln)\mapRead.$O \
+	$(genLib)\ptrAry.$O \
+	../bioTools.h \
+	../genLib/endLine.h \
+	../genAln/defsMapRead.h \
+	../genAln/alnDefs.h
+		$(CC) /Fo:mainMapRead.$O  \
+			$(coreCFLAGS) $(CFLAGS) mainMapRead.c
 
-$(genAln)\mapRead.$O: $(genAln)\mapRead.c $(genAln)\mapRead.h $(genAln)\needle.$O $(genAln)\dirMatrix.$O $(genBio)\kmerFun.$O $(genAln)\defsMapRead.h  $(genLib)\genMath.h
-	$(CC) /Fo:$(genAln)\mapRead.$O  $(coreCFLAGS) $(CFLAGS) $(genAln)\mapRead.c
+$(genAln)\mapRead.$O: \
+	$(genAln)\mapRead.c $(genAln)\mapRead.h \
+	$(genAln)\needle.$O $(genAln)\dirMatrix.$O \
+	$(genBio)\kmerFun.$O $(genLib)\shellSort.$O \
+	$(genAln)\defsMapRead.h  $(genLib)\genMath.h
+	 	$(CC) /Fo:$(genAln)\mapRead.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genAln)\mapRead.c
 
-$(genAln)\needle.$O: $(genAln)\needle.c $(genAln)\dirMatrix.$O $(genLib)\genMath.h
-	$(CC) /Fo:$(genAln)\needle.$O  $(coreCFLAGS) $(CFLAGS) $(genAln)\needle.c
+$(genLib)\ptrAry.$O: \
+	$(genLib)\ptrAry.c $(genLib)\ptrAry.h \
+	$(genLib)\ulCp.$O
+		$(CC) /Fo:$(genLib)\ptrAry.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\ptrAry.c
 
-$(genAln)\dirMatrix.$O: $(genAln)\dirMatrix.c $(genAln)\alnSet.$O $(genAln)\indexToCoord.$O $(genBio)\samEntry.$O $(genBio)\seqST.$O $(genLib)\charCp.$O
-	$(CC) /Fo:$(genAln)\dirMatrix.$O  $(coreCFLAGS) $(CFLAGS) $(genAln)\dirMatrix.c
+$(genAln)\needle.$O: \
+	$(genAln)\needle.c $(genAln)\dirMatrix.$O \
+	$(genLib)\genMath.h
+		$(CC) /Fo:$(genAln)\needle.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genAln)\needle.c
 
-$(genAln)\alnSet.$O: $(genAln)\alnSet.c $(genAln)\alnDefs.h $(genLib)\ulCp.$O $(genLib)\base10str.$O $(genLib)\endLine.h
-	$(CC) /Fo:$(genAln)\alnSet.$O  $(coreCFLAGS) $(CFLAGS) $(genAln)\alnSet.c
+$(genAln)\dirMatrix.$O: \
+	$(genAln)\dirMatrix.c $(genAln)\alnSet.$O \
+	$(genAln)\indexToCoord.$O \
+	$(genBio)\samEntry.$O $(genBio)\seqST.$O \
+	$(genLib)\charCp.$O
+		$(CC) /Fo:$(genAln)\dirMatrix.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genAln)\dirMatrix.c
 
-$(genLib)\base10str.$O: $(genLib)\base10str.c $(genLib)\base10str.h
-	$(CC) /Fo:$(genLib)\base10str.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\base10str.c
+$(genAln)\alnSet.$O: \
+	$(genAln)\alnSet.c $(genAln)\alnDefs.h \
+	$(genLib)\ulCp.$O $(genLib)\base10str.$O \
+	$(genAln)\alnDefs.h $(genLib)\endLine.h
+		$(CC) /Fo:$(genAln)\alnSet.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genAln)\alnSet.c
 
-$(genLib)\ulCp.$O: $(genLib)\ulCp.c $(genLib)\ulCp.h
-	$(CC) /Fo:$(genLib)\ulCp.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\ulCp.c
+$(genLib)\base10str.$O: \
+	$(genLib)\base10str.c $(genLib)\base10str.h
+		$(CC) /Fo:$(genLib)\base10str.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\base10str.c
 
-$(genAln)\indexToCoord.$O: $(genAln)\indexToCoord.c
-	$(CC) /Fo:$(genAln)\indexToCoord.$O  $(coreCFLAGS) $(CFLAGS) $(genAln)\indexToCoord.c
 
-$(genBio)\samEntry.$O: $(genBio)\samEntry.c $(genBio)\samEntry.h $(genLib)\strAry.$O $(genLib)\base10str.$O $(genLib)\numToStr.$O $(genBio)\ntTo5Bit.h $(genLib)\endLine.h
-	$(CC) /Fo:$(genBio)\samEntry.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\samEntry.c
+$(genLib)\ulCp.$O: \
+	$(genLib)\ulCp.c $(genLib)\ulCp.h
+		$(CC) /Fo:$(genLib)\ulCp.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\ulCp.c
 
-$(genLib)\strAry.$O: $(genLib)\strAry.c $(genLib)\strAry.h $(genLib)\ulCp.$O
-	$(CC) /Fo:$(genLib)\strAry.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\strAry.c
 
-$(genLib)\numToStr.$O: $(genLib)\numToStr.c $(genLib)\numToStr.h
-	$(CC) /Fo:$(genLib)\numToStr.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\numToStr.c
+$(genAln)\indexToCoord.$O: \
+	$(genAln)\indexToCoord.c $(genAln)\indexToCoord.h
+		$(CC) /Fo:$(genAln)\indexToCoord.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genAln)\indexToCoord.c
 
-$(genBio)\seqST.$O: $(genBio)\seqST.c $(genBio)\seqST.h $(genLib)\ulCp.$O
-	$(CC) /Fo:$(genBio)\seqST.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\seqST.c
+$(genBio)\samEntry.$O: \
+	$(genBio)\samEntry.c $(genBio)\samEntry.h \
+	$(genLib)\strAry.$O $(genLib)\base10str.$O \
+	$(genLib)\numToStr.$O $(genBio)\ntTo5Bit.h \
+	$(genLib)\endLine.h
+		$(CC) /Fo:$(genBio)\samEntry.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genBio)\samEntry.c
 
-$(genLib)\charCp.$O: $(genLib)\charCp.c $(genLib)\charCp.h
-	$(CC) /Fo:$(genLib)\charCp.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\charCp.c
+$(genLib)\strAry.$O: \
+	$(genLib)\strAry.c $(genLib)\strAry.h \
+	$(genLib)\ulCp.$O
+		$(CC) /Fo:$(genLib)\strAry.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\strAry.c
 
-$(genBio)\kmerFun.$O: $(genBio)\kmerFun.c $(genBio)\kmerFun.h $(genBio)\kmerBit.h
-	$(CC) /Fo:$(genBio)\kmerFun.$O  $(coreCFLAGS) $(CFLAGS) $(genBio)\kmerFun.c
+$(genLib)\numToStr.$O: \
+	$(genLib)\numToStr.c $(genLib)\numToStr.h
+		$(CC) /Fo:$(genLib)\numToStr.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\numToStr.c
 
-$(genLib)\ptrAry.$O: $(genLib)\ptrAry.c $(genLib)\ptrAry.h $(genLib)\ulCp.$O
-	$(CC) /Fo:$(genLib)\ptrAry.$O  $(coreCFLAGS) $(CFLAGS) $(genLib)\ptrAry.c
+
+$(genBio)\seqST.$O: \
+	$(genBio)\seqST.c $(genBio)\seqST.h \
+	$(genLib)\ulCp.$O $(genLib)\inflate.$O
+		$(CC) /Fo:$(genBio)\seqST.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genBio)\seqST.c
+
+$(genLib)\inflate.$O: \
+	$(genLib)\inflate.c $(genLib)\inflate.h \
+	$(genLib)\checkSum.$O $(genLib)\ulCp.$O \
+	$(genLib)\genMath.$O $(genLib)\endLine.h
+		$(CC) /Fo:$(genLib)\inflate.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\inflate.c
+
+$(genLib)\checkSum.$O: \
+	$(genLib)\checkSum.c $(genLib)\checkSum.h \
+	$(genLib)\endin.$O
+	$(CC) /Fo:$(genLib)\checkSum.$O \
+		 $(coreCFLAGS) $(CFLAGS) \
+		$(genLib)\checkSum.c
+
+$(genLib)\endin.$O: \
+	$(genLib)\endin.c $(genLib)\endin.h
+		$(CC) /Fo:$(genLib)\endin.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\endin.c
+
+$(genLib)\genMath.$O: \
+	$(genLib)\genMath.c $(genLib)\genMath.h
+		$(CC) /Fo:$(genLib)\genMath.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\genMath.c
+
+$(genLib)\charCp.$O: \
+	$(genLib)\charCp.c $(genLib)\charCp.h
+		$(CC) /Fo:$(genLib)\charCp.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\charCp.c
+
+$(genBio)\kmerFun.$O: \
+	$(genBio)\kmerFun.c $(genBio)\kmerFun.h \
+	$(genBio)\kmerBit.h
+		$(CC) /Fo:$(genBio)\kmerFun.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genBio)\kmerFun.c
+
+$(genLib)\shellSort.$O: \
+	$(genLib)\shellSort.c $(genLib)\shellSort.h
+		$(CC) /Fo:$(genLib)\shellSort.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)\shellSort.c
 
 install:
 	move $(NAME) $(PREFIX)

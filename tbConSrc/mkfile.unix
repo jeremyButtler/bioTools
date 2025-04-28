@@ -1,5 +1,5 @@
 LD=cc
-coreCFLAGS= -O3 -std=c89 -Wall -Wextra
+coreCFLAGS= -O3 -std=c89 -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wcast-align -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
 CFLAGS=-DNONE
 NAME=tbCon
 PREFIX=/usr/local/bin
@@ -10,44 +10,82 @@ genLib=../genLib
 
 objFiles= \
    $(genBio)/tbCon.$O \
+   $(genLib)/charCp.$O \
    $(genBio)/samEntry.$O \
    $(genLib)/strAry.$O \
    $(genLib)/ulCp.$O \
    $(genLib)/numToStr.$O \
    $(genLib)/base10str.$O \
-   $(genLib)/charCp.$O \
    mainTbCon.$O
 
-all: mainTbCon.$O
+$(NAME): mainTbCon.$O
 	$(LD) -o $(NAME) $(objFiles)
 
-mainTbCon.$O: mainTbCon.c $(genBio)/tbCon.$O $(genLib)/charCp.$O ../bioTools.h ../bioTools.h ../bioTools.h ../bioTools.h
-	$(CC) -o mainTbCon.$O -c $(coreCFLAGS) $(CFLAGS) mainTbCon.c
+mainTbCon.$O: \
+	mainTbCon.c \
+	$(genBio)/tbCon.$O \
+	$(genLib)/charCp.$O \
+	../bioTools.h \
+	../genLib/endLine.h \
+	../genLib/genMath.h \
+	../genBio/tbConDefs.h
+		$(CC) -o mainTbCon.$O -c \
+			$(coreCFLAGS) $(CFLAGS) mainTbCon.c
 
-$(genBio)/tbCon.$O: $(genBio)/tbCon.c $(genBio)/tbCon.h $(genBio)/samEntry.$O $(genBio)/tbConDefs.h $(genLib)/genMath.h $(genLib)/endLine.h
-	$(CC) -o $(genBio)/tbCon.$O -c $(coreCFLAGS) $(CFLAGS) $(genBio)/tbCon.c
+$(genBio)/tbCon.$O: \
+	$(genBio)/tbCon.c $(genBio)/tbCon.h \
+	$(genBio)/samEntry.$O $(genBio)/tbConDefs.h \
+	$(genLib)/genMath.h $(genLib)/endLine.h
+		$(CC) -o $(genBio)/tbCon.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genBio)/tbCon.c
 
-$(genBio)/samEntry.$O: $(genBio)/samEntry.c $(genBio)/samEntry.h $(genLib)/strAry.$O $(genLib)/base10str.$O $(genLib)/numToStr.$O $(genBio)/ntTo5Bit.h $(genLib)/endLine.h
-	$(CC) -o $(genBio)/samEntry.$O -c $(coreCFLAGS) $(CFLAGS) $(genBio)/samEntry.c
+$(genLib)/charCp.$O: \
+	$(genLib)/charCp.c $(genLib)/charCp.h
+		$(CC) -o $(genLib)/charCp.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/charCp.c
 
-$(genLib)/strAry.$O: $(genLib)/strAry.c $(genLib)/strAry.h $(genLib)/ulCp.$O
-	$(CC) -o $(genLib)/strAry.$O -c $(coreCFLAGS) $(CFLAGS) $(genLib)/strAry.c
+$(genBio)/samEntry.$O: \
+	$(genBio)/samEntry.c $(genBio)/samEntry.h \
+	$(genLib)/strAry.$O $(genLib)/base10str.$O \
+	$(genLib)/numToStr.$O $(genBio)/ntTo5Bit.h \
+	$(genLib)/endLine.h
+		$(CC) -o $(genBio)/samEntry.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genBio)/samEntry.c
 
-$(genLib)/ulCp.$O: $(genLib)/ulCp.c $(genLib)/ulCp.h
-	$(CC) -o $(genLib)/ulCp.$O -c $(coreCFLAGS) $(CFLAGS) $(genLib)/ulCp.c
+$(genLib)/strAry.$O: \
+	$(genLib)/strAry.c $(genLib)/strAry.h \
+	$(genLib)/ulCp.$O
+		$(CC) -o $(genLib)/strAry.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/strAry.c
 
-$(genLib)/numToStr.$O: $(genLib)/numToStr.c $(genLib)/numToStr.h
-	$(CC) -o $(genLib)/numToStr.$O -c $(coreCFLAGS) $(CFLAGS) $(genLib)/numToStr.c
+$(genLib)/ulCp.$O: \
+	$(genLib)/ulCp.c $(genLib)/ulCp.h
+		$(CC) -o $(genLib)/ulCp.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/ulCp.c
 
-$(genLib)/base10str.$O: $(genLib)/base10str.c $(genLib)/base10str.h
-	$(CC) -o $(genLib)/base10str.$O -c $(coreCFLAGS) $(CFLAGS) $(genLib)/base10str.c
 
-$(genLib)/charCp.$O: $(genLib)/charCp.c $(genLib)/charCp.h
-	$(CC) -o $(genLib)/charCp.$O -c $(coreCFLAGS) $(CFLAGS) $(genLib)/charCp.c
+$(genLib)/numToStr.$O: \
+	$(genLib)/numToStr.c $(genLib)/numToStr.h
+		$(CC) -o $(genLib)/numToStr.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/numToStr.c
+
+
+$(genLib)/base10str.$O: \
+	$(genLib)/base10str.c $(genLib)/base10str.h
+		$(CC) -o $(genLib)/base10str.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/base10str.c
+
 
 install:
 	mv $(NAME) $(PREFIX)
-	chmod a+x $(PREFIX)/$(NAME)
+	chmod a+x $(PREFIX)\/$(NAME)
 
 clean:
 	rm $(objFiles)

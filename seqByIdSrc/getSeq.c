@@ -787,10 +787,21 @@ ulfqNoBuff_getSeq(
 
     ++(*posUL); /*Get off new line*/
 
-    if(buffStr[*posUL] == '\r')
-       ++(*posUL); /*Get off new line*/
     if(buffStr[*posUL] == '\n')
+    { /*If: line ended in new line*/
        ++(*posUL); /*Get off new line*/
+
+       if(buffStr[*posUL] == '\r')
+          ++(*posUL); /*Get off new line*/
+    } /*If: line ended in new line*/
+
+    else if(buffStr[*posUL] == '\r')
+    { /*Else If: line ended in carriage return*/
+       ++(*posUL); /*Get off new line*/
+
+       if(buffStr[*posUL] == '\n')
+          ++(*posUL); /*Get off new line*/
+    } /*Else If: line ended in carriage return*/
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun04 Sec04:
@@ -877,10 +888,21 @@ ulfqNoBuff_getSeq(
 
     ++(*posUL); /*Get off new line*/
 
-    if(buffStr[*posUL] == '\r')
-       ++(*posUL); /*Get off new line*/
     if(buffStr[*posUL] == '\n')
+    { /*If: line ended in new line*/
        ++(*posUL); /*Get off new line*/
+
+       if(buffStr[*posUL] == '\r')
+          ++(*posUL); /*Get off new line*/
+    } /*If: line ended in new line*/
+
+    else if(buffStr[*posUL] == '\r')
+    { /*Else If: line ended in carriage return*/
+       ++(*posUL); /*Get off new line*/
+
+       if(buffStr[*posUL] == '\n')
+          ++(*posUL); /*Get off new line*/
+    } /*Else If: line ended in carriage return*/
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun04 Sec06:
@@ -924,13 +946,21 @@ ulfqNoBuff_getSeq(
     *posUL += lenSeqSL; /*end of q-score entry*/
     /*new line is included*/
 
-    /*playing it safe*/
-    if(buffStr[*posUL] == '\r')
-       ++(*posUL); /*Get off new line*/
     if(buffStr[*posUL] == '\n')
+    { /*If: line ended in new line*/
        ++(*posUL); /*Get off new line*/
-    if(buffStr[*posUL] == '\r')
+
+       if(buffStr[*posUL] == '\r')
+          ++(*posUL); /*Get off new line*/
+    } /*If: line ended in new line*/
+
+    else if(buffStr[*posUL] == '\r')
+    { /*Else If: line ended in carriage return*/
        ++(*posUL); /*Get off new line*/
+
+       if(buffStr[*posUL] == '\n')
+          ++(*posUL); /*Get off new line*/
+    } /*Else If: line ended in carriage return*/
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun04 Sec07:
@@ -1127,9 +1157,20 @@ ulsamNoBuff_getSeq(
     ++(*posUL); /*Get off new line*/
 
     if(buffStr[*posUL] == '\n')
+    { /*If: line ended in new line*/
        ++(*posUL); /*Get off new line*/
-    if(buffStr[*posUL] == '\r')
+
+       if(buffStr[*posUL] == '\r')
+          ++(*posUL); /*Get off new line*/
+    } /*If: line ended in new line*/
+
+    else if(buffStr[*posUL] == '\r')
+    { /*Else If: line ended in carriage return*/
        ++(*posUL); /*Get off new line*/
+
+       if(buffStr[*posUL] == '\n')
+          ++(*posUL); /*Get off new line*/
+    } /*Else If: line ended in carriage return*/
 
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Fun05 Sec04:

@@ -1230,7 +1230,6 @@ dist_edDist(
    signed int siQryCig = 0;  /*query cigar position*/
    signed int qryValSI = 0;
    unsigned int uiQry = 0;     /*query nucleotide on*/
-   unsigned int uiRef = 0;
 
    signed long retSL = 0;    /*returned edit distance*/
 
@@ -1352,7 +1351,6 @@ dist_edDist(
          /*Case: likley match (or no way to check)*/
             match_fun07_sec04_sub03:;
             uiQry += qryValSI;
-            uiRef += qryValSI;
             baseInWinUI += qryValSI;
 
             while(baseInWinUI >= winSizeUI)
@@ -1444,7 +1442,6 @@ dist_edDist(
 
                nextNt_fun07_sec04_sub03_cat03:;
                ++uiQry;
-               ++uiRef;
                --qryValSI;
             } /*Loop: count number of SNPs*/
 
@@ -1549,7 +1546,6 @@ dist_edDist(
             +   - move to next reference base
             \+++++++++++++++++++++++++++++++++++++++++++*/
 
-            uiRef += qryValSI;
             break;
          /*Case: deletion*/
 

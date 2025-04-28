@@ -16,32 +16,63 @@ objFiles= \
    $genLib/shellSort.$O \
    mainK2TaxaId.$O
 
-all: mainK2TaxaId.$O
+$(NAME): mainK2TaxaId.$O
 	$LD -o $NAME $objFiles
 
-mainK2TaxaId.$O: mainK2TaxaId.c ../k2TaxaIdSrc/k2TaxaId.$O ../bioTools.h ../bioTools.h
-	$CC -o mainK2TaxaId.$O  $coreCFLAGS $CFLAGS mainK2TaxaId.c
+mainK2TaxaId.$O: \
+	mainK2TaxaId.c \
+	../k2TaxaIdSrc/k2TaxaId.$O \
+	../bioTools.h \
+	../genLib/endLine.h
+		$CC -o mainK2TaxaId.$O  \
+			$coreCFLAGS $CFLAGS mainK2TaxaId.c
 
-../k2TaxaIdSrc/k2TaxaId.$O: ../k2TaxaIdSrc/k2TaxaId.c ../k2TaxaIdSrc/k2TaxaId.h $genLib/ptrAry.$O $genLib/shellSort.$O $genLib/numToStr.$O $genLib/base10str.$O $genLib/genMath.$O
-	$CC -o ../k2TaxaIdSrc/k2TaxaId.$O  $coreCFLAGS $CFLAGS ../k2TaxaIdSrc/k2TaxaId.c
+../k2TaxaIdSrc/k2TaxaId.$O: \
+	../k2TaxaIdSrc/k2TaxaId.c ../k2TaxaIdSrc/k2TaxaId.h $genLib/ptrAry.$O \
+	$genLib/shellSort.$O $genLib/numToStr.$O \
+	$genLib/base10str.$O $genLib/genMath.$O
+		$CC -o ../k2TaxaIdSrc/k2TaxaId.$O  \
+			$coreCFLAGS $CFLAGS ../k2TaxaIdSrc/k2TaxaId.c
 
-$genLib/ptrAry.$O: $genLib/ptrAry.c $genLib/ptrAry.h $genLib/ulCp.$O
-	$CC -o $genLib/ptrAry.$O  $coreCFLAGS $CFLAGS $genLib/ptrAry.c
+$genLib/ptrAry.$O: \
+	$genLib/ptrAry.c $genLib/ptrAry.h \
+	$genLib/ulCp.$O
+		$CC -o $genLib/ptrAry.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/ptrAry.c
 
-$genLib/ulCp.$O: $genLib/ulCp.c $genLib/ulCp.h
-	$CC -o $genLib/ulCp.$O  $coreCFLAGS $CFLAGS $genLib/ulCp.c
+$genLib/ulCp.$O: \
+	$genLib/ulCp.c $genLib/ulCp.h
+		$CC -o $genLib/ulCp.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/ulCp.c
 
-$genLib/base10str.$O: $genLib/base10str.c $genLib/base10str.h
-	$CC -o $genLib/base10str.$O  $coreCFLAGS $CFLAGS $genLib/base10str.c
 
-$genLib/numToStr.$O: $genLib/numToStr.c $genLib/numToStr.h
-	$CC -o $genLib/numToStr.$O  $coreCFLAGS $CFLAGS $genLib/numToStr.c
+$genLib/base10str.$O: \
+	$genLib/base10str.c $genLib/base10str.h
+		$CC -o $genLib/base10str.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/base10str.c
 
-$genLib/genMath.$O: $genLib/genMath.c $genLib/genMath.h
-	$CC -o $genLib/genMath.$O  $coreCFLAGS $CFLAGS $genLib/genMath.c
 
-$genLib/shellSort.$O: $genLib/shellSort.c $genLib/shellSort.h
-	$CC -o $genLib/shellSort.$O  $coreCFLAGS $CFLAGS $genLib/shellSort.c
+$genLib/numToStr.$O: \
+	$genLib/numToStr.c $genLib/numToStr.h
+		$CC -o $genLib/numToStr.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/numToStr.c
+
+
+$genLib/genMath.$O: \
+	$genLib/genMath.c $genLib/genMath.h
+		$CC -o $genLib/genMath.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/genMath.c
+
+$genLib/shellSort.$O: \
+	$genLib/shellSort.c $genLib/shellSort.h
+		$CC -o $genLib/shellSort.$O \
+			 $coreCFLAGS $CFLAGS \
+			$genLib/shellSort.c
 
 install:
 	mv $(NAME) $(PREFIX)

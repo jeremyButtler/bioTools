@@ -152,12 +152,19 @@ cnvtIdToHexAry_searchST(
    ^   - convert the read id
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   if(*idStr == '\r')
-      ++idStr;
    if(*idStr == '\n')
+   { /*If: at unix/RISC line break*/
       ++idStr;
-   if(*idStr == '\r')
+      if(*idStr == '\r')
+         ++idStr;
+   } /*If: at unix/RISC line break*/
+
+   else if(*idStr == '\r')
+   { /*If: at windows/ancient mac line break*/
       ++idStr;
+      if(*idStr == '\n')
+         ++idStr;
+   } /*If: at windows/ancient mac line break*/
 
    idStr += ( (*idStr == '@') | (*idStr == '>') );
 
@@ -185,8 +192,8 @@ cnvtIdToHexAry_searchST(
 
          ++lenIdUC;
 
-         idAryUL[(*posInUL)] <<= def_elmSizeUL_idLkTbl;
-         idAryUL[(*posInUL)] |= hexUC;
+         idAryUL[*posInUL] <<= def_elmSizeUL_idLkTbl;
+         idAryUL[*posInUL] |= hexUC;
       } /*Loop: add each id character to the list*/
 
       idAryUL[sumPosUL] = 
@@ -868,6 +875,7 @@ mkSkip_searchST(
 \-------------------------------------------------------*/
 ulong_searchST
 majicNum_searchST(
+   void
 ){
    unsigned char ucDig = 0;
    ulong_searchST majicNumUL = 0;

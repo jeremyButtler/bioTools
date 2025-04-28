@@ -1,0 +1,75 @@
+LD=cc
+coreCFLAGS= -O0 -std=c89 -g -Werror -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wcast-align -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
+CFLAGS=-DNONE
+NAME=revCmp
+PREFIX=/usr/local/bin
+O=o.bug
+
+genBio=../genBio
+genLib=../genLib
+
+objFiles= \
+   $(genBio)/seqST.$O \
+   $(genLib)/inflate.$O \
+   $(genLib)/checkSum.$O \
+   $(genLib)/endin.$O \
+   $(genLib)/genMath.$O \
+   $(genLib)/ulCp.$O \
+   revCmp.$O
+
+$(NAME): revCmp.$O
+	$(LD) -o $(NAME) $(objFiles)
+
+revCmp.$O: \
+	revCmp.c \
+	$(genBio)/seqST.$O \
+	../bioTools.h \
+	../genLib/endLine.h
+		$(CC) -o revCmp.$O -c \
+			$(coreCFLAGS) $(CFLAGS) revCmp.c
+
+$(genBio)/seqST.$O: \
+	$(genBio)/seqST.c $(genBio)/seqST.h \
+	$(genLib)/ulCp.$O $(genLib)/inflate.$O
+		$(CC) -o $(genBio)/seqST.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genBio)/seqST.c
+
+$(genLib)/inflate.$O: \
+	$(genLib)/inflate.c $(genLib)/inflate.h \
+	$(genLib)/checkSum.$O $(genLib)/ulCp.$O \
+	$(genLib)/genMath.$O $(genLib)/endLine.h
+		$(CC) -o $(genLib)/inflate.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/inflate.c
+
+$(genLib)/checkSum.$O: \
+	$(genLib)/checkSum.c $(genLib)/checkSum.h \
+	$(genLib)/endin.$O
+	$(CC) -o $(genLib)/checkSum.$O \
+		-c $(coreCFLAGS) $(CFLAGS) \
+		$(genLib)/checkSum.c
+
+$(genLib)/endin.$O: \
+	$(genLib)/endin.c $(genLib)/endin.h
+		$(CC) -o $(genLib)/endin.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/endin.c
+
+$(genLib)/genMath.$O: \
+	$(genLib)/genMath.c $(genLib)/genMath.h
+		$(CC) -o $(genLib)/genMath.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/genMath.c
+
+$(genLib)/ulCp.$O: \
+	$(genLib)/ulCp.c $(genLib)/ulCp.h
+		$(CC) -o $(genLib)/ulCp.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/ulCp.c
+
+
+
+
+clean:
+	rm $(objFiles)
