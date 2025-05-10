@@ -3,11 +3,11 @@
 '   - converts 
 '   o header:
 '     - guards
-'   o fun01: ulTo_bigEndin
+'   o fun01: ulToBig_endin
 '     - converts unsigned long to big endin format
-'   o fun02: uiTo_bigEndin
+'   o fun02: uiToBig_endin
 '     - converts unsigned int to big endin format
-'   o fun03: usTo_bigEndin
+'   o fun03: usToBig_endin
 '     - converts unsigned short to big endin format
 '   o fun04: ulToLittle_endin
 '     - converts unsigned long to little endin format
@@ -34,7 +34,7 @@
 #define BIG_ENDIN_CONVERSION_H
 
 /*-------------------------------------------------------\
-| Fun01: ulTo_bigEndin
+| Fun01: ulToBig_endin
 |   - converts unsigned long to big endin format
 | Input:
 |   - valUL:
@@ -44,12 +44,12 @@
 |     o bigendin number as unsigned long
 \-------------------------------------------------------*/
 unsigned long
-ulTo_bigEndin(
+ulToBig_endin(
    unsigned long valUL
 );
 
 /*-------------------------------------------------------\
-| Fun02: uiTo_bigEndin
+| Fun02: uiToBig_endin
 |   - converts unsigned int to big endin format
 | Input:
 |   - valUI:
@@ -59,12 +59,12 @@ ulTo_bigEndin(
 |     o bigendin number as unsigned int
 \-------------------------------------------------------*/
 unsigned int
-uiTo_bigEndin(
+uiToBig_endin(
    unsigned int valUI
 );
 
 /*-------------------------------------------------------\
-| Fun03: usTo_bigEndin
+| Fun03: usToBig_endin
 |   - converts unsigned short to big endin format
 | Input:
 |   - valUI:
@@ -74,7 +74,7 @@ uiTo_bigEndin(
 |     o bigendin number as unsigned short
 \-------------------------------------------------------*/
 unsigned short
-usTo_bigEndin(
+usToBig_endin(
    unsigned short valUS
 );
 

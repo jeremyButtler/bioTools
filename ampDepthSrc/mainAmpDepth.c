@@ -47,6 +47,7 @@
 !   - .c  #include "../genLib/numToStr.h"
 !   - .c  #include "../genLib/ulCp.h"
 !   - .c  #include "../genLib/strAry.h"
+!   - .c  #include "../genLib/fileFun.h"
 !   - .h  #include "../genLib/genMath.h" using macros
 !   - .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -851,8 +852,6 @@ main(
    struct geneCoord *genesHeapST = 0; 
 
    struct samEntry samStackST;
-   signed char *samBuffHeapStr = 0;
-   unsigned long lenSamBuffUL = 0;
 
    FILE *samFILE = 0;
    FILE *outFILE = 0;
@@ -1070,13 +1069,8 @@ main(
    *   - skip headers, alternative alignments, & unmapped
    \*****************************************************/
 
-   errSC =
-      get_samEntry(
-          &samStackST,
-          &samBuffHeapStr,
-          &lenSamBuffUL,
-          samFILE
-      ); /*get first line of sam file (likely header)*/
+  /*get first line of sam file (likely header)*/
+   errSC = get_samEntry(&samStackST, samFILE);
 
    offTargSI = 0;
 
@@ -1109,14 +1103,7 @@ main(
       ); /*Add in the coverd bases to the histogram*/
 
       nextEntry_main_sec06_sub03:;
-
-      errSC =
-         get_samEntry(
-             &samStackST,
-             &samBuffHeapStr,
-             &lenSamBuffUL,
-             samFILE
-         );
+         errSC = get_samEntry(&samStackST, samFILE);
    } /*Loop: read in the samfile*/
 
    /*****************************************************\
@@ -1139,10 +1126,6 @@ main(
       fclose(samFILE);
 
    samFILE = 0;
-
-   free(samBuffHeapStr);
-   samBuffHeapStr = 0;
-   lenSamBuffUL = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec05:
@@ -1207,13 +1190,6 @@ main(
    \*****************************************************/
 
    cleanUp_main_sec06_sub03:;
-
-      if(samBuffHeapStr)
-         free(samBuffHeapStr);
-
-      samBuffHeapStr = 0;
-      lenSamBuffUL = 0;
-
       freeStack_samEntry(&samStackST);
 
       freeHeap_geneCoord(genesHeapST);

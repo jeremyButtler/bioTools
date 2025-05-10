@@ -26,38 +26,44 @@ unGz.$O: \
 			$(coreCFLAGS) $(CFLAGS) unGz.c
 
 $(genLib)/inflate.$O: \
-	$(genLib)/inflate.c $(genLib)/inflate.h \
-	$(genLib)/checkSum.$O $(genLib)/ulCp.$O \
-	$(genLib)/genMath.$O $(genLib)/endLine.h
+	$(genLib)/inflate.c \
+	$(genLib)/inflate.h \
+	$(genLib)/checkSum.$O \
+	$(genLib)/ulCp.$O \
+	$(genLib)/genMath.$O \
+	$(genLib)/endLine.h
 		$(CC) -o $(genLib)/inflate.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
 			$(genLib)/inflate.c
 
 $(genLib)/checkSum.$O: \
-	$(genLib)/checkSum.c $(genLib)/checkSum.h \
+	$(genLib)/checkSum.c \
+	$(genLib)/checkSum.h \
 	$(genLib)/endin.$O
 	$(CC) -o $(genLib)/checkSum.$O \
 		-c $(coreCFLAGS) $(CFLAGS) \
 		$(genLib)/checkSum.c
 
 $(genLib)/endin.$O: \
-	$(genLib)/endin.c $(genLib)/endin.h
+	$(genLib)/endin.c \
+	$(genLib)/endin.h
 		$(CC) -o $(genLib)/endin.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
 			$(genLib)/endin.c
 
 $(genLib)/genMath.$O: \
-	$(genLib)/genMath.c $(genLib)/genMath.h
+	$(genLib)/genMath.c \
+	$(genLib)/genMath.h
 		$(CC) -o $(genLib)/genMath.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
 			$(genLib)/genMath.c
 
 $(genLib)/ulCp.$O: \
-	$(genLib)/ulCp.c $(genLib)/ulCp.h
+	$(genLib)/ulCp.c \
+	$(genLib)/ulCp.h
 		$(CC) -o $(genLib)/ulCp.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
 			$(genLib)/ulCp.c
-
 
 
 

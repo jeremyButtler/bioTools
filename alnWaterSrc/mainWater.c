@@ -51,6 +51,7 @@
 !   o .c  #include "../genLib/numToStr.h"
 !   o .c  #include "../genLib/shellSort.h"
 !   o .c  #include "../genLib/strAry.h"
+!   o .c  #include "../genLib/fileFun.h"
 !   o .c  #include "../genAln/indexToCoord.h"
 !   o .h  #include "../genLib/genMath.h" (not using .c)
 !   o .h  #include "../genBio/ntTo2Bit.h"
@@ -1006,8 +1007,6 @@ main(
    struct alnSet setStackST;
 
    struct samEntry samStackST;
-   signed char *buffHeapStr = 0;
-   unsigned long lenBuffUL = 0;
 
    struct kmerCnt kmerStackST;
    unsigned char lenKmerUC = def_lenKmer_mainWater;
@@ -1161,7 +1160,7 @@ main(
    if(refTypeSC == def_fqFile_mainWater)
    { /*If: reading from fastq file*/
       errSC =
-         getFqSeq_seqST(
+         getFq_seqST(
              seqFILE,
              kmerStackST.forSeqST
          ); /*read in reference sequence*/
@@ -1170,7 +1169,7 @@ main(
    else
    { /*Else: from fasta file*/
       errSC =
-         getFaSeq_seqST(
+         getFa_seqST(
              seqFILE,
              kmerStackST.forSeqST
          ); /*read in reference sequence*/
@@ -1299,7 +1298,7 @@ main(
    if(qryTypeSC == def_fqFile_mainWater)
    { /*If: reading from fastq file*/
       errSC =
-         getFqSeq_seqST(
+         getFq_seqST(
              seqFILE,
              &qryStackST
          ); /*read in first query sequence*/
@@ -1308,7 +1307,7 @@ main(
    else
    { /*Else: from fasta file*/
       errSC =
-         getFaSeq_seqST(
+         getFa_seqST(
              seqFILE,
              &qryStackST
          ); /*read in first query sequence*/
@@ -1396,10 +1395,8 @@ main(
    ^   o main sec03 sub03:
    ^     - get alignment
    ^   o main sec03 sub04:
-   ^     - print alignment
-   ^   o main sec03 sub05:
    ^     - get next query sequence
-   ^   o main sec03 sub06:
+   ^   o main sec03 sub05:
    ^     - finished alingments, check for errors
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1420,7 +1417,7 @@ main(
          outFILE,
          "@SQ\tSN:%s\tLN:%lu%s",
          kmerStackST.forSeqST->idStr + 1, /*get off >*/
-         kmerStackST.forSeqST->lenSeqUL,
+         kmerStackST.forSeqST->seqLenSL,
          str_endLine
       );
 
@@ -1550,41 +1547,17 @@ main(
          goto memErr_main_sec04_sub02;
       } /*If: memory error*/
 
+      p_samEntry(&samStackST, 0, outFILE);
+
       /**************************************************\
       * Main Sec03 Sub04:
-      *   - print alignment
-      \**************************************************/
-
-      errSC =
-         p_samEntry(
-            &samStackST,
-            &buffHeapStr,
-            &lenBuffUL,
-            0,
-            outFILE
-         );
-
-      if(errSC)
-      { /*If: memory error*/
-         fprintf(
-            stderr,
-            "MEMORY ERROR sequence %li%s",
-            seqSL,
-            str_endLine
-         );
-
-         goto memErr_main_sec04_sub02;
-      } /*If: memory error*/
-
-      /**************************************************\
-      * Main Sec03 Sub05:
       *   - get next query sequence
       \**************************************************/
 
       if(qryTypeSC == def_fqFile_mainWater)
       { /*If: reading from fastq file*/
          errSC =
-            getFqSeq_seqST(
+            getFq_seqST(
                 seqFILE,
                 &qryStackST
             ); /*read in next query sequence*/
@@ -1593,7 +1566,7 @@ main(
       else
       { /*Else: from fasta file*/
          errSC =
-            getFaSeq_seqST(
+            getFa_seqST(
                 seqFILE,
                 &qryStackST
             ); /*read in next query sequence*/
@@ -1602,7 +1575,7 @@ main(
    /*Loop: align all query sequences*/
 
    /*****************************************************\
-   * Main Sec03 Sub06:
+   * Main Sec03 Sub05:
    *   - finished alingments, check for errors
    \*****************************************************/
 
@@ -1684,9 +1657,6 @@ main(
    freeStack_dirMatrix(&matrixStackST);
    freeStack_alnSet(&setStackST);
    freeStack_samEntry(&samStackST);
-
-   free(buffHeapStr);
-   buffHeapStr = 0;
 
    free(kmerHeapArySI);
    kmerHeapArySI = 0;

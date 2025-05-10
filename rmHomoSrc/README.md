@@ -73,3 +73,12 @@ Deletions that have been overwritten have the quality for
   the inserted reference base set to `!`, which is the
   symbol for a quality score of 0. However, if you want
   to mask replaced deletions, you can use `-mask N`.
+
+By default rmHomo will check to see if both neighbor bases
+  around the indel are in a homopolymer. So, the `T`
+  in `aaaaaTaaaaa` would be be removed. However, the `T`
+  in `aaaagTcaaaa` would be kept since neigther neighbor
+  is part of a homopolymer. You disable this so that the
+  indel must be the same base as the homopolymer
+  with `-no-scan`
+  Ex. `rmHomo -no-scan -ref ref.fa -sam reads.sam > out.sam`

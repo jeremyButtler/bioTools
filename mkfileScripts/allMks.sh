@@ -49,7 +49,7 @@ bash "../$retDirStr/allOSMkfiles.sh" k2TaxaId mainK2TaxaId k2TaxaId ../bioTools.
 cd "../$retDirStr" || exit;
 
 cd ../mapReadSrc || exit;
-bash "../$retDirStr/allOSMkfiles.sh" mapRead mainMapRead mapRead inflate ../bioTools.h
+bash "../$retDirStr/allOSMkfiles.sh" mapRead mainMapRead mapRead gzSeqST ../bioTools.h
 cd "../$retDirStr" || exit;
 
 cd ../maskPrimSrc || exit;

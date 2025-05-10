@@ -46,6 +46,7 @@
 !   o .c  #include "../genLib/numToStr.h"
 !   o .c  #include "../genulCp.h"
 !   o .c  #include "../genLib/strAry.h"
+!   o .c  #include "../genLib/fileFun.h"
 !   o .h  #include "../genLib/endLine.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -91,6 +92,7 @@
 |     o 1 for memory error
 |       - does not free strBuffPtr (you need to free)
 |       - does not free valArySI   (you need to free)
+|     o 2 if read had no sequence
 \-------------------------------------------------------*/
 signed char
 cigToEqx(
@@ -139,53 +141,37 @@ cigToEqx(
 
    /*check if I have an cigar entry*/
    if(samSTPtr->cigTypeStr[0] == '*')
-      goto finishAndExit_fun01_sec02_sub01;
+      goto noSeq_fun01_sec02;
 
    /*check if I have an sequence entry*/
    if(samSTPtr->seqStr[0] == '*')
-      goto finishAndExit_fun01_sec02_sub01;
+      goto noSeq_fun01_sec02;
 
-   if(*strBuffPtr == 0)
-   { /*If: I need to allocate memory*/
-      *lenBuffSI = (signed int) samSTPtr->lenCigUI << 1;
-
-      *strBuffPtr =
-         malloc((*lenBuffSI + 1) * sizeof(signed char));
-
-      if(! strBuffPtr)
-         goto memErr_fun01_sec02_sub02;
-
-      *valArySI = malloc(*lenBuffSI * sizeof(signed int));
-
-      if(! valArySI)
-         goto memErr_fun01_sec02_sub02;
-   } /*If: I need to allocate memory*/
-
-   else if(*lenBuffSI < (signed int) samSTPtr->readLenUI)
-   { /*Else If: I need to reallocate memory*/
-      *lenBuffSI = (signed int) samSTPtr->readLenUI << 1;
-
-      tmpStr =
-         malloc((*lenBuffSI +1) * sizeof(signed char));
-
-      if(! tmpStr)
-         goto memErr_fun01_sec02_sub02;
-
+   if(*lenBuffSI < (signed int) samSTPtr->readLenUI)
+   { /*If: I need more memory*/
       free(*strBuffPtr);
       *strBuffPtr = 0;
-      *strBuffPtr = tmpStr;
-
-      tmpStr=
-         (signed char *)
-         malloc(*lenBuffSI * sizeof(signed int));
-
-      if(! valArySI)
-         goto memErr_fun01_sec02_sub02;
 
       free(*valArySI);
       *valArySI = 0;
-      *valArySI = (signed int *) tmpStr;
-   } /*Else If: I need to reallocate memory*/
+   } /*If: I need more memory*/
+
+
+   if(*strBuffPtr)
+      ;
+   else if(! *valArySI)
+   { /*If: I need to allocate memory*/
+      *lenBuffSI = (signed int) samSTPtr->readLenUI << 1;
+
+      *strBuffPtr =
+         malloc((*lenBuffSI + 1) * sizeof(signed char));
+      if(! strBuffPtr)
+         goto memErr_fun01_sec02;
+
+      *valArySI = malloc(*lenBuffSI * sizeof(signed int));
+      if(! valArySI)
+         goto memErr_fun01_sec02;
+   } /*If: I need to allocate memory*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun01 Sec03:
@@ -217,7 +203,7 @@ cigToEqx(
 
    for(
       siCig = 0;
-      siCig < (signed int) samSTPtr->lenCigUI;
+      siCig < (signed int) samSTPtr->cigLenUI;
       ++siCig
    ){ /*Loop: Check all cigar entries*/
       switch(samSTPtr->cigTypeStr[siCig])
@@ -572,20 +558,20 @@ cigToEqx(
    ++siNewCig; /*Convert index 0 to index 1*/
 
    if(
-        samSTPtr->lenCigBuffUI
+        samSTPtr->cigSizeUI
       < (unsigned int) (siNewCig + 1)
    ){ /*If: I need to resize the cigar arrays*/
-      samSTPtr->lenCigBuffUI =
+      samSTPtr->cigSizeUI =
          (unsigned int) siNewCig << 1;
 
       tmpStr =
          (signed char *)
          malloc(
-            samSTPtr->lenCigBuffUI * sizeof(signed char)
+            samSTPtr->cigSizeUI * sizeof(signed char)
          );
 
       if(! tmpStr)
-         goto memErr_fun01_sec02_sub02;
+         goto memErr_fun01_sec02;
 
       free(samSTPtr->cigTypeStr);
       samSTPtr->cigTypeStr = 0;
@@ -594,11 +580,11 @@ cigToEqx(
       tmpStr =
          (signed char *)
          malloc(
-            samSTPtr->lenCigBuffUI * sizeof(signed int)
+            samSTPtr->cigSizeUI * sizeof(signed int)
          );
 
       if(! tmpStr)
-         goto memErr_fun01_sec02_sub02;
+         goto memErr_fun01_sec02;
 
       free(samSTPtr->cigArySI);
       samSTPtr->cigArySI = 0;
@@ -610,7 +596,7 @@ cigToEqx(
    *   - copy the new cigar entry
    \*****************************************************/
 
-   samSTPtr->lenCigUI = (unsigned int) siNewCig;
+   samSTPtr->cigLenUI = (unsigned int) siNewCig;
 
    for(siCig = 0; siCig < siNewCig; ++siCig)
    { /*Loop: Copy the new cigar over*/
@@ -624,29 +610,14 @@ cigToEqx(
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun01 Sec05:
    ^   - clean up
-   ^   o fun01 sec05 sub01:
-   ^     - clean up after success
-   ^   o fun01 sec05 sub02:
-   ^     - error clean up
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   /*****************************************************\
-   * Fun01 Sec05 Sub01:
-   *   - clean up after success
-   \*****************************************************/
-
-   finishAndExit_fun01_sec02_sub01:;
 
    return 0;
 
-   /*****************************************************\
-   * Fun01 Sec05 Sub02:
-   *   - error clean up
-   \*****************************************************/
-
-   memErr_fun01_sec02_sub02:;
-
-   return 1;
+   memErr_fun01_sec02:;
+      return 1;
+   noSeq_fun01_sec02:;
+      return 2;
 } /*samCigToEqxCig*/
 
 

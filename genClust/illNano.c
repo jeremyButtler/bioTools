@@ -79,6 +79,7 @@
 ! Hidden libraries
 !   o .c   #include "../genLib/numToStr.h"
 !   o .c   #include "../genLib/strAry.h"
+!   o .c   #include "../genLib/fileFun.h"
 !   o .h   #include "ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -1277,7 +1278,7 @@ getVarNano_illNano(
    if(samSTPtr->cigTypeStr[0] == 'H')
       cigPosUI = 1;
 
-   while(cigPosUI < samSTPtr->lenCigUI)
+   while(cigPosUI < samSTPtr->cigLenUI)
    { /*Loop: go through cigar*/
 
       if(profileStr[refPosUI] == '\0')
@@ -1578,10 +1579,6 @@ getVarNano_illNano(
 |          cover, but their is no difference
 |     o 0: only merge when at least on read completly
 |          overlaps other
-|   - buffStrPtr:
-|     o pointer to c-string to use in reading sam file
-|   - lenBuffULPtr:
-|     o length of buffStrPtr
 |   - samFILE:
 |     o FILE pointer to sam file with reads to get
 |   - outFILE:
@@ -1607,8 +1604,6 @@ getNanoReads_illNano(
    signed char tranBl,       /*1: is uknown transition*/
    signed char mergeOverBl,/*1 merge incompelte overlaps*/
    struct samEntry *samSTPtr,/*sam file reading*/
-   signed char **buffStrPtr, /*buffer for file reading*/
-   unsigned long *lenBuffULPtr,/*length of buffStrPtr*/
    void *samFILE,            /*sam file with ONT reads*/
    void *outFILE             /*file to save reads to*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
@@ -1637,7 +1632,6 @@ getNanoReads_illNano(
       /*nucleotide of mapped var*/
    unsigned int numVarUI = 0;/*number of variants*/
    unsigned int uiVar = 0;   /*for printing variants*/
-   unsigned int uiPos = 0;   /*position in output buffer*/
 
    struct prof_illNano *tmpHeapProfST = 0;
    struct prof_illNano *nodeSTPtr = 0; /*node in list*/
@@ -1653,24 +1647,16 @@ getNanoReads_illNano(
 
    mapPosHeapAryUI =
       malloc(lenProfileUI * sizeof(unsigned int));
-
    if(! mapPosHeapAryUI)
       goto memErr_fun16_sec04;
 
    mapNtHeapArySC =
       malloc(lenProfileUI * sizeof(signed char));
-
    if(! mapNtHeapArySC)
       goto memErr_fun16_sec04;
 
-   errSC =
-      get_samEntry(
-         samSTPtr,
-         buffStrPtr,
-         lenBuffULPtr,
-         samFILE
-       );
 
+   errSC = get_samEntry(samSTPtr, samFILE);
    if(errSC)
    { /*If: had error*/
       if(errSC == def_memErr_samEntry)
@@ -1817,35 +1803,29 @@ getNanoReads_illNano(
          numVarUI
       );
 
-      uiPos = 0;
-
+      if(numVarUI >= 1)
+         fprintf(
+            (FILE *) outFILE,
+            "%i%c",
+            mapPosHeapAryUI[0] + 1, /*to index 1*/
+            mapNtHeapArySC[0]
+         );
       for(
-         uiVar = 0;
+         uiVar = 1;
          uiVar < numVarUI;
          ++uiVar
       ){ /*Loop: print out each variant position*/
-         if(uiVar > 0)
-            (*buffStrPtr)[uiPos++] = '_'; /*for humans*/
-         
-         uiPos +=
-            numToStr(
-               &(*buffStrPtr)[uiPos],
-               mapPosHeapAryUI[uiVar] + 1  /*to index 1*/
-            );
-               
-         (*buffStrPtr)[uiPos++] = mapNtHeapArySC[uiVar];
+         fprintf(
+            (FILE *) outFILE,
+            "_%i%c",
+            mapPosHeapAryUI[uiVar] + 1, /*to index 1*/
+            mapNtHeapArySC[uiVar]
+         );
       } /*Loop: print out each variant position*/
 
-      (*buffStrPtr)[uiPos++] = str_endLine[0];
-      if(str_endLine[1] != '\0')
-         (*buffStrPtr)[uiPos++] = str_endLine[1];
-      (*buffStrPtr)[uiPos] = '\0';
-
-      fprintf(
-         (FILE *) outFILE,
-         "%s",
-         *buffStrPtr
-      ); /*add new line ot end of line*/
+      fputc(str_endLine[0], (FILE *) outFILE);
+      if(str_endLine[1])
+         fputc(str_endLine[1], (FILE *) outFILE);
 
       /**************************************************\
       * Fun16 Sec03 Sub05:
@@ -1853,14 +1833,7 @@ getNanoReads_illNano(
       \**************************************************/
 
       nextRead_fun16_sec03_sub05:;
-
-      errSC =
-         get_samEntry(
-            samSTPtr,
-            buffStrPtr,
-            lenBuffULPtr,
-            samFILE
-          );
+         errSC = get_samEntry(samSTPtr, samFILE);
    } /*Loop: get varaints*/
 
    /*****************************************************\
@@ -1870,6 +1843,8 @@ getNanoReads_illNano(
 
    if(errSC == def_memErr_samEntry)
       goto memErr_fun16_sec04;
+   if(errSC == def_fileErr_samEntry)
+      goto fileErr_fun16_sec04;
 
    /*****************************************************\
    * Fun16 Sec03 Sub07:
@@ -2303,8 +2278,6 @@ run_illNano(
       /*number of variant positions*/
 
    struct samEntry samStackST;
-   signed char *buffHeapStr = 0;
-   unsigned long lenBuffUL = 0;
 
    struct profList_illNano profListStackST;
    struct profList_illNano *profListSTPtr = 0;
@@ -2365,8 +2338,6 @@ run_illNano(
          tranBl,
          mergeOverBl,
          &samStackST,
-         &buffHeapStr,
-         &lenBuffUL,
          samFILE,
          outFILE
       ); /*extract reads with variant positions*/
@@ -2414,11 +2385,6 @@ run_illNano(
          free(profHeapStr);
       profHeapStr = 0;
       lenProfUI = 0;
-
-      if(buffHeapStr)
-         free(buffHeapStr);
-      buffHeapStr = 0;
-      lenBuffUL = 0;
 
       freeStack_samEntry(&samStackST);
       freeStack_profList_illNano(&profListStackST);

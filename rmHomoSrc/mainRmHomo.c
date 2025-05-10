@@ -43,6 +43,7 @@
 ! Hidden Libraries:
 !   - .c  #include "../genLib/numToStr.h"
 !   - .c  #include "../genLib/strAry.h"
+!   - .c  #include "../genLib/fileFun.h"
 !   - .h  #include "../genLib/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -57,6 +58,11 @@
 
 #define def_mask_mainRmHomo 0
   /*0 is no mask, any other character is mask*/
+
+#define def_scan_mainRmHomo 1
+  /*scan both neighbor bases to see if they are
+  `  part of a homopolymer
+  */
 
 /*-------------------------------------------------------\
 | Fun01: pversion_mainRmHomo
@@ -315,6 +321,44 @@ phelp_mainRmHomo(
       str_endLine
    );
 
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub03 Cat04:
+   +   - scan neighbor homopolymers
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(def_scan_mainRmHomo)
+      fprintf(
+         (FILE *) outFILE,
+         "  -scan: [Yes]%s",
+         str_endLine
+      );
+
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "  -scan: [No]%s",
+         str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o scan both neighbor bases to see if they%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      are part of a homopolymer%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o disable with `-no-scan`%s",
+      str_endLine
+   );
+
+
    /*****************************************************\
    * Fun02 Sec02 Sub04:
    *   - help and version arguments
@@ -373,6 +417,9 @@ phelp_mainRmHomo(
 |   - maskSCPtr:
 |     o signed char pointer to get base to mask deletions
 |       with
+|   - scanBlPtr:
+|     o signed char pointer to get if scanning neighbor
+|       bases for homopolymers
 | Ouput:
 |   - Modifies:
 |     o all input variables, except numArgsSI and
@@ -396,7 +443,8 @@ input_mainRmHomo(
    signed char **outFileStrPtr, /*gets output file path*/
    signed int  *homoLenSIPtr,   /*min homopolymer len*/
    signed int  *indelLenSIPtr,  /*gets max indel lenght*/
-   signed char *maskSCPtr       /*gets base to mask with*/
+   signed char *maskSCPtr,      /*gets base to mask with*/
+   signed char *scanBlPtr       /*scan around indels*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
    '   - gets user input from argAryStr
@@ -602,6 +650,25 @@ input_mainRmHomo(
          )
       ) *maskSCPtr = 0;
 
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec02 Sub02 Cat04:
+      +   - scan setting
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-scan",
+            (signed char *) argAryStr[siArg]
+         )
+      ) *scanBlPtr = 1;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-no-scan",
+            (signed char *) argAryStr[siArg]
+         )
+      ) *scanBlPtr = 0;
+
       /**************************************************\
       * Fun03 Sec02 Sub03:
       *   - help message
@@ -778,6 +845,7 @@ main(
    signed int homoLenSI = def_minHomo_mainRmHomo;
    signed int indelLenSI = def_maxIndel_mainRmHomo;
    signed char maskSC = def_mask_mainRmHomo;
+   signed char scanBl = def_scan_mainRmHomo;
 
    struct seqST refStackST; /*holds reference sequence*/
 
@@ -837,7 +905,8 @@ main(
          &outFileStr,
          &homoLenSI,
          &indelLenSI,
-         &maskSC
+         &maskSC,
+         &scanBl
       );
 
    if(errSC)
@@ -924,17 +993,11 @@ main(
    +   - get reference sequence
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   errSC =
-      getFaSeq_seqST(
-         samFILE,
-         &refStackST
-      );
-
+   errSC = getFa_seqST(samFILE, &refStackST);
 
    if(samFILE != stdin)
      fclose(samFILE);
    samFILE = 0;
-
 
    if(errSC)
    { /*If: had an error or EOF*/
@@ -984,7 +1047,7 @@ main(
    `  white space
    */
    errSC = (refStackST.idStr[0] == '>');
-   refStackST.lenIdUL =
+   refStackST.idLenSL =
       cpWhite_ulCp(
          &refStackST.idStr[0],
          &refStackST.idStr[(unsigned char) errSC]
@@ -1060,13 +1123,7 @@ main(
    *   - get first line in sam file + start rm indel loop
    \*****************************************************/
 
-   errSC =
-      get_samEntry(
-         &samStackST,
-         &buffHeapStr,
-         &lenBuffUL,
-         samFILE
-      );
+   errSC = get_samEntry(&samStackST, samFILE);
 
    if(errSC)
    { /*If: had error*/
@@ -1120,31 +1177,10 @@ main(
       }  /*Else If: sequence entry (check if reference)*/
 
       /*print the header*/
-      if(
-         p_samEntry(
-           &samStackST,
-           &buffHeapStr,
-           &lenBuffUL,
-           0,            /*0 meanss end line*/
-           outFILE
-         )
-      ){ /*If: memory error printing header*/
-        fprintf(
-           stderr,
-           "memory error printing sam header %s%s",
-           samStackST.extraStr,
-           str_endLine
-        );
-      }  /*If: memory error printing header*/
+      p_samEntry(&samStackST, 0, outFILE);
 
       nextEntry_main_sec03_sub02_cat01:;
-         errSC =
-            get_samEntry(
-               &samStackST,
-               &buffHeapStr,
-               &lenBuffUL,
-               samFILE
-            );
+         errSC = get_samEntry(&samStackST, samFILE);
    } /*Loop: print headers*/
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -1163,7 +1199,7 @@ main(
       else
          fprintf(
             stderr,
-            "no reads in -sam %s%s",
+            "file error reading header in -sam %s%s",
             samFileStr,
             str_endLine
          );
@@ -1200,6 +1236,11 @@ main(
          outFILE,
          " -no-mask"
       );
+
+   if(scanBl)
+      fprintf(outFILE, " -scan");
+   else
+      fprintf(outFILE, " -no-scan");
 
    fprintf(
       outFILE,
@@ -1258,7 +1299,7 @@ main(
       `  reduces memory allocations
       */
       lenSeqBuffUI = samStackST.readLenUI;
-      lenSeqBuffUI += samStackST.numDelUI;
+      lenSeqBuffUI += samStackST.delCntUI;
       lenSeqBuffUI += 8;
 
       if(lenBuffUL < (lenSeqBuffUI << 1))
@@ -1297,6 +1338,7 @@ main(
             homoLenSI,
             indelLenSI,
             maskSC,
+            scanBl,
             &buffHeapStr,
             &lenSeqBuffUI,
             &qBuffNoFreeStr,
@@ -1316,23 +1358,7 @@ main(
             goto err_main_sec05;
       }  /*If: memory error removing indels*/
 
-      if(
-         p_samEntry(
-           &samStackST,
-           &buffHeapStr,
-           &lenBuffUL,
-           0,            /*0 ends the line*/
-           outFILE
-         )
-      ){ /*If: memory error printing read*/
-        fprintf(
-           stderr,
-           "memory error printing read %li -sam %s%s",
-           seqSL,
-           samFileStr,
-           str_endLine
-        );
-      }  /*If: memory error printing read*/
+      p_samEntry(&samStackST, 0, outFILE);
       
       /**************************************************\
       * Main Sec04 Sub04:
@@ -1340,13 +1366,7 @@ main(
       \**************************************************/
 
       nextRead_main_sec04_sub04:;
-         errSC =
-            get_samEntry(
-               &samStackST,
-               &buffHeapStr,
-               &lenBuffUL,
-               samFILE
-            );
+         errSC = get_samEntry(&samStackST, samFILE);
    } /*Loop: remove indels*/
 
    /*****************************************************\
@@ -1358,11 +1378,24 @@ main(
    { /*If: had error*/
       fprintf(
          stderr,
-         "memory error printing headers%s",
+         "memory error on read %li%s",
+         seqSL,
          str_endLine
       );
       goto err_main_sec05;
    } /*If: had error*/
+
+   else if(errSC != def_EOF_samEntry)
+   { /*If: had error*/
+      fprintf(
+         stderr,
+         "file error on read %li%s",
+         seqSL,
+         str_endLine
+      );
+      goto err_main_sec05;
+   } /*If: had error*/
+
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec05:

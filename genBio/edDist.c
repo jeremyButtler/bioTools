@@ -64,6 +64,7 @@
 !   o .c   #include "../genLib/base10str.h"
 !   o .c   #include "../genLib/numToStr.h"
 !   o .c   #include "../genLib/strAry.h"
+!   o .c   #include "../genLib/fileFun.h"
 !   o .h   #include "ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -541,8 +542,8 @@ readCmpDist_edDist(
    \*****************************************************/
 
    while(
-         siQryCig < (signed int) qrySTPtr->lenCigUI
-      && siRefCig < (signed int) refSTPtr->lenCigUI
+         siQryCig < (signed int) qrySTPtr->cigLenUI
+      && siRefCig < (signed int) refSTPtr->cigLenUI
    ){ /*Loop: get edit distance*/
       if(refSTPtr->cigTypeStr[siRefCig] == 'S')
          break; /*soft masking only at ends (finished)*/
@@ -1322,7 +1323,7 @@ dist_edDist(
    *   - start loop and check if at end (hard/soft mask)
    \*****************************************************/
 
-   while(siQryCig < (signed int) qrySTPtr->lenCigUI)
+   while(siQryCig < (signed int) qrySTPtr->cigLenUI)
    { /*Loop: get edit distance*/
       if(qrySTPtr->cigTypeStr[siQryCig] == 'S')
          break; /*soft masking only at ends (finished)*/
@@ -1972,8 +1973,8 @@ addReadToDepth_edDist(
    \*****************************************************/
 
    while(
-         siQryCig < (signed int) qrySTPtr->lenCigUI
-      && siRefCig < (signed int) refSTPtr->lenCigUI
+         siQryCig < (signed int) qrySTPtr->cigLenUI
+      && siRefCig < (signed int) refSTPtr->cigLenUI
    ){ /*Loop: add depths*/
       if(refSTPtr->cigTypeStr[siRefCig] == 'S')
          break; /*soft masking only at ends (finished)*/
@@ -2235,10 +2236,6 @@ addReadToDepth_edDist(
 |     o pointer to res_edDist struct to have depth profile
 |   - samSTPtr:
 |     o for reading each line in the sam file
-|   - buffStrPtr:
-|     o pointer to c-string with buffer for reading file
-|   - lenBuffULPtr:
-|     o pointer to unsigned long to hold buffStrPtr size
 |   - samFILE:
 |     o sam file to scan
 | Output:
@@ -2261,8 +2258,6 @@ mkDepthProfile_edDist(
    float minOverlapF,         /*min % overlap*/
    struct res_edDist *resSTPtr,/*has depth array*/
    struct samEntry *samSTPtr, /*for reading sam file*/
-   signed char **buffStrPtr,  /*for reading sam file*/
-   unsigned long *lenBuffULPtr, /*size of buffStrPtr*/
    void *samFILE
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun10 TOC:
@@ -2309,13 +2304,7 @@ mkDepthProfile_edDist(
       resSTPtr->sizeDepthUL = refSTPtr->readLenUI;
    } /*If: need to allocate memory for the depth array*/
 
-   errSC =
-      get_samEntry(
-         samSTPtr,
-         buffStrPtr,
-         lenBuffULPtr,
-         samFILE
-      );
+   errSC = get_samEntry(samSTPtr, samFILE);
 
    if(errSC)
    { /*If: had error*/
@@ -2342,13 +2331,7 @@ mkDepthProfile_edDist(
          resSTPtr
       );
 
-      errSC =
-         get_samEntry(
-            samSTPtr,
-            buffStrPtr,
-            lenBuffULPtr,
-            samFILE
-         );
+      errSC = get_samEntry(samSTPtr, samFILE);
    } /*Loop: get depths*/
 
    if(errSC == def_memErr_samEntry)

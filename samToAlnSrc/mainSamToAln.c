@@ -49,6 +49,7 @@
 ! Hidden dependices
 !   - .c  #include "../genLib/numToStr.h"
 !   - .c  #include "../genLib/strAry.h"
+!   - .c  #include "../genLib/fileFun.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
 !   - .h  #include "../genAln/alnDefs.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -808,8 +809,6 @@ main(
  
 
    struct samEntry samStackST;
-   signed char *buffHeapStr = 0;
-   unsigned long lenBuffUL = 0;
 
    FILE *samFILE = 0;
    FILE *outFILE = 0;
@@ -1046,13 +1045,7 @@ main(
    *   - get first sam file line
    \*****************************************************/
 
-   errSC =
-     get_samEntry(
-        &samStackST,
-        &buffHeapStr,
-        &lenBuffUL,
-        samFILE
-     );
+   errSC = get_samEntry(&samStackST, samFILE);
 
    if(errSC)
    { /*If: had an error*/
@@ -1083,14 +1076,7 @@ main(
    *   - print global header (program history)
    \*****************************************************/
 
-   errSC =
-      psamPg_samToAln(
-         &samStackST,
-         &buffHeapStr,
-         &lenBuffUL,
-         samFILE,
-         outFILE
-      );
+   errSC = psamPg_samToAln(&samStackST, samFILE, outFILE);
 
    if(errSC)
    { /*If: had an error*/
@@ -1199,7 +1185,7 @@ main(
 
          if(
                tmpStr - refHeapAryST[indexSL].idStr
-            <  (signed long) refHeapAryST[indexSL].lenIdUL
+            <  refHeapAryST[indexSL].idLenSL
          ) *tmpStr = ' '; /*Id was prematurely shortend*/
       } /*If: user wanted full reference id*/
 
@@ -1216,13 +1202,7 @@ main(
 
       nextRead_main_sec03_sub04:;
 
-      errSC =
-        get_samEntry(
-           &samStackST,
-           &buffHeapStr,
-           &lenBuffUL,
-           samFILE
-        );
+      errSC = get_samEntry(&samStackST, samFILE);
    } /*Loop: print alignments in sam file*/
 
    if(errSC & def_memErr_samEntry)
@@ -1294,11 +1274,6 @@ main(
          sizeRefSL
       );
    refHeapAryST = 0;
-
-   if(buffHeapStr)
-      free(buffHeapStr);
-   buffHeapStr = 0;
-
 
    if(
          samFILE

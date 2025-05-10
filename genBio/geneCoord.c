@@ -57,6 +57,7 @@
 
 #include <stdio.h>
 
+#include "../genLib/fileFun.h"
 #include "../genLib/base10str.h"
 #include "../genLib/ulCp.h"
 #include "../genLib/charCp.h"
@@ -800,23 +801,14 @@ getCoords_geneCoord(
    ^   - Variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   signed int lenBuffSI = 1 << 10; /*~ 2000*/
    signed char *buffHeapStr = 0;
-   
-   signed char newLineBl = 0;  /*Check if on an new line*/
    signed char *cpStr = 0;
    signed char *dupStr = 0;
 
-   signed int numLinesSI = 0;
-   signed int maxLineLenSI = 0;
-   signed int lineLenSI = 0;
-
-   unsigned long bytesUL = 0;
-   unsigned long ulByte = 0;
-   unsigned int tmpUI = 0;
+   signed long maxLineSL = 0;
+   signed long numLinesSL = 0;
    
    struct geneCoord *genesHeapST = 0;
-
    FILE *tblFILE  = 0;
    
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -824,159 +816,28 @@ getCoords_geneCoord(
    ^   - Check input and allocate memory for buffer
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   *numGenesSI = 0;
-   *errULPtr = 0;
-
-   tblFILE  =
-      fopen(
-         (char *) geneTblFileStr,
-         "r"
-      );
-
-   if(! tblFILE)
-      goto fileErr_fun12_sec06_sub03;
-
-   buffHeapStr =
-      calloc(
-         (lenBuffSI + 9),
-         sizeof(signed char)
-      );
-   /*Why +9:
-   `  - 1 for null;
-   `  - 8 for endLine_ulCp out of bounds (quites valgrind)
-   */
-
-   if(! buffHeapStr)
-       goto memErr_fun12_sec06_sub02;
-
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun12 Sec03:
    ^   - Find number lines/max line length in table file
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   bytesUL =
-      fread(
-         (char *) buffHeapStr,
-         sizeof(char),
-         lenBuffSI,
-         tblFILE
-      ); /*Read in the first part of the file*/
-   buffHeapStr[bytesUL] = '\0';
+   *numGenesSI = 0;
+   *errULPtr = 0;
 
-   while(bytesUL > 0)
-   { /*Loop: Scan through the file for new lines*/
+   tblFILE  = fopen( (char *) geneTblFileStr, "r");
+   if(! tblFILE)
+      goto fileErr_fun12_sec06_sub03;
+   numLinesSL = lineCnt_fileFun(tblFILE, &maxLineSL);
+   maxLineSL += 3; /*account for line endings*/
 
-      ulByte = 0;
+   buffHeapStr =
+      calloc((maxLineSL + 8), sizeof(signed char));
+   if(! buffHeapStr)
+       goto memErr_fun12_sec06_sub02;
 
-      while(buffHeapStr[ulByte] != '\0')
-      { /*Loop: Count the number of newlines in buffer*/
-         tmpUI = endLine_ulCp(&buffHeapStr[ulByte]);
-         ulByte += tmpUI;
-         bytesUL -= tmpUI;
-
-         /*get of end of line*/
-         if(buffHeapStr[ulByte] == '\n')
-         { /*If: still not at end of line*/
-            if(bytesUL <= 1)
-               break;/*need more to determine line break*/
-
-            ++ulByte;
-            ++newLineBl;
-            ++numLinesSI;
-            --bytesUL;
-
-            if(buffHeapStr[ulByte] == '\r')
-            { /*If: still not at end of line*/
-               ++ulByte;
-               ++newLineBl;
-               ++numLinesSI;
-               --bytesUL;
-            } /*If: still not at end of line*/
-         } /*If: unix/RISC line break*/
-
-         else if(buffHeapStr[ulByte] == '\r')
-         { /*Else If: windows/ancient mac line break*/
-            if(bytesUL <= 1)
-               break;/*need more to determine line break*/
-
-            ++ulByte;
-            ++newLineBl;
-            ++numLinesSI;
-            --bytesUL;
-
-            if(buffHeapStr[ulByte] == '\n')
-            { /*If: still not at end of line*/
-               ++ulByte;
-               ++newLineBl;
-               ++numLinesSI;
-               --bytesUL;
-            } /*If: still not at end of line*/
-         } /*Else If: windows/ancient mac line break*/
-
-         lineLenSI += tmpUI;
-
-         maxLineLenSI =
-            max_genMath(
-               maxLineLenSI,
-               lineLenSI
-            );
-
-         if(newLineBl)
-            lineLenSI = 0;
-      } /*Loop: Count the number of newlines in buffer*/
-            
-
-      if(bytesUL)
-      { /*If: endind on line ending*/
-         buffHeapStr[0] = buffHeapStr[ulByte];
-         ulByte = 1;
-      } /*If: endind on line ending*/
-
-      else
-         ulByte = 0;
-
-      bytesUL =
-         fread(
-            (char *) &buffHeapStr[ulByte],
-            sizeof(char),
-            lenBuffSI - ulByte,
-            tblFILE
-         ); /*Read in the next part of the file*/
-
-      buffHeapStr[bytesUL + ulByte] = '\0';
-      ulByte = 0;
-   } /*Loop: Scan through the file for new lines*/
-
-   if(buffHeapStr[ulByte])
-      ++numLinesSI;
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun12 Sec04:
-   ^   - Allocate memory and go back to start of file
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   /*Make sure I have a full sized buffer*/
-   if(lenBuffSI < maxLineLenSI)
-   { /*If: I need to make an larger buffer*/
-      free(buffHeapStr);
-      buffHeapStr = 0;
-
-      lenBuffSI = maxLineLenSI;
-
-      buffHeapStr =
-         malloc((lenBuffSI +1 ) * sizeof(signed char));
-
-      if(! buffHeapStr)
-         goto memErr_fun12_sec06_sub02;
-   } /*If: I need to make an larger buffer*/
-
-   genesHeapST = mk_geneCoord(numLinesSI);
-   
+   genesHeapST = mk_geneCoord(numLinesSL);
    if(! genesHeapST)
       goto memErr_fun12_sec06_sub02;
-
-   /*Extract each entry*/
-   fseek((tblFILE), 0, SEEK_SET);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun12 Sec05:
@@ -1000,16 +861,23 @@ getCoords_geneCoord(
    *   - Start loop and copy gene name
    \*****************************************************/
 
-   cpStr =
-      (signed char *)
-      fgets(
-         (char *) buffHeapStr,
-         lenBuffSI,
-         tblFILE
-      ); /*get past header*/
+   
+   numLinesSL =
+      getLine_fileFun(
+         tblFILE,
+         buffHeapStr,
+         maxLineSL,
+         &numLinesSL /*will ingore*/
+      ); /*get past header (already know has)*/
 
-   while(fgets((char *) buffHeapStr, lenBuffSI, tblFILE))
-   { /*Loop: Get entries from the paf file*/
+   while(
+      getLine_fileFun(
+         tblFILE,
+         buffHeapStr,
+         maxLineSL,
+         &numLinesSL /*will ingore*/
+      )
+   ){ /*Loop: Get entries from coordinates file*/
 
       cpStr = buffHeapStr;
       dupStr = genesHeapST->idStrAry[*numGenesSI];
@@ -1124,82 +992,46 @@ getCoords_geneCoord(
       \**************************************************/
 
       ++(*numGenesSI);
-   } /*Loop: Get entries from the paf file*/
+   } /*Loop: Get entries from coordinates file*/
    
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun12 Sec06:
    ^   - Clean up and return
-   ^   o fun12 sec06 sub01:
-   ^     - Clean up and return after success
-   ^   o fun12 sec06 sub02:
-   ^     - Deal with memory errors
-   ^   o fun12 sec06 sub03:
-   ^     - Deal with file opening errors
-   ^   o fun12 sec06 sub04:
-   ^     - Deal with invalid entries in files
-   ^   o fun12 sec06 sub05:
-   ^     - Clean up and return after an error
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   /*****************************************************\
-   * Fun12 Sec06 Sub01:
-   *   - Clean up and return after success
-   \*****************************************************/
 
    --(*numGenesSI); /*Convert to index 0*/
    sort_geneCoord(genesHeapST, 0, *(numGenesSI));
 
    goto cleanUp_fun12_sec06_sub05;
 
-   /*****************************************************\
-   * Fun12 Sec06 Sub02:
-   *   - Deal with memory errors
-   \*****************************************************/
-
    memErr_fun12_sec06_sub02:;
-   *errULPtr = def_memErr_geneCoord;
-   goto errCleanUp_fun12_sec06_sub05;
-
-   /*****************************************************\
-   * Fun12 Sec06 Sub03:
-   *   - Deal with file opening errors
-   \*****************************************************/
+      *errULPtr = def_memErr_geneCoord;
+      goto errCleanUp_fun12_sec06_sub05;
 
    fileErr_fun12_sec06_sub03:;
-   *errULPtr = def_fileErr_geneCoord;
-   goto errCleanUp_fun12_sec06_sub05;
-
-   /*****************************************************\
-   * Fun12 Sec06 Sub04:
-   *   - Deal with invalid entries in files
-   \*****************************************************/
+      *errULPtr = def_fileErr_geneCoord;
+      goto errCleanUp_fun12_sec06_sub05;
 
    invalidEntry_fun12_sec06_sub04:;
-   *errULPtr = def_invalidEntry_geneCoord;
-   *errULPtr |= (*numGenesSI << 8);
-   goto errCleanUp_fun12_sec06_sub05;
-
-   /*****************************************************\
-   * Fun12 Sec06 Sub05:
-   *   - Clean up and return after an error
-   \*****************************************************/
+      *errULPtr = def_invalidEntry_geneCoord;
+      *errULPtr |= (*numGenesSI << 8);
+      goto errCleanUp_fun12_sec06_sub05;
 
    errCleanUp_fun12_sec06_sub05:;
-
-   freeHeap_geneCoord(genesHeapST);
-   genesHeapST = 0;
+      freeHeap_geneCoord(genesHeapST);
+      genesHeapST = 0;
+      goto cleanUp_fun12_sec06_sub05;
 
    cleanUp_fun12_sec06_sub05:;
+      free(buffHeapStr);
+      buffHeapStr = 0;
 
-   free(buffHeapStr);
-   buffHeapStr = 0;
+      if(tblFILE)
+         fclose(tblFILE);
 
-   if(tblFILE)
-      fclose(tblFILE);
+      tblFILE = 0;
 
-   tblFILE = 0;
-
-   return genesHeapST;
+      return genesHeapST;
 } /*getCoords_geneCoord*/
 
 /*=======================================================\

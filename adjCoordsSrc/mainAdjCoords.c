@@ -54,6 +54,7 @@
 !   - .c  #include "../genLib/base10StrToNum.h"
 !   - .c  #include "../genLib/ulCp.h"
 !   - .c  #include "../genLib/strAry.h"
+!   - .c  #include "../genLib/fileFun.h"
 !   - .h  #include "../genLib/genMath.h" .h macro only
 !   - .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -586,8 +587,6 @@ main(
    signed int numGenesSI = 0;
 
    struct samEntry samStackST;
-   signed char *buffHeapStr = 0;
-   unsigned long lenBuffUL = 0;
    signed char onReadsBl = 0; /*For printing the header*/
 
    FILE *samFILE = 0;
@@ -645,7 +644,17 @@ main(
    *   - setup samEntru struct and open output file
    \*****************************************************/
 
-   setup_samEntry(&samStackST);
+   if(setup_samEntry(&samStackST))
+   { /*If: had memory err0r*/
+      fprintf(
+         stderr,
+         "memory error in setup%s",
+         str_endLine
+      );
+
+      goto cleanUp_main_sec05;
+   } /*If: had memory err0r*/
+
    outFILE = stdout;
 
    /*****************************************************\
@@ -657,11 +666,7 @@ main(
       samFILE = stdin;
    else
    { /*Else: I need to open the sam file*/
-      samFILE =
-         fopen(
-            (char *) samFileStr,
-            "r"
-         );
+      samFILE = fopen((char *) samFileStr, "r");
 
       if(! samFILE)
       { /*If: I could not open the sam file*/
@@ -682,11 +687,7 @@ main(
    \*****************************************************/
 
    coordsHeapST =
-      getCoords_geneCoord(
-         tblFileStr,
-         &numGenesSI,
-         &errUL
-      );
+     getCoords_geneCoord(tblFileStr, &numGenesSI, &errUL);
 
    if(errUL)
    { /*If: I had an error*/
@@ -727,11 +728,8 @@ main(
       str_endLine
     );*/ /*print out the sequence and length header*/
 
-   sortName_geneCoord(
-      coordsHeapST,
-      0,
-      numGenesSI /*Is index 0*/
-   ); /*sort genes by name instead of start*/
+   /*sort genes by name instead of start*/
+   sortName_geneCoord(coordsHeapST, 0, numGenesSI);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec04:
@@ -757,13 +755,7 @@ main(
    *   - read first sam file line and start loop
    \*****************************************************/
 
-   errUL =
-      get_samEntry(
-         &samStackST,
-         &buffHeapStr,
-         &lenBuffUL,
-         samFILE
-      );
+   errUL = get_samEntry(&samStackST, samFILE);
 
    while(! errUL)
    { /*Loop: convert coordinates in the sam file*/
@@ -774,7 +766,7 @@ main(
      \***************************************************/
 
      if(
-           samStackST.lenExtraUI > 0
+           samStackST.extraLenUI > 0
         && samStackST.extraStr[0] == '@'
      ){ /*If: have an comment*/
         if(
@@ -822,13 +814,8 @@ main(
         } /*If: An sam file was input*/
 
         else
-        { /*Else: sam file read in by stdin*/
-           fprintf(
-              outFILE,
-              " -%s",
-              str_endLine
-           );
-        } /*Else: sam file read in by stdin*/
+           fprintf(outFILE, " -%s", str_endLine);
+           /*print stdin input*/
 
         onReadsBl = 1;
      } /*If: I need to print the programs header*/
@@ -856,14 +843,10 @@ main(
      \***************************************************/
 
      printEntry_main_sec04_sub05:;
-
-     p_samEntry(
-        &samStackST,
-        &buffHeapStr,
-        &lenBuffUL,
-        0,          /*do not want a new line*/
-        outFILE
-     );
+        p_samEntry(&samStackST, 0, outFILE);
+           /*0 is to not print a line break, so I can add
+           `  extra entries at end
+           */
            
      /***************************************************\
      * Main Sec04 Sub06:
@@ -871,14 +854,7 @@ main(
      \***************************************************/
 
      nextEntry_main_sec04_sub06:;
-
-     errUL =
-        get_samEntry(
-           &samStackST,
-           &buffHeapStr,
-           &lenBuffUL,
-           samFILE
-        );
+        errUL = get_samEntry(&samStackST, samFILE);
    } /*Loop: convert coordinates in the sam file*/
 
    /*****************************************************\
@@ -913,34 +889,28 @@ main(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    cleanUp_main_sec05:;
+      if( ! outFILE) ;
+      else if(outFILE == stdin) ;
+      else if(outFILE == stdout) ;
+      else if(outFILE == stderr) ;
+      else
+         fclose(outFILE);
+      outFILE = 0;
 
-   if(buffHeapStr)
-      free(buffHeapStr);
+      if( ! samFILE) ;
+      else if(samFILE == stdin) ;
+      else if(samFILE == stdout) ;
+      else if(samFILE == stderr) ;
+      else
+         fclose(samFILE);
+      samFILE = 0;
 
-   buffHeapStr = 0;
+      freeHeap_geneCoord(coordsHeapST);
+      coordsHeapST = 0;
 
-   if(
-         outFILE
-      && outFILE != stdin
-      && outFILE != stdout
-   ) fclose(outFILE);
+      freeStack_samEntry(&samStackST);
 
-   outFILE = 0;
-
-   if(
-         samFILE
-      && samFILE != stdin
-      && samFILE != stdout
-   ) fclose(samFILE);
-
-   samFILE = 0;
-
-   freeHeap_geneCoord(coordsHeapST);
-   coordsHeapST = 0;
-
-   freeStack_samEntry(&samStackST);
-
-   return (int) errUL;
+      return (int) errUL;
 } /*main*/
 
 /*=======================================================\

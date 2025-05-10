@@ -114,6 +114,7 @@
 #include "alnSet.h"
 #include "dirMatrix.h"
 #include "needle.h"
+#include "water.h"
 
 /*.h files only*/
 #include "defsMapRead.h" /*default settings*/
@@ -124,6 +125,7 @@
 !   - .c  #include "../genLib/base10Str.h"
 !   - .c  #include "../genLib/charCp.h"
 !   - .c  #include "../genLib/strAry.h"
+!   - .c  #include "../genLib/fileFun.h"
 !   - .c  #include "../genAln/indexToCoord.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
 !   - .h  #include "../genLib/endLine.h"
@@ -986,8 +988,8 @@ addRef_ref_mapRead(
       ++siKmer
    ){ /*Loop: find kmer and chain size*/
       if(
-             refSTPtr->seqSTPtr->lenSeqUL
-          < (unsigned long) setSTPtr->lenArySI[siKmer]
+            refSTPtr->seqSTPtr->seqLenSL
+          < setSTPtr->lenArySI[siKmer]
       ) break; /*found kmer settings*/
    }  /*Loop: find kmer and chain size*/
 
@@ -1010,7 +1012,7 @@ addRef_ref_mapRead(
    refSTPtr->lenSI =
       seqToKmer_kmerFun(
          seqSTPtr->seqStr,
-         (signed int) seqSTPtr->lenSeqUL,
+         seqSTPtr->seqLenSL,
          &refSTPtr->kmerArySI,
          &refSTPtr->sizeKmerSI,
          refSTPtr->lenKmerUC
@@ -1042,11 +1044,8 @@ addRef_ref_mapRead(
       refSTPtr->sizeIndexSI = refSTPtr->lenSI;
    } /*If: need more memory*/
 
-   for(
-      siPos = 0;
-      siPos < (signed int) seqSTPtr->lenSeqUL;
-      ++siPos
-   ) refSTPtr->indexArySI[siPos] = siPos;
+   for(siPos = 0; siPos < refSTPtr->lenSI; ++siPos)
+      refSTPtr->indexArySI[siPos] = siPos;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun17 Sec05:
@@ -1075,7 +1074,7 @@ addRef_ref_mapRead(
    refSTPtr->lenSI =
       seqToKmer_kmerFun(
          seqSTPtr->seqStr,
-         (signed int) seqSTPtr->lenSeqUL,
+         seqSTPtr->seqLenSL,
          &refSTPtr->kmerArySI,
          &refSTPtr->sizeKmerSI,
          refSTPtr->lenKmerUC
@@ -1255,20 +1254,12 @@ getRef_ref_mapRead(
    /*TODO add gzip support*/
    if(fxBl)
    { /*If: fastq file*/
-      errSC = 
-         getFqSeq_seqST(
-            refFILE,
-            refSTPtr->seqSTPtr
-         );
+      errSC = getFq_seqST(refFILE, refSTPtr->seqSTPtr);
    } /*If: fastq file*/
 
    else
    { /*Else: fasta file*/
-      errSC = 
-         getFaSeq_seqST(
-            refFILE,
-            refSTPtr->seqSTPtr
-         );
+      errSC = getFa_seqST(refFILE, refSTPtr->seqSTPtr);
    } /*Else: fasta file*/
 
    if(errSC)
@@ -1478,14 +1469,10 @@ getRefBin_ref_mapRead(
    if(refSTPtr->seqSTPtr->idStr)
    { /*If: have id buffer*/
 
-      if(
-           refSTPtr->seqSTPtr->lenIdBuffUL
-         < (unsigned long) refSTPtr->lenSI
-      ){ /*If: id buffer is to short*/
-
+      if(refSTPtr->seqSTPtr->idSizeSL < refSTPtr->lenSI)
+      { /*If: id buffer is to short*/
          free(refSTPtr->seqSTPtr->idStr);
          refSTPtr->seqSTPtr->idStr = 0;
-
       }  /*If: id buffer is to short*/
    } /*If: have id buffer*/
 
@@ -1495,12 +1482,9 @@ getRefBin_ref_mapRead(
          malloc(
            (refSTPtr->lenSI + 8) * sizeof(signed char)
          );
-
       if(! refSTPtr->seqSTPtr->idStr)
          goto memErr_fun20_sec07;
-
-      refSTPtr->seqSTPtr->lenIdBuffUL =
-         (unsigned int) refSTPtr->lenSI;
+      refSTPtr->seqSTPtr->idSizeSL = refSTPtr->lenSI;
    } /*If: need more memory*/
 
    /*****************************************************\
@@ -1508,7 +1492,7 @@ getRefBin_ref_mapRead(
    *   - get id from file
    \*****************************************************/
 
-   refSTPtr->seqSTPtr->lenIdUL =
+   refSTPtr->seqSTPtr->idLenSL =
       fread(
          refSTPtr->seqSTPtr->idStr,
          sizeof(signed char),
@@ -1516,16 +1500,13 @@ getRefBin_ref_mapRead(
          (FILE *) refFILE
       );
 
-   if(! refSTPtr->seqSTPtr->lenIdUL)
+   if(! refSTPtr->seqSTPtr->idLenSL)
       goto badEntry_fun20_sec07;
-   if(
-        refSTPtr->seqSTPtr->lenIdUL
-      < (unsigned int) refSTPtr->lenSI
-   ) goto badEntry_fun20_sec07;
-     /*hit EOF early*/
+   if(refSTPtr->seqSTPtr->idLenSL < refSTPtr->lenSI)
+      goto badEntry_fun20_sec07; /*hit EOF early*/
 
    refSTPtr->seqSTPtr->idStr[
-      refSTPtr->seqSTPtr->lenIdUL
+      refSTPtr->seqSTPtr->idLenSL
    ] = '\0';
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -1565,11 +1546,8 @@ getRefBin_ref_mapRead(
    if(refSTPtr->seqSTPtr->seqStr)
    { /*If: have sequence buffer*/
 
-      if(
-           refSTPtr->seqSTPtr->lenSeqBuffUL
-         < (unsigned int) refSTPtr->lenSI
-      ){ /*If: need more memory*/
-
+      if(refSTPtr->seqSTPtr->seqSizeSL < refSTPtr->lenSI)
+      { /*If: need more memory*/
          free(refSTPtr->seqSTPtr->seqStr);
          refSTPtr->seqSTPtr->seqStr = 0;
       }  /*If: need more memory*/
@@ -1583,9 +1561,7 @@ getRefBin_ref_mapRead(
          );
       if(! refSTPtr->seqSTPtr->seqStr)
          goto memErr_fun20_sec07;
-
-      refSTPtr->seqSTPtr->lenSeqBuffUL =
-         (unsigned int) refSTPtr->lenSI;
+      refSTPtr->seqSTPtr->seqSizeSL = refSTPtr->lenSI;
    } /*If: need to allocate memory*/
 
    /*****************************************************\
@@ -1599,18 +1575,18 @@ getRefBin_ref_mapRead(
          malloc(9 * sizeof(signed char));
       if(! refSTPtr->seqSTPtr->qStr)
          goto memErr_fun20_sec07;
-      refSTPtr->seqSTPtr->lenQBuffUL = 1;
+      refSTPtr->seqSTPtr->qSizeSL = 1;
    } /*If: need memory for q-score entry*/
 
    refSTPtr->seqSTPtr->qStr[0] = '\0';
-   refSTPtr->seqSTPtr->lenQUL = 0;
+   refSTPtr->seqSTPtr->qLenSL = 0;
 
    /*****************************************************\
    * Fun20 Sec05 Sub04:
    *   - get sequence from file
    \*****************************************************/
 
-   refSTPtr->seqSTPtr->lenSeqUL =
+   refSTPtr->seqSTPtr->seqLenSL =
       fread(
          refSTPtr->seqSTPtr->seqStr,
          sizeof(signed char),
@@ -1618,16 +1594,16 @@ getRefBin_ref_mapRead(
          (FILE *) refFILE
       );
 
-   if(! refSTPtr->seqSTPtr->lenSeqUL)
+   if(! refSTPtr->seqSTPtr->seqLenSL)
       goto badEntry_fun20_sec07;
    if(
-        refSTPtr->seqSTPtr->lenSeqUL
+        refSTPtr->seqSTPtr->seqLenSL
       < (unsigned int) refSTPtr->lenSI
    ) goto badEntry_fun20_sec07;
      /*hit EOF early*/
 
    refSTPtr->seqSTPtr->seqStr[
-      refSTPtr->seqSTPtr->lenSeqUL
+      refSTPtr->seqSTPtr->seqLenSL
    ] = '\0';
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -1849,7 +1825,7 @@ writeRefBin_ref_mapRead(
    ^   - print id and sequence
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   tmpSI = (signed int) refSTPtr->seqSTPtr->lenIdUL;
+   tmpSI = refSTPtr->seqSTPtr->idLenSL;
 
    fwrite(
       &tmpSI,
@@ -1861,12 +1837,12 @@ writeRefBin_ref_mapRead(
    fwrite(
       refSTPtr->seqSTPtr->idStr,
       sizeof(signed char),
-      refSTPtr->seqSTPtr->lenIdUL,
+      refSTPtr->seqSTPtr->idLenSL,
       (FILE *) refFILE
    );
 
 
-   tmpSI = (signed int) refSTPtr->seqSTPtr->lenSeqUL;
+   tmpSI = refSTPtr->seqSTPtr->seqLenSL;
 
    fwrite(
       &tmpSI,
@@ -1878,7 +1854,7 @@ writeRefBin_ref_mapRead(
    fwrite(
       refSTPtr->seqSTPtr->seqStr,
       sizeof(signed char),
-      refSTPtr->seqSTPtr->lenSeqUL,
+      refSTPtr->seqSTPtr->seqLenSL,
       (FILE *) refFILE
    );
 
@@ -3583,7 +3559,7 @@ mergeToSam_mapRead(
          /*coordinates in index 0, but cigar index 1*/
 
       siCig = 1;
-      samSTPtr->lenCigUI = 1;
+      samSTPtr->cigLenUI = 1;
    } /*If: have starting softmasking*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -3621,7 +3597,7 @@ mergeToSam_mapRead(
       chainsSTPtr->chainArySI[indexSI];
    samSTPtr->cigArySI[siCig] += (lenKmerUC - 1);
         /*last kmer is always two bases off*/
-   ++samSTPtr->lenCigUI;
+   ++samSTPtr->cigLenUI;
    ++siCig;
 
    qryLastEndSI = chainsSTPtr->qryArySI[indexSI];
@@ -3663,9 +3639,9 @@ mergeToSam_mapRead(
       `   entries, the thrid is for a softmask ending
       */
       if(
-        siCig + 3 >= (signed int) samSTPtr->lenCigBuffUI)
+        siCig + 3 >= (signed int) samSTPtr->cigSizeUI)
       { /*If: need more cigar memory*/
-         newCigPosSI= (signed int) samSTPtr->lenCigBuffUI;
+         newCigPosSI= (signed int) samSTPtr->cigSizeUI;
          newCigPosSI += (newCigPosSI >> 1);
 
          swapSCPtr =
@@ -3687,7 +3663,7 @@ mergeToSam_mapRead(
             goto memErr_fun34_sec06;
          samSTPtr->cigArySI = (signed int *) swapSCPtr;
 
-         samSTPtr->lenCigBuffUI =
+         samSTPtr->cigSizeUI =
             (unsigned int) newCigPosSI;
       } /*If: need more cigar memory*/
 
@@ -3807,14 +3783,14 @@ mergeToSam_mapRead(
 
       else
       { /*Else: need to align*/
-         qrySTPtr->offsetUL = qryLastEndSI;
-         qrySTPtr->endAlnUL = (unsigned long) qryStartSI;
-         --qrySTPtr->endAlnUL; /*avoid 1st base in chain*/
+         qrySTPtr->offsetSL = qryLastEndSI;
+         qrySTPtr->endAlnSL = qryStartSI;
+         --qrySTPtr->endAlnSL; /*avoid 1st base in chain*/
 
-         refSTPtr->offsetUL = refLastEndSI;
+         refSTPtr->offsetSL = refLastEndSI;
 
-         refSTPtr->endAlnUL = (unsigned long) refStartSI;
-         --refSTPtr->endAlnUL; /*avoid 1st base in chain*/
+         refSTPtr->endAlnSL = (unsigned long) refStartSI;
+         --refSTPtr->endAlnSL; /*avoid 1st base in chain*/
 
          needle(
             qrySTPtr,
@@ -3826,7 +3802,7 @@ mergeToSam_mapRead(
          if(matrixSTPtr->errSC == def_memErr_needle)
             goto memErr_fun34_sec06;
 
-         samSTPtr->cigTypeStr[samSTPtr->lenCigUI] = '\0';
+         samSTPtr->cigTypeStr[samSTPtr->cigLenUI] = '\0';
             /*so getCig_dirMatrix knows is new cigar*/
 
          newCigPosSI =
@@ -3838,8 +3814,8 @@ mergeToSam_mapRead(
               refSTPtr,              /*reference sequence*/
               &samSTPtr->cigTypeStr, /*cigar type array*/
               &samSTPtr->cigArySI,  /*has cigar lengths*/
-              samSTPtr->lenCigUI,   /*position in cigar*/
-              &samSTPtr->lenCigBuffUI, /*length of cigar*/
+              samSTPtr->cigLenUI,   /*position in cigar*/
+              &samSTPtr->cigSizeUI, /*length of cigar*/
               (unsigned int *) &refLastEndSI,/*aln start*/
               &anonUI,               /*ignoring*/
               &maskUI,               /*ignoring*/
@@ -3882,7 +3858,7 @@ mergeToSam_mapRead(
          );
 
       samSTPtr->cigTypeStr[siCig++] = '=';
-      samSTPtr->lenCigUI = (unsigned int) siCig;
+      samSTPtr->cigLenUI = (unsigned int) siCig;
 
       /**************************************************\
       * Fun34 Sec03 Sub09:
@@ -3910,22 +3886,21 @@ mergeToSam_mapRead(
 
    samSTPtr->cigTypeStr[siCig] = '\0';
 
-   if(
-        qryLastEndSI
-      < ( (signed int) (qrySTPtr->lenSeqUL - 1) )
-   ){ /*If: have softmasking at end*/
+   if(qryLastEndSI < qrySTPtr->seqLenSL)
+      /*< ( (signed int) (qrySTPtr->seqLenSL - 1) )*/
+   { /*If: have softmasking at end*/
       /*cig softmasking length at end*/
       samSTPtr->cigArySI[siCig] =
-        (signed int) qrySTPtr->lenSeqUL;
+        (signed int) qrySTPtr->seqLenSL;
 
       samSTPtr->cigArySI[siCig] -= qryLastEndSI;
 
       samSTPtr->cigTypeStr[siCig++] = 'S';
       samSTPtr->cigTypeStr[siCig] = '\0';
-      ++samSTPtr->lenCigUI;
+      ++samSTPtr->cigLenUI;
 
       samSTPtr->readLenUI =
-         (signed int) qrySTPtr->lenSeqUL;
+         (signed int) qrySTPtr->seqLenSL;
    } /*If: have softmasking at end*/
 
    if(! alnEndsBl)
@@ -4027,11 +4002,11 @@ mergeToSam_mapRead(
       } /*Else: need to check if query is longer*/
 
 
-      qrySTPtr->offsetUL = (unsigned long) qryStartSI;
-      qrySTPtr->endAlnUL = (unsigned long) qryEndSI;
+      qrySTPtr->offsetSL = qryStartSI;
+      qrySTPtr->endAlnSL = qryEndSI;
 
-      refSTPtr->offsetUL = (unsigned long) refStartSI;
-      refSTPtr->endAlnUL = (unsigned long) refEndSI;
+      refSTPtr->offsetSL = refStartSI;
+      refSTPtr->endAlnSL = refEndSI;
 
        needle(
          qrySTPtr,
@@ -4052,7 +4027,7 @@ mergeToSam_mapRead(
       tmpUI = (chainLenSI << 1);
       cigHeapStr[0] = '\0';
 
-      samSTPtr->cigTypeStr[samSTPtr->lenCigUI] = '\0';
+      samSTPtr->cigTypeStr[samSTPtr->cigLenUI] = '\0';
          /*so getCig_dirMatrix knows is new cigar*/
 
       newCigPosSI =
@@ -4086,8 +4061,8 @@ mergeToSam_mapRead(
       bestScoreSL = 0;
       bestCigSI = 0;
 
-      refStartSI = (signed int) refSTPtr->endAlnUL;
-      qryStartSI = (signed int) qrySTPtr->endAlnUL;
+      refStartSI = refSTPtr->endAlnSL;
+      qryStartSI = qrySTPtr->endAlnSL;
 
       /*needleman only reutrns match/snp/ins/del*/
       while(siCig >= 0)
@@ -4157,11 +4132,11 @@ mergeToSam_mapRead(
       +   - realloc main memory (if more need)
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-      indexSI = (signed int) samSTPtr->lenCigUI + maskUI;
+      indexSI = (signed int) samSTPtr->cigLenUI + maskUI;
 
       if(
             indexSI + 1
-         >= (signed int) samSTPtr->lenCigBuffUI
+         >= (signed int) samSTPtr->cigSizeUI
       ){ /*If: need more memory*/
 
          swapSCPtr =
@@ -4183,7 +4158,7 @@ mergeToSam_mapRead(
             goto memErr_fun34_sec06;
          samSTPtr->cigArySI = (signed int *) swapSCPtr;
 
-         samSTPtr->lenCigBuffUI = (unsigned int) indexSI;
+         samSTPtr->cigSizeUI = (unsigned int) indexSI;
       } /*If: need more memory*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -4191,7 +4166,7 @@ mergeToSam_mapRead(
       +   - make room in old cigar entry for extra entry
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-      indexSI = (signed int) samSTPtr->lenCigUI - 1;
+      indexSI = (signed int) samSTPtr->cigLenUI - 1;
       indexSI -= (! bestCigSI);
          /*reduce copy range by one if no softmasking*/
       indexSI += maskUI;
@@ -4200,7 +4175,7 @@ mergeToSam_mapRead(
       /*deal with softmasking not aligined*/
       if(bestCigSI == 1)
       { /*If: first entry could be a deletion*/
-         if(qrySTPtr->offsetUL)
+         if(qrySTPtr->offsetSL)
             bestCigSI = 1;
 
          else if(cigHeapStr[0] == 'D')
@@ -4212,16 +4187,16 @@ mergeToSam_mapRead(
 
       else if(bestCigSI)
          ;
-      else if(qrySTPtr->offsetUL)
+      else if(qrySTPtr->offsetSL)
       { /*Else If: did not align all query bases*/
          ++indexSI;
          bestCigSI = 1;
       } /*Else If: did not align all query bases*/
 
-      siCig = samSTPtr->lenCigUI - 1;
+      siCig = samSTPtr->cigLenUI - 1;
          /*-1 to conver index 1 to index 0*/
-      samSTPtr->lenCigUI = indexSI + 1;
-      samSTPtr->cigTypeStr[samSTPtr->lenCigUI] = '\0';
+      samSTPtr->cigLenUI = indexSI + 1;
+      samSTPtr->cigTypeStr[samSTPtr->cigLenUI] = '\0';
 
       while(siCig > 0)
       { /*Loop: move cigar up*/
@@ -4296,7 +4271,7 @@ mergeToSam_mapRead(
 
    skipStartMask_fun34_sec04_sub02:;
 
-   siCig = samSTPtr->lenCigUI - 1;
+   siCig = samSTPtr->cigLenUI - 1;
 
    if(samSTPtr->cigTypeStr[siCig] == 'S')
    { /*If: have ending softmasking*/
@@ -4307,17 +4282,17 @@ mergeToSam_mapRead(
       refEndSI += chainLenSI;
       --refEndSI; /*convert index one to index zero*/
 
-      if(refEndSI >= (signed int) refSTPtr->lenSeqUL)
-         refEndSI = (signed int) refSTPtr->lenSeqUL - 1;
+      if(refEndSI >= (signed int) refSTPtr->seqLenSL)
+         refEndSI = (signed int) refSTPtr->seqLenSL - 1;
 
-      qryStartSI = (signed int) qrySTPtr->lenSeqUL;
+      qryStartSI = (signed int) qrySTPtr->seqLenSL;
       qryStartSI -= samSTPtr->cigArySI[siCig];
       qryEndSI = qryStartSI;
       qryEndSI += chainLenSI;
       --qryEndSI; /*convert index 1 to index 0*/
 
-      if(qryEndSI >= (signed int) qrySTPtr->lenSeqUL)
-         qryEndSI = (signed int) qrySTPtr->lenSeqUL - 1;
+      if(qryEndSI >= (signed int) qrySTPtr->seqLenSL)
+         qryEndSI = (signed int) qrySTPtr->seqLenSL - 1;
 
       /*check if have sequence to align*/
       if(refEndSI <= refStartSI)
@@ -4355,11 +4330,11 @@ mergeToSam_mapRead(
       } /*Else: need to check if query is longer*/
 
 
-      qrySTPtr->offsetUL = (unsigned long) qryStartSI;
-      qrySTPtr->endAlnUL = (unsigned long) qryEndSI;
+      qrySTPtr->offsetSL = qryStartSI;
+      qrySTPtr->endAlnSL = qryEndSI;
 
-      refSTPtr->offsetUL = (unsigned long) refStartSI;
-      refSTPtr->endAlnUL = (unsigned long) refEndSI;
+      refSTPtr->offsetSL = refStartSI;
+      refSTPtr->endAlnSL = refEndSI;
 
       needle(
          qrySTPtr,
@@ -4380,7 +4355,7 @@ mergeToSam_mapRead(
       tmpUI = chainLenSI << 1;
       cigHeapStr[0] = '\0';
 
-      samSTPtr->cigTypeStr[samSTPtr->lenCigUI] = '\0';
+      samSTPtr->cigTypeStr[samSTPtr->cigLenUI] = '\0';
          /*so getCig_dirMatrix knows is new cigar*/
 
       newCigPosSI =
@@ -4411,8 +4386,8 @@ mergeToSam_mapRead(
       bestScoreSL = 0;
       bestCigSI = 0;
 
-      refStartSI = (signed int) refSTPtr->offsetUL;
-      qryStartSI = (signed int) qrySTPtr->offsetUL;
+      refStartSI = refSTPtr->offsetSL;
+      qryStartSI = qrySTPtr->offsetSL;
 
       /*needleman only reutrns match/snp/ins/del*/
       while(siCig <= newCigPosSI)
@@ -4480,11 +4455,11 @@ mergeToSam_mapRead(
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
       indexSI =
-         (signed int) samSTPtr->lenCigUI + bestCigSI;
+         (signed int) samSTPtr->cigLenUI + bestCigSI;
 
       if(
             indexSI + 1
-         >= (signed int) samSTPtr->lenCigBuffUI
+         >= (signed int) samSTPtr->cigSizeUI
       ){ /*If: need more memory*/
 
          swapSCPtr =
@@ -4506,7 +4481,7 @@ mergeToSam_mapRead(
             goto memErr_fun34_sec06;
 
          samSTPtr->cigArySI = (signed int *) swapSCPtr;
-         samSTPtr->lenCigBuffUI = (unsigned int) indexSI;
+         samSTPtr->cigSizeUI = (unsigned int) indexSI;
       } /*If: need more memory*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -4515,9 +4490,9 @@ mergeToSam_mapRead(
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
       siCig = 0;
-      --samSTPtr->lenCigUI;
+      --samSTPtr->cigLenUI;
          /*so will override softmasked base entry at end*/
-      qryStartSI = (signed int) qrySTPtr->offsetUL;
+      qryStartSI = qrySTPtr->offsetSL;
 
       while(siCig <= (signed int) bestCigSI)
       { /*Loop: move cigar up*/
@@ -4532,27 +4507,27 @@ mergeToSam_mapRead(
             samSTPtr->refEndUI += cigHeapArySI[siCig];
                /*reference length*/
 
-         samSTPtr->cigTypeStr[samSTPtr->lenCigUI] =
+         samSTPtr->cigTypeStr[samSTPtr->cigLenUI] =
             cigHeapStr[siCig];
 
-         samSTPtr->cigArySI[samSTPtr->lenCigUI] =
+         samSTPtr->cigArySI[samSTPtr->cigLenUI] =
             cigHeapArySI[siCig];
 
 
          ++siCig;
-         ++samSTPtr->lenCigUI;
+         ++samSTPtr->cigLenUI;
       } /*Loop: move cigar up*/
 
-      if(qryStartSI < (signed int) qrySTPtr->lenSeqUL)
+      if(qryStartSI < (signed int) qrySTPtr->seqLenSL)
       { /*If: had softmasking*/
-         samSTPtr->cigTypeStr[samSTPtr->lenCigUI] = 'S';
-         samSTPtr->cigArySI[samSTPtr->lenCigUI] = 
-              (signed int) qrySTPtr->lenSeqUL
+         samSTPtr->cigTypeStr[samSTPtr->cigLenUI] = 'S';
+         samSTPtr->cigArySI[samSTPtr->cigLenUI] = 
+              (signed int) qrySTPtr->seqLenSL
             - qryStartSI;
-         ++samSTPtr->lenCigUI;
+         ++samSTPtr->cigLenUI;
       } /*If: had softmasking*/
 
-      samSTPtr->cigTypeStr[samSTPtr->lenCigUI] = '\0';
+      samSTPtr->cigTypeStr[samSTPtr->cigLenUI] = '\0';
    } /*If: have ending softmasking*/
    
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -4579,7 +4554,7 @@ mergeToSam_mapRead(
 
    /*add in read lengths*/
    samSTPtr->readLenUI =
-      (unsigned int) qrySTPtr->lenSeqUL;
+      (unsigned int) qrySTPtr->seqLenSL;
 
    samSTPtr->alnReadLenUI =
       samSTPtr->refEndUI - samSTPtr->refStartUI;
@@ -4597,7 +4572,7 @@ mergeToSam_mapRead(
       indexSI = 0;
 
    /*copy read ids*/
-   samSTPtr->lenRefIdUC =
+   samSTPtr->refIdLenUC =
       (unsigned int)
       cpWhite_ulCp(
          samSTPtr->refIdStr,
@@ -4612,7 +4587,7 @@ mergeToSam_mapRead(
    else
       indexSI = 0;
 
-   samSTPtr->lenQryIdUC =
+   samSTPtr->qryIdLenUC =
       (unsigned int)
       cpWhite_ulCp(
          samSTPtr->qryIdStr,
@@ -4624,22 +4599,22 @@ mergeToSam_mapRead(
    *   - copy sequence
    \*****************************************************/
 
-   if(samSTPtr->lenSeqBuffUI < qrySTPtr->lenSeqUL)
+   if(samSTPtr->seqSizeUI < qrySTPtr->seqLenSL)
    { /*If: need more memory for sequence*/
       free(samSTPtr->seqStr);
       samSTPtr->seqStr = 0;
 
       samSTPtr->seqStr =
          malloc(
-              (qrySTPtr->lenSeqUL + 9)
+              (qrySTPtr->seqLenSL + 9)
             * sizeof(unsigned char)
          );
 
       if(! samSTPtr)
          goto memErr_fun34_sec06;
 
-      samSTPtr->lenSeqBuffUI =
-        (unsigned int) qrySTPtr->lenSeqUL;
+      samSTPtr->seqSizeUI =
+        (unsigned int) qrySTPtr->seqLenSL;
    } /*If: need more memory for sequence*/
 
    samSTPtr->readLenUI =
@@ -4663,22 +4638,22 @@ mergeToSam_mapRead(
       && qrySTPtr->qStr[0] != '\0'
    ){ /*If: have q-score entry*/
 
-      if(samSTPtr->lenQBuffUI < qrySTPtr->lenSeqUL)
+      if(samSTPtr->qSizeUI < qrySTPtr->seqLenSL)
       { /*If: need more memory*/
          free(samSTPtr->qStr);
          samSTPtr->qStr = 0;
 
          samSTPtr->qStr =
             malloc(
-                 (qrySTPtr->lenSeqUL + 9)
+                 (qrySTPtr->seqLenSL + 9)
                * sizeof(unsigned char)
             );
 
          if(! samSTPtr)
             goto memErr_fun34_sec06;
 
-         samSTPtr->lenSeqBuffUI =
-           (unsigned int) qrySTPtr->lenSeqUL;
+         samSTPtr->seqSizeUI =
+           (unsigned int) qrySTPtr->seqLenSL;
       } /*If: need more memory*/
 
       cpQEntry_samEntry(
@@ -4706,7 +4681,7 @@ mergeToSam_mapRead(
 
    for(
       siCig = 0;
-      siCig < (signed int) samSTPtr->lenCigUI;
+      siCig < (signed int) samSTPtr->cigLenUI;
       ++siCig
    ){ /*Loop: get mutation counts*/
 
@@ -4714,35 +4689,35 @@ mergeToSam_mapRead(
       { /*Switch: find mutation type*/
          case '=':
          /*Case: match*/
-            samSTPtr->numMatchUI +=
+            samSTPtr->matchCntUI +=
                samSTPtr->cigArySI[siCig];
             break;
          /*Case: match*/
 
          case 'X':
          /*Case: mismatch*/
-            samSTPtr->numSnpUI +=
+            samSTPtr->snpCntUI +=
                samSTPtr->cigArySI[siCig];
             break;
          /*Case: mismatch*/
 
          case 'I':
          /*Case: insertion*/
-            samSTPtr->numInsUI +=
+            samSTPtr->insCntUI +=
                samSTPtr->cigArySI[siCig];
             break;
          /*Case: insertion*/
 
          case 'D':
          /*Case: deletion*/
-            samSTPtr->numDelUI +=
+            samSTPtr->delCntUI +=
                samSTPtr->cigArySI[siCig];
             break;
          /*Case: deletion*/
 
          case 'S':
          /*Case: soft mask*/
-            samSTPtr->numMaskUI +=
+            samSTPtr->maskCntUI +=
                samSTPtr->cigArySI[siCig];
             break;
          /*Case: soft mask*/
@@ -4750,12 +4725,30 @@ mergeToSam_mapRead(
 
    }  /*Loop: get mutation counts*/
 
-   samSTPtr->alnReadLenUI = samSTPtr->numMatchUI;
-   samSTPtr->alnReadLenUI += samSTPtr->numSnpUI;
-   samSTPtr->alnReadLenUI += samSTPtr->numDelUI;
+   samSTPtr->alnReadLenUI = samSTPtr->matchCntUI;
+   samSTPtr->alnReadLenUI += samSTPtr->snpCntUI;
+   samSTPtr->alnReadLenUI += samSTPtr->delCntUI;
 
    samSTPtr->refEndUI = samSTPtr->refStartUI;
    samSTPtr->refEndUI += samSTPtr->alnReadLenUI;
+
+   if(samSTPtr->cigTypeStr[samSTPtr->cigLenUI - 1] != 'S')
+      ;
+   else if(samSTPtr->cigArySI[samSTPtr->cigLenUI -1] == 1)
+   { /*If: need to make sure did not overshoot*/
+      siCig = samSTPtr->matchCntUI;
+      siCig += samSTPtr->snpCntUI;
+      siCig += samSTPtr->insCntUI;
+      siCig += samSTPtr->maskCntUI;
+
+      if(siCig > (signed int) samSTPtr->readLenUI)
+      { /*If: overshot*/
+         --samSTPtr->maskCntUI;
+         --samSTPtr->cigLenUI;
+         samSTPtr->cigTypeStr[samSTPtr->cigLenUI] = 0;
+         samSTPtr->cigArySI[samSTPtr->cigLenUI] = 0;
+      } /*If: overshot*/
+   } /*If: need to make sure did not overshoot*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun34 Sec06:
@@ -4769,11 +4762,11 @@ mergeToSam_mapRead(
       errSC = def_memErr_mapRead;
       goto ret_fun34_sec06;
    ret_fun34_sec06:;
-      qrySTPtr->offsetUL = 0;
-      qrySTPtr->endAlnUL = qrySTPtr->lenSeqUL - 1;
+      qrySTPtr->offsetSL = 0;
+      qrySTPtr->endAlnSL = qrySTPtr->seqLenSL - 1;
 
-      refSTPtr->offsetUL = 0;
-      refSTPtr->endAlnUL = refSTPtr->lenSeqUL - 1;
+      refSTPtr->offsetSL = 0;
+      refSTPtr->endAlnSL = refSTPtr->seqLenSL - 1;
 
       if(cigHeapArySI)
          free(cigHeapArySI);
@@ -4819,7 +4812,7 @@ mergeToSam_mapRead(
 |       entry
 |     o cigTypeStr and cigArySI in samSTPtr to be setup
 |       for best sub-alignment (if subBl is 1)
-|     o lenCigUI in samSTPtr to be new cigar length if
+|     o cigLenUI in samSTPtr to be new cigar length if
 |       looking for best sub-alignment
 |     o maxScoreSLPtr to have maximum possible score for
 |       returned alignment (exlcudes unaligned bases)
@@ -4884,21 +4877,21 @@ scoreSub_mapRead(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    if(
-      samSTPtr->lenExtraUI >= samSTPtr->lenExtraBuffUI -32
+      samSTPtr->extraLenUI >= samSTPtr->extraSizeUI -32
    ){ /*If: need more memory*/
       /*32 is more then enough for two numeric entries*/
 
       swapSCPtr =
          realloc(
             samSTPtr->extraStr,
-              (samSTPtr->lenExtraUI + 41)
+              (samSTPtr->extraLenUI + 41)
             * sizeof(signed char)
          );
       if(! swapSCPtr)
          goto memErr_fun35_sec05;
       samSTPtr->extraStr = swapSCPtr;
 
-      samSTPtr->lenExtraBuffUI += 32;
+      samSTPtr->extraSizeUI += 32;
    }  /*If: need more memory*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -4933,7 +4926,7 @@ scoreSub_mapRead(
 
    for(
       uiCig = 0;
-      uiCig < samSTPtr->lenCigUI;
+      uiCig < samSTPtr->cigLenUI;
       ++uiCig
    ){ /*Loop: score cigar*/
 
@@ -5097,9 +5090,9 @@ scoreSub_mapRead(
    ^   o fun35 sec04 sub01:
    ^     - check if have subalinment
    ^   o fun35 sec04 sub02:
-   ^     - handel adjusting start for sub-alignment
-   ^   o fun35 sec04 sub03:
    ^     - adjusting cigar end for sub-alignment
+   ^   o fun35 sec04 sub03:
+   ^     - handel adjusting start for sub-alignment
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
@@ -5107,7 +5100,7 @@ scoreSub_mapRead(
    *   - check if have sub-alignment
    \*****************************************************/
 
-   if( (bestEndUI + 1) >= samSTPtr->lenCigUI)
+   if( (bestEndUI + 1) >= samSTPtr->cigLenUI )
       ; /*no softmasking at end or at end*/
    else if(samSTPtr->cigTypeStr[bestEndUI + 1] == 'S')
       ++bestEndUI;
@@ -5124,20 +5117,99 @@ scoreSub_mapRead(
       goto ret_fun35_sec05;
    else if(bestStartUI == bestEndUI)
       goto noScore_fun35_sec05;
-   else if(bestStartUI >= samSTPtr->lenCigUI)
+   else if(bestStartUI >= samSTPtr->cigLenUI)
       goto noScore_fun35_sec05;
 
    /*****************************************************\
    * Fun35 Sec04 Sub02:
+   *   - adjusting cigar end for sub-alignment
+   \*****************************************************/
+
+   if(bestEndUI + 1 < samSTPtr->cigLenUI)
+   { /*If: removing ending cigar entries*/
+      uiCig = bestEndUI + 1;
+      subScoreSL = 0; /*using to count masked bases*/
+     
+      while(uiCig < samSTPtr->cigLenUI)
+      { /*Loop: remove tailing entries*/
+
+         switch(samSTPtr->cigTypeStr[uiCig])
+         { /*Switch: find cigar type*/
+
+            case 'M':
+            case '=':
+            /*Case: match or match/snp*/
+               subScoreSL += samSTPtr->cigArySI[uiCig];
+
+               samSTPtr->matchCntUI -=
+                 samSTPtr->cigArySI[uiCig];
+               samSTPtr->refEndUI -=
+                  samSTPtr->cigArySI[uiCig];
+               samSTPtr->alnReadLenUI -=
+                  samSTPtr->cigArySI[uiCig];
+               break;
+            /*Case: match or match/snp*/
+
+            case 'X':
+            /*Case: snp*/
+               subScoreSL += samSTPtr->cigArySI[uiCig];
+
+               samSTPtr->snpCntUI -=
+                 samSTPtr->cigArySI[uiCig];
+               samSTPtr->refEndUI -=
+                  samSTPtr->cigArySI[uiCig];
+               samSTPtr->alnReadLenUI -=
+                  samSTPtr->cigArySI[uiCig];
+               break;
+            /*Case: snp*/
+
+            case 'D':
+            /*Case: deletion*/
+               samSTPtr->delCntUI -=
+                 samSTPtr->cigArySI[uiCig];
+               samSTPtr->refEndUI -=
+                  samSTPtr->cigArySI[uiCig];
+               samSTPtr->alnReadLenUI -=
+                  samSTPtr->cigArySI[uiCig];
+               break;
+            /*Case: deletion*/
+
+            case 'I':
+            /*Case: insertion*/
+               subScoreSL += samSTPtr->cigArySI[uiCig];
+
+               samSTPtr->insCntUI -=
+                 samSTPtr->cigArySI[uiCig];
+               break;
+            /*Case: insertion*/
+
+            case 'S':
+               subScoreSL += samSTPtr->cigArySI[uiCig];
+               break;
+         } /*Switch: find cigar type*/
+
+         ++uiCig;
+      } /*Loop: remove tailing entries*/
+
+      uiCig = bestEndUI + 1;
+      samSTPtr->cigTypeStr[uiCig] = 'S';
+      samSTPtr->cigArySI[uiCig] = (signed int) subScoreSL;
+      samSTPtr->cigLenUI = uiCig + 1;
+      samSTPtr->cigTypeStr[samSTPtr->cigLenUI] = '\0';
+   } /*If: removing ending cigar entries*/
+
+
+   /*****************************************************\
+   * Fun35 Sec04 Sub03:
    *   - handel adjusting start for sub-alignment
-   *   o fun35 sec04 sub02 cat01:
+   *   o fun35 sec04 sub03 cat01:
    *     - start removal; convert first cigar entry to S
-   *   o fun35 sec04 sub02 cat02:
+   *   o fun35 sec04 sub03 cat02:
    *     - start removal; remove targed cigar entries
    \*****************************************************/
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun35 Sec04 Sub02 Cat01:
+   + Fun35 Sec04 Sub03 Cat01:
    +   - start removal; convert first cigar entry to S
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -5147,7 +5219,7 @@ scoreSub_mapRead(
             samSTPtr->cigTypeStr[0] != 'S'
          && samSTPtr->cigTypeStr[0] != 'H'
       ){ /*If: start not masked*/
-         samSTPtr->numMaskUI += samSTPtr->cigArySI[0];
+         samSTPtr->maskCntUI += samSTPtr->cigArySI[0];
 
          switch(samSTPtr->cigTypeStr[0])
          { /*Switch: find cigar type*/
@@ -5155,7 +5227,7 @@ scoreSub_mapRead(
             case 'M':
             case '=':
             /*Case: match or match/snp*/
-               samSTPtr->numMatchUI -=
+               samSTPtr->matchCntUI -=
                  samSTPtr->cigArySI[0];
                samSTPtr->refStartUI +=
                  samSTPtr->cigArySI[0];
@@ -5166,7 +5238,7 @@ scoreSub_mapRead(
 
             case 'X':
             /*Case: snp*/
-               samSTPtr->numSnpUI -=
+               samSTPtr->snpCntUI -=
                  samSTPtr->cigArySI[0];
                samSTPtr->refStartUI +=
                  samSTPtr->cigArySI[0];
@@ -5177,7 +5249,7 @@ scoreSub_mapRead(
 
             case 'D':
             /*Case: deletion*/
-               samSTPtr->numDelUI -=
+               samSTPtr->delCntUI -=
                  samSTPtr->cigArySI[0];
 
                samSTPtr->refStartUI +=
@@ -5191,7 +5263,7 @@ scoreSub_mapRead(
 
             case 'I':
             /*Case: insertion*/
-               samSTPtr->numInsUI -=
+               samSTPtr->insCntUI -=
                  samSTPtr->cigArySI[0];
                break;
             /*Case: insertion*/
@@ -5202,170 +5274,85 @@ scoreSub_mapRead(
       samSTPtr->cigTypeStr[0] = 'S';
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun35 Sec04 Sub02 Cat02:
+      + Fun35 Sec04 Sub03 Cat02:
       +   - start removal; remove targed cigar entries
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
       uiCig = 1;
       uiPos = 1;
      
-      while(uiCig < samSTPtr->lenCigUI)
+      while(uiCig < samSTPtr->cigLenUI)
       { /*Loop: shift cigar*/
 
-         if(uiCig < bestStartUI)
+         if(uiCig <= bestStartUI)
          { /*If: masking*/
 
             if(samSTPtr->cigTypeStr[uiCig] != 'D')
             { /*If: not a deletion*/
                samSTPtr->cigArySI[0] +=
                   samSTPtr->cigArySI[uiCig];
-               samSTPtr->numMaskUI +=
+               samSTPtr->maskCntUI +=
                   samSTPtr->cigArySI[uiCig];
-
-               if(samSTPtr->cigTypeStr[uiCig] != 'I')
-               { /*If: not an insertion*/
-                  samSTPtr->refStartUI +=
-                    samSTPtr->cigArySI[uiCig];
-                  samSTPtr->alnReadLenUI -=
-                    samSTPtr->cigArySI[uiCig];
-               } /*If: not an insertion*/
             } /*If: not a deletion*/
 
-            else
-            { /*Else: have deletion*/
+            if(samSTPtr->cigTypeStr[uiCig] != 'I')
+            { /*If: not an insertion*/
                samSTPtr->refStartUI +=
-                  samSTPtr->cigArySI[uiCig];
+                 samSTPtr->cigArySI[uiCig];
                samSTPtr->alnReadLenUI -=
-                  samSTPtr->cigArySI[uiCig];
-            } /*Else: have deletion*/
+                 samSTPtr->cigArySI[uiCig];
+            } /*If: not an insertion*/
 
             switch(samSTPtr->cigTypeStr[uiCig])
             { /*Switch: find cigar type*/
 
                case 'M':
                case '=':
-                  samSTPtr->numMatchUI -=
+                  samSTPtr->matchCntUI -=
                     samSTPtr->cigArySI[uiCig];
                   break;
 
                case 'X':
-                  samSTPtr->numSnpUI -=
+                  samSTPtr->snpCntUI -=
                     samSTPtr->cigArySI[uiCig];
                   break;
 
                case 'D':
-                  samSTPtr->numDelUI -=
+                  samSTPtr->delCntUI -=
                     samSTPtr->cigArySI[uiCig];
                   break;
 
                case 'I':
-                  samSTPtr->numInsUI -=
+                  samSTPtr->insCntUI -=
                     samSTPtr->cigArySI[uiCig];
                   break;
             } /*Switch: find cigar type*/
          } /*If: masking*/
-
-         else
-            ++uiPos;
 
          samSTPtr->cigTypeStr[uiPos] =
             samSTPtr->cigTypeStr[uiCig];
          samSTPtr->cigArySI[uiPos] =
             samSTPtr->cigArySI[uiCig];
 
+         if(uiCig > bestStartUI)
+            ++uiPos;
+
          ++uiCig;
       }  /*Loop: shift cigar*/
 
-      samSTPtr->lenCigUI = uiPos;
+      samSTPtr->cigLenUI = uiPos;
       samSTPtr->cigTypeStr[uiPos] = '\0';
-      bestEndUI = samSTPtr->lenCigUI;
+      bestEndUI = samSTPtr->cigLenUI;
    } /*If: need to shift cigar*/
-
-
-   /*****************************************************\
-   * Fun35 Sec04 Sub03:
-   *   - adjusting cigar end for sub-alignment
-   \*****************************************************/
-
-   if(bestEndUI + 1 < samSTPtr->lenCigUI)
-   { /*If: removing ending cigar entries*/
-      uiCig = bestEndUI + 1;
-      subScoreSL = 0; /*using to count masked bases*/
-     
-      while(uiCig < samSTPtr->lenCigUI)
-      { /*Loop: remove tailing entries*/
-
-         switch(samSTPtr->cigTypeStr[uiCig])
-         { /*Switch: find cigar type*/
-
-            case 'M':
-            case '=':
-            /*Case: match or match/snp*/
-               subScoreSL += samSTPtr->cigArySI[uiCig];
-
-               samSTPtr->numMatchUI -=
-                 samSTPtr->cigArySI[uiCig];
-               samSTPtr->refEndUI -=
-                  samSTPtr->cigArySI[uiCig];
-               samSTPtr->alnReadLenUI -=
-                  samSTPtr->cigArySI[uiCig];
-               break;
-            /*Case: match or match/snp*/
-
-            case 'X':
-            /*Case: snp*/
-               samSTPtr->numSnpUI -=
-                 samSTPtr->cigArySI[uiCig];
-               samSTPtr->refEndUI -=
-                  samSTPtr->cigArySI[uiCig];
-               samSTPtr->alnReadLenUI -=
-                  samSTPtr->cigArySI[uiCig];
-               break;
-            /*Case: snp*/
-
-            case 'D':
-            /*Case: deletion*/
-               samSTPtr->numDelUI -=
-                 samSTPtr->cigArySI[uiCig];
-               samSTPtr->refEndUI -=
-                  samSTPtr->cigArySI[uiCig];
-               samSTPtr->alnReadLenUI -=
-                  samSTPtr->cigArySI[uiCig];
-               break;
-            /*Case: deletion*/
-
-            case 'I':
-            /*Case: insertion*/
-               subScoreSL += samSTPtr->cigArySI[uiCig];
-
-               samSTPtr->numInsUI -=
-                 samSTPtr->cigArySI[uiCig];
-               break;
-            /*Case: insertion*/
-
-            case 'S':
-               subScoreSL += samSTPtr->cigArySI[uiCig];
-               break;
-         } /*Switch: find cigar type*/
-
-         ++uiCig;
-      } /*Loop: remove tailing entries*/
-
-      samSTPtr->cigTypeStr[uiCig] = 'S';
-      samSTPtr->cigArySI[uiCig] =
-         (signed int) subScoreSL;
-      samSTPtr->lenCigUI = uiCig + 1;
-      samSTPtr->cigTypeStr[samSTPtr->lenCigUI] = '\0';
-   } /*If: removing ending cigar entries*/
 
    /*****************************************************\
    * Fun35 Sec04 Sub04:
    *   - adjusting alignment lengths and coordiantes
    \*****************************************************/
 
-   samSTPtr->alnReadLenUI = samSTPtr->numMatchUI;
-   samSTPtr->alnReadLenUI += samSTPtr->numSnpUI;
-   samSTPtr->alnReadLenUI += samSTPtr->numDelUI;
+   samSTPtr->alnReadLenUI = samSTPtr->matchCntUI;
+   samSTPtr->alnReadLenUI += samSTPtr->snpCntUI;
+   samSTPtr->alnReadLenUI += samSTPtr->delCntUI;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun35 Sec05:
@@ -5375,42 +5362,42 @@ scoreSub_mapRead(
    ret_fun35_sec05:;
       *errSCPtr = 0;
 
-      samSTPtr->extraStr[samSTPtr->lenExtraUI++] = 'N';
-      samSTPtr->extraStr[samSTPtr->lenExtraUI++] = 'M';
-      samSTPtr->extraStr[samSTPtr->lenExtraUI++] = ':';
-      samSTPtr->extraStr[samSTPtr->lenExtraUI++] = 'i';
-      samSTPtr->extraStr[samSTPtr->lenExtraUI++] = ':';
+      samSTPtr->extraStr[samSTPtr->extraLenUI++] = 'N';
+      samSTPtr->extraStr[samSTPtr->extraLenUI++] = 'M';
+      samSTPtr->extraStr[samSTPtr->extraLenUI++] = ':';
+      samSTPtr->extraStr[samSTPtr->extraLenUI++] = 'i';
+      samSTPtr->extraStr[samSTPtr->extraLenUI++] = ':';
 
-      samSTPtr->lenExtraUI +=
+      samSTPtr->extraLenUI +=
          numToStr(
-            &samSTPtr->extraStr[samSTPtr->lenExtraUI],
+            &samSTPtr->extraStr[samSTPtr->extraLenUI],
             (unsigned long)
             (
-                samSTPtr->numSnpUI
-              + samSTPtr->numDelUI
-              + samSTPtr->numInsUI
+                samSTPtr->snpCntUI
+              + samSTPtr->delCntUI
+              + samSTPtr->insCntUI
             )
          );
 
-      samSTPtr->extraStr[samSTPtr->lenExtraUI++] = '\t';
+      samSTPtr->extraStr[samSTPtr->extraLenUI++] = '\t';
 
-      samSTPtr->extraStr[samSTPtr->lenExtraUI++] = 'A';
-      samSTPtr->extraStr[samSTPtr->lenExtraUI++] = 'S';
-      samSTPtr->extraStr[samSTPtr->lenExtraUI++] = ':';
-      samSTPtr->extraStr[samSTPtr->lenExtraUI++] = 'i';
-      samSTPtr->extraStr[samSTPtr->lenExtraUI++] = ':';
+      samSTPtr->extraStr[samSTPtr->extraLenUI++] = 'A';
+      samSTPtr->extraStr[samSTPtr->extraLenUI++] = 'S';
+      samSTPtr->extraStr[samSTPtr->extraLenUI++] = ':';
+      samSTPtr->extraStr[samSTPtr->extraLenUI++] = 'i';
+      samSTPtr->extraStr[samSTPtr->extraLenUI++] = ':';
 
       bestScoreSL = scoreSL; /*so can  update AS:i score*/
 
       if(scoreSL < 0)
       { /*If: had negative score*/
-         samSTPtr->extraStr[samSTPtr->lenExtraUI++] = '-';
+         samSTPtr->extraStr[samSTPtr->extraLenUI++] = '-';
          bestScoreSL *= -1;
       } /*If: had negative score*/
       
-      samSTPtr->lenExtraUI +=
+      samSTPtr->extraLenUI +=
          numToStr(
-            &samSTPtr->extraStr[samSTPtr->lenExtraUI],
+            &samSTPtr->extraStr[samSTPtr->extraLenUI],
             (unsigned long) bestScoreSL
          );
 
@@ -5522,7 +5509,7 @@ chainToAln_mapRead(
       /*-1 for index 1 to 0 coversion, another -1 (-2)
       `  to account for one base always kept
       */
-   percF /= (float) qrySTPtr->lenSeqUL;
+   percF /= (float) qrySTPtr->seqLenSL;
 
    if(percF < setSTPtr->chainMinNtF)
       goto noChains_fun36_sec04;
@@ -5568,21 +5555,21 @@ chainToAln_mapRead(
 
 
    /*check if had the minimum percent length*/
-   percF = (float) samSTPtr->numMatchUI;
-   percF += (float) samSTPtr->numSnpUI;
-   percF += (float) samSTPtr->numInsUI;
-   percF /= (float) qrySTPtr->lenSeqUL;
+   percF = (float) samSTPtr->matchCntUI;
+   percF += (float) samSTPtr->snpCntUI;
+   percF += (float) samSTPtr->insCntUI;
+   percF /= (float) qrySTPtr->seqLenSL;
 
    if(percF < setSTPtr->minPercLenF)
       goto noAln_fun36_sec04;
 
 
    /*find percent matches for aligned read*/
-   percF = (float) samSTPtr->numMatchUI;
+   percF = (float) samSTPtr->matchCntUI;
 
-   maxScoreSL = (signed long) samSTPtr->numMatchUI;
-   maxScoreSL += (signed long) samSTPtr->numSnpUI;
-   maxScoreSL += (signed long) samSTPtr->numInsUI;
+   maxScoreSL = (signed long) samSTPtr->matchCntUI;
+   maxScoreSL += (signed long) samSTPtr->snpCntUI;
+   maxScoreSL += (signed long) samSTPtr->insCntUI;
 
    percF /= (float) maxScoreSL;
 
@@ -5675,12 +5662,14 @@ align_mapRead(
    '   o fun31 sec01:
    '     - variable declarations
    '   o fun37 sec02:
-   '     - setup and get query kmer sequence
+   '     - deal with to short alignments (waterman)
    '   o fun37 sec03:
-   '     - get chains, merge chains, and check coverage
+   '     - setup and get query kmer sequence
    '   o fun37 sec04:
-   '     - get alignments
+   '     - get chains, merge chains, and check coverage
    '   o fun37 sec05:
+   '     - get alignments
+   '   o fun37 sec06:
    '     - return
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -5691,6 +5680,7 @@ align_mapRead(
 
    signed long scoreSL = 0;
    signed long bestScoreSL = def_minSL_mapRead;
+   unsigned int ignoreUI = 0;
 
    float percF = 0;
 
@@ -5704,29 +5694,107 @@ align_mapRead(
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun37 Sec02:
-   ^   - setup and get query kmer sequence
+   ^   - deal with to short alignments (waterman)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    init_samEntry(&samStackST);
    if( setup_samEntry(&samStackST) )
-      goto memErr_fun37_sec05;
+      goto memErr_fun37_sec06;
 
    seqToIndex_alnSet(qrySTPtr->seqStr);
+
+   if(qrySTPtr->seqLenSL < (refSTPtr->lenKmerUC << 1))
+   { /*If: mapping a read that has less then two chains*/
+      qrySTPtr->offsetSL = 0;
+      qrySTPtr->endAlnSL = qrySTPtr->seqLenSL - 1;
+
+      refSTPtr->seqSTPtr->offsetSL = 0;
+      refSTPtr->seqSTPtr->endAlnSL =
+         refSTPtr->seqSTPtr->seqLenSL - 1;
+
+      bestScoreSL =
+         water(
+            qrySTPtr,
+            refSTPtr->seqSTPtr,
+            alnSTPtr->matrixSTPtr,
+            setSTPtr->alnSetST
+         );
+
+      if(alnSTPtr->matrixSTPtr->errSC == def_memErr_water)
+         goto memErr_fun37_sec06;
+      if(
+         getAln_dirMatrix(
+            alnSTPtr->matrixSTPtr,
+            0, /*0 = use index in matrixSTPtr*/
+            0, /*forward alignment*/
+            qrySTPtr,
+            refSTPtr->seqSTPtr,
+            samSTPtr,
+            &ignoreUI,
+            setSTPtr->alnSetST
+         )
+      ) goto memErr_fun37_sec06;
+
+      scoreSL =
+         maxScore_alnSet(
+            qrySTPtr->seqStr,
+            0,
+            qrySTPtr->seqLenSL,
+            setSTPtr->alnSetST
+        );
+
+      /*check if had the minimum percent score*/
+      percF = (float) bestScoreSL;
+      percF /= (float) scoreSL;
+
+      if(percF < setSTPtr->minScoreF)
+         goto noAln_fun37_sec06;
+
+      /*check if had the minimum percent length*/
+      percF = (float) samSTPtr->matchCntUI;
+      percF += (float) samSTPtr->snpCntUI;
+      percF += (float) samSTPtr->insCntUI;
+      percF /= (float) qrySTPtr->seqLenSL;
+
+      if(percF < setSTPtr->minPercLenF)
+         goto noAln_fun37_sec06;
+
+
+      /*find percent matches for aligned read*/
+      percF = (float) samSTPtr->matchCntUI;
+
+      scoreSL = (signed long) samSTPtr->matchCntUI;
+      scoreSL += (signed long) samSTPtr->snpCntUI;
+      scoreSL += (signed long) samSTPtr->insCntUI;
+
+      percF /= (float) scoreSL;
+
+      if(percF < setSTPtr->minMatchF)
+         goto noAln_fun37_sec06;
+         /*not enough matches*/
+
+      goto done_fun37_sec06;
+   } /*If: mapping a read that has less then two chains*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun37 Sec03:
+   ^   - setup and get query kmer sequence
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    alnSTPtr->lenSI =
       seqToKmer_kmerFun(
          qrySTPtr->seqStr,
-         qrySTPtr->lenSeqUL,
+         qrySTPtr->seqLenSL,
          &alnSTPtr->kmerArySI,
          &alnSTPtr->sizeSI,
          refSTPtr->lenKmerUC
       );
 
    if(! alnSTPtr->lenSI)
-      goto memErr_fun37_sec05;
+      goto memErr_fun37_sec06;
    
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun37 Sec03:
+   ^ Fun37 Sec04:
    ^   - get chains, merge chains, and check coverage
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -5742,7 +5810,7 @@ align_mapRead(
          refSTPtr->lenSI,
          0
       )
-   ) goto memErr_fun37_sec05;
+   ) goto memErr_fun37_sec06;
 
    *mapIndexSIPtr =
        mergeChains_mapRead(
@@ -5752,14 +5820,14 @@ align_mapRead(
           setSTPtr->matchSI,  /*score for match*/
           (signed int)
              (
-                 qrySTPtr->lenSeqUL 
+                 qrySTPtr->seqLenSL 
                * setSTPtr->maxLenPercF
              )
              /*skip merge if gap is 25% of query length*/
        ); /*merges chains to get an alignment guide*/
 
    if(*mapIndexSIPtr == def_noChains_mapRead)
-      goto noChains_fun37_sec05;
+      goto noChains_fun37_sec06;
 
    /*make sure this alignment could be kept*/
    percF =
@@ -5770,13 +5838,13 @@ align_mapRead(
       /*-1 for index 1 to 0 coversion, another -1 (-2)
       `  to account for one base always kept
       */
-   percF /= (float) qrySTPtr->lenSeqUL;
+   percF /= (float) qrySTPtr->seqLenSL;
 
    if(percF < setSTPtr->chainMinNtF)
-      goto noAln_fun37_sec05;
+      goto noAln_fun37_sec06;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun37 Sec04:
+   ^ Fun37 Sec05:
    ^   - get alignments
    ^   o fun37 sec03 sub01:
    ^     - check if already aligned index + start loop
@@ -5863,7 +5931,7 @@ align_mapRead(
 
       swapSTPtr = malloc( sizeof(struct hit_mapRead) );
       if(! swapSTPtr)
-         goto memErr_fun37_sec05;
+         goto memErr_fun37_sec06;
       swapSTPtr->indexSI =
          alnSTPtr->chainsSTPtr->nextArySI[siIndex];
       swapSTPtr->nextST = 0;
@@ -5939,7 +6007,7 @@ align_mapRead(
          );
 
       if(*errSCPtr == def_memErr_mapRead)
-          goto memErr_fun37_sec05;
+          goto memErr_fun37_sec06;
       else if(*errSCPtr)
          continue; /*no alingment*/
 
@@ -5955,33 +6023,34 @@ align_mapRead(
    } /*Loop: find best alignment*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun37 Sec05:
+   ^ Fun37 Sec06:
    ^   - return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   if(bestScoreSL == def_minSL_mapRead)
-      goto noAln_fun37_sec05;
+   done_fun37_sec06:;
+      if(bestScoreSL == def_minSL_mapRead)
+         goto noAln_fun37_sec06;
 
-   *errSCPtr = 0;
-   goto ret_fun37_sec05;
+      *errSCPtr = 0;
+   goto ret_fun37_sec06;
 
-   memErr_fun37_sec05:;
+   memErr_fun37_sec06:;
       *errSCPtr = def_memErr_mapRead;
-      goto err_fun37_sec05;
+      goto err_fun37_sec06;
 
-   noAln_fun37_sec05:;
+   noAln_fun37_sec06:;
       *errSCPtr = def_noAln_mapRead;
-      goto err_fun37_sec05;
+      goto err_fun37_sec06;
 
-   noChains_fun37_sec05:;
+   noChains_fun37_sec06:;
       *errSCPtr = def_noChains_mapRead;
-      goto err_fun37_sec05;
+      goto err_fun37_sec06;
 
-   err_fun37_sec05:;
+   err_fun37_sec06:;
       blank_samEntry(samSTPtr);
-      goto ret_fun37_sec05;
+      goto ret_fun37_sec06;
 
-   ret_fun37_sec05:;
+   ret_fun37_sec06:;
       freeStack_samEntry(&samStackST);
 
       while(hitHeapST)

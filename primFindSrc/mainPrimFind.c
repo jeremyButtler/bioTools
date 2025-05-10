@@ -40,6 +40,7 @@
 ! Hidden libraries:
 !   - .c  #include "../genLib/ulCp.h"
 !   - .c  #include "../genLib/shellSort.h"
+!   - .c  #include "../genLib/fileFun.h"
 !   - .c  #include "../genAln/indexToCoord.h"
 !   - .c  #include "../genAln/alnDefs.h"
 !   - .c  #include "../genAln/memwater.h"
@@ -1256,24 +1257,9 @@ main(
    pHeaderHit_kmerFind(outFILE);
 
    if(fqBl)
-   { /*If: i have a fastq file*/
-      errSC =
-         (signed char)
-         getFqSeq_seqST(
-            seqFILE,
-            &seqStackST
-         );
-   } /*If: i have a fastq file*/
-
+      errSC = getFq_seqST(seqFILE, &seqStackST);
    else
-   { /*Else: i have a fasta file*/
-      errSC =
-         (signed char)
-         getFaSeq_seqST(
-            seqFILE,
-            &seqStackST
-         );
-   } /*Else: i have a fasta file*/
+      errSC = getFa_seqST(seqFILE, &seqStackST);
 
    while(! errSC)
    { /*Loop: find primers in sequences*/
@@ -1285,10 +1271,10 @@ main(
 
       ++entryOnUL;
 
-      if(seqStackST.lenSeqUL < minLenUI)
+      if(seqStackST.seqLenSL < (signed long) minLenUI)
          goto nextSeq_main_sec04_sub04;
 
-      if(seqStackST.lenSeqUL > maxLenUI)
+      if(seqStackST.seqLenSL > (signed long) maxLenUI)
       { /*If: read is longer then max length*/
          if(maxLenUI > 0)
             goto nextSeq_main_sec04_sub04;
@@ -1361,26 +1347,10 @@ main(
       \**************************************************/
 
       nextSeq_main_sec04_sub04:;
-
-      if(fqBl)
-      { /*If: i have a fastq file*/
-         errSC =
-            (signed char)
-            getFqSeq_seqST(
-               seqFILE,
-               &seqStackST
-            );
-      } /*If: i have a fastq file*/
-
-      else
-      { /*Else: i have a fasta file*/
-         errSC =
-            (signed char)
-            getFaSeq_seqST(
-               seqFILE,
-               &seqStackST
-            );
-      } /*Else: i have a fasta file*/
+         if(fqBl)
+            errSC = getFq_seqST(seqFILE, &seqStackST);
+         else
+            errSC = getFa_seqST(seqFILE, &seqStackST);
    } /*Loop: find primers in sequences*/
 
    /*****************************************************\

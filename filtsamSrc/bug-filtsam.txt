@@ -1,11 +1,3 @@
-#b filtsam.c:683
-b filtsam.c:156
-b ../generalLib/samEntryStruct.c:1435
+#b ../generalLib/samEntryStruct.c:1435
 
-#r -sam ~/files/testing/MIRU-154.sam -coords 153951,154459 -coord-trim
-#r -sam ~/files/testing/MIRU-154.sam -coords-file lineage-coords.tsv
-#r -sam ~/files/testing/dr-region.sam -coords-file DR.tsv
-#r -F 4 -F 256 -F 2048 -in-range -coords 3119037,3123624 -sam ~/files/testing/spoligoTest/spoligoTest.sam > del.sam
-#r -F 4 -F 256 -F 2048 -in-range -coords 3119037,3123624 -sam ~/files/testing/spoligoTest/test.fq
-#r -out-fasta -sam test.sam
-r -sam del.sam -trim
+r -sam test.sam -coords 0,$,pncA

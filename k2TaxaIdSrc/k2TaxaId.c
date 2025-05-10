@@ -56,6 +56,7 @@
 #include "../genLib/genMath.h"
 #include "../genLib/shellSort.h"
 #include "../genLib/ptrAry.h"
+#include "../genLib/fileFun.h"
 
 /*no .c files*/
 #include "../genLib/endLine.h"
@@ -724,6 +725,8 @@ readReport_k2TaxaId(
    #define def_expand_fun10 1028
    struct taxa_k2TaxaId *retTaxaHeapST;
 
+   signed long tmpSL = 0; /*for getLine_fileFun*/
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun10 Sec02:
    ^   - allocate memory for arrays
@@ -770,10 +773,11 @@ readReport_k2TaxaId(
    depthSI = -1; /*no position in history*/
 
    while(
-      fgets(
-         (char *) buffStr,
+      getLine_fileFun(
+         inFILE,
+         buffStr,
          def_lenBuff_fun10,
-         (FILE *) inFILE
+         &tmpSL
       )
    ){ /*Loop: process file*/
       tmpStr = buffStr;
@@ -1388,6 +1392,7 @@ pIds_k2TaxaId(
    signed char buffStr[def_sizeBuff_fun12 + 9];
 
    FILE *unclassFILE = 0;
+   signed long tmpSL = 0; /*for getLine_fileFun*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun12 Sec02:
@@ -1445,11 +1450,12 @@ pIds_k2TaxaId(
    \*****************************************************/
 
    while(
-      fgets(
-         (char *) buffStr,
+      getLine_fileFun(
+         inFILE,
+         buffStr,
          def_sizeBuff_fun12,
-         (FILE *) inFILE
-       )
+         &tmpSL
+      )
    ){ /*Loop: get read ids*/
 
       if(buffStr[0] == 'U')
@@ -1754,15 +1760,15 @@ pIds_k2TaxaId(
             *tmpStr != '\r'
          && *tmpStr != '\n'
       ){ /*Loop: move past line*/
-         tmpStr =
-            (signed char *)
-            fgets(
-               (char *) buffStr,
+         tmpSL = 
+            getLine_fileFun(
+               inFILE,
+               buffStr,
                def_sizeBuff_fun12,
-               (FILE *) inFILE
-             );
+               &tmpSL
+            );
 
-          if(! tmpStr)
+          if(! tmpSL)
              goto done_fun12_sec04;
 
           tmpStr = buffStr;

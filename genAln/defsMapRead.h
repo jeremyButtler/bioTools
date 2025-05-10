@@ -69,10 +69,14 @@
     `  chains at
     */
 
-#define def_alnEnd_defsMapRead 1 /*align softmasked ends*/
+#define def_alnEnd_defsMapRead 0
+   /*1: is align softmasked ends
+   `  gets stuff at end, but that is sometimes just
+   `  nosie, so better to leave off
+   */
 #define def_subAln_defsMapRead 1 /*keep best sub-aln*/
-#define def_chainGap_defsMapRead -1
-  /*gap score for chaining step*/
+#define def_chainGap_defsMapRead 0
+  /*gap score for chaining step (0 is do not apply)*/
 #define def_chainMatch_defsMapRead 5
   /*match score for chaining step*/
 

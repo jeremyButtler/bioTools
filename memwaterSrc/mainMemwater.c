@@ -48,6 +48,7 @@
 !   o .c  #include "../genLib/ulCp.h"
 !   o .c  #include "../genLib/numToStr.h"
 !   o .c  #include "../genLib/shellSort.h"
+!   o .c  #include "../genLib/fileFun.h"
 !   o .c  #include "../genAln/indexToCoord.h"
 !   o .h  #include "../genLib/genMath.h" (only .h macros)
 !   o .h  #include "../genBio/ntTo2Bit.h"
@@ -947,7 +948,6 @@ input_mainMemwater(
 | Output:
 |   - prints alignment as sam file
 \-------------------------------------------------------*/
-
 int
 main(
    int numArgsSI,
@@ -974,11 +974,11 @@ main(
    signed long scoreSL = 0;
    signed long seqSL = 0;   /*query sequence on*/
 
-   unsigned long refStartUL = 0;
-   unsigned long refEndUL = 0;
+   signed long refStartSL = 0;
+   signed long refEndSL = 0;
 
-   unsigned long qryStartUL = 0;
-   unsigned long qryEndUL = 0;
+   signed long qryStartSL = 0;
+   signed long qryEndSL = 0;
 
    signed char *qryFileStr = 0;
    signed char qryTypeSC = def_fqFile_mainMemwater;
@@ -1145,22 +1145,10 @@ main(
    );
 
    if(refTypeSC == def_fqFile_mainMemwater)
-   { /*If: reading from fastq file*/
-      errSC =
-         getFqSeq_seqST(
-             seqFILE,
-             kmerStackST.forSeqST
-         ); /*read in reference sequence*/
-   } /*If: reading from fastq file*/
+      errSC = getFq_seqST(seqFILE, kmerStackST.forSeqST);
 
    else
-   { /*Else: from fasta file*/
-      errSC =
-         getFaSeq_seqST(
-             seqFILE,
-             kmerStackST.forSeqST
-         ); /*read in reference sequence*/
-   } /*Else: from fasta file*/
+      errSC = getFa_seqST(seqFILE, kmerStackST.forSeqST);
 
    if(! errSC)
    { /*If: no errors; prepare kmerCnt structure*/
@@ -1282,22 +1270,10 @@ main(
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
    if(qryTypeSC == def_fqFile_mainMemwater)
-   { /*If: reading from fastq file*/
-      errSC =
-         getFqSeq_seqST(
-             seqFILE,
-             &qryStackST
-         ); /*read in first query sequence*/
-   } /*If: reading from fastq file*/
+      errSC = getFq_seqST(seqFILE, &qryStackST);
 
    else
-   { /*Else: from fasta file*/
-      errSC =
-         getFaSeq_seqST(
-             seqFILE,
-             &qryStackST
-         ); /*read in first query sequence*/
-   } /*Else: from fasta file*/
+      errSC = getFa_seqST(seqFILE, &qryStackST);
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
    + Main Sec02 Sub03 Cat03:
@@ -1309,32 +1285,15 @@ main(
       && errSC != def_EOF_seqST
    ){ /*If: had an error*/
       if(errSC & def_memErr_seqST)
-         fprintf(
-            stderr,
-            "MEMORY ERROR reading"
-         );
-
+         fprintf(stderr, "MEMORY ERROR reading");
       else
-         fprintf(
-            stderr,
-            "file error with"
-         );
+         fprintf(stderr, "file error with");
 
       if(qryTypeSC == def_fqFile_mainMemwater)
-         fprintf(
-           stderr,
-           " -qry-fq %s%s",
-           qryFileStr,
-           str_endLine
-         );
-
+         fprintf(stderr, " -qry-fq %s", qryFileStr);
       else
-         fprintf(
-           stderr,
-           " -qry %s%s",
-           qryFileStr,
-           str_endLine
-         );
+         fprintf(stderr, " -qry %s", qryFileStr);
+      fprintf(stderr, "%s", str_endLine);
 
       if(errSC & def_memErr_seqST)
          goto memErr_main_sec04_sub02;
@@ -1461,10 +1420,10 @@ main(
          memwater(
             &qryStackST,
             refSTPtr,
-            &refStartUL,
-            &refEndUL,
-            &qryStartUL,
-            &qryEndUL,
+            &refStartSL,
+            &refEndSL,
+            &qryStartSL,
+            &qryEndSL,
             &setStackST
          );
 
@@ -1484,13 +1443,13 @@ main(
          fprintf(
             outFILE,
             "\tR\t%lu\t%lu\t%lu\t%lu%s",
-            refSTPtr->lenSeqUL - refEndUL,
-            refSTPtr->lenSeqUL - refStartUL,
-            qryStackST.lenSeqUL - qryEndUL,
-            qryStackST.lenSeqUL - qryStartUL,
+            refSTPtr->seqLenSL - refEndSL,
+            refSTPtr->seqLenSL - refStartSL,
+            qryStackST.seqLenSL - qryEndSL,
+            qryStackST.seqLenSL - qryStartSL,
             str_endLine
          ); /*need to convert coordinates*/
-         /*lenSeqUL is index 1, while xEndUL and xStartUL
+         /*seqLenSL is index 1, while xEndUL and xStartUL
          `   are index 0. So, result is index 1
          */
       } /*If: read is reverse complement*/
@@ -1502,10 +1461,10 @@ main(
          fprintf(
             outFILE,
             "\tF\t%lu\t%lu\t%lu\t%lu%s",
-            refStartUL + 1,
-            refEndUL + 1,
-            qryStartUL + 1,
-            qryEndUL + 1,
+            refStartSL + 1,
+            refEndSL + 1,
+            qryStartSL + 1,
+            qryEndSL + 1,
             str_endLine
          );
       } /*Else: read is forward*/
@@ -1516,22 +1475,10 @@ main(
       \**************************************************/
 
       if(qryTypeSC == def_fqFile_mainMemwater)
-      { /*If: reading from fastq file*/
-         errSC =
-            getFqSeq_seqST(
-                seqFILE,
-                &qryStackST
-            ); /*read in next query sequence*/
-      } /*If: reading from fastq file*/
+         errSC = getFq_seqST(seqFILE, &qryStackST);
 
       else
-      { /*Else: from fasta file*/
-         errSC =
-            getFaSeq_seqST(
-                seqFILE,
-                &qryStackST
-            ); /*read in next query sequence*/
-      } /*Else: from fasta file*/
+         errSC = getFa_seqST(seqFILE, &qryStackST);
    }  while(! errSC);
       /*Loop: align all query sequences*/
 

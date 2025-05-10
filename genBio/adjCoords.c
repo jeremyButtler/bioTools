@@ -37,6 +37,7 @@
 !   - .c  #include "../genLib/base10StrToNum.h"
 !   - .c  #include "../genLib/charCp.h"
 !   - .c  #include "../genLib/strAry.h"
+!   - .c  #include "../genLib/fileFun.h"
 !   - .h  #include "../genLib/genMath.h" .h macro only
 !   - .h  #include "ntTo5Bit.h"
 !   - .h  #include "../genLib/endLine.h"
@@ -110,13 +111,11 @@ adjCoords(
          coordsSTPtr->startAryUI[siIndx];
    } /*Else: this is a foward gene*/
 
-   samSTPtr->lenRefIdUC =
+   samSTPtr->refIdLenUC =
       (unsigned char)
-      cpDelim_ulCp(
+      cpStr_ulCp(
          samSTPtr->refIdStr,
-         coordsSTPtr->refAryStr[siIndx],
-         0,
-         '\0'
+         coordsSTPtr->refAryStr[siIndx]
       );
 
    errSC = 0;

@@ -6,20 +6,15 @@ Map reads to a reference sequence. This is slower than
   indepently.
 
 The main issue in sensitivity, is that mapRead requires
-  the sequence to have multiple 20+ base long match
+  the sequence to have multiple 13+ base long match
   (a chain) regions. Also, the chains must cover at at
   least 20% of the query. This results in missing many
-  alignments that minimap2 may detect. For example, in
-  one sample we mapped to tuberculosis, we missed over
-  4000 16sRNA sequences from non-tuberculosis bacteria. We
-  also missed around 27 sequences that were from other 
-  locations (less than 20% of bases in 20+ base pair match
-  regions).
+  alignments that minimap2 may detect.
 
 Also, in some cases mapRead may prefer indels, when
   minimap2 preferes a different alignment. For
   tuberculosis reads this seems to happen in the direct
-  repeat region, were many 20mers are repeated. It comes
+  repeat region, were many 13mers are repeated. It comes
   from the chain merging step.
 
 Finally, mapRead often prefers indels at the end of

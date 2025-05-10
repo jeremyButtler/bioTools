@@ -30,13 +30,16 @@ genClustStr="";
 genGenoTypeStr="";
 #seqByIdStr=""; add in for k2 taxa
 
-# marks if library location was used
+# marks if library location was used (bioTools)
 genLibBl=0;
 genBioBl=0;
 genAlnBl=0;
 genClustBl=0;
 genGenoTypeBl=0;
-#seqByIdBl=0; # add in when k2Taxa using seqById
+
+# unique libraryes for freezeTB
+genFreezeTB="";
+genFreezeTBBl="";
 
 # for building compile calls
 coreFlagsStr=""; # CFLAGS
@@ -317,11 +320,11 @@ then # Else If: static unix make file
 elif [ "$osStr" = "win" ];
 then # Else If: windows make file
    headStr="$headStr\nCC=cl.exe";
-   headStr="LD=link.exe";
+   headStr="$headStr\nLD=link.exe";
    headStr="$headStr\ncoreCFLAGS= /c /O2 /Ot /Za /Tc";
    headStr="$headStr\nCFLAGS=/DNONE";
    headStr="$headStr\nNAME=$nameStr.exe";
-   headStr="$headStr\nPREFIX=%localAppData%";
+   headStr="$headStr\nPREFIX=\"%localAppData%\"";
    headStr="$headStr\nO=o.win";
 
    genLibStr="\$(genLib)\\\\";
@@ -410,18 +413,7 @@ fi # check makefile type
 #   o sec03 sub06:
 #     - genGenoType libraries
 #   o sec03 sub07:
-#     - non-general libraries
-#     - not general enough to be a general library
-#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-#*********************************************************
-# Sec03 Sub01:
-#   - setup start of main file build command
-#*********************************************************
-
-#   o sec03 sub07:
-#     - non-general libraries
-#     - not general enough to be a general library
+#     - code for freezeTB (genFreezeTB)
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 #*********************************************************
@@ -455,6 +447,10 @@ mainCmdStr="$mainFileStr.\$O: \\
 #     - strAry
 #   o sec03 sub02 cat10:
 #     - ptrAry
+#   o sec03 sub02 cat11:
+#     - fileFun
+#   o sec03 sub02 cat12:
+#     - inflate
 #*********************************************************
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -463,11 +459,11 @@ mainCmdStr="$mainFileStr.\$O: \\
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 numToStr="${genLibStr}numToStr.\$O: \\
-	${genLibStr}numToStr.c ${genLibStr}numToStr.h
+	${genLibStr}numToStr.c \\
+	${genLibStr}numToStr.h
 		$ccStr ${dashOStr}${genLibStr}numToStr.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
-			${genLibStr}numToStr.c
-"
+			${genLibStr}numToStr.c"
 
 numToStrObj="${genLibStr}numToStr.\$O";
 numToStrDep="";
@@ -478,11 +474,11 @@ numToStrDep="";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 base10Str="${genLibStr}base10str.\$O: \\
-	${genLibStr}base10str.c ${genLibStr}base10str.h
+	${genLibStr}base10str.c \\
+	${genLibStr}base10str.h
 		$ccStr ${dashOStr}${genLibStr}base10str.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
-			${genLibStr}base10str.c
-"
+			${genLibStr}base10str.c"
 
 base10strObj="${genLibStr}base10str.\$O";
 base10strDep="";
@@ -493,11 +489,11 @@ base10strDep="";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ulCpStr="${genLibStr}ulCp.\$O: \\
-	${genLibStr}ulCp.c ${genLibStr}ulCp.h
+	${genLibStr}ulCp.c \\
+	${genLibStr}ulCp.h
 		$ccStr ${dashOStr}${genLibStr}ulCp.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
-			${genLibStr}ulCp.c
-"
+			${genLibStr}ulCp.c"
 
 ulCpObj="${genLibStr}ulCp.\$O";
 ulCpDep="";
@@ -508,7 +504,8 @@ ulCpDep="";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 charCpStr="${genLibStr}charCp.\$O: \\
-	${genLibStr}charCp.c ${genLibStr}charCp.h
+	${genLibStr}charCp.c \\
+	${genLibStr}charCp.h
 		$ccStr ${dashOStr}${genLibStr}charCp.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genLibStr}charCp.c"
@@ -522,7 +519,8 @@ charCpDep="";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 genMathStr="${genLibStr}genMath.\$O: \\
-	${genLibStr}genMath.c ${genLibStr}genMath.h
+	${genLibStr}genMath.c \\
+	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genLibStr}genMath.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genLibStr}genMath.c"
@@ -536,7 +534,8 @@ genMathDep="";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 shellSortStr="${genLibStr}shellSort.\$O: \\
-	${genLibStr}shellSort.c ${genLibStr}shellSort.h
+	${genLibStr}shellSort.c \\
+	${genLibStr}shellSort.h
 		$ccStr ${dashOStr}${genLibStr}shellSort.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genLibStr}shellSort.c"
@@ -550,7 +549,8 @@ shellSortDep="";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 endinStr="${genLibStr}endin.\$O: \\
-	${genLibStr}endin.c ${genLibStr}endin.h
+	${genLibStr}endin.c \\
+	${genLibStr}endin.h
 		$ccStr ${dashOStr}${genLibStr}endin.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genLibStr}endin.c"
@@ -564,7 +564,8 @@ endinDep="";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 checkSumStr="${genLibStr}checkSum.\$O: \\
-	${genLibStr}checkSum.c ${genLibStr}checkSum.h \\
+	${genLibStr}checkSum.c \\
+	${genLibStr}checkSum.h \\
 	${genLibStr}endin.\$O
 	$ccStr ${dashOStr}${genLibStr}checkSum.\$O \\
 		$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -580,7 +581,8 @@ checkSumDep="endin $endinDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 strAryStr="${genLibStr}strAry.\$O: \\
-	${genLibStr}strAry.c ${genLibStr}strAry.h \\
+	${genLibStr}strAry.c \\
+	${genLibStr}strAry.h \\
 	${genLibStr}ulCp.\$O
 		$ccStr ${dashOStr}${genLibStr}strAry.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -596,7 +598,8 @@ strAryDep="ulCp $ulCpDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ptrAryStr="${genLibStr}ptrAry.\$O: \\
-	${genLibStr}ptrAry.c ${genLibStr}ptrAry.h \\
+	${genLibStr}ptrAry.c \\
+	${genLibStr}ptrAry.h \\
 	${genLibStr}ulCp.\$O
 		$ccStr ${dashOStr}${genLibStr}ptrAry.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -608,13 +611,33 @@ ptrAryDep="ulCp $ulCpDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub02 Cat11:
+#   - fileFun
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+fileFunStr="${genLibStr}fileFun.\$O: \\
+	${genLibStr}fileFun.c \\
+	${genLibStr}fileFun.h \\
+	${genLibStr}ulCp.\$O
+		$ccStr ${dashOStr}${genLibStr}fileFun.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genLibStr}fileFun.c";
+
+
+fileFunObj="${genLibStr}fileFun.\$O";
+fileFunDep="ulCp $ulCpDep";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub02 Cat12:
 #   - inflate
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 inflateStr="${genLibStr}inflate.\$O: \\
-	${genLibStr}inflate.c ${genLibStr}inflate.h \\
-	${genLibStr}checkSum.\$O ${genLibStr}ulCp.\$O \\
-	${genLibStr}genMath.\$O ${genLibStr}endLine.h
+	${genLibStr}inflate.c \\
+	${genLibStr}inflate.h \\
+	${genLibStr}checkSum.\$O \\
+	${genLibStr}ulCp.\$O \\
+	${genLibStr}genMath.\$O \\
+	${genLibStr}endLine.h
 		$ccStr ${dashOStr}${genLibStr}inflate.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genLibStr}inflate.c";
@@ -623,6 +646,7 @@ inflateStr="${genLibStr}inflate.\$O: \\
 inflateObj="${genLibStr}inflate.\$O";
 inflateDep="checkSum $checkSumDep genMath $genMathDep";
 inflateDep="$inflateDep ulCp $ulCpDep";
+
 
 #*********************************************************
 # Sec03 Sub03:
@@ -634,26 +658,28 @@ inflateDep="$inflateDep ulCp $ulCpDep";
 #   o sec03 sub03 cat03:
 #     - seqST
 #   o sec03 sub03 cat04:
-#     - kmerCnt
+#     - gzSeqST
 #   o sec03 sub03 cat05:
-#     - geneCoord
+#     - kmerCnt
 #   o sec03 sub03 cat06:
-#     - samEntry
+#     - geneCoord
 #   o sec03 sub03 cat07:
-#     - adjCoords
+#     - samEntry
 #   o sec03 sub03 cat08:
-#     - cigToEqx
+#     - adjCoords
 #   o sec03 sub03 cat09:
-#     - maskPrim
+#     - cigToEqx
 #   o sec03 sub03 cat10:
-#     - trimSam
+#     - maskPrim
 #   o sec03 sub03 cat11:
-#     - ampDepth
+#     - trimSam
 #   o sec03 sub03 cat12:
-#     - tbCon
+#     - ampDepth
 #   o sec03 sub03 cat13:
-#     - edDist
+#     - tbCon
 #   o sec03 sub03 cat14:
+#     - edDist
+#   o sec03 sub03 cat15:
 #     - rmHomo
 #*********************************************************
 
@@ -663,8 +689,10 @@ inflateDep="$inflateDep ulCp $ulCpDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 codonFunStr="${genBioStr}codonFun.\$O: \\
-	${genBioStr}codonFun.c ${genBioStr}codonFun.h \\
-	${genBioStr}codonTbl.h ${genBioStr}ntTo2Bit.h \\
+	${genBioStr}codonFun.c \\
+	${genBioStr}codonFun.h \\
+	${genBioStr}codonTbl.h \\
+	${genBioStr}ntTo2Bit.h \\
 	${genBioStr}revNtTo2Bit.h
 		$ccStr ${dashOStr}${genBioStr}codonFun.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -679,7 +707,8 @@ codonFunDep="";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 kmerFunStr="${genBioStr}kmerFun.\$O: \\
-	${genBioStr}kmerFun.c ${genBioStr}kmerFun.h \\
+	${genBioStr}kmerFun.c \\
+	${genBioStr}kmerFun.h \\
 	${genBioStr}kmerBit.h
 		$ccStr ${dashOStr}${genBioStr}kmerFun.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -694,24 +723,45 @@ kmerFunDep="";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 seqSTStr="${genBioStr}seqST.\$O: \\
-	${genBioStr}seqST.c ${genBioStr}seqST.h \\
-	${genLibStr}ulCp.\$O ${genLibStr}inflate.\$O
+	${genBioStr}seqST.c \\
+	${genBioStr}seqST.h \\
+	${genLibStr}fileFun.\$O
 		$ccStr ${dashOStr}${genBioStr}seqST.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genBioStr}seqST.c";
 
 
 seqSTObj="${genBioStr}seqST.\$O";
-seqSTDep="inflate $inflateDep ulCp $ulCpDep";
+seqSTDep="fileFun $fileFunDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat04:
+#   - gzSeqST
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+gzSeqSTStr="${genBioStr}gzSeqST.\$O: \\
+	${genBioStr}gzSeqST.c \\
+	${genBioStr}gzSeqST.h \\
+	${genBioStr}seqST.\$O \\
+ 	${genLibStr}inflate.\$O
+		$ccStr ${dashOStr}${genBioStr}gzSeqST.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}gzSeqST.c";
+
+
+gzSeqSTObj="${genBioStr}gzSeqST.\$O";
+gzSeqSTDep="inflate $inflateDep seqST $seqSTDep";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub03 Cat05:
 #   - kmerCnt
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 kmerCntStr="${genBioStr}kmerCnt.\$O: \\
-	${genBioStr}kmerCnt.c ${genBioStr}kmerCnt.h \\
-	${genBioStr}seqST.\$O ${genBioStr}ntTo2Bit.h \\
+	${genBioStr}kmerCnt.c \\
+	${genBioStr}kmerCnt.h \\
+	${genBioStr}seqST.\$O \\
+	${genBioStr}ntTo2Bit.h \\
 	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genBioStr}kmerCnt.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -722,48 +772,58 @@ kmerCntObj="${genBioStr}kmerCnt.\$O";
 kmerCntDep="seqST $seqSTDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat05:
+# Sec03 Sub03 Cat06:
 #   - geneCoord
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 geneCoordStr="${genBioStr}geneCoord.\$O: \\
-	${genBioStr}geneCoord.c ${genBioStr}geneCoord.h \\
-	${genLibStr}base10str.\$O ${genLibStr}ulCp.\$O \\
-	${genLibStr}charCp.\$O ${genLibStr}genMath.h
+	${genBioStr}geneCoord.c \\
+	${genBioStr}geneCoord.h \\
+	${genLibStr}fileFun.\$O \\
+	${genLibStr}base10str.\$O \\
+	${genLibStr}charCp.\$O \\
+	${genLibStr}genMath.h
 	$ccStr ${dashOStr}${genBioStr}geneCoord.\$O \\
 		$dashCStr $coreFlagsStr $cFlagsStr \\
 		${genBioStr}geneCoord.c";
 
 geneCoordObj="${genBioStr}geneCoord.\$O";
-geneCoordDep="base10str $base10strDep ulCp $ulCpDep";
+geneCoordDep="fileFun $fileFun base10str $base10strDep";
 geneCoordDep="$geneCoordDep $ulCpDep charCp $charCpDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat06:
+# Sec03 Sub03 Cat07:
 #   - samEntry
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 samEntryStr="${genBioStr}samEntry.\$O: \\
-	${genBioStr}samEntry.c ${genBioStr}samEntry.h \\
-	${genLibStr}strAry.\$O ${genLibStr}base10str.\$O \\
-	${genLibStr}numToStr.\$O ${genBioStr}ntTo5Bit.h \\
+	${genBioStr}samEntry.c \
+	${genBioStr}samEntry.h \\
+	${genLibStr}fileFun.\$O \\
+	${genLibStr}strAry.\$O \\
+	${genLibStr}base10str.\$O \\
+	${genLibStr}numToStr.\$O \\
+	${genBioStr}ntTo5Bit.h \\
 	${genLibStr}endLine.h
 		$ccStr ${dashOStr}${genBioStr}samEntry.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genBioStr}samEntry.c";
 
 samEntryObj="${genBioStr}samEntry.\$O";
-samEntryDep="strAry $strAryDep numToStr numToStrDep";
+samEntryDep="fileFun $fileFunDep strAry $strAryDep";
+samEntryDep="$samEntryDep numToStr $numToStrDep";
 samEntryDep="$samEntryDep base10str $base10strDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat07:
+# Sec03 Sub03 Cat08:
 #   - adjCoords
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 adjCoordsStr="${genBioStr}adjCoords.\$O: \\
-	${genBioStr}adjCoords.c ${genBioStr}adjCoords.h \\
-	${genBioStr}geneCoord.\$O ${genBioStr}samEntry.\$O
+	${genBioStr}adjCoords.c \\
+	${genBioStr}adjCoords.h \\
+	${genBioStr}geneCoord.\$O \\
+	${genBioStr}samEntry.\$O
 		$ccStr ${dashOStr}${genBioStr}adjCoords.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genBioStr}adjCoords.c";
@@ -773,12 +833,13 @@ adjCoordsDep="geneCoord $geneCoordDep";
 adjCoordsDep="$adjCoordsDep samEntry $samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat08:
+# Sec03 Sub03 Cat09:
 #   - cigToEqx
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 cigToEqxStr="${genBioStr}cigToEqx.\$O: \\
-	${genBioStr}cigToEqx.c ${genBioStr}cigToEqx.h \\
+	${genBioStr}cigToEqx.c \\
+	${genBioStr}cigToEqx.h \\
 	${genBioStr}samEntry.\$O
 		$ccStr ${dashOStr}${genBioStr}cigToEqx.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -788,13 +849,15 @@ cigToEqxObj="${genBioStr}cigToEqx.\$O";
 cigToEqxDep="samEntry $samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat09:
+# Sec03 Sub03 Cat10:
 #   - maskPrim
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 maskPrimStr="${genBioStr}maskPrim.\$O: \\
-	${genBioStr}maskPrim.c ${genBioStr}maskPrim.h \\
-	${genBioStr}samEntry.\$O ${genLibStr}shellSort.\$O
+	${genBioStr}maskPrim.c \\
+	${genBioStr}maskPrim.h \\
+	${genBioStr}samEntry.\$O \\
+	${genLibStr}shellSort.\$O
 		$ccStr ${dashOStr}${genBioStr}maskPrim.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genBioStr}maskPrim.c";
@@ -804,12 +867,13 @@ maskPrimDep="samEntry $samEntryDep";
 maskPrimDep="$maskPrimDep shellSort shellSortDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat10:
+# Sec03 Sub03 Cat11:
 #   - trimSam
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 trimSamStr="${genBioStr}trimSam.\$O: \\
-	${genBioStr}trimSam.c ${genBioStr}trimSam.h \\
+	${genBioStr}trimSam.c \\
+	${genBioStr}trimSam.h \\
 	${genBioStr}samEntry.\$O
 		$ccStr ${dashOStr}${genBioStr}trimSam.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -819,13 +883,15 @@ trimSamObj="${genBioStr}trimSam.\$O";
 trimSamDep="samEntry samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat11:
+# Sec03 Sub03 Cat12:
 #   - ampDepth
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ampDepthStr="${genBioStr}ampDepth.\$O: \\
-	${genBioStr}ampDepth.c ${genBioStr}ampDepth.h \\
-	${genBioStr}geneCoord.\$O ${genBioStr}samEntry.\$O
+	${genBioStr}ampDepth.c \\
+	${genBioStr}ampDepth.h \\
+	${genBioStr}geneCoord.\$O \\
+	${genBioStr}samEntry.\$O
 		$ccStr ${dashOStr}${genBioStr}ampDepth.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genBioStr}ampDepth.c";
@@ -835,14 +901,17 @@ ampDepthDep="geneCoord $geneCoordDep";
 ampDepthDep="$ampDepthDep samEntry $samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat12:
+# Sec03 Sub03 Cat13:
 #   - tbCon
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 tbConStr="${genBioStr}tbCon.\$O: \\
-	${genBioStr}tbCon.c ${genBioStr}tbCon.h \\
-	${genBioStr}samEntry.\$O ${genBioStr}tbConDefs.h \\
-	${genLibStr}genMath.h ${genLibStr}endLine.h
+	${genBioStr}tbCon.c \\
+	${genBioStr}tbCon.h \\
+	${genBioStr}samEntry.\$O \\
+	${genBioStr}tbConDefs.h \\
+	${genLibStr}genMath.h \\
+	${genLibStr}endLine.h
 		$ccStr ${dashOStr}${genBioStr}tbCon.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genBioStr}tbCon.c";
@@ -851,14 +920,17 @@ tbConObj="${genBioStr}tbCon.\$O";
 tbConDep="samEntry $samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat13:
+# Sec03 Sub03 Cat14:
 #   - edDist
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 edDistStr="${genBioStr}edDist.\$O: \\
-	${genBioStr}edDist.c ${genBioStr}edDist.h \\
-	${genBioStr}samEntry.\$O ${genBioStr}seqST.\$O \\
-	${genLibStr}genMath.h ${genLibStr}endLine.h
+	${genBioStr}edDist.c \\
+	${genBioStr}edDist.h \\
+	${genBioStr}samEntry.\$O \\
+	${genBioStr}seqST.\$O \\
+	${genLibStr}genMath.h \\
+	${genLibStr}endLine.h
 		$ccStr ${dashOStr}${genBioStr}edDist.\$O \\
 		$dashCStr $coreFlagsStr $cFlagsStr \\
 		${genBioStr}edDist.c";
@@ -868,13 +940,15 @@ edDistObj="${genBioStr}edDist.\$O";
 edDistDep="samEntry $samEntryDep seqST $seqSTDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat14:
+# Sec03 Sub03 Cat15:
 #   - rmHomo
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 rmHomoStr="${genBioStr}rmHomo.\$O: \\
-	${genBioStr}rmHomo.c ${genBioStr}rmHomo.h \\
-	${genBioStr}samEntry.\$O ${genBioStr}seqST.\$O
+	${genBioStr}rmHomo.c \\
+	${genBioStr}rmHomo.h \\
+	${genBioStr}samEntry.\$O \\
+	${genBioStr}seqST.\$O
 		$ccStr ${dashOStr}${genBioStr}rmHomo.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genBioStr}rmHomo.c";
@@ -912,7 +986,8 @@ rmHomoDep="samEntry $samEntryDep seqST $seqSTDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 indexToCoordStr="${genAlnStr}indexToCoord.\$O: \\
-	${genAlnStr}indexToCoord.c ${genAlnStr}indexToCoord.h
+	${genAlnStr}indexToCoord.c \\
+	${genAlnStr}indexToCoord.h
 		$ccStr ${dashOStr}${genAlnStr}indexToCoord.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genAlnStr}indexToCoord.c";
@@ -927,16 +1002,20 @@ indexToCoordDep="";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 alnSetStr="${genAlnStr}alnSet.\$O: \\
-	${genAlnStr}alnSet.c ${genAlnStr}alnDefs.h \\
-	${genLibStr}ulCp.\$O ${genLibStr}base10str.\$O \\
-	${genAlnStr}alnDefs.h ${genLibStr}endLine.h
+	${genAlnStr}alnSet.c \\
+	${genAlnStr}alnDefs.h \\
+	${genLibStr}fileFun.\$O \\
+	${genLibStr}ulCp.\$O \\
+	${genLibStr}base10str.\$O \\
+	${genAlnStr}alnDefs.h \\
+	${genLibStr}endLine.h
 		$ccStr ${dashOStr}${genAlnStr}alnSet.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genAlnStr}alnSet.c";
 
 
 alnSetObj="${genAlnStr}alnSet.\$O";
-alnSetDep="base10str $base10strDep ulCp $ulCpDep"
+alnSetDep="base10str $base10strDep fileFun $fileFunDep"
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub04 Cat03:
@@ -944,9 +1023,11 @@ alnSetDep="base10str $base10strDep ulCp $ulCpDep"
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 dirMatrixStr="${genAlnStr}dirMatrix.\$O: \\
-	${genAlnStr}dirMatrix.c ${genAlnStr}alnSet.\$O \\
+	${genAlnStr}dirMatrix.c \\
+	${genAlnStr}alnSet.\$O \\
 	${genAlnStr}indexToCoord.\$O \\
-	${genBioStr}samEntry.\$O ${genBioStr}seqST.\$O \\
+	${genBioStr}samEntry.\$O \\
+	${genBioStr}seqST.\$O \\
 	${genLibStr}charCp.\$O
 		$ccStr ${dashOStr}${genAlnStr}dirMatrix.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -967,7 +1048,8 @@ dirMatrixDep="$dirMatrixDep charCp $charCpDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 waterStr="${genAlnStr}water.\$O: ${genAlnStr}water.c \\
-	${genAlnStr}dirMatrix.\$O ${genLibStr}genMath.h
+	${genAlnStr}dirMatrix.\$O \\
+	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genAlnStr}water.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genAlnStr}water.c";
@@ -982,7 +1064,8 @@ waterDep="dirMatrix $dirMatrixDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 needleStr="${genAlnStr}needle.\$O: \\
-	${genAlnStr}needle.c ${genAlnStr}dirMatrix.\$O \\
+	${genAlnStr}needle.c \\
+	${genAlnStr}dirMatrix.\$O \\
 	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genAlnStr}needle.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -998,8 +1081,10 @@ needleDep="dirMatrix $dirMatrixDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 memwaterStr="${genAlnStr}memwater.\$O: \\
-	${genAlnStr}memwater.c ${genAlnStr}alnSet.\$O \\
-	${genAlnStr}indexToCoord.\$O ${genBioStr}seqST.\$O \\
+	${genAlnStr}memwater.c \\
+	${genAlnStr}alnSet.\$O \\
+	${genAlnStr}indexToCoord.\$O \\
+	${genBioStr}seqST.\$O \\
 	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genAlnStr}memwater.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -1017,8 +1102,10 @@ memwaterDep="$memwaterDep seqST $seqSTDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 kmerFindStr="${genAlnStr}kmerFind.\$O: \\
-	${genAlnStr}kmerFind.c ${genAlnStr}memwater.\$O \\
-	${genLibStr}shellSort.\$O ${genLibStr}genMath.h \\
+	${genAlnStr}kmerFind.c \\
+	${genAlnStr}memwater.\$O \\
+	${genLibStr}shellSort.\$O \\
+	${genLibStr}genMath.h \\
 	${genBioStr}kmerBit.h
 		$ccStr ${dashOStr}${genAlnStr}kmerFind.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -1035,8 +1122,10 @@ kmerFindDep="$kmerFindDep shellSort $shellSortDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 samToAlnStr="${genAlnStr}samToAln.\$O: \\
-	${genAlnStr}samToAln.c ${genAlnStr}samToAln.h \\
-	${genBioStr}samEntry.\$O ${genBioStr}seqST.\$O \\
+	${genAlnStr}samToAln.c \\
+	${genAlnStr}samToAln.h \\
+	${genBioStr}samEntry.\$O \\
+	${genBioStr}seqST.\$O \\
 	${genAlnStr}alnSet.\$O
 		$ccStr ${dashOStr}${genAlnStr}samToAln.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -1053,10 +1142,15 @@ samToAlnDep="$samToAlnDep seqST $seqSTDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 mapReadStr="${genAlnStr}mapRead.\$O: \\
-	${genAlnStr}mapRead.c ${genAlnStr}mapRead.h \\
-	${genAlnStr}needle.\$O ${genAlnStr}dirMatrix.\$O \\
-	${genBioStr}kmerFun.\$O ${genLibStr}shellSort.\$O \\
-	${genAlnStr}defsMapRead.h  ${genLibStr}genMath.h
+	${genAlnStr}mapRead.c \\
+	${genAlnStr}mapRead.h \\
+	${genAlnStr}needle.\$O \\
+	${genAlnStr}water.\$O \\
+	${genAlnStr}dirMatrix.\$O \\
+	${genBioStr}kmerFun.\$O \\
+	${genLibStr}shellSort.\$O \\
+	${genAlnStr}defsMapRead.h  \\
+	${genLibStr}genMath.h
 	 	$ccStr ${dashOStr}${genAlnStr}mapRead.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genAlnStr}mapRead.c";
@@ -1064,6 +1158,8 @@ mapReadStr="${genAlnStr}mapRead.\$O: \\
 
 mapReadObj="${genAlnStr}mapRead.\$O";
 mapReadDep="needle $needleDep dirMatrix $dirMatrixDep";
+mapReadDep="$mapReadDep water $waterDep";
+mapReadDep="$mapReadDep dirMatrix $dirMatrixDep";
 mapReadDep="$mapReadDep samEntry $samEntryDep";
 mapReadDep="$mapReadDep seqST $seqSTDep";
 mapReadDep="$mapReadDep kmerFun $kmerFunDep";
@@ -1086,7 +1182,8 @@ mapReadDep="$mapReadDep shellSort $shellSortDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 illNanoStr="${genClustStr}illNano.\$O: \\
-	${genClustStr}illNano.c ${genClustStr}illNano.h \\
+	${genClustStr}illNano.c \\
+	${genClustStr}illNano.h \\
 	${genBioStr}samEntry.\$O
 		$ccStr ${dashOStr}${genClustStr}illNano.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -1103,9 +1200,12 @@ illNanoDep="samEntry $samEntryDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 clustSTStr="${genClustStr}clustST.\$O: \\
-	${genClustStr}clustST.c ${genClustStr}clustST.h \\
-	${genBioStr}samEntry.\$O ${genBioStr}tbCon.\$O \\
-	${genBioStr}edDist.\$O ${genLibStr}genMath.h
+	${genClustStr}clustST.c \\
+	${genClustStr}clustST.h \\
+	${genBioStr}samEntry.\$O \\
+	${genBioStr}tbCon.\$O \\
+	${genBioStr}edDist.\$O \\
+	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genClustStr}clustST.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genClustStr}clustST.c
@@ -1121,7 +1221,8 @@ clustSTDep="$clustSTDep edDist $edDistDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 edClustStr="${genClustStr}edClust.\$O: \\
-	${genClustStr}edClust.c ${genClustStr}edClust.h \\
+	${genClustStr}edClust.c \\
+	${genClustStr}edClust.h \\
 	${genClustStr}clustST.\$O
 		$ccStr ${dashOStr}${genClustStr}edClust.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
@@ -1144,8 +1245,10 @@ edClustDep="clustST $clustSTDep";
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 cgMLSTStr="${genGenoTypeStr}cgMLST.\$O: \\
-	${genGenoTypeStr}cgMLST.c ${genGenoTypeStr}cgMLST.h \\
-	${genBioStr}edDist.\$O ${genLibStr}ptrAry.\$O
+	${genGenoTypeStr}cgMLST.c \\
+	${genGenoTypeStr}cgMLST.h \\
+	${genBioStr}edDist.\$O \\
+	${genLibStr}ptrAry.\$O
 		$ccStr ${dashOStr}${genGenoTypeStr}cgMLST.\$O \\
 			$dashCStr $coreFlagsStr $cFlagsStr \\
 			${genGenoTypeStr}cgMLST.c
@@ -1156,27 +1259,32 @@ cgMLSTDep="edDist $edDistDep ptrAry $ptrAryDep";
 
 #*********************************************************
 # Sec03 Sub07:
-#   - non-general libraries
-#   - not general enough to be a general library
+#   - code for freezeTB (genFreezeTB)
 #   o sec03 sub07 cat01:
-#     - k2TaxaId
+#     - 
 #*********************************************************
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub07 Cat01:
-#   - k2TaxaId
+#   - 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 tmpStr="..${slashSC}k2TaxaIdSrc${slashSC}k2TaxaId";
 k2TaxaIdStr="$tmpStr.\$O: \\
-	$tmpStr.c $tmpStr.h ${genLibStr}ptrAry.\$O \\
-	${genLibStr}shellSort.\$O ${genLibStr}numToStr.\$O \\
-	${genLibStr}base10str.\$O ${genLibStr}genMath.\$O
+	$tmpStr.c $tmpStr.h \\
+	${genLibStr}fileFun.\$O \\
+	${genLibStr}ptrAry.\$O \\
+	${genLibStr}shellSort.\$O \\
+	${genLibStr}numToStr.\$O \\
+	${genLibStr}base10str.\$O \\
+	${genLibStr}genMath.\$O
 		$ccStr $dashOStr$tmpStr.\$O $dashCStr \\
 			$coreFlagsStr $cFlagsStr $tmpStr.c";
 
 k2TaxaIdObj="$tmpStr.\$O";
-k2TaxaIdDep="ptrAry $ptrAryDep base10str $base10strDep";
+k2TaxaIdDep="fileFun $fileFunDep";
+k2TaxaIdDep="$k2TaxaIdDep ptrAry $ptrAryDep";
+k2TaxaIdDep="$k2TaxaIdDep base10str $base10strDep";
 k2TaxaIdDep="$k2TaxaIdDep numToStr $numToStrDep";
 k2TaxaIdDep="$k2TaxaIdDep genMath $genMathDep";
 k2TaxaIdDep="$k2TaxaIdDep shellSort $shellSortDep";
@@ -1295,6 +1403,10 @@ do # Loop: get dependencies
    #     - strAry
    #   o sec04 sub03 cat10:
    #     - ptrAry
+   #   o sec04 sub03 cat11:
+   #     - fileFun
+   #   o sec04 sub03 cat12:
+   #     - inflate
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1569,6 +1681,33 @@ do # Loop: get dependencies
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
    # Sec04 Sub03 Cat11:
+   #   - fileFun
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "fileFun" ]; then
+   # Else If: fileFun library
+      if [ "$fileFunBl" = "" ]; then
+         cmdStr="$cmdStr$newLineStr$fileFunStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}${fileFunObj}";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$fileFunObj";
+         fi
+
+         fileFunBl=1;
+         depStr="$depStr $fileFunDep";
+      fi
+
+      if [ "$genLibBl" -lt 1 ]; then
+         genLibBl=1;
+         libPathStr="$libPathStr\ngenLib=..${slashSC}genLib";
+      fi
+   # Else If: fileFun library
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub03 Cat12:
    #   - inflate
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1604,26 +1743,28 @@ do # Loop: get dependencies
    #   o sec04 sub04 cat03:
    #     - seqST
    #   o sec04 sub04 cat04:
-   #     - kmerCnt
+   #     - gzSeqST
    #   o sec04 sub04 cat05:
-   #     - geneCoord
+   #     - kmerCnt
    #   o sec04 sub04 cat06:
-   #     - samEntry
+   #     - geneCoord
    #   o sec04 sub04 cat07:
-   #     - adjCoords
+   #     - samEntry
    #   o sec04 sub04 cat08:
-   #     - cigToEqx
+   #     - adjCoords
    #   o sec04 sub04 cat09:
-   #     - maskPrim
+   #     - cigToEqx
    #   o sec04 sub04 cat10:
-   #     - trimSam
+   #     - maskPrim
    #   o sec04 sub04 cat11:
-   #     - ampDepth
+   #     - trimSam
    #   o sec04 sub04 cat12:
-   #     - tbCon
+   #     - ampDepth
 	#   o sec04 sub04 cat13:
-   #     - edDist
+   #     - tbCon
 	#   o sec04 sub04 cat14:
+   #     - edDist
+	#   o sec04 sub04 cat15:
    #     - rmHomo
    #******************************************************
 
@@ -1711,6 +1852,34 @@ do # Loop: get dependencies
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
    # Sec04 Sub04 Cat04:
+   #   - seqST
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "gzSeqST" ]; then
+   # Else If: gzSeqST library
+      if [ "$gzSeqSTBl" = "" ]; then
+         cmdStr="$cmdStr$newLineStr$gzSeqSTStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}${gzSeqSTObj}";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$gzSeqSTObj";
+         fi
+
+         gzSeqSTBl=1;
+
+         depStr="$depStr $gzSeqSTDep";
+      fi
+
+      if [ "$genBioBl" -lt 1 ]; then
+         genBioBl=1;
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
+      fi
+   # Else If: gzSeqST library
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub04 Cat05:
    #   - kmerCnt
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1737,7 +1906,7 @@ do # Loop: get dependencies
    # Else If: kmerCnt library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat05:
+   # Sec04 Sub04 Cat06:
    #   - geneCoord
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1759,7 +1928,7 @@ do # Loop: get dependencies
    # Else If: geneCoord library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat06:
+   # Sec04 Sub04 Cat07:
    #   - samEntry
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1786,7 +1955,7 @@ do # Loop: get dependencies
    # Else If: samEntry library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat07:
+   # Sec04 Sub04 Cat08:
    #   - adjCoords
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1813,7 +1982,7 @@ do # Loop: get dependencies
    # Else If: adjCoords library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat08:
+   # Sec04 Sub04 Cat09:
    #   - cigToEqx
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1841,7 +2010,7 @@ do # Loop: get dependencies
    # Else If: cigToEqx library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat09:
+   # Sec04 Sub04 Cat10:
    #   - maskPrim
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1868,7 +2037,7 @@ do # Loop: get dependencies
    # Else If: maskPrim library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat10:
+   # Sec04 Sub04 Cat11:
    #   - trimSam
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1896,7 +2065,7 @@ do # Loop: get dependencies
    # Else If: trimSam library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat11:
+   # Sec04 Sub04 Cat12:
    #   - ampDepth
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1923,7 +2092,7 @@ do # Loop: get dependencies
    # If: ampDepth library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat12:
+   # Sec04 Sub04 Cat13:
    #   - tbCon
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1951,7 +2120,7 @@ do # Loop: get dependencies
    # If: tbCon library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat13:
+   # Sec04 Sub04 Cat14:
    #   - edDist
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1978,7 +2147,7 @@ do # Loop: get dependencies
    # If: edDist library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat14:
+   # Sec04 Sub04 Cat15:
    #   - rmHomo
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2442,6 +2611,17 @@ do # Loop: get dependencies
       # pop off first arugment
    depStr="${depStr#"${depStr%%[![:space:]]*}"}";
       # clear leading spaces
+
+   if [ "$libStr" = "" ];
+   then # If: no lib in path
+      if [ "$depStr" = "" ];
+      then # Check if have more dependencies
+         break; # finished
+      else
+         libStr="${depStr%% *}"; # reget argument
+      fi # Check if have more dependencies
+       
+   fi # If: no lib in path
 done
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

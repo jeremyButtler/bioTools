@@ -46,6 +46,7 @@
 ! Hidden libraries:
 !   o .c  #include "../generalLib/ulCp.h"
 !   o .c  #include "../generalLib/strAry.h"
+!   o .c  #include "../generalLib/fileFun.h"
 !   o .h  #include "../generalBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -58,10 +59,6 @@
 | Input:
 |   - samSTPtr:
 |     o pointer to a sam entry struct with first header
-|   - buffStrPtr:
-|     o pointer to buffer to use in read sam file headers
-|   - lenBuffULPtr:
-|     o pointer to unsigned long with length of buffStrPtr
 |   - samFILE:
 |     o sam file to get header from
 |   - outFILE:
@@ -81,8 +78,6 @@
 signed char
 psamPg_samToAln(
    struct samEntry *samSTPtr,
-   signed char **buffStrPtr,
-   unsigned long *lenBuffULPtr,
    void *samFILE,
    void *outFILE
 ){
@@ -107,13 +102,7 @@ psamPg_samToAln(
          );
       } /*If: is the program entry*/
 
-      errSC =
-         get_samEntry(
-            samSTPtr,
-            buffStrPtr,
-            lenBuffULPtr,
-            samFILE
-         ); /*get next samfile entry*/
+      errSC = get_samEntry(samSTPtr, samFILE);
    } /*Loop: read in sam file entries*/
 
    if(errSC == def_EOF_samEntry)
@@ -228,14 +217,14 @@ phead_samToAln(
    } /*Else: no masking at start*/
 
    if(
-         samSTPtr->cigTypeStr[samSTPtr->lenCigUI - 1]=='S'
-      || samSTPtr->cigTypeStr[samSTPtr->lenCigUI - 1]=='H'
+         samSTPtr->cigTypeStr[samSTPtr->cigLenUI - 1]=='S'
+      || samSTPtr->cigTypeStr[samSTPtr->cigLenUI - 1]=='H'
    ){ /*If; masking at end*/
       fprintf(
          (FILE *) outFILE,
          " %u%s",
          samSTPtr->readLenUI
-          - samSTPtr->cigArySI[samSTPtr->lenCigUI - 1],
+          - samSTPtr->cigArySI[samSTPtr->cigLenUI - 1],
          str_endLine
       );
    } /*If; masking at end*/
@@ -279,35 +268,35 @@ phead_samToAln(
    fprintf(
       (FILE *) outFILE,
       "# matches: %u%s",
-      samSTPtr->numMatchUI,
+      samSTPtr->matchCntUI,
       str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
       "# snps: %u%s",
-      samSTPtr->numSnpUI,
+      samSTPtr->snpCntUI,
       str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
       "# insertions: %u%s",
-      samSTPtr->numInsUI,
+      samSTPtr->insCntUI,
       str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
       "# deletions: %u%s",
-      samSTPtr->numDelUI,
+      samSTPtr->delCntUI,
       str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
       "# masked: %u%s",
-      samSTPtr->numMaskUI,
+      samSTPtr->maskCntUI,
       str_endLine
    );
 
@@ -321,9 +310,9 @@ phead_samToAln(
    fprintf(
       (FILE *) outFILE,
       "# edit distance: %u%s",
-       samSTPtr->numSnpUI
-         + samSTPtr->numInsUI
-         + samSTPtr->numDelUI,
+       samSTPtr->snpCntUI
+         + samSTPtr->insCntUI
+         + samSTPtr->delCntUI,
        str_endLine
    );
 
@@ -677,7 +666,7 @@ paln_samToAln(
       lenBuffUL = setSTPtr->lineWrapUI;
 
    else
-      lenBuffUL= samSTPtr->readLenUI + refSTPtr->lenSeqUL;
+      lenBuffUL= samSTPtr->readLenUI + refSTPtr->seqLenSL;
 
    qryHeapStr =
       calloc(
@@ -985,7 +974,7 @@ paln_samToAln(
    ulCig = (samSTPtr->cigTypeStr[0] == 'S');
    diffUL = (unsigned long) samSTPtr->cigArySI[ulCig];
 
-   while(ulCig < samSTPtr->lenCigUI)
+   while(ulCig < samSTPtr->cigLenUI)
    { /*Loop: print out alignment*/
 
       /**************************************************\

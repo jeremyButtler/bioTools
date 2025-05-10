@@ -51,6 +51,7 @@
 !   o .c  #include "../genLib/numToStr.h"
 !   o .c  #include "../genLib/shellSort.h"
 !   o .c  #include "../genLib/strAry.h"
+!   o .c  #include "../genAln/fileFun.h"
 !   o .c  #include "../genAln/indexToCoord.h"
 !   o .h  #include "../genLib/genMath.h" (not using .c)
 !   o .h  #include "../genBio/ntTo2Bit.h"
@@ -962,7 +963,6 @@ input_mainNeedle(
 | Output:
 |   - prints alignment as sam file
 \-------------------------------------------------------*/
-
 int
 main(
    int numArgsSI,
@@ -1007,8 +1007,6 @@ main(
    struct alnSet setStackST;
 
    struct samEntry samStackST;
-   signed char *buffHeapStr = 0;
-   unsigned long lenBuffUL = 0;
 
    struct kmerCnt kmerStackST;
    unsigned char lenKmerUC = def_lenKmer_mainNeedle;
@@ -1088,7 +1086,7 @@ main(
    kmerHeapArySI =
       malloc((maxKmerUI + 1) * sizeof(signed int));
 
-   if( setup_samEntry(&samStackST) )
+   if(setup_samEntry(&samStackST) )
       goto memErr_main_sec04_sub02;
 
    if(! kmerHeapArySI)
@@ -1127,11 +1125,7 @@ main(
       goto fileErr_main_sec04_sub03;
    } /*If: no reference file input*/
 
-   seqFILE =
-      fopen(
-         (char *) refFileStr,
-         "r"
-      );
+   seqFILE = fopen((char *) refFileStr, "r");
 
    if(! seqFILE)
    { /*If: file error*/
@@ -1157,33 +1151,24 @@ main(
    +   - get reference sequence
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   setup_kmerCnt(
-      &kmerStackST,
-      lenKmerUC
-   );
+   if(setup_kmerCnt(&kmerStackST, lenKmerUC))
+   { /*If: had memory error*/
+      fprintf(
+         stderr,
+         "memory error in setup%s",
+         str_endLine
+      );
+      goto memErr_main_sec04_sub02;
+   } /*If: had memory error*/
 
+   /*get reference sequence*/
    if(refTypeSC == def_fqFile_mainNeedle)
-   { /*If: reading from fastq file*/
-      errSC =
-         getFqSeq_seqST(
-             seqFILE,
-             kmerStackST.forSeqST
-         ); /*read in reference sequence*/
-   } /*If: reading from fastq file*/
-
+      errSC = getFq_seqST(seqFILE, kmerStackST.forSeqST);
    else
-   { /*Else: from fasta file*/
-      errSC =
-         getFaSeq_seqST(
-             seqFILE,
-             kmerStackST.forSeqST
-         ); /*read in reference sequence*/
-   } /*Else: from fasta file*/
+      errSC = getFa_seqST(seqFILE, kmerStackST.forSeqST);
 
-   if(
-         ! errSC
-      || errSC == def_EOF_seqST
-   ){ /*If: had no problems*/
+   if(! errSC || errSC == def_EOF_seqST)
+   { /*If: had no problems*/
       tmpStr =
          (signed char *) kmerStackST.forSeqST->idStr;
 
@@ -1209,17 +1194,11 @@ main(
    else
    { /*Else: had an error*/
       if(errSC & def_memErr_seqST)
-         fprintf(
-            stderr,
-            "MEMORY ERROR reading"
-         );
+         fprintf(stderr, "MEMORY ERROR reading");
          /*memory errors are same for seqST and kmerCnt*/
 
       else
-         fprintf(
-            stderr,
-            "file error with"
-         );
+         fprintf(stderr, "file error with");
 
       if(refTypeSC == def_fqFile_mainNeedle)
          fprintf(
@@ -1270,11 +1249,7 @@ main(
       goto fileErr_main_sec04_sub03;
    } /*If: no query file input*/
 
-   seqFILE =
-      fopen(
-         (char *) qryFileStr,
-         "r"
-      );
+   seqFILE = fopen((char *) qryFileStr, "r");
 
    if(! seqFILE)
    { /*If: file error*/
@@ -1300,23 +1275,11 @@ main(
    +   - get query sequence
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
+   /*get first query sequence*/
    if(qryTypeSC == def_fqFile_mainNeedle)
-   { /*If: reading from fastq file*/
-      errSC =
-         getFqSeq_seqST(
-             seqFILE,
-             &qryStackST
-         ); /*read in first query sequence*/
-   } /*If: reading from fastq file*/
-
+      errSC = getFq_seqST(seqFILE, &qryStackST);
    else
-   { /*Else: from fasta file*/
-      errSC =
-         getFaSeq_seqST(
-             seqFILE,
-             &qryStackST
-         ); /*read in first query sequence*/
-   } /*Else: from fasta file*/
+      errSC = getFa_seqST(seqFILE, &qryStackST);
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
    + Main Sec02 Sub04 Cat03:
@@ -1328,16 +1291,10 @@ main(
       && errSC != def_EOF_seqST
    ){ /*If: had an error*/
       if(errSC & def_memErr_seqST)
-         fprintf(
-            stderr,
-            "MEMORY ERROR reading"
-         );
+         fprintf(stderr, "MEMORY ERROR reading");
 
       else
-         fprintf(
-            stderr,
-            "file error with"
-         );
+         fprintf(stderr, "file error with");
 
       if(qryTypeSC == def_fqFile_mainNeedle)
          fprintf(
@@ -1371,11 +1328,7 @@ main(
 
    else
    { /*Else: output file input*/
-      outFILE =
-         fopen(
-            (char *) outFileStr,
-            "w"
-         );
+      outFILE = fopen( (char *) outFileStr, "w");
 
       if(! outFILE)
       { /*If: could not open output file*/
@@ -1412,52 +1365,36 @@ main(
    *   - print out header (sam file)
    \*****************************************************/
 
-   if(outFILE)
-   { /*If: printing to sam file*/
-      fprintf(
-         outFILE,
-         "@HD\tVN:1.6\tSO:unsorted\tGO:none%s",
-         str_endLine
-      );
+   fprintf(
+      outFILE,
+      "@HD\tVN:1.6\tSO:unsorted\tGO:none%s",
+      str_endLine
+   );
 
-      fprintf(
-         outFILE,
-         "@SQ\tSN:%s\tLN:%lu%s",
-         kmerStackST.forSeqST->idStr + 1, /*get off >*/
-         kmerStackST.forSeqST->lenSeqUL,
-         str_endLine
-      );
+   fprintf(
+      outFILE,
+      "@SQ\tSN:%s\tLN:%lu%s",
+      kmerStackST.forSeqST->idStr + 1, /*get off >*/
+      kmerStackST.forSeqST->seqLenSL,
+      str_endLine
+   );
 
-      fprintf(
-        outFILE,
-        "@PG\tID:%s\tVN:bioTools_%i-%02i-%02i\t%s",
-        "alnNeedle",
-        def_year_bioTools,
-        def_month_bioTools,
-        def_day_bioTools,
-        "alnNeedle"
-     ); /*print out first part of program id tag*/
+   fprintf(
+     outFILE,
+     "@PG\tID:%s\tVN:bioTools_%i-%02i-%02i\t%s",
+     "alnNeedle",
+     def_year_bioTools,
+     def_month_bioTools,
+     def_day_bioTools,
+     "alnNeedle"
+   ); /*print out first part of program id tag*/
 
-      for(
-         seqSL = 1;
-         seqSL < numArgsSI;
-         ++seqSL
-      ){ /*Loop: print user arguments*/
-         fprintf(
-            outFILE,
-            " %s",
-            argAryStr[seqSL]
-         );
-      } /*Loop: print user arguments*/
+   for(seqSL = 1; seqSL < numArgsSI; ++seqSL)
+     fprintf(outFILE, " %s", argAryStr[seqSL]);
+     /*Loop: print user arguments*/
 
-      seqSL = 0;
-
-      fprintf(
-         outFILE,
-         "%s",
-         str_endLine
-      );
-   } /*If: printing to sam file*/
+   seqSL = 0;
+   fprintf(outFILE, "%s", str_endLine);
 
    /*****************************************************\
    * Main Sec03 Sub02:
@@ -1557,14 +1494,7 @@ main(
       *   - print alignment
       \**************************************************/
 
-      errSC =
-         p_samEntry(
-            &samStackST,
-            &buffHeapStr,
-            &lenBuffUL,
-            0,
-            outFILE
-         );
+      p_samEntry(&samStackST, 0, outFILE);
 
       if(errSC)
       { /*If: memory error*/
@@ -1583,23 +1513,11 @@ main(
       *   - get next query sequence
       \**************************************************/
 
+      /*read in next query sequence*/
       if(qryTypeSC == def_fqFile_mainNeedle)
-      { /*If: reading from fastq file*/
-         errSC =
-            getFqSeq_seqST(
-                seqFILE,
-                &qryStackST
-            ); /*read in next query sequence*/
-      } /*If: reading from fastq file*/
-
+         errSC = getFq_seqST( seqFILE, &qryStackST);
       else
-      { /*Else: from fasta file*/
-         errSC =
-            getFaSeq_seqST(
-                seqFILE,
-                &qryStackST
-            ); /*read in next query sequence*/
-      } /*Else: from fasta file*/
+         errSC = getFa_seqST(seqFILE, &qryStackST);
    } while(! errSC);
    /*Loop: align all query sequences*/
 
@@ -1686,9 +1604,6 @@ main(
       freeStack_dirMatrix(&matrixStackST);
       freeStack_alnSet(&setStackST);
       freeStack_samEntry(&samStackST);
-
-      free(buffHeapStr);
-      buffHeapStr = 0;
 
       free(kmerHeapArySI);
       kmerHeapArySI = 0;

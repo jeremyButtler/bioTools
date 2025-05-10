@@ -31,6 +31,8 @@
 
 #include <stdio.h>
 
+#include "../genLib/fileFun.h"
+
 #include "../genBio/samEntry.h"
 #include "../genBio/tbCon.h"
 #include "../genBio/edDist.h"
@@ -40,7 +42,6 @@
 /*.h files only (no .c files)*/
 #include "../genLib/endLine.h"
 #include "../genLib/genMath.h" /*only using .h min macro*/
-
 #include "../genBio/tbConDefs.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
@@ -192,12 +193,7 @@ getBestRead_edClust(
 
 
    ret_fun01_sec04:;
-      fseek(
-         samFILE,
-         0,
-         SEEK_SET
-      );
-
+      fseek(samFILE, 0, SEEK_SET);
       return bestIndexSL;
 } /*getBestRead_edClust*/
 
@@ -295,11 +291,7 @@ depthProf_edClust(
          goto memErr_fun02_sec04;
    } /*If: need more memory*/
 
-   fseek(
-      samFILE,
-      0,
-      SEEK_SET
-   );
+   fseek(samFILE, 0, SEEK_SET);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun02 Sec03:
@@ -1070,7 +1062,8 @@ cluster_edClust(
    ^   - set up index array (and score)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   numReadsSL = getNumLines_clustST(samFILE);
+   numReadsSL = lineCnt_fileFun(samFILE, &bestIndexSL);
+   bestIndexSL = 0;
 
    if(! numReadsSL)
       goto fileErr_fun05_sec07_sub03;
@@ -1081,7 +1074,8 @@ cluster_edClust(
          clustSetSTPtr,  /*has settings for indexing*/
          samSTPtr,       /*for reading sam file*/
          buffStrPtr,     /*for reading sam file*/
-         lenBuffULPtr,   /*length of buffStrPtr*/
+         (signed long *) lenBuffULPtr,
+            /*length of buffStrPtr*/
          samFILE 
       );
 

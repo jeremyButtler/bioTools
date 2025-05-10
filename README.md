@@ -54,14 +54,9 @@ fi
 
 cd ~/Downloads;
 git clone https://github.com/jeremybuttler/bioTools;
-
 cd bioTools;
-
-for strMk in */mkfile.unix;
-do
-   make -f $(basename "$strMk") -C $(dirname "$strMk");
-   sudo make -f $(basename "$strMk") -C $(dirname "$strMk") install;
-done
+make -f mkfile.unix;
+sudo make -f mkfile.unix install;
 ```
 
 For individual programs:
@@ -84,8 +79,21 @@ sudo make -f mkfile.unix install;
 
 ## Windows
 
-Need to test global makefile first or figure out shell
-  commands. You will have to install these individually.
+Not tested yet, but here is the general idea. You will
+  need to install the visual studio build tools. Then open
+  a developer terminal.
+
+```
+cd "%HOMEPATH\Downloads\bioTools"
+nmake /F mkfile.win
+nmake PREFIX=bin\win /F mkfile.win
+```
+
+This should put all exe files in the `bin\win` directory.
+  Move them to were they need to be.
+
+These are command line programs, so you will need a
+  terminal to run them.
 
 # Scripts
 
@@ -144,7 +152,7 @@ The programs are built and debugged on Linux and then
   - filtsam (freezeTB):
     - filter sam files by flag, length, median/mean
       q-scores, and coordinates
-      - for coordiantes use `-coords start,end -in-range`
+      - for coordiantes use `-coords start,end`
     - also supports read soft mask removal
     - samtools view nock off, with an odd twist
     - works on linux and plan9
@@ -263,7 +271,30 @@ My general libraries.
 
 # Updates:
 
-- 2025-04-28
+- 2025-05-09:
+  - fixed bug in fastq read part of primFind + push all
+    changes since 2025-04-30
+- 2025-05-08:
+  - fixed alignment output errors in mapRead
+  - added trim start and end options to filtsam
+- 2025-05-06:
+  - samEntry and seqST variables were changed
+  - samEntry uses small, bufferd read in system now
+  - filtSam can now filter by reference
+  - filtSam now uses `-in-range` by default
+  - add fileFun library to reduce potential OS line break
+    issues
+- 2025-04-30:
+  - ../genLib/fileFun now has file reading functions
+  - fixed error were last charcter in extra entry in
+    sam files was removed
+  - also added fileFun functions to multiple files
+- 2025-04-29:
+  - fixed segfault bug in kmerFind, might have sped it up
+    to
+  - added in fileFun.c file for getting number of lines
+    in a file
+- 2025-04-28:
   - added gz file support to mapRead and removed the `-fq`
     option
   - added `get_seqST` function to ../genBio/seqST.c for
@@ -359,6 +390,9 @@ My general libraries.
 4. add using_this_code guides (using in C code) for
    programs and libraries
    - less likely to happen, lot of work for shoddy guides
+5. add SIMD support to mapRead
+   - likely will happen once get freezeTB to more polished
+     state
 
 # Thanks
 

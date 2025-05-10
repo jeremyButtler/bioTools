@@ -36,11 +36,8 @@
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden Libraries:
-!   - .c  #include "../genLib/inflate.h"
-!   - .c  #include "../genLib/checkSum.h"
-!   - .c  #include "../genLib/endin.h"
+!   - .c  #include "../genLib/fileFun.h"
 !   - .c  #include "../genLib/ulCp.h"
-!   - .c  #include "../genLib/genMath.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*--------------------------------------------------------\
@@ -234,6 +231,9 @@ int main(
             goto unkownInput_main_sec04; /*no idea*/
       } /*If: used two dashes*/
 
+      else if(! argAryStr[1][1])
+         ; /*uer wants stdin input*/
+
       else if(argAryStr[1][1] == 'h')
       { /*Else If: user likely requested help message*/
          phelp_revCmp(stdout);
@@ -320,7 +320,7 @@ int main(
       } /*Else: need to open the file*/
 
       blank_seqST(&seqStackST);
-      errSC = getFaSeq_seqST(inFILE, &seqStackST);
+      errSC = getFa_seqST(inFILE, &seqStackST);
       numSeqSI = 0;
 
       if(errSC == def_memErr_seqST)
@@ -344,7 +344,7 @@ int main(
          ); /*Print out the sequence*/
 
          blank_seqST(&seqStackST);
-         errSC = getFaSeq_seqST(inFILE, &seqStackST);
+         errSC = getFa_seqST(inFILE, &seqStackST);
       } /*LoopCheck user input*/
 
       if(errSC == def_memErr_seqST)

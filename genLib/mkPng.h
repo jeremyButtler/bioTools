@@ -8,12 +8,6 @@
 '     and arise from different goals
 '   o .h st01: st_mkPng
 '     - has png image for mkPng
-'   o .h st02: set_mkPng
-'     - has print settings for st_mkPng struct
-'     - really here for future use
-'   o .c tbl01: crc32_mkPng
-'     - crc32 lookup table
-'     - copied from misc0110's libattpng repository
 '   o fun01: blank_st_mkPng
 '     - blanks the pixel matrix in a st_mkPng struct
 '   o .c fun02 calcDepth_st_mkPng
@@ -38,15 +32,6 @@
 '     - adds a single pixel to a st_mkPng image
 '   o fun12: addBar_st_mkPng
 '     - adds a bar to a st_mkPng image
-'   o .c fun13: crc32_mkPng
-'     - find new crc value after adding next byte
-'     - copied from misc0110's libattpng repository, I
-'       really do not know whats going on here
-'   o fun14: strToCrc32_mkPng
-'     - find new crc value for string
-'   o .c fun15: bigendInt_mkPng
-'     - converts unit to bigendin
-'     - copied from misc0110's libattpng repository
 '   o .c fun16: addUint_mkPng
 '     - adds a uint to a png buffer
 '   o .c fun17: addIhdr_st_mkPng
@@ -80,11 +65,16 @@
 #define def_width_mkPng 960
 #define def_height_mkPng 720
 
-/*so always have maximum value for cpu*/
-#ifdef PLAN9_64
-   typedef unsigned long long ul_mkPng;
-#else
-   typedef unsigned long ul_mkPng;
+#ifdef NOUL
+   typedef unsigned char ul_mkPng;
+      /*if machine requires int addresses to be even*/
+   #else
+      /*so always have maximum value for cpu*/
+      #ifdef PLAN9_64
+         typedef unsigned long long ul_mkPng;
+      #else
+         typedef unsigned long ul_mkPng;
+      #endif
 #endif
 
 /*this is a trick I use in ulCp to figure out how to
@@ -136,33 +126,7 @@ typedef struct st_mkPng
    unsigned char bluAryUC[def_maxCol_mkPng];/*blue value*/
    unsigned char greAryUC[def_maxCol_mkPng];/*green valu*/
    unsigned char numColUC; /*number colors in pallete*/
-
-   /*headers to print out*/
-   unsigned char pngStr[16];     /*png header*/
-   unsigned char lenPngUC;       /*png header length*/
-
-   unsigned char ihdrStr[32];    /*IDHR header*/
-   unsigned char lenIhdrUC;      /*length of ihdr header*/
-
-   unsigned char palleteStr[32 + def_maxCol_mkPng * 3];
-      /*pallete header*/
-   signed short lenPalSS;        /*length of pallete*/
-
-   unsigned char idatStr[32];    /*image header (IDAT)*/
-   unsigned char lenIdatUC;      /*length of IDAT header*/
-
-   unsigned char endStr[16];     /*png end header (IEND)*/
-   unsigned char lenEndUC;       /*lenght of end header*/
 }st_mkPng;
-
-/*-------------------------------------------------------\
-| ST02: set_mkPng
-|   - has print settings for st_mkPng struct
-|   - really here for future use
-\-------------------------------------------------------*/
-typedef struct set_mkPng
-{
-}set_mkPng;
 
 /*-------------------------------------------------------\
 | Fun01: blank_st_mkPng
@@ -331,6 +295,10 @@ freeHeap_st_mkPng(
 | Input:
 |   - pngSTPtr:
 |     o pointer to st_mkPng struct to allocate memory
+|   - widthUS:
+|     o width of png in pixels
+|   - heightUS:
+|     o height of png in pixels
 |   - maxColUC:
 |     o maximum colors plan to be used in color pallete
 |     o use 256 to force 8bit
@@ -346,6 +314,8 @@ freeHeap_st_mkPng(
 signed char
 setup_st_mkPng(
    struct st_mkPng *pngSTPtr,
+   unsigned short widthUS,
+   unsigned short heightUS,
    unsigned char maxColUC
 );
 
@@ -416,7 +386,7 @@ addPixel_st_mkPng(
 |   - heigthSL:
 |     o heigth in pixels of bar
 |   - colUC:
-|     o color (0-4) to assign
+|     o index of color in pallete to assign
 | Output:
 |   - Modifies:
 |     o pixelAryUC in pngSTPtr to have bar
@@ -442,9 +412,6 @@ addBar_st_mkPng(
 | Input:
 |   - pngSTPtr:
 |     o pointer to st_mkPng struct to write to outFILE
-|   - setSTPtr:
-|     o pionter to set_mkPng struct with settings to save
-|       png as (for easier future modifications)
 |   - outFILE:
 |     o pionter to FILE struct to write png to (binary
 |       file ("wb"))
@@ -455,7 +422,6 @@ addBar_st_mkPng(
 void
 print_st_mkPng(
    struct st_mkPng *pngSTPtr,  /*png to print*/
-   struct set_mkPng *setSTPtr, /*print settings*/
    void *outFILE               /*file to print to*/
 );
 

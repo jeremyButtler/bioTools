@@ -12,8 +12,9 @@ genLib=../genLib
 objFiles= \
    $(genClust)/illNano.$O \
    $(genBio)/samEntry.$O \
-   $(genLib)/strAry.$O \
+   $(genLib)/fileFun.$O \
    $(genLib)/ulCp.$O \
+   $(genLib)/strAry.$O \
    $(genLib)/numToStr.$O \
    $(genLib)/base10str.$O \
    mainIllNano.$O
@@ -30,7 +31,8 @@ mainIllNano.$O: \
 			$(coreCFLAGS) $(CFLAGS) mainIllNano.c
 
 $(genClust)/illNano.$O: \
-	$(genClust)/illNano.c $(genClust)/illNano.h \
+	$(genClust)/illNano.c \
+	$(genClust)/illNano.h \
 	$(genBio)/samEntry.$O
 		$(CC) -o $(genClust)/illNano.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
@@ -38,41 +40,53 @@ $(genClust)/illNano.$O: \
 
 
 $(genBio)/samEntry.$O: \
-	$(genBio)/samEntry.c $(genBio)/samEntry.h \
-	$(genLib)/strAry.$O $(genLib)/base10str.$O \
-	$(genLib)/numToStr.$O $(genBio)/ntTo5Bit.h \
+	$(genBio)/samEntry.c 	$(genBio)/samEntry.h \
+	$(genLib)/fileFun.$O \
+	$(genLib)/strAry.$O \
+	$(genLib)/base10str.$O \
+	$(genLib)/numToStr.$O \
+	$(genBio)/ntTo5Bit.h \
 	$(genLib)/endLine.h
 		$(CC) -o $(genBio)/samEntry.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
 			$(genBio)/samEntry.c
 
+$(genLib)/fileFun.$O: \
+	$(genLib)/fileFun.c \
+	$(genLib)/fileFun.h \
+	$(genLib)/ulCp.$O
+		$(CC) -o $(genLib)/fileFun.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/fileFun.c
+
+$(genLib)/ulCp.$O: \
+	$(genLib)/ulCp.c \
+	$(genLib)/ulCp.h
+		$(CC) -o $(genLib)/ulCp.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/ulCp.c
+
 $(genLib)/strAry.$O: \
-	$(genLib)/strAry.c $(genLib)/strAry.h \
+	$(genLib)/strAry.c \
+	$(genLib)/strAry.h \
 	$(genLib)/ulCp.$O
 		$(CC) -o $(genLib)/strAry.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
 			$(genLib)/strAry.c
 
-$(genLib)/ulCp.$O: \
-	$(genLib)/ulCp.c $(genLib)/ulCp.h
-		$(CC) -o $(genLib)/ulCp.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
-			$(genLib)/ulCp.c
-
-
 $(genLib)/numToStr.$O: \
-	$(genLib)/numToStr.c $(genLib)/numToStr.h
+	$(genLib)/numToStr.c \
+	$(genLib)/numToStr.h
 		$(CC) -o $(genLib)/numToStr.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
 			$(genLib)/numToStr.c
 
-
 $(genLib)/base10str.$O: \
-	$(genLib)/base10str.c $(genLib)/base10str.h
+	$(genLib)/base10str.c \
+	$(genLib)/base10str.h
 		$(CC) -o $(genLib)/base10str.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
 			$(genLib)/base10str.c
-
 
 
 

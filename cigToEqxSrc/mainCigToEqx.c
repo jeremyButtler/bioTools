@@ -46,6 +46,7 @@
 !   o .c  #include "../genLib/base10StrToNum.h"
 !   o .c  #include "../genLib/numToStr.h"
 !   o .c  #include "../genLib/strAry.h"
+!   o .c  #include "../genLib/fileFun.h"
 !   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -590,8 +591,6 @@ main(
 
    signed char *tmpStr = 0;
    signed char errSC = 0;
-   signed char *buffHeapStr = 0;
-   unsigned long lenBuffUL = 0;
 
    signed int *cigHeapArySI = 0;
    signed int lenCigSI = 0;
@@ -604,11 +603,15 @@ main(
    signed long indexSL = 0;   /*index of reference*/
 
    struct samEntry samStackST;
-
    signed char endOfHeadBl = 0;
 
-   signed char *samFileStr = 0; /*For input command reporting*/
-   signed char *refFileStr = 0; /*For input command reporting*/
+   /*for converting cigar entries*/
+   signed char *buffHeapStr = 0;
+   unsigned long lenBuffUL = 0;
+
+   /*for printing cigToEqx input to header*/
+   signed char *samFileStr = 0;
+   signed char *refFileStr = 0;
 
    FILE *samFILE = 0;
    FILE *outFILE = stdout;
@@ -796,13 +799,7 @@ main(
    if(errSC)
       goto err_main_sec05_sub02;
 
-   errSC =
-      get_samEntry(
-         &samStackST,
-         &buffHeapStr,
-         &lenBuffUL,
-         samFILE
-      );
+   errSC = get_samEntry(&samStackST, samFILE);
 
    while(! errSC)
    { /*Loop: convert cigar entries to eqx cigars*/
@@ -812,18 +809,11 @@ main(
       *   - print headers
       \**************************************************/
 
-      if(
-            samStackST.lenExtraUI > 0
-         && samStackST.extraStr[0] == '@'
-      ){ /*If: This is an comment*/
-         p_samEntry(
-            &samStackST,
-            &buffHeapStr,
-            &lenBuffUL,
-            0,          /*print newline at end*/
-            outFILE
-         ); /*Print out the comment*/
-
+      if(samStackST.extraLenUI <= 0)
+         ;
+      else if(samStackST.extraStr[0] == '@')
+      { /*If: This is an comment*/
+         p_samEntry(&samStackST, 0, outFILE);
          goto nextEntry_main_sec04_sub05;
       } /*If: This is an comment*/
 
@@ -848,23 +838,12 @@ main(
             def_day_bioTools
          );
 
-         fprintf(
-            outFILE,
-            " -ref %s",
-            refFileStr
-         );
+         fprintf(outFILE, " -ref %s", refFileStr);
 
          if(nAsSnpBl)
-            fprintf(
-               outFILE,
-               " -n-as-snp"
-            );
-
+            fprintf(outFILE, " -n-as-snp");
          else
-            fprintf(
-               outFILE,
-               " -n-as-match"
-            );
+            fprintf(outFILE, " -n-as-match");
 
          if(samFileStr)
             fprintf(
@@ -958,6 +937,12 @@ main(
             nAsSnpBl
          );
 
+      if(errSC == 1)
+      { /*If: had memory error*/
+         errSC = def_memErr_samEntry;
+         break;
+      } /*If: had memory error*/
+
       if(lenBuffUL < (unsigned long) lenCigSI)
          lenBuffUL = (unsigned long) lenCigSI;
 
@@ -966,23 +951,11 @@ main(
       *   - print entry if keeping and get next entry
       \**************************************************/
 
-      p_samEntry(
-         &samStackST,
-         &buffHeapStr,
-         &lenBuffUL,
-         0,          /*add newline to end*/
-         outFILE
-      ); /*Print out the comment*/
+      if(! errSC)
+         p_samEntry(&samStackST, 0, outFILE);
 
       nextEntry_main_sec04_sub05:;
-
-      errSC =
-         get_samEntry(
-            &samStackST,
-            &buffHeapStr,
-            &lenBuffUL,
-            samFILE
-         );
+         errSC = get_samEntry(&samStackST, samFILE);
    } /*Loop: convert cigar entries to eqx cigars*/
 
    /*****************************************************\
@@ -1037,34 +1010,30 @@ main(
 
    cleanUp_main_sec05_sub03:;
 
-   if(buffHeapStr)
-      free(buffHeapStr);
+      if(buffHeapStr)
+         free(buffHeapStr);
+      buffHeapStr = 0;
 
-   buffHeapStr = 0;
+      if(cigHeapArySI)
+         free(cigHeapArySI);
+      cigHeapArySI = 0;
 
-   if(cigHeapArySI)
-      free(cigHeapArySI);
+      if(outFILE && outFILE != stdout)
+         fclose(outFILE);
+      outFILE = 0;
 
-   cigHeapArySI = 0;
+      if(samFILE && samFILE != stdin)
+         fclose(samFILE);
+      samFILE = 0;
 
-   if(outFILE && outFILE != stdout)
-      fclose(outFILE);
+      if(refHeapAryST)
+         freeHeapAry_seqST(
+            refHeapAryST,
+            sizeRefSL
+         );
+      refHeapAryST = 0;
 
-   outFILE = 0;
+      freeStack_samEntry(&samStackST);
 
-   if(samFILE && samFILE != stdin)
-      fclose(samFILE);
-
-   samFILE = 0;
-
-   if(refHeapAryST)
-      freeHeapAry_seqST(
-         refHeapAryST,
-         sizeRefSL
-      );
-   refHeapAryST = 0;
-
-   freeStack_samEntry(&samStackST);
-
-   return(errSC);
+      return(errSC);
 } /*main*/

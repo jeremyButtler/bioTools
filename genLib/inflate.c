@@ -52,9 +52,12 @@
 '     - copies bytes from file_inflate struct a buffer
 '   o fun23: get_inflate
 '     - inflate blocks until have required input
-'   o fun24: next_file_inflate
+'   o fun25: unget_file_inflate
+'     - add one character back to the buffer; only call
+'       once per read
+'   o fun26: next_file_inflate
 '     - move to next deflate/gz entry in the file
-'   o fun25: add_file_inflate
+'   o fun27: add_file_inflate
 '     - decompresses zip data
 '   o license:
 '     - licensing for this code (public domain / mit)
@@ -1927,6 +1930,8 @@ cpBytes_inflate(
 |   - bytesSL:
 |     o maximum bytes to get
 |   - endBl:
+|     o 8: skip buffer grab step (forces refill if no
+|          buffPosSL is one off buffLenSL)
 |     o 4: have two extra bytes at end of buffer for line
 |          breaks (only used if line breaks)
 |     o 2: copy until have full block
@@ -2004,10 +2009,11 @@ get_inflate(
    *   - if user wanted not bytes or need more bytes
    \*****************************************************/
 
-   if(bytesSL <= 0)
+   if( bytesSL <= 0)
    { /*If: not bytes to copy*/
-      outStr[0] = '\0';
-      return 0; /*user wanted no bytes*/
+      outStr[0] = '\0'; /*user wanted no bytes*/
+      if(! (endBl & 8) )
+         return 0; /*not refilling on edge case*/
    } /*If: not bytes to copy*/
 
 
@@ -2021,6 +2027,8 @@ get_inflate(
    *   - copy uncopied bytes to buffer
    \*****************************************************/
 
+   else if(endBl & 8)
+      ;
    else if(fileSTPtr->buffPosUS != fileSTPtr->buffLenUS)
    { /*Else If: have bytes to copy*/
       copyBytes_fun23_sec02_sub01:;
@@ -2067,7 +2075,7 @@ get_inflate(
             goto noErr_fun23_sec04; /*hit end of line*/
          else if(lineBl && outStr[cpLenSL - 1] == '\r')
             goto noErr_fun23_sec04; /*hit end of line*/
-         else if(bytesSL < 2)
+         else if( bytesSL == 1 && ! (endBl & 4) )
             goto noErr_fun23_sec04; /*buffer is full*/
          else if(
             fileSTPtr->blockFlagSC != def_noBlock_inflate
@@ -2083,8 +2091,15 @@ get_inflate(
          goto noErr_fun23_sec04; /*hit end of line*/
       else if(lineBl && outStr[cpLenSL - 1] == '\r')
          goto noErr_fun23_sec04; /*hit end of line*/
-      else if(bytesSL < 2)
+      else if(! bytesSL)
          goto noErr_fun23_sec04; /*buffer is full*/
+      else if(bytesSL >= 2)
+         ; /*grab more bytes*/
+      else if(endBl & 4)
+         ;
+      else
+         goto noErr_fun23_sec04;
+         /*not enough room to ensure got line ending*/
       /*else; grab more bytes*/
    } /*Else If: have bytes to copy*/
 
@@ -2295,7 +2310,166 @@ get_inflate(
 } /*get_inflate*/
 
 /*-------------------------------------------------------\
-| Fun24: next_file_inflate
+| Fun24: getc_file_inflate
+|   - get one charater or one line break (two characters)
+|     from file
+| Input:
+|   - fileSTPtr:
+|     o file_inflate struct pointer with buffer to getc
+|   - getArySC:
+|     o c-string (size 3) to hold character or line break
+|       with null at end
+|       * for non-line breaks 1 byte + null byte = 2 bytes
+|       * line break 1-2 bytes (OS) + null byte = 3 bytes
+| Output:
+|   - Modifies:
+|     o buffStr in fileSTPtr to be moved one character or
+|       one break
+|     o buffPosSL in fileSTPtr to be one character
+|       or break forward
+|   - Returns:
+|     o number characters in getArySC
+|     o def_eof_inflate * -1 for end of final block
+|       * this is not file EOF, just decompress EOF
+|     o def_memErr_inflate * -1 for memory errors
+|     o def_badSymbol_inflate * -1 for bad symbol in zip
+|       file
+|     o def_badBlock_inflate * -1 for unrecognized blocks
+|     o def_eofErr_inflate * -1 for early EOF
+\----------:--------------------------------------------*/
+signed char
+getc_file_inflate(
+   struct file_inflate *fileSTPtr,
+   signed char getArySC[]
+){
+   signed char errSC = 0;
+
+   if(fileSTPtr->buffPosUS > fileSTPtr->buffLenUS) ;
+
+   else if(
+      fileSTPtr->buffPosUS > fileSTPtr->buffLenUS - 1
+   ){ /*Else If: need to grab more bytes*/
+      get_inflate(fileSTPtr, 0, 8, getArySC, &errSC);
+
+      if(errSC)
+         return errSC * -1;
+   }  /*Else If: need to grab more bytes*/
+
+   if(fileSTPtr->binBl)
+   { /*If: reading binary data*/
+      errSC = 1;
+      getArySC[0] =
+         fileSTPtr->buffStr[fileSTPtr->buffPosUS];
+
+      if(fileSTPtr->buffPosUS >= fileSTPtr->buffSizeUS)
+         fileSTPtr->buffPosUS = 0;
+      else
+         ++fileSTPtr->buffPosUS;
+   } /*If: reading binary data*/
+
+   else if(
+      fileSTPtr->buffStr[fileSTPtr->buffPosUS] == '\n'
+   ){ /*Else If: have line break*/
+      if(fileSTPtr->buffPosUS >= fileSTPtr->buffSizeUS)
+         fileSTPtr->buffPosUS = 0;
+      else
+         ++fileSTPtr->buffPosUS;
+
+      if(fileSTPtr->buffStr[fileSTPtr->buffPosUS] == '\r')
+      { /*If: have a two line break ending*/
+         if(fileSTPtr->buffPosUS >= fileSTPtr->buffSizeUS)
+            fileSTPtr->buffPosUS = 0;
+         else
+            ++fileSTPtr->buffPosUS;
+      } /*If: have a two line break ending*/
+
+      getArySC[0] = str_endLine[0];
+      ++errSC;
+
+      if(str_endLine[1])
+      { /*If: using 2 character new line line break*/
+         ++errSC;
+         getArySC[1] = str_endLine[1];
+         getArySC[2] = 0;
+      } /*If: using 2 character new line line break*/
+
+      else
+         getArySC[1] = 0;
+   } /*Else If: have line break*/
+
+   else if(
+      fileSTPtr->buffStr[fileSTPtr->buffPosUS] == '\r'
+   ){ /*Else If: have carriage return line break*/
+      if(fileSTPtr->buffPosUS >= fileSTPtr->buffSizeUS)
+         fileSTPtr->buffPosUS = 0;
+      else
+         ++fileSTPtr->buffPosUS;
+
+      if(fileSTPtr->buffStr[fileSTPtr->buffPosUS] == '\n')
+      { /*If: have a two line break ending*/
+         if(fileSTPtr->buffPosUS >= fileSTPtr->buffSizeUS)
+            fileSTPtr->buffPosUS = 0;
+         else
+            ++fileSTPtr->buffPosUS;
+      } /*If: have a two line break ending*/
+
+      getArySC[0] = str_endLine[0];
+      ++errSC;
+
+      if(str_endLine[1])
+      { /*If: using 2 character line break*/
+         ++errSC;
+         getArySC[1] = str_endLine[1];
+         getArySC[2] = 0;
+      } /*If: using 2 character line break*/
+
+      else
+         getArySC[1] = 0;
+   }  /*Else If: have carriage return line break*/
+
+   else
+   { /*Else: non-line break character*/
+      errSC = 1;
+      getArySC[0] =
+         fileSTPtr->buffStr[fileSTPtr->buffPosUS];
+      getArySC[1] = 0;
+
+      if(fileSTPtr->buffPosUS >= fileSTPtr->buffSizeUS)
+         fileSTPtr->buffPosUS = 0;
+      else
+         ++fileSTPtr->buffPosUS;
+   } /*Else: non-line break character*/
+
+   return errSC;
+} /*getc_file_inflate*/
+
+/*-------------------------------------------------------\
+| Fun25: unget_file_inflate
+|   - add one character back to the buffer; only call once
+|     per read
+| Input:
+|   - fileSTPtr:
+|     o file_inflate struct pointer with buffer to unget
+|   - ungetSC:
+|     o character to unget
+| Output:
+|   - Modifies:
+|     o buffStr in fileSTPtr to have ungetSC
+|     o buffPosSL in fileSTPtr to be one character back
+\-------------------------------------------------------*/
+void
+unget_file_inflate(
+   struct file_inflate *fileSTPtr,
+   signed char ungetSC
+){
+   if(! fileSTPtr->buffPosUS)
+      fileSTPtr->buffPosUS = fileSTPtr->buffSizeUS - 1;
+   --fileSTPtr->buffPosUS;
+   fileSTPtr->buffStr[fileSTPtr->buffPosUS] = ungetSC;
+} /*unget_file_inflate*/
+
+/*-------------------------------------------------------\
+| Fun26: next_file_inflate
 |   - move to next deflate/gz entry in the file
 | Input:
 |   - fileSTPtr:
@@ -2328,22 +2502,22 @@ next_file_inflate(
    signed char *firstBytesArySC,   /*1st 2 bytes in file*/
    signed char newBl               /*1: first time*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun24 TOC:
+   ' Fun26 TOC:
    '   - move to next deflate/gz entry in the file
-   '   o fun24 sec01:
+   '   o fun26 sec01:
    '     - variable declarations
-   '   o fun24 sec02:
+   '   o fun26 sec02:
    '     - get past footers for deflate and gz
-   '   o fun24 sec03:
+   '   o fun26 sec03:
    '     - get headers
-   '   o fun24 sec04:
+   '   o fun26 sec04:
    '     - get and check CINo fO block (byte) & checksum
-   '   o fun24 sec05:
+   '   o fun26 sec05:
    '     - return result
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun24 Sec01:
+   ^ Fun26 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -2365,18 +2539,18 @@ next_file_inflate(
    #endif
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun24 Sec02:
+   ^ Fun26 Sec02:
    ^   - get past footers for deflate and gz
-   ^   o fun24 sec02 sub01:
+   ^   o fun26 sec02 sub01:
    ^     - gz format; get ending head
-   ^   o fun24 sec02 sub02:
+   ^   o fun26 sec02 sub02:
    ^     - zlib format; get ending head
-   ^   o fun24 sec02 sub03:
+   ^   o fun26 sec02 sub03:
    ^     - all formats; check if at end of file
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun24 Sec02 Sub01:
+   * Fun26 Sec02 Sub01:
    *   - gz format; get ending head
    \*****************************************************/
 
@@ -2392,7 +2566,7 @@ next_file_inflate(
                1,
                fileSTPtr->zipFILE
             )
-         ) goto eofErr_fun24_sec05;
+         ) goto eofErr_fun26_sec05;
 
          if(
             ! fread(
@@ -2401,15 +2575,15 @@ next_file_inflate(
                1,
                fileSTPtr->zipFILE
             )
-         ) goto eofErr_fun24_sec05;
+         ) goto eofErr_fun26_sec05;
 
 
          fileSTPtr->crc32UI =
            crc32Finish_checkSum(fileSTPtr->crc32UI);
          if(crc32UI != fileSTPtr->crc32UI)
-            goto badCheck_fun24_sec05;
+            goto badCheck_fun26_sec05;
          if(fileLenUI != fileSTPtr->lenUI)
-            goto badCheck_fun24_sec05;
+            goto badCheck_fun26_sec05;
 
 
          blank_file_inflate(fileSTPtr, 0);
@@ -2417,7 +2591,7 @@ next_file_inflate(
       } /*If: this was a gzip file*/
 
       /**************************************************\
-      * Fun24 Sec02 Sub02:
+      * Fun26 Sec02 Sub02:
       *   - zlib format; get ending head
       \**************************************************/
 
@@ -2453,26 +2627,26 @@ next_file_inflate(
                ); /*adler 32 checksum for deflate*/
 
          if(errSC == def_eofErr_inflate)
-            goto eofErr_fun24_sec05;
+            goto eofErr_fun26_sec05;
          else if(
             tmpAryUC[0] != fileSTPtr->checkSumAryUC[0]
-         ) goto badCheck_fun24_sec05;
+         ) goto badCheck_fun26_sec05;
          else if(
             tmpAryUC[1] != fileSTPtr->checkSumAryUC[1]
-         ) goto badCheck_fun24_sec05;
+         ) goto badCheck_fun26_sec05;
          else if(
             tmpAryUC[2] != fileSTPtr->checkSumAryUC[2]
-         ) goto badCheck_fun24_sec05;
+         ) goto badCheck_fun26_sec05;
          else if(
             tmpAryUC[3] != fileSTPtr->checkSumAryUC[3]
-         ) goto badCheck_fun24_sec05;
+         ) goto badCheck_fun26_sec05;
 
          blank_file_inflate(fileSTPtr, 0);
          fileSTPtr->typeSC = def_zlib_inflate;
       } /*Else: zlib format*/
 
       /**************************************************\
-      * Fun24 Sec02 Sub03:
+      * Fun26 Sec02 Sub03:
       *   - all formats; check if at end of file
       \**************************************************/
 
@@ -2480,35 +2654,35 @@ next_file_inflate(
          /*get gz header magic number*/
 
       if(errSC == def_eofErr_inflate)
-         goto eof_fun24_sec05;
+         goto eof_fun26_sec05;
       else
          fileSTPtr->zipMaskUC = 8;
    } /*If: need to clear last entry*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun24 Sec03:
+   ^ Fun26 Sec03:
    ^   - get headers
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun24 Sec03 Sub01:
+   * Fun26 Sec03 Sub01:
    *   - get gz header (if relavent)
-   *   o fun24 sec03 sub01 cat01:
+   *   o fun26 sec03 sub01 cat01:
    *     - read in required part of header
-   *   o fun24 sec03 sub01 cat02:
+   *   o fun26 sec03 sub01 cat02:
    *     - get file data type (binary or text)
-   *   o fun24 sec03 sub01 cat03:
+   *   o fun26 sec03 sub01 cat03:
    *     - skip extra entry (if present)
-   *   o fun24 sec03 sub01 cat04:
+   *   o fun26 sec03 sub01 cat04:
    *     - get file name (if present)
-   *   o fun24 sec03 sub01 cat05:
+   *   o fun26 sec03 sub01 cat05:
    *     - skip comment (if present)
-   *   o fun24 sec03 sub01 cat06:
+   *   o fun26 sec03 sub01 cat06:
    *     - skip crc16 (if present)
    \*****************************************************/
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun24 Sec03 Sub01 Cat01:
+   + Fun26 Sec03 Sub01 Cat01:
    +   - read in required part of header
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2528,27 +2702,27 @@ next_file_inflate(
          /*get gz header magic number*/
 
       if(errSC == def_eofErr_inflate)
-         goto eofErr_fun24_sec05;
+         goto eofErr_fun26_sec05;
       else if(tmpAryUC[1] != 0x1f)
-         goto badType_fun24_sec05;
+         goto badType_fun26_sec05;
       else if(tmpAryUC[0] != 0x8b)
-         goto badType_fun24_sec05;
+         goto badType_fun26_sec05;
          /*backwards to account for little endin*/
  
 
       errSC = getBytes_inflate(fileSTPtr, 1, &cmfUC);
          /*get compression method*/
       if(errSC == def_eofErr_inflate)
-         goto eofErr_fun24_sec05;
+         goto eofErr_fun26_sec05;
       else if(cmfUC != 8)
-         goto badType_fun24_sec05;
+         goto badType_fun26_sec05;
 
 
       errSC =
          getBytes_inflate(fileSTPtr, 1, &fileFlagsUC);
          /*get file flags*/
       if(errSC == def_eofErr_inflate)
-         goto eofErr_fun24_sec05;
+         goto eofErr_fun26_sec05;
 
 
       if(
@@ -2558,22 +2732,22 @@ next_file_inflate(
             4,
             fileSTPtr->zipFILE
          ) /*get time stamp*/
-      ) goto eofErr_fun24_sec05;
+      ) goto eofErr_fun26_sec05;
 
       fileSTPtr->zipMaskUC = 8;
 
       errSC = getBytes_inflate(fileSTPtr, 1, &cmfUC);
          /*get compression flags (ignore)*/
       if(errSC == def_eofErr_inflate)
-         goto eofErr_fun24_sec05;
+         goto eofErr_fun26_sec05;
 
       errSC = getBytes_inflate( fileSTPtr, 1, &cmfUC);
          /*get operating system (ignore)*/
       if(errSC == def_eofErr_inflate)
-         goto eofErr_fun24_sec05;
+         goto eofErr_fun26_sec05;
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun24 Sec03 Sub01 Cat02:
+      + Fun26 Sec03 Sub01 Cat02:
       +   - get file data type (binary or text)
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2586,7 +2760,7 @@ next_file_inflate(
          fileSTPtr->binBl = 0;
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun24 Sec03 Sub01 Cat03:
+      + Fun26 Sec03 Sub01 Cat03:
       +   - skip extra entry (if present)
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2599,7 +2773,7 @@ next_file_inflate(
               (unsigned char *) &lenUS
             ); /*get the length of the subfeilds*/
          if(errSC == def_eofErr_inflate)
-            goto eofErr_fun24_sec05;
+            goto eofErr_fun26_sec05;
 
          fileSTPtr->zipMaskUC = 8;
          lenUS = usToLittle_endin(lenUS);
@@ -2615,7 +2789,7 @@ next_file_inflate(
                   lenUS,
                   (FILE *) fileSTPtr->zipFILE
                )
-            ) goto eofErr_fun24_sec05;
+            ) goto eofErr_fun26_sec05;
          } /*If: can read extra in one go*/
 
          else
@@ -2627,7 +2801,7 @@ next_file_inflate(
                   lenUS - def_window_inflate,
                   (FILE *) fileSTPtr->zipFILE
                )
-            ) goto eofErr_fun24_sec05;
+            ) goto eofErr_fun26_sec05;
 
             if(
                ! fread(
@@ -2636,12 +2810,12 @@ next_file_inflate(
                   def_window_inflate,
                   (FILE *) fileSTPtr->zipFILE
                )
-            ) goto eofErr_fun24_sec05;
+            ) goto eofErr_fun26_sec05;
          } /*Else: need two reads to get past extra*/
       } /*If: have extra entry*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun24 Sec03 Sub01 Cat04:
+      + Fun26 Sec03 Sub01 Cat04:
       +   - get file name (if present)
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2665,7 +2839,7 @@ next_file_inflate(
                   1,
                   fileSTPtr->zipFILE
                )
-            ) goto eofErr_fun24_sec05;
+            ) goto eofErr_fun26_sec05;
          }while(fileSTPtr->nameStr[fileSTPtr->nameLenUC]);
            /*Loop: get file name*/
 
@@ -2673,7 +2847,7 @@ next_file_inflate(
       } /*If: have file name in header*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun24 Sec03 Sub01 Cat05:
+      + Fun26 Sec03 Sub01 Cat05:
       +   - skip comment (if present)
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2690,14 +2864,14 @@ next_file_inflate(
                   1,
                   fileSTPtr->zipFILE
                )
-            ) goto eofErr_fun24_sec05;
+            ) goto eofErr_fun26_sec05;
          } while(fileSTPtr->zipByteUC);
 
          fileSTPtr->zipMaskUC = 8;
       } /*If: have comment in header*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun24 Sec03 Sub01 Cat06:
+      + Fun26 Sec03 Sub01 Cat06:
       +   - skip crc16 (if present)
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2706,14 +2880,14 @@ next_file_inflate(
          errSC = getBytes_inflate(fileSTPtr, 2, tmpAryUC);
             /*move past crc16 in header*/
          if(errSC == def_eofErr_inflate)
-            goto eofErr_fun24_sec05;
+            goto eofErr_fun26_sec05;
       } /*If: crc-16 in header*/
 
       /*bits 5 to 7 (32 to 128) are not used (reserved)*/
    } /*If: gz file type*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun24 Sec03:
+   ^ Fun26 Sec03:
    ^   - get and check CMF block (byte)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -2732,21 +2906,21 @@ next_file_inflate(
                &cmfUC
             );
          if(errSC == def_eofErr_inflate)
-            goto eofErr_fun24_sec05;
+            goto eofErr_fun26_sec05;
       } /*Else: need to read in CMF block*/
 
       if( (cmfUC & 0xf) != 8 )
-         goto badType_fun24_sec05;
+         goto badType_fun26_sec05;
 
       winLenSS = ( (signed short) (cmfUC & 0xf0) ) >> 4;
 
       if(winLenSS > 7)
-         goto badWindow_fun24_sec05;
+         goto badWindow_fun26_sec05;
       /*winLenSS = (signed short) 1 << (winLenSS + 8);*/
          /*do not use window length, assume max is used*/
 
       /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-      ^ Fun24 Sec04:
+      ^ Fun26 Sec04:
       ^   - get and check CINFO block (byte) & checksum
       \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -2768,59 +2942,59 @@ next_file_inflate(
                &cinfoUC
             );
          if(errSC == def_eofErr_inflate)
-            goto eofErr_fun24_sec05;
+            goto eofErr_fun26_sec05;
       } /*Else: need to read in CINFO block*/
 
       if( ((cmfUC << 8) + cinfoUC) % 31 )
-         goto badCheck_fun24_sec05;
+         goto badCheck_fun26_sec05;
          /*cmfUC << 8 = cmfUC * 256*/
 
       if(cinfoUC & 0x10)
-         goto dictErr_fun24_sec05;
+         goto dictErr_fun26_sec05;
          /*dictionarys are not supported*/
    } /*Else If: zlib file*/
 
    else
-      goto badType_fun24_sec05; /*no idea file type*/
+      goto badType_fun26_sec05; /*no idea file type*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun24 Sec05:
+   ^ Fun26 Sec05:
    ^   - return result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    errSC = 0;
-   goto ret_fun24_sec05;
+   goto ret_fun26_sec05;
 
-   eof_fun24_sec05:;
+   eof_fun26_sec05:;
       errSC = def_eof_inflate;
-      goto ret_fun24_sec05;
+      goto ret_fun26_sec05;
 
-   badType_fun24_sec05:;
+   badType_fun26_sec05:;
       errSC = def_badType_inflate;
-      goto ret_fun24_sec05;
+      goto ret_fun26_sec05;
 
-   badWindow_fun24_sec05:;
+   badWindow_fun26_sec05:;
       errSC = def_badWindow_inflate;
-      goto ret_fun24_sec05;
+      goto ret_fun26_sec05;
 
-   badCheck_fun24_sec05:;
+   badCheck_fun26_sec05:;
       errSC = def_badCheck_inflate;
-      goto ret_fun24_sec05;
+      goto ret_fun26_sec05;
 
-   dictErr_fun24_sec05:;
+   dictErr_fun26_sec05:;
       errSC = def_dictErr_inflate;
-      goto ret_fun24_sec05;
+      goto ret_fun26_sec05;
 
-   eofErr_fun24_sec05:;
+   eofErr_fun26_sec05:;
       errSC = def_eofErr_inflate;
-      goto ret_fun24_sec05;
+      goto ret_fun26_sec05;
 
-   ret_fun24_sec05:;
+   ret_fun26_sec05:;
       return errSC;
 } /*next_file_inflate*/
 
 /*-------------------------------------------------------\
-| Fun25: add_file_inflate
+| Fun27: add_file_inflate
 |   - adds a file to an file_inflate struct
 | Input:
 |   - zipFILE:
@@ -2865,18 +3039,18 @@ add_file_inflate(
    struct file_inflate *fileSTPtr, /*gets file*/
    signed char *firstBytesArySC    /*1st 2 bytes in file*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun25 TOC:
+   ' Fun27 TOC:
    '   - decompresses zip data
-   '   o fun25 sec01:
+   '   o fun27 sec01:
    '     - variable declarations and add file in
-   '   o fun25 Sec02:
+   '   o fun27 Sec02:
    '     - get first two bytes (identifies if gz file)
-   '   o fun25 sec03:
+   '   o fun27 sec03:
    '     - return result
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun25 Sec01:
+   ^ Fun27 Sec01:
    ^   - variable declarations and add file in
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -2884,13 +3058,13 @@ add_file_inflate(
    unsigned char tmpAryUC[8];
 
    if(! zipFILE)
-      goto fileErr_fun25_sec03;
+      goto fileErr_fun27_sec03;
 
    blank_file_inflate(fileSTPtr, 2);/*will close zipFILE*/
    fileSTPtr->zipFILE = zipFILE;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun25 Sec02:
+   ^ Fun27 Sec02:
    ^   - get first two bytes (identifies if gz file)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -2904,7 +3078,7 @@ add_file_inflate(
    { /*Else: need to get first two bytes from header*/
       errSC = getBytes_inflate(fileSTPtr, 2, tmpAryUC);
       if(errSC == def_eofErr_inflate)
-         goto eofErr_fun25_sec03;
+         goto eofErr_fun27_sec03;
    } /*If: gz file type*/
 
    if(tmpAryUC[1] == 0x1f && tmpAryUC[0] == 0x8b)
@@ -2927,22 +3101,22 @@ add_file_inflate(
       ); /*read in rest of header*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun25 Sec03:
+   ^ Fun27 Sec03:
    ^   - return result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*error type already set*/
-   goto ret_fun25_sec03;
+   goto ret_fun27_sec03;
 
-   fileErr_fun25_sec03:;
+   fileErr_fun27_sec03:;
       errSC = def_fileErr_inflate;
-      goto ret_fun25_sec03;
+      goto ret_fun27_sec03;
 
-   eofErr_fun25_sec03:;
+   eofErr_fun27_sec03:;
       errSC = def_eofErr_inflate;
-      goto ret_fun25_sec03;
+      goto ret_fun27_sec03;
 
-   ret_fun25_sec03:;
+   ret_fun27_sec03:;
       return errSC;
 } /*add_file_inflate*/
 

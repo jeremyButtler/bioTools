@@ -49,6 +49,7 @@
 !   o .c  #include "../genLib/ulCp.h"
 !   o .c  #include "../genLib/shellSort.h"
 !   o .c  #include "../genLib/strAry.h"
+!   o .c  #include "../genLib/fileFun.h"
 !   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -808,9 +809,6 @@ main(
    signed char filterBl = def_filter_mainMaskPrim;
      /*Remove reads with no primers*/
 
-   signed char *buffHeapStr = 0;
-   unsigned long lenBuffUL = 0;
-
    unsigned int *startAryHeapUI = 0;
    unsigned int *endAryHeapUI = 0;
    unsigned int *flagAryHeapUI = 0;
@@ -1033,14 +1031,8 @@ main(
       goto err_main_sec05_sub02;
    } /*If: memory error*/
 
-   errSC =
-      (signed char)
-      get_samEntry(
-        &samStackST,
-        &buffHeapStr,
-        &lenBuffUL,
-        samFILE
-      ); /*Get the first line in the sam file*/
+   /*get first line in the sam file*/
+   errSC = get_samEntry(&samStackST, samFILE);
 
    /*****************************************************\
    * Main Sec04 Sub02:
@@ -1051,22 +1043,8 @@ main(
    { /*Loop: print header*/
       if(*samStackST.extraStr != '@')
          break;
-
-      p_samEntry(
-         &samStackST,
-         &buffHeapStr,
-         &lenBuffUL,
-         0,          /*0 = print newline at end*/
-         outFILE
-      );
-
-      errSC =
-         get_samEntry(
-           &samStackST,
-           &buffHeapStr,
-           &lenBuffUL,
-           samFILE
-         ); /*Get the first line in the sam file*/
+      p_samEntry(&samStackST, 0, outFILE);
+      errSC = get_samEntry(&samStackST, samFILE);
    } /*Loop: print header*/
 
    /**************************************************\
@@ -1089,15 +1067,9 @@ main(
    );
 
    if(filterBl)
-      fprintf(
-         outFILE,
-         "\t-filter"
-      );
+      fprintf( outFILE, "\t-filter");
    else
-      fprintf(
-         outFILE,
-         "\t-no-filter"
-      );
+      fprintf( outFILE, "\t-no-filter");
 
    fprintf(
       outFILE,
@@ -1107,30 +1079,16 @@ main(
    );
 
    if(samFileStr)
-      fprintf(
-         outFILE,
-         "\t-sam %s",
-         samFileStr
-      );
+      fprintf(outFILE, "\t-sam %s", samFileStr);
    else
-      fprintf(
-         outFILE,
-         "\t-sam -"
-      );
+      fprintf(outFILE, "\t-sam -");
 
    if(outFileStr)
-      fprintf(
-         outFILE,
-         "\t-out %s%s",
-         outFileStr,
-         str_endLine
-      );
+      fprintf(outFILE, "\t-out %s", outFileStr);
    else
-      fprintf(
-         outFILE,
-         "\t-out -%s",
-         str_endLine
-      );
+      fprintf(outFILE, "\t-out -");
+
+   fprintf(outFILE, "%s", str_endLine);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec05:
@@ -1169,13 +1127,7 @@ main(
          && errSL
       ) goto nextLine_main_sec05; /*rm non-primer seq*/
 
-      p_samEntry(
-         &samStackST,
-         &buffHeapStr,
-         &lenBuffUL,
-         0,          /*0 = print newline at end*/
-         outFILE
-      );
+      p_samEntry(&samStackST, 0, outFILE);
 
       /**************************************************\
       * Main Sec05 Sub02:
@@ -1183,14 +1135,7 @@ main(
       \**************************************************/
 
       nextLine_main_sec05:;
-
-      errSC =
-         get_samEntry(
-           &samStackST,
-           &buffHeapStr,
-           &lenBuffUL,
-           samFILE
-         ); /*Get the first line in the sam file*/
+         errSC = get_samEntry(&samStackST, samFILE);
    } /*Loop: Read in all lines and mask primers*/
 
    /*****************************************************\
@@ -1198,11 +1143,23 @@ main(
    *  - check if had an error
    \*****************************************************/
 
-   if(errSC != 1)
+   if(errSC == def_memErr_samEntry)
    { /*If: I had an memroy error*/
       fprintf(
          stderr,
          "Memory error reading -sam %s%s",
+         samFileStr,
+         str_endLine
+      );
+
+      goto err_main_sec05_sub02;
+   } /*If: I had an memroy error*/
+
+   else if(errSC != def_EOF_samEntry)
+   { /*If: I had an memroy error*/
+      fprintf(
+         stderr,
+         "file error -sam %s%s",
          samFileStr,
          str_endLine
       );
@@ -1230,40 +1187,32 @@ main(
    cleanUp_main_sec05_sub03:;
       if(startAryHeapUI)
          free(startAryHeapUI);
-
       startAryHeapUI = 0;
 
       if(endAryHeapUI)
          free(endAryHeapUI);
-
       endAryHeapUI = 0;
 
       if(flagAryHeapUI)
          free(flagAryHeapUI);
-
       flagAryHeapUI = 0;
-
-      if(buffHeapStr)
-         free(buffHeapStr);
-
-      buffHeapStr = 0;
 
       freeStack_samEntry(&samStackST);
 
-      if(
-            samFILE
-         && samFILE != stdin
-         && samFILE != stdout
-      ) fclose(samFILE);
-
+      if(! samFILE) ;
+      else if(samFILE == stdin) ;
+      else if(samFILE == stdout) ;
+      else if(samFILE == stderr) ;
+      else
+         fclose(samFILE);
       samFILE = 0;
 
-      if(
-            outFILE
-         && outFILE != stdin
-         && outFILE != stdout
-      ) fclose(outFILE);
-
+      if(! outFILE) ;
+      else if(outFILE == stdin) ;
+      else if(outFILE == stdout) ;
+      else if(outFILE == stderr) ;
+      else
+         fclose(outFILE);
       outFILE = 0;
 
       return errSC;

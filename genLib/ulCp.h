@@ -87,7 +87,7 @@
 
 /*plan9 defines long as 32 bit, so need an extra check*/
 #ifdef NOUL
-   typedef char ulong_ulCp;
+   typedef unsigned char ulong_ulCp;
    /*back up to make sure byte copying used, however it
    `  will reduce the efficeny due to more operations in
    `  bit operations for longs

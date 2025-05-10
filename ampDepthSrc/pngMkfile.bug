@@ -1,3 +1,0 @@
-all:
-	gcc -o test.o --std=c89 -O0 -ggdb -Wall -Werror testPng.c mkPng.c
-

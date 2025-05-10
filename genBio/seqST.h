@@ -6,16 +6,10 @@
 '     - guards and defined variables
 '   o .h st01: seqST
 '     - holds an single sequence (fasta/fastq)
-'   o .c fun01 addLine_seqST:
-'     - add characters from file to buffer, if needed 
-'       resize. This will only read in till the end of the
-'       line
-'   o fun02 getFqSeq_seqST:
+'   o fun02 getFq_seqST:
 '     - reads a fastq sequence from a fastq file
-'   o fun03 getFaSeq_seqST:
+'   o fun03 getFa_seqST:
 '     - grabs the next read in the fasta file
-'   o fun04: get_seqST
-'     - gets a sequence from a fastx/fastx.gz file
 '   o fun05 revComp_seqST:
 '     - reverse complement a sequence
 '   o fun06 blank_seqST:
@@ -63,13 +57,6 @@
 #define def_badLine_seqST 16 /*invald fastx entry*/
 #define def_memErr_seqST 4
 
-#define def_noType_seqST 0
-#define def_faType_seqST 1
-#define def_fqType_seqST 2
-#define def_gzType_seqST 4
-
-struct file_inflate;
-
 /*-------------------------------------------------------\
 | ST01: seqST
 |  - holds an single sequence (fasta/fastq)
@@ -77,23 +64,23 @@ struct file_inflate;
 typedef struct seqST
 {
   signed char *idStr;         /*sequence id*/
-  unsigned long  lenIdUL;     /*length of sequence id*/
-  unsigned long  lenIdBuffUL; /*length of Id buffer*/
+  signed long  idLenSL;       /*length of sequence id*/
+  signed long  idSizeSL;      /*length of Id buffer*/
 
   signed char *seqStr;        /*sequence*/
-  unsigned long  lenSeqUL;    /*length of the sequence*/
-  unsigned long  lenSeqBuffUL;/*length sequence buffer*/
+  signed long  seqLenSL;      /*length of the sequence*/
+  signed long  seqSizeSL;     /*length sequence buffer*/
 
   signed char *qStr;          /*q-score entry*/
-  unsigned long  lenQUL;      /*length of the q-score*/
-  unsigned long  lenQBuffUL;  /*length of q-score buffer*/
+  signed long  qLenSL;        /*length of the q-score*/
+  signed long  qSizeSL;       /*length of q-score buffer*/
 
-  unsigned long  offsetUL;    /*offset for an alignment*/
-  unsigned long  endAlnUL;    /*marks end of alignment*/
+  signed long  offsetSL;      /*offset for an alignment*/
+  signed long  endAlnSL;      /*marks end of alignment*/
 }seqST;
 
 /*-------------------------------------------------------\
-| Fun02: readRefFqSeq
+| Fun02: getFq_seqsT
 |  - grabs the next read in the fastq file
 | Input:
 |  - fqFILE:
@@ -114,13 +101,13 @@ typedef struct seqST
 |     o def_memErr_seqST If malloc failed to find memory
 \-------------------------------------------------------*/
 signed char
-getFqSeq_seqST(
+getFq_seqST(
   void *fqFILE,           /*fastq file with sequence*/
   struct seqST *seqSTPtr /*will hold one fastq entry*/
 );
 
 /*-------------------------------------------------------\
-| Fun03 TOC: getFaSeq_seqST
+| Fun03 TOC: getFa_seqST
 |  -  grabs the next read in the fasta file
 | Input:
 |  - faFILE:
@@ -145,54 +132,9 @@ getFqSeq_seqST(
 |     "atc atc".
 \-------------------------------------------------------*/
 signed char
-getFaSeq_seqST(
+getFa_seqST(
   void *faFILE,           /*fasta file with sequence*/
   struct seqST *seqSTPtr  /*will hold one fastq entry*/
-);
-
-/*-------------------------------------------------------\
-| Fun04: get_seqST
-|   - gets a sequence from a fastx/fastx.gz file
-| Input:
-|   - fileSTPtr:
-|     o file_inflate struct to use in uncompression
-|   - typeSCPtr:
-|     o is set to or has the correct file type
-|   - seqSTPtr:
-|     o seqST struct pointer to add new sequence to
-|   - inFILE:
-|     o FILE pointer to file to add (new file)
-|     o 0 if already called get_seqST for this file
-|     o you should set inFILE to 0/null after calling,
-|       because freeStack_file_inflate 
-|       freeHeap_file_inflate will close inFILE for you
-| Output:
-|   - Modifies:
-|     o if have inFILE, sets fileSTPtr be blanked and then
-|       have inFILE
-|     o if have inFILE, typeSCPtr to have file type 
-|       o def_noType_seqST if end of file
-|       o def_faType_seqST if fasta file
-|       o def_faType_seqST | def_gzType_seqST if fasta.gz
-|       o def_fqType_seqST if fastq file
-|       o def_fqType_seqST | def_gzType_seqST if fasta.gz
-|     o fileSTPtr to be on next read/sequence
-|     o seqSTPtr to have next read/sequence
-|   - Returns:
-|     o 0 for no errors
-|     o def_EOF_seqST if at end of file
-|     o def_memErr_seqST for memory errors
-|     o def_badLine_seqST | def_fileErr_seqST for invalid
-|       file entries
-|     o def_fileErr_seqST for file errors (including gzip
-|       checks)
-\-------------------------------------------------------*/
-signed char
-get_seqST(
-   struct file_inflate *fileSTPtr, /*has file to extract*/
-   signed char *typeSCPtr,         /*gets/has file type*/
-   struct seqST *seqSTPtr,         /*gets sequence*/
-   void *inFILE
 );
 
 /*-------------------------------------------------------\

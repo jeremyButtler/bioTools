@@ -51,6 +51,7 @@
 
 #include "../genLib/base10str.h"
 #include "../genLib/shellSort.h"
+#include "../genLib/fileFun.h"
 #include "samEntry.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
@@ -334,7 +335,7 @@ maskPrim(
 
       while(refEndPosUI <= forEndUI)
       { /*Loop: Mask bases and adjust cigar*/
-         if(uiEndCig >= samSTPtr->lenCigUI)
+         if(uiEndCig >= samSTPtr->cigLenUI)
             break; /*sequence had part of primer only*/
 
          if(refEndPosUI > samSTPtr->refEndUI)
@@ -789,11 +790,12 @@ getCoords_maskPrim(
    ^   - Variable declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   #define lenBuffUS 1024
-   signed char buffStr[lenBuffUS];
+   #define lenBuff_fun11 1024
+   signed char buffStr[lenBuff_fun11];
    signed char *tmpStr = 0;
 
-   signed int numPrimSI = 0;
+   signed long numPrimSL = 0;
+   signed long maxLenSL = 0;
    signed int siLine = 0;
 
    signed char revBl = 0; /*On the reverse primer*/
@@ -805,62 +807,40 @@ getCoords_maskPrim(
    ^   - Get the number of primers (lines * 2) in file
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   primFILE =
-      fopen(
-         (char *) primFileStr,
-         "r"
-      );
-
+   primFILE = fopen((char *) primFileStr, "r");
    if(!primFILE)
        goto fileErr_fun11_sec05_sub03;
 
-   /*do not expect line lengths be over 1024 characters*/
-   while(fgets((char *) buffStr, lenBuffUS, primFILE))
-      numPrimSI += 2;
-
-   numPrimSI -= 2; /*Account for the header*/
-
-   fseek(
-      primFILE,
-      0,
-      SEEK_SET
-   );
+   numPrimSL = lineCnt_fileFun(primFILE, &maxLenSL);
+   --numPrimSL; /*account for header*/
+   numPrimSL <<= 1; /*account for two primers per line*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun11 Sec03:
    ^   - Allocate memory for the primers
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   if(numPrimSI < 1)
+   if(numPrimSL < 1)
       goto emptyFileErr_fun11_sec05_sub04;
-      
+
    if(*startAryUI)
       free(*startAryUI);
-
    *startAryUI = 0;
-
-   *startAryUI = malloc(numPrimSI * sizeof(unsigned int));
-
+   *startAryUI = malloc(numPrimSL * sizeof(unsigned int));
    if(! *startAryUI)
       goto memErr_fun11_sec05_sub02;
 
    if(*endAryUI)
       free(*endAryUI);
-
    *endAryUI = 0;
-
-   *endAryUI = malloc(numPrimSI * sizeof(unsigned int));
-
+   *endAryUI = malloc(numPrimSL * sizeof(unsigned int));
    if(! *endAryUI)
        goto memErr_fun11_sec05_sub02;
 
    if(*flagAryUI)
       free(*flagAryUI);
-
    *flagAryUI = 0;
-
-   *flagAryUI = malloc(numPrimSI * sizeof(unsigned int));
-
+   *flagAryUI = malloc(numPrimSL * sizeof(unsigned int));
    if(! *flagAryUI)
       goto memErr_fun11_sec05_sub02;
    
@@ -890,19 +870,25 @@ getCoords_maskPrim(
    *   - Get past header and start primer read loop
    \*****************************************************/
 
-   tmpStr =
-      (signed char *)
-      fgets(
-         (char *) buffStr,
-         lenBuffUS,
-         primFILE
+   maxLenSL =
+      getLine_fileFun(
+         primFILE,
+         buffStr,
+         lenBuff_fun11,
+         &maxLenSL
       );
 
-   numPrimSI = 0;
+   numPrimSL = 0;
    siLine = 1;
 
-   while(fgets((char *) buffStr, lenBuffUS, primFILE))
-   { /*Loop: Read in each primer coordinate*/
+   while(
+      getLine_fileFun(
+         primFILE,
+         buffStr,
+         lenBuff_fun11,
+         &maxLenSL
+      )
+   ){ /*Loop: Read in each primer coordinate*/
       ++siLine;
       tmpStr = buffStr;
 
@@ -957,21 +943,21 @@ getCoords_maskPrim(
       *   - find if this is an paired primer
       \**************************************************/
 
-      (*flagAryUI)[numPrimSI] = 0;
+      (*flagAryUI)[numPrimSL] = 0;
 
       if(*tmpStr == '1')
-         {setPair_maskPrim((*flagAryUI)[numPrimSI], 1);}
+         {setPair_maskPrim((*flagAryUI)[numPrimSL], 1);}
       else if( ((*tmpStr) & ~32) == 'P')
-         {setPair_maskPrim((*flagAryUI)[numPrimSI], 1);}
+         {setPair_maskPrim((*flagAryUI)[numPrimSL], 1);}
       else if( ((*tmpStr) & ~32) == 'T')
-         {setPair_maskPrim((*flagAryUI)[numPrimSI], 1);}
+         {setPair_maskPrim((*flagAryUI)[numPrimSL], 1);}
       else if( *tmpStr == '+')
-         {setPair_maskPrim((*flagAryUI)[numPrimSI], 1);}
+         {setPair_maskPrim((*flagAryUI)[numPrimSL], 1);}
       else
-         {setPair_maskPrim((*flagAryUI)[numPrimSI], 0);}
+         {setPair_maskPrim((*flagAryUI)[numPrimSL], 0);}
 
       /*Should always be an forward primer*/
-      setDir_maskPrim((*flagAryUI)[numPrimSI], 0);
+      setDir_maskPrim((*flagAryUI)[numPrimSL], 0);
 
       while(*tmpStr > 32)
         ++tmpStr; /*Move to end of entry*/
@@ -1003,13 +989,13 @@ getCoords_maskPrim(
          tmpStr +=
             strToUI_base10str(
                tmpStr,
-               &(*startAryUI)[numPrimSI]
+               &(*startAryUI)[numPrimSL]
             );
 
          if(*tmpStr > 32)
             goto fileErr_fun11_sec05_sub03; /*not entry*/
             
-         --(*startAryUI)[numPrimSI]; /*to index 0*/
+         --(*startAryUI)[numPrimSL]; /*to index 0*/
 
          if(*tmpStr == '\r')
             goto fileErr_fun11_sec05_sub03;
@@ -1065,26 +1051,26 @@ getCoords_maskPrim(
       tmpStr +=
          strToUI_base10str(
            tmpStr,
-           &(*endAryUI)[numPrimSI]
+           &(*endAryUI)[numPrimSL]
          );
 
       if(*tmpStr > 32)
          goto fileErr_fun11_sec05_sub03; /*Not entry*/
          
-      --(*endAryUI)[numPrimSI]; /*convert to index 0*/
+      --(*endAryUI)[numPrimSL]; /*convert to index 0*/
 
       if(
-           (*startAryUI)[numPrimSI]
-         > (*endAryUI)[numPrimSI]
+           (*startAryUI)[numPrimSL]
+         > (*endAryUI)[numPrimSL]
       ){ /*If: I need to swap start and end*/
-         (*startAryUI)[numPrimSI] ^=
-            (*endAryUI)[numPrimSI];
+         (*startAryUI)[numPrimSL] ^=
+            (*endAryUI)[numPrimSL];
 
-         (*endAryUI)[numPrimSI] ^=
-            (*startAryUI)[numPrimSI];
+         (*endAryUI)[numPrimSL] ^=
+            (*startAryUI)[numPrimSL];
 
-         (*startAryUI)[numPrimSI] ^=
-            (*endAryUI)[numPrimSI];
+         (*startAryUI)[numPrimSL] ^=
+            (*endAryUI)[numPrimSL];
       } /*If: I need to swap start and end*/
 
       while(*tmpStr < 33)
@@ -1116,27 +1102,27 @@ getCoords_maskPrim(
             goto nextLine_fun11_sec04_sub08;
             /*only a forward primer*/
 
-         ++numPrimSI;
+         ++numPrimSL;
 
          /*At this point this is not the end of the line*/
          setMateIndex_maskPrim(
-            (*flagAryUI)[numPrimSI - 1],
-            numPrimSI
+            (*flagAryUI)[numPrimSL - 1],
+            numPrimSL
          );
 
          setPair_maskPrim(
-            (*flagAryUI)[numPrimSI],
-            getPair_maskPrim((*flagAryUI)[numPrimSI - 1])
+            (*flagAryUI)[numPrimSL],
+            getPair_maskPrim((*flagAryUI)[numPrimSL - 1])
          );
 
          setDir_maskPrim(
-            (*flagAryUI)[numPrimSI],
+            (*flagAryUI)[numPrimSL],
             1
          );
 
          setMateIndex_maskPrim(
-            (*flagAryUI)[numPrimSI],
-            numPrimSI - 1
+            (*flagAryUI)[numPrimSL],
+            numPrimSL - 1
          );
 
          revBl = 1;
@@ -1151,7 +1137,7 @@ getCoords_maskPrim(
       nextLine_fun11_sec04_sub08:;
 
       revBl = 0;
-      ++numPrimSI;
+      ++numPrimSL;
    } /*Loop: Read in each primer coordinate*/
    
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -1181,7 +1167,7 @@ getCoords_maskPrim(
       *startAryUI,
       *endAryUI,
       *flagAryUI,
-      numPrimSI
+      numPrimSL
    ); /*Sort the indexes*/ 
 
    *errSL = 0;
@@ -1194,7 +1180,7 @@ getCoords_maskPrim(
 
    memErr_fun11_sec05_sub02:;
       *errSL = def_memErr_maskPrim;
-      numPrimSI = 0;
+      numPrimSL = 0;
       goto cleanUp_fun11_sec05_sub05;
 
    /*****************************************************\
@@ -1204,7 +1190,7 @@ getCoords_maskPrim(
 
    fileErr_fun11_sec05_sub03:;
       *errSL = (siLine << 8) | def_fileErr_maskPrim;
-      numPrimSI = 0;
+      numPrimSL = 0;
       goto cleanUp_fun11_sec05_sub05;
 
    /*****************************************************\
@@ -1214,7 +1200,7 @@ getCoords_maskPrim(
 
    emptyFileErr_fun11_sec05_sub04:;
       *errSL = def_emptyFileErr_maskPrim;
-      numPrimSI = 0;
+      numPrimSL = 0;
       goto cleanUp_fun11_sec05_sub05;
 
    /*****************************************************\
@@ -1227,7 +1213,7 @@ getCoords_maskPrim(
          fclose(primFILE);
       primFILE = 0;
 
-      return numPrimSI;
+      return numPrimSL;
 } /*getCoords_maskPrim*/
 
 /*=======================================================\

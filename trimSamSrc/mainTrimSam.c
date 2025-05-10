@@ -8,7 +8,7 @@
 '   o fun03: input_mainTrimSam
 '     - gets user input from input arguments
 '   o main:
-'     -  Main function to glue everything together
+'     -  main function to glue everything together
 '   o license:
 '     - Licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -39,7 +39,7 @@
 !   - .c  #include "../genLib/numToStr.h"
 !   - .c  #include "../genLib/base10str.h"
 !   - .c  #include "../genLib/strAry.h"
-!   - .h  #include "../genLib/dataTypeShortHand.h"
+!   - .c  #include "../genLib/fileFun.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -454,8 +454,6 @@ main(
     signed char errSC = 0;
 
     struct samEntry samStackST;
-    signed char *buffHeapStr = 0;
-    unsigned long lenBuffUL = 0;
 
     FILE *samFILE = 0;
     FILE *outFILE = 0;
@@ -582,13 +580,7 @@ main(
     *   - get first line in sam file
     \****************************************************/
 
-    errSC =
-       get_samEntry(
-          &samStackST,
-          &buffHeapStr,
-          &lenBuffUL,
-          (FILE *) samFILE
-      );
+    errSC = get_samEntry(&samStackST, samFILE);
 
     if(errSC)
     { /*If: error*/
@@ -624,36 +616,8 @@ main(
     { /*Loop: print headers*/
        if(samStackST.extraStr[0] != '@')
           break;
-
-       errSC =
-          p_samEntry(
-             &samStackST,
-             &buffHeapStr,
-             &lenBuffUL,
-             0,
-             (FILE *) outFILE
-          );
-
-       if(errSC)
-       { /*If: memory error*/
-          fprintf(
-             stderr,
-             "memory error printing -sam %s headers%s",
-             samFileStr,
-             str_endLine
-          );
-
-          goto memErr_main_sec04;
-       } /*If: memory error*/
-
-       errSC =
-          get_samEntry(
-             &samStackST,
-             &buffHeapStr,
-             &lenBuffUL,
-             (FILE *) samFILE
-         );
-
+       p_samEntry(&samStackST, 0, outFILE);
+       errSC = get_samEntry(&samStackST, samFILE);
     } /*Loop: print headers*/
 
     /****************************************************\
@@ -678,7 +642,7 @@ main(
        /*EOF*/
        fprintf(
           stderr,
-          "no reads in -sam %s%s",
+          "no reads or bad line in -sam %s%s",
           samFileStr,
           str_endLine
        );
@@ -705,40 +669,19 @@ main(
     );
 
     if(keepNoMapBl)
-       fprintf(
-          (FILE *) outFILE,
-          " -keep-no-map"
-       );
+       fprintf((FILE *) outFILE, " -keep-no-map");
 
     if(samFILE != stdout)
-       fprintf(
-          (FILE *) outFILE,
-          " -sam %s",
-          samFileStr
-       );
+       fprintf((FILE *) outFILE, " -sam %s", samFileStr);
     else
-       fprintf(
-          (FILE *) outFILE,
-          " -sam -"
-       );
+       fprintf((FILE *) outFILE, " -sam -");
 
     if(outFILE != stdout)
-       fprintf(
-          (FILE *) outFILE,
-          " -out %s",
-          outFileStr
-       );
+       fprintf((FILE *) outFILE, " -out %s", outFileStr);
     else
-       fprintf(
-          (FILE *) outFILE,
-          " -out -"
-       );
+       fprintf((FILE *) outFILE, " -out -");
 
-    fprintf(
-       (FILE *) outFILE,
-       "%s",
-       str_endLine
-    );
+    fprintf((FILE *) outFILE, "%s", str_endLine);
     
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Main Sec03:
@@ -748,7 +691,7 @@ main(
     while(! errSC)
     { /*Loop: trim reads*/
         /*Convert & print out sam file entry*/
-        errSC = trimSeq_trimSam(&samStackST);
+        errSC = seq_trimSam(&samStackST);
 
         if(
               keepNoMapBl
@@ -756,23 +699,9 @@ main(
         ) errSC = 0;
 
         if(! errSC) 
-        { /*If: read was trimmed (or printing)*/
-           p_samEntry(
-               &samStackST,
-               &buffHeapStr,
-               &lenBuffUL,
-               0,          /*want full line output*/
-               (FILE *) outFILE
-           ); /*print the trimed entry*/
-        } /*If: read was trimmed (or printing)*/
+           p_samEntry(&samStackST, 0, outFILE);
         
-        errSC =
-           get_samEntry(
-              &samStackST,
-              &buffHeapStr,
-              &lenBuffUL,
-              (FILE *) samFILE
-           );
+        errSC = get_samEntry(&samStackST, samFILE);
     } /*Loop: trim reads*/
 
     if(errSC == def_memErr_samEntry)
@@ -786,6 +715,17 @@ main(
        goto memErr_main_sec04;
     } /*If: had an error*/
 
+    if(errSC != def_EOF_samEntry)
+    { /*If: had an error*/
+       fprintf(
+          stderr,
+          "file error when trimming reads%s",
+          str_endLine
+       );
+
+       goto fileErr_main_sec04;
+    } /*If: had an error*/
+
     /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
     ^ Main Sec04:
     ^   - clean up
@@ -795,40 +735,33 @@ main(
     goto cleanUp_main_sec04;
 
     memErr_main_sec04:;
-    errSC = def_memErr_trimSam;
-    goto cleanUp_main_sec04;
+       errSC = def_memErr_trimSam;
+       goto cleanUp_main_sec04;
 
     fileErr_main_sec04:;
-    errSC = def_fileErr_trimSam;
-    goto cleanUp_main_sec04;
+       errSC = def_fileErr_trimSam;
+       goto cleanUp_main_sec04;
 
     cleanUp_main_sec04:;
+       freeStack_samEntry(&samStackST);
 
-    if(buffHeapStr)
-       free(buffHeapStr);
+       if(
+             samFILE
+          && samFILE != stdin
+          && samFILE != stdout
+       ) fclose(samFILE);
 
-    buffHeapStr = 0;
-    lenBuffUL = 0;
+       samFILE = 0;
 
-    freeStack_samEntry(&samStackST);
+       if(
+             outFILE
+          && outFILE != stdin
+          && outFILE != stdout
+       ) fclose(outFILE);
 
-    if(
-          samFILE
-       && samFILE != stdin
-       && samFILE != stdout
-    ) fclose(samFILE);
+       outFILE = 0;
 
-    samFILE = 0;
-
-    if(
-          outFILE
-       && outFILE != stdin
-       && outFILE != stdout
-    ) fclose(outFILE);
-
-    outFILE = 0;
-
-    return errSC;
+       return errSC;
 } /*main function*/
 
 

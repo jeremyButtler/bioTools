@@ -43,6 +43,7 @@
 ! Hidden libraries
 !   o .c   #include "../genLib/numToStr.h"
 !   o .c   #include "../genLib/strAry.h"
+!   o .c   #include "../genLib/fileFun.h"
 !   o .h   #include "ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 

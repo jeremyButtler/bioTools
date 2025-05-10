@@ -38,8 +38,27 @@ sudo make install;
 
 To get the help message do `filtsam -h`.
 
-To filter unmapped
+To filter unmapped 
   reads `filtsam -F 4 -sam reads.sam > out.sam`.
+
+Get reads mapping to reference NC000962
+  id `filtsam -coords 0,$,NC000962 -sam reads.sam -out out.sam`.
+
+By default, filtsam will keep any reads that overlap with
+  any base in the input coordinates. To make it so that
+  you only keep reads that completly cover the target
+  region use `-no-range`.
+
+Get reads that completly cover positons 100 to 1000 on
+  any reference
+ `filtsam -no-range -coords 100,1000 -sam reads.sam -out out.sam`.
+
+Trim off first and last 30 bases
+ `filtsam -trim-start 30 -trim-end 30 -sam reads.sam -out out.sam`.
+
+Trim off softmasking and first and last 30 bases after
+  soft masking
+ `filtsam -trim -trim-start 30 -trim-end 30 -sam reads.sam -out out.sam`.
 
 Change file output
 

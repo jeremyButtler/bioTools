@@ -1,0 +1,54 @@
+CC=cc
+LD=cc
+CFLAGS=-DNONE
+PREFIX=/usr/local/bin
+O=o.unix
+
+all:
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C adjCoordsSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C alnNeedleSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C alnWaterSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C ampDepthSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C cigToEqxSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C edClustSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C edDistSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C filtsamSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C illNanoSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C k2TaxaIdSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C mapReadSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C maskPrimSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C memwaterSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C primFindSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C revCmpSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C rmHomoSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C samToAlnSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C seqByIdSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C tbConSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C tranSeqSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C trimSamSrc;
+
+install:
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C adjCoordsSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C alnNeedleSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C alnWaterSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C ampDepthSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C cigToEqxSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C edClustSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C edDistSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C filtsamSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C illNanoSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C k2TaxaIdSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C mapReadSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C maskPrimSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C memwaterSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C primFindSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C revCmpSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C rmHomoSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C samToAlnSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C seqByIdSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C tbConSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C tranSeqSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C trimSamSrc install;
+
+clean:
+	rm */*.$O

@@ -9,8 +9,9 @@ genLib=../genLib
 
 objFiles= \
    ../k2TaxaIdSrc/k2TaxaId.$O \
-   $(genLib)/ptrAry.$O \
+   $(genLib)/fileFun.$O \
    $(genLib)/ulCp.$O \
+   $(genLib)/ptrAry.$O \
    $(genLib)/base10str.$O \
    $(genLib)/numToStr.$O \
    $(genLib)/genMath.$O \
@@ -29,48 +30,63 @@ mainK2TaxaId.$O: \
 			$(coreCFLAGS) $(CFLAGS) mainK2TaxaId.c
 
 ../k2TaxaIdSrc/k2TaxaId.$O: \
-	../k2TaxaIdSrc/k2TaxaId.c ../k2TaxaIdSrc/k2TaxaId.h $(genLib)/ptrAry.$O \
-	$(genLib)/shellSort.$O $(genLib)/numToStr.$O \
-	$(genLib)/base10str.$O $(genLib)/genMath.$O
+	../k2TaxaIdSrc/k2TaxaId.c ../k2TaxaIdSrc/k2TaxaId.h \
+	$(genLib)/fileFun.$O \
+	$(genLib)/ptrAry.$O \
+	$(genLib)/shellSort.$O \
+	$(genLib)/numToStr.$O \
+	$(genLib)/base10str.$O \
+	$(genLib)/genMath.$O
 		$(CC) -o ../k2TaxaIdSrc/k2TaxaId.$O -c \
 			$(coreCFLAGS) $(CFLAGS) ../k2TaxaIdSrc/k2TaxaId.c
 
+$(genLib)/fileFun.$O: \
+	$(genLib)/fileFun.c \
+	$(genLib)/fileFun.h \
+	$(genLib)/ulCp.$O
+		$(CC) -o $(genLib)/fileFun.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/fileFun.c
+
+$(genLib)/ulCp.$O: \
+	$(genLib)/ulCp.c \
+	$(genLib)/ulCp.h
+		$(CC) -o $(genLib)/ulCp.$O \
+			-c $(coreCFLAGS) $(CFLAGS) \
+			$(genLib)/ulCp.c
+
 $(genLib)/ptrAry.$O: \
-	$(genLib)/ptrAry.c $(genLib)/ptrAry.h \
+	$(genLib)/ptrAry.c \
+	$(genLib)/ptrAry.h \
 	$(genLib)/ulCp.$O
 		$(CC) -o $(genLib)/ptrAry.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
 			$(genLib)/ptrAry.c
 
-$(genLib)/ulCp.$O: \
-	$(genLib)/ulCp.c $(genLib)/ulCp.h
-		$(CC) -o $(genLib)/ulCp.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
-			$(genLib)/ulCp.c
-
-
 $(genLib)/base10str.$O: \
-	$(genLib)/base10str.c $(genLib)/base10str.h
+	$(genLib)/base10str.c \
+	$(genLib)/base10str.h
 		$(CC) -o $(genLib)/base10str.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
 			$(genLib)/base10str.c
 
-
 $(genLib)/numToStr.$O: \
-	$(genLib)/numToStr.c $(genLib)/numToStr.h
+	$(genLib)/numToStr.c \
+	$(genLib)/numToStr.h
 		$(CC) -o $(genLib)/numToStr.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
 			$(genLib)/numToStr.c
 
-
 $(genLib)/genMath.$O: \
-	$(genLib)/genMath.c $(genLib)/genMath.h
+	$(genLib)/genMath.c \
+	$(genLib)/genMath.h
 		$(CC) -o $(genLib)/genMath.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
 			$(genLib)/genMath.c
 
 $(genLib)/shellSort.$O: \
-	$(genLib)/shellSort.c $(genLib)/shellSort.h
+	$(genLib)/shellSort.c \
+	$(genLib)/shellSort.h
 		$(CC) -o $(genLib)/shellSort.$O \
 			-c $(coreCFLAGS) $(CFLAGS) \
 			$(genLib)/shellSort.c

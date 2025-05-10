@@ -40,6 +40,7 @@
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden Libraries:
+!   - .c  #include "../genLib/fileFun.h"
 !   - .h  #include "../genBio/ntTo2Bit.h"
 !   - .h  #include "../genBio/revNtTo2Bit.h"
 !   - .h  #include "../genBio/codonTbl.h"
@@ -1162,19 +1163,15 @@ int main(
    *  - read in first sequence
    \******************************************************/
 
-   errSC =
-      getFaSeq_seqST(
-         seqFILE,
-         &seqStackST
-      );
+   errSC = getFa_seqST(seqFILE, &seqStackST);
 
    aaHeapStr =
       malloc(
-         (seqStackST.lenSeqUL + 9) * sizeof(signed char)
+         (seqStackST.seqLenSL + 9) * sizeof(signed char)
       );
    if(! aaHeapStr)
       goto memErr_main_sec0x;
-   sizeAaSL = seqStackST.lenSeqUL;
+   sizeAaSL = seqStackST.seqLenSL;
 
    if(errSC == def_EOF_seqST)
    { /*If: read end of file*/
@@ -1206,22 +1203,22 @@ int main(
    { /*Loop: translate all sequences in fasta file*/
       ++numSeqSL;
 
-      if(sizeAaSL < (signed long) seqStackST.lenSeqUL)
+      if(sizeAaSL < (signed long) seqStackST.seqLenSL)
       { /*If: need more memory*/
          free(aaHeapStr);
          aaHeapStr = 0;
 
          aaHeapStr =
             malloc(
-                 (seqStackST.lenSeqUL + 9)
+                 (seqStackST.seqLenSL + 9)
                * sizeof(signed char)
             );
          if(! aaHeapStr)
             goto memErr_main_sec0x;
-         sizeAaSL = seqStackST.lenSeqUL;
+         sizeAaSL = seqStackST.seqLenSL;
       } /*If: need more memory*/
 
-      if(seqStackST.lenSeqUL < (unsigned long) startSL)
+      if(seqStackST.seqLenSL < startSL)
          goto nextSeq_main_sec03_sub09;
          /*can not translate*/
 
@@ -1421,12 +1418,7 @@ int main(
 
       nextSeq_main_sec03_sub09:;
          blank_seqST(&seqStackST);
-
-         errSC =
-            getFaSeq_seqST(
-               seqFILE,
-               &seqStackST
-            );
+         errSC = getFa_seqST(seqFILE, &seqStackST);
    } /*Loop: translate all sequences in fasta file*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\

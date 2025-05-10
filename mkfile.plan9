@@ -1,0 +1,52 @@
+</$objtype/mkfile
+CFLAGS=-DNONE
+PREFIX=$home/bin
+
+all:
+	make CFLAGS="$CFLAGS" -f mkfile.static -C adjCoordsSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C alnNeedleSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C alnWaterSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C ampDepthSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C cigToEqxSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C edClustSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C edDistSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C filtsamSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C illNanoSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C k2TaxaIdSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C mapReadSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C maskPrimSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C memwaterSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C primFindSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C revCmpSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C rmHomoSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C samToAlnSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C seqByIdSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C tbConSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C tranSeqSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.static -C trimSamSrc;
+
+install:
+	make PREFIX="$PREFIX" -f mkfile.static -C adjCoordsSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C alnNeedleSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C alnWaterSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C ampDepthSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C cigToEqxSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C edClustSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C edDistSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C filtsamSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C illNanoSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C k2TaxaIdSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C mapReadSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C maskPrimSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C memwaterSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C primFindSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C revCmpSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C rmHomoSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C samToAlnSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C seqByIdSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C tbConSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C tranSeqSrc install;
+	make PREFIX="$PREFIX" -f mkfile.static -C trimSamSrc install;
+
+clean:
+	rm */*.$O

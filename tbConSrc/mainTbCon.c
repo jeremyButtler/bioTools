@@ -47,6 +47,7 @@
 ! Hidden files
 !   - .c  #include "../genLib/ulCp.h"
 !   - .c  #include "../genLib/numToStr.h"
+!   - .c  #include "../genLib/fileFun.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -1664,6 +1665,10 @@ main(
 
    } /*If: had error*/
 
+   free(buffHeapStr);
+   buffHeapStr = 0;
+   lenBuffUL = 0;
+
    /*****************************************************\
    * Main Sec03 Sub05:
    *   - print tbCon cosensus (same file) program header
@@ -1895,14 +1900,7 @@ main(
        } /*If: I had a memory error*/
 
        nextEntry_main_sec04_sub01:;
-
-       errSC =
-          get_samEntry(
-             &samStackST,
-             &buffHeapStr,
-             &lenBuffUL,
-             samFILE
-          );
+          errSC = get_samEntry(&samStackST, samFILE);
    } /*Loop: add reads to consensus*/
 
    /*****************************************************\
@@ -2084,8 +2082,6 @@ main(
             if(samHeapAryST[siIter].qryIdStr[0] != '\0')
                 p_samEntry(
                    &samHeapAryST[siIter],
-                   &buffHeapStr,
-                   &lenBuffUL,
                    0,
                    outFILE
                 ); /*Print consensuses as sam file*/
@@ -2150,7 +2146,6 @@ main(
 
       if(buffHeapStr)
          free(buffHeapStr);
-
       buffHeapStr = 0;
       lenBuffUL = 0;
 

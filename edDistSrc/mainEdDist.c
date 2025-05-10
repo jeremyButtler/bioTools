@@ -52,6 +52,7 @@
 !   o .c  #include "../genLib/base10str.h"
 !   o .c  #include "../genLib/numToStr.h"
 !   o .c  #include "../genLib/strAry.h"
+!   o .c  #include "../genLib/fileFun.h"
 !   o .h  #include "../genLib/genMath.h" not using .c
 !   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -1143,8 +1144,6 @@ main(
 
    struct samEntry refStackST;
    struct samEntry qryStackST;
-   signed char *buffHeapStr = 0;
-   unsigned long lenBuffUL = 0;
    unsigned long entryUL = 0;
 
    struct res_edDist resEdStackST;
@@ -1309,11 +1308,7 @@ main(
 
       if(refFaBl)
       { /*If: is fasta file*/
-         errSC =
-            getFaSeq_seqST(
-               samFILE,
-               &refSeqStackST
-            );
+         errSC = getFa_seqST(samFILE, &refSeqStackST);
 
          if(errSC)
          { /*If: error*/
@@ -1356,13 +1351,7 @@ main(
 
       else
       { /*Else: reference in sam file*/
-         errSC =
-            get_samEntry(
-               &refStackST,
-               &buffHeapStr,
-               &lenBuffUL,
-               samFILE
-            );
+         errSC = get_samEntry(&refStackST, samFILE);
 
          if(errSC)
          { /*If: error*/
@@ -1376,7 +1365,7 @@ main(
             else
                fprintf(
                   stderr,
-                  "-ref %s has nothing%s",
+                  "-ref %s has nothing or bad line%s",
                   refFileStr,
                   str_endLine
                );
@@ -1393,14 +1382,7 @@ main(
          { /*Loop: get reference sequence*/
             if(*refStackST.extraStr != '@')
                break;
-
-            errSC =
-               get_samEntry(
-                  &refStackST,
-                  &buffHeapStr,
-                  &lenBuffUL,
-                  samFILE
-               );
+            errSC = get_samEntry(&refStackST, samFILE);
          } /*Loop: get reference sequence*/
 
          if(errSC)
@@ -1409,6 +1391,13 @@ main(
                fprintf(
                   stderr,
                   "memory error reading reference%s",
+                  str_endLine
+               );
+
+            if(errSC == def_fileErr_samEntry)
+               fprintf(
+                  stderr,
+                  "file error reading reference%s",
                   str_endLine
                );
 
@@ -1547,8 +1536,6 @@ main(
             minOverlapF,
             &resEdStackST,
             &qryStackST,
-            &buffHeapStr,
-            &lenBuffUL,
             samFILE
          );
 
@@ -1587,14 +1574,7 @@ main(
    *   - get first sam file entry
    \*****************************************************/
 
-   errSC =
-      (signed char)
-      get_samEntry(
-         &qryStackST,
-         &buffHeapStr,
-         &lenBuffUL,
-         samFILE
-      );
+   errSC = get_samEntry(&qryStackST, samFILE);
 
    if(errSC)
    { /*If: error*/
@@ -1609,7 +1589,7 @@ main(
       else
          fprintf(
             stderr,
-            "-sam %s has nothing%s",
+            "-sam %s has nothing or 1st line is bad%s",
             samFileStr,
             str_endLine
          );
@@ -1699,14 +1679,7 @@ main(
             );
       } /*If: have edit distance*/
 
-      errSC =
-         (signed char)
-         get_samEntry(
-            &qryStackST,
-            &buffHeapStr,
-            &lenBuffUL,
-            samFILE
-         );
+      errSC = get_samEntry(&qryStackST, samFILE);
    } /*Loop: get edit distances*/
 
    /*****************************************************\
@@ -1714,11 +1687,24 @@ main(
    *   - print out file errors
    \*****************************************************/
 
-   if(errSC == 64)
+   if(errSC == def_memErr_samEntry)
    { /*If: had an error*/
       fprintf(
          stderr,
          "MEMORY ERROR reading %lu in -sam %s%s",
+         entryUL,
+         samFileStr,
+         str_endLine
+      );
+
+      goto err_main_sec04_sub02;
+   } /*If: had an error*/
+
+   if(errSC == def_fileErr_samEntry)
+   { /*If: had an error*/
+      fprintf(
+         stderr,
+         "line %lu in -sam %s is not a sam file line%s",
          entryUL,
          samFileStr,
          str_endLine
@@ -1760,9 +1746,6 @@ main(
       freeStack_samEntry(&qryStackST);
       freeStack_seqST(&refSeqStackST);
       freeStack_res_edDist(&resEdStackST);
-
-      free(buffHeapStr);
-      buffHeapStr = 0;
 
       return errSC;
 } /*main*/

@@ -26,7 +26,6 @@
    #include <libc.h>
 #else
    #include <stdlib.h>
-   #include <time.h>
 #endif
 
 #include <stdio.h>
@@ -37,6 +36,7 @@
 #include "../genLib/inflate.h"
 
 #include "../genBio/seqST.h"
+#include "../genBio/gzSeqST.h"
 #include "../genBio/samEntry.h"
 
 #include "../genAln/alnSet.h"
@@ -50,7 +50,6 @@
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries
-!   - std #include <stdio.h>
 !   - .c  #include "../genLib/base10Str.h"
 !   - .c  #include "../genLib/numToStr.h"
 !   - .c  #include "../genLib/charCp.h"
@@ -59,6 +58,7 @@
 !   - .c  #include "../genLib/endin.h"
 !   - .c  #include "../genLib/checkSum.h"
 !   - .c  #include "../genLib/strAry.h"
+!   - .c  #include "../genLib/fileFun.h"
 !   - .c  #include "../genBio/kmerFun.h"
 !   - .c  #include "../genAln/indexToCoord.h"
 !   - .c  #include "../genAln/dirMatrix.h"
@@ -630,7 +630,15 @@ phelp_mainMapRead(
 
    fprintf(
       (FILE *) outFILE,
-      "      o also gap score for chain merging step%s",
+      "    -chain-gap %i: [Optional; %i]%s",
+      def_gapExtend_alnDefs,
+      def_gapExtend_alnDefs,
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o score for extending chain past a gap%s",
       str_endLine
    );
 
@@ -1406,11 +1414,39 @@ input_mainMapRead(
 
          ++siArg;
          tmpStr = (signed char *) argAryStr[siArg];
-         tmpStr +=
-            strToSI_base10str(
-              tmpStr,
-              &tmpSI
+         tmpStr += strToSI_base10str(tmpStr, &tmpSI);
+
+         if(*tmpStr != '\0')
+         { /*If: error*/
+            fprintf(
+               stderr,
+               "-gap-extend %s non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
             );
+
+            goto err_fun03_sec03;
+         } /*If: error*/
+
+         changeGap_alnSet(
+            setSTPtr->alnSetST,
+            tmpSI,
+            setSTPtr->alnSetST->gapSS
+         );
+      }  /*Else If: gap extension penalty*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-chain-gap",
+            (signed char *) argAryStr[siArg]
+         )
+      ){ /*Else If: gap extension penalty*/
+         if(*fxPosSIPtr)
+            goto qryNotEndErr_fun03_sec03;
+
+         ++siArg;
+         tmpStr = (signed char *) argAryStr[siArg];
+         tmpStr += strToSI_base10str(tmpStr, &tmpSI);
 
          if(*tmpStr != '\0')
          { /*If: error*/
@@ -1425,12 +1461,6 @@ input_mainMapRead(
          } /*If: error*/
 
          setSTPtr->gapSI = tmpSI;
-
-         changeGap_alnSet(
-            setSTPtr->alnSetST,
-            tmpSI,
-            setSTPtr->alnSetST->gapSS
-         );
       }  /*Else If: gap extension penalty*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -1969,6 +1999,14 @@ main(
    '   - driver function for mapRead
    '   o main sec01:
    '     - variable declarations
+   '   o main sec02:
+   '     - initialize, get input, setup, and check input
+   '   o main sec03:
+   '     - print out user input settings
+   '   o main sec04:
+   '     - map reads to reference
+   '   o main sec05:
+   '     - clean up and return
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -1976,6 +2014,7 @@ main(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
+   signed char *tmpStr = 0;
    signed char errSC = 0;
    signed char forErrSC = 0;
    signed char revErrSC = 0;
@@ -2004,8 +2043,6 @@ main(
 
    signed long forScoreSL = 0;
    signed long revScoreSL = 0;
-   signed char *buffHeapStr = 0;
-   signed long lenBuffSL = 0;
 
    struct file_inflate inFileStackST;
    signed char fileTypeSC = 0;
@@ -2057,7 +2094,7 @@ main(
          str_endLine
       );
 
-      goto err_main_sec04;
+      goto err_main_sec05;
    }  /*If: memory error*/
 
    /*****************************************************\
@@ -2079,7 +2116,7 @@ main(
    if(errSC)
    { /*If: need to exit*/
       --errSC; /*convert help/version to no error*/
-      goto ret_main_sec04; /*error value setup*/
+      goto ret_main_sec05; /*error value setup*/
    } /*If: need to exit*/
 
    /*****************************************************\
@@ -2095,7 +2132,7 @@ main(
          str_endLine
       );
 
-      goto err_main_sec04;
+      goto err_main_sec05;
    } /*If: memory error setting up alignment strucutre*/
 
 
@@ -2107,7 +2144,7 @@ main(
          str_endLine
       );
 
-      goto err_main_sec04;
+      goto err_main_sec05;
    } /*If: memory error setting up alignment strucutre*/
 
 
@@ -2119,7 +2156,7 @@ main(
          str_endLine
       );
 
-      goto err_main_sec04;
+      goto err_main_sec05;
    } /*If: memory error setting up alignment strucutre*/
 
    /*****************************************************\
@@ -2137,11 +2174,7 @@ main(
 
    else
    { /*Else: user input output file*/
-      outFILE =
-         fopen(
-            (char *) outFileStr,
-            "w"
-         );
+      outFILE = fopen((char *) outFileStr, "w");
 
       if(! outFILE)
       { /*If: could not open output*/
@@ -2152,7 +2185,7 @@ main(
             str_endLine
          );
 
-         goto err_main_sec04;
+         goto err_main_sec05;
       } /*If: could not open output*/
    } /*Else: user input output file*/
 
@@ -2174,11 +2207,7 @@ main(
    +   - open reference file
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   seqFILE =
-      fopen(
-         (char *) refFileStr,
-         "r"
-      );
+   seqFILE = fopen((char *) refFileStr, "r");
 
    if(! seqFILE)
    { /*If: could not open reference*/
@@ -2189,7 +2218,7 @@ main(
          str_endLine
       );
 
-      goto err_main_sec04;
+      goto err_main_sec05;
    } /*If: could not open reference*/
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -2223,7 +2252,7 @@ main(
                   str_endLine
                );
 
-               goto err_main_sec04;
+               goto err_main_sec05;
             } /*If: no reference sequence*/
          } /*If: end of file*/
 
@@ -2236,7 +2265,7 @@ main(
                str_endLine
             );
 
-            goto err_main_sec04;
+            goto err_main_sec05;
          } /*Else If: memory error*/
 
          /*I can ingore can def_noStruct_mapRead error
@@ -2252,7 +2281,7 @@ main(
                str_endLine
             );
 
-            goto err_main_sec04;
+            goto err_main_sec05;
          } /*Else: file error*/
       } /*If: had error*/
    } /*If: reading reference from fasta file*/
@@ -2279,7 +2308,7 @@ main(
             str_endLine
          );
 
-         goto err_main_sec04;
+         goto err_main_sec05;
       } /*If: had memory error*/
 
       else if(errSC == def_badFile_mapRead)
@@ -2291,7 +2320,7 @@ main(
             str_endLine
          );
 
-         goto err_main_sec04;
+         goto err_main_sec05;
       } /*If: had memory error*/
    } /*Else: getting reference from index file*/
 
@@ -2309,22 +2338,59 @@ main(
         &refStackST,
         outFILE
       );
-      goto noErr_main_sec04;
+      goto noErr_main_sec05;
    } /*If: printing reference index to file*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec03:
+   ^   - print out user input settings
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   fprintf(outFILE, "@HD\tVN:1.6\tSO:unsorted\tGO:query");
+   fprintf(outFILE, "%s", str_endLine);
+
+   tmpStr = refStackST.seqSTPtr->idStr;
+   while(*tmpStr > 32)
+      ++tmpStr;
+   errSC = *tmpStr;
+   *tmpStr = 0;
+
+   fprintf(
+      outFILE,
+      "@SQ\tSN:%s\tLN:%li%s",
+      refStackST.seqSTPtr->idStr,
+      refStackST.seqSTPtr->seqLenSL + 1,
+      str_endLine
+   );
+   *tmpStr = errSC;
+   tmpStr = 0;
+
+   fprintf(
+      outFILE,
+      "@PG\tID:mapRead\tVN:%i-%02i-%02i\tCL:mapRead",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools
+   );
+
+   for(seqSL = 1; seqSL < numArgsSI; ++seqSL)
+      fprintf(outFILE, " %s", argAryStr[seqSL]);
+   seqSL = 0;
+   fprintf(outFILE, "%s", str_endLine);
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Main Sec04:
    ^   - map reads to reference
-   ^   o main sec03 sub01:
+   ^   o main sec04 sub01:
    ^     - open query files
-   ^   o main sec03 sub02:
+   ^   o main sec04 sub02:
    ^     - map reads in one file
-   ^   o main sec03 sub04:
+   ^   o main sec04 sub04:
    ^     - handel errors before cleanup
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Main Sec03 Sub01:
+   * Main Sec04 Sub01:
    *   - open query files
    \*****************************************************/
 
@@ -2343,12 +2409,12 @@ main(
          seqFILE = fopen(argAryStr[qryFileIndexSI], "r");
 
          if(! seqFILE)
-            goto noFile_main_sec04;
+            goto noFile_main_sec05;
       } /*Else: getting input from file*/
          
 
       errSC =
-         get_seqST(
+         get_gzSeqST(
             &inFileStackST,
             &fileTypeSC,
             &qryStackST,
@@ -2371,10 +2437,10 @@ main(
       } /*If: nothing in file*/
 
       else if(errSC == def_memErr_seqST)
-         goto memErr_main_sec04;
+         goto memErr_main_sec05;
 
       else if(errSC)
-         goto fileErr_main_sec04;
+         goto fileErr_main_sec05;
 
       else
       { /*Else: valid file*/
@@ -2388,20 +2454,20 @@ main(
       } /*Else: valid file*/
 
       /**************************************************\
-      * Main Sec03 Sub02:
+      * Main Sec04 Sub02:
       *   - map reads in one file
-      *   o main sec03 sub02 cat01:
+      *   o main sec04 sub02 cat01:
       *     - map forward read + start loop
-      *   o main sec03 sub02 cat02:
+      *   o main sec04 sub02 cat02:
       *     - map reverse read
-	   *   o main sec03 sub02 cat03:
+	   *   o main sec04 sub02 cat03:
       *     - print read
-	   *   o main sec03 sub02 cat04:
+	   *   o main sec04 sub02 cat04:
       *     - get next read
       \**************************************************/
       
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Main Sec03 Sub02 Cat01:
+      + Main Sec04 Sub02 Cat01:
       +   - map forward read + start loop
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2423,17 +2489,17 @@ main(
             );
 
          if(forErrSC == def_memErr_mapRead)
-            goto memErr_main_sec04;
+            goto memErr_main_sec05;
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
-         + Main Sec03 Sub03 Cat02:
+         + Main Sec04 Sub03 Cat02:
          +   - map reverse read
          \++++++++++++++++++++++++++++++++++++++++++++++*/
 
          revCmpIndex_alnSet(
             qryStackST.seqStr,
             qryStackST.qStr,
-            qryStackST.lenSeqUL
+            qryStackST.seqLenSL
          );
 
          revScoreSL =
@@ -2450,10 +2516,10 @@ main(
          revSamStackST.flagUS = 16;
 
          if(revErrSC == def_memErr_mapRead)
-            goto memErr_main_sec04;
+            goto memErr_main_sec05;
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
-         + Main Sec03 Sub03 Cat03:
+         + Main Sec04 Sub03 Cat03:
          +   - print read
          \++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2466,34 +2532,17 @@ main(
             forSamStackST.flagUS |= 256;
 
          if(! forErrSC && forScoreSL > revScoreSL)
-           errSC =
-              p_samEntry(
-                 &forSamStackST,
-                 &buffHeapStr,
-                 (unsigned long *) &lenBuffSL,
-                 0, /*want newline*/
-                 outFILE
-              );
+            p_samEntry(&forSamStackST, 0, outFILE);
          else if(! revErrSC && revScoreSL > forScoreSL)
-            errSC =
-               p_samEntry(
-                  &revSamStackST,
-                  &buffHeapStr,
-                  (unsigned long *) &lenBuffSL,
-                  0, /*want newline*/
-                  outFILE
-               );
-
-         if(errSC)
-            goto memErr_main_sec04;
+            p_samEntry(&revSamStackST, 0, outFILE);
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
-         + Main Sec03 Sub03 Cat04:
+         + Main Sec04 Sub03 Cat04:
          +   - get next read
          \++++++++++++++++++++++++++++++++++++++++++++++*/
 
          errSC =
-            get_seqST(
+            get_gzSeqST(
                &inFileStackST,
                &fileTypeSC,
                &qryStackST,
@@ -2502,32 +2551,32 @@ main(
       } /*Loop: map reads in one file*/
 
       /**************************************************\
-      * Main Sec03 Sub04:
+      * Main Sec04 Sub04:
       *   - handel errors before cleanup
       \**************************************************/
 
       if(errSC == def_memErr_seqST)
-         goto memErr_main_sec04;
+         goto memErr_main_sec05;
       else if(errSC != def_EOF_seqST)
-         goto fileErr_main_sec04;
+         goto fileErr_main_sec05;
    } /*Loop: for each file; map reads*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Main Sec04:
+   ^ Main Sec05:
    ^   - clean up and return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   goto noErr_main_sec04;
+   goto noErr_main_sec05;
 
-   noErr_main_sec04:;
+   noErr_main_sec05:;
       errSC = 0;
-      goto ret_main_sec04;
+      goto ret_main_sec05;
 
-   err_main_sec04:;
+   err_main_sec05:;
       errSC = 1;
-      goto ret_main_sec04;
+      goto ret_main_sec05;
 
-   memErr_main_sec04:;
+   memErr_main_sec05:;
       errSC = 2;
       if(seqSL)
          fprintf(
@@ -2543,9 +2592,9 @@ main(
             "memory error setting up to map reads%s",
             str_endLine
          );
-      goto ret_main_sec04;
+      goto ret_main_sec05;
 
-   noFile_main_sec04:;
+   noFile_main_sec05:;
       errSC = 3;
       fprintf(
          stderr,
@@ -2553,9 +2602,9 @@ main(
          argAryStr[qryFileIndexSI],
          str_endLine
       );
-      goto ret_main_sec04;
+      goto ret_main_sec05;
 
-   fileErr_main_sec04:;
+   fileErr_main_sec05:;
       errSC = 4;
       fprintf(
          stderr,
@@ -2569,9 +2618,9 @@ main(
          seqSL,
          str_endLine
       );
-      goto ret_main_sec04;
+      goto ret_main_sec05;
 
-   ret_main_sec04:;
+   ret_main_sec05:;
       freeStack_samEntry(&forSamStackST);
       freeStack_samEntry(&revSamStackST);
       freeStack_seqST(&qryStackST);
@@ -2580,26 +2629,20 @@ main(
       freeStack_aln_mapRead(&alnStackST);
       freeStack_file_inflate(&inFileStackST);
 
-      if(buffHeapStr)
-         free(buffHeapStr);
-      buffHeapStr = 0;
-      lenBuffSL = 0;
-
-
-      if(
-            seqFILE
-         && seqFILE != stdin
-         && seqFILE != stdout
-         && seqFILE != stderr
-      ) fclose(seqFILE);
+      if(! seqFILE) ;
+      else if(seqFILE == stdin) ;
+      else if(seqFILE == stdout) ;
+      else if(seqFILE == stderr) ;
+      else
+         fclose(seqFILE);
       seqFILE = 0;
 
-      if(
-            outFILE
-         && outFILE != stdin
-         && outFILE != stdout
-         && outFILE != stderr
-      ) fclose(outFILE);
+      if(! outFILE) ;
+      else if(outFILE == stdin) ;
+      else if(outFILE == stdout) ;
+      else if(outFILE == stderr) ;
+      else
+         fclose(outFILE);
       outFILE = 0;
 
       return errSC;

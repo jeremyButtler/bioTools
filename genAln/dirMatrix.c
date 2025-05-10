@@ -57,6 +57,7 @@
 ! Hidden libraries:
 !   o .c  #include "../genLib/base10str.h"
 !   o .c  #include "../genLib/strAry.h"
+!   o .c  #include "../genLib/fileLen.h"
 !   o .h  #include "../genLib/endLine.h"
 !   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -78,15 +79,15 @@ blank_dirMatrix(
   struct dirMatrix *dirMatrixSTPtr
 ){
    dirMatrixSTPtr->scoreSL = 0;
-   dirMatrixSTPtr->indexUL = 0;
+   dirMatrixSTPtr->indexSL = 0;
 
-   dirMatrixSTPtr->lenRefUL = 0;
-   dirMatrixSTPtr->refOffsetUL = 0;
-   dirMatrixSTPtr->refEndUL = 0;
+   dirMatrixSTPtr->refLenSL = 0;
+   dirMatrixSTPtr->refOffsetSL = 0;
+   dirMatrixSTPtr->refEndSL = 0;
 
-   dirMatrixSTPtr->lenQryUL = 0;
-   dirMatrixSTPtr->qryOffsetUL = 0;
-   dirMatrixSTPtr->qryEndUL = 0;
+   dirMatrixSTPtr->qryLenSL = 0;
+   dirMatrixSTPtr->qryOffsetSL = 0;
+   dirMatrixSTPtr->qryEndSL = 0;
 
    dirMatrixSTPtr->errSC = 0;
 } /*blank_dirMatrixSC*/
@@ -108,10 +109,10 @@ init_dirMatrix(
    blank_dirMatrix(dirMatrixSTPtr);
   
    dirMatrixSTPtr->dirMatrixSC = 0;
-   dirMatrixSTPtr->lenMatrixUL = 0;
+   dirMatrixSTPtr->lenMatrixSL = 0;
   
    dirMatrixSTPtr->scoreArySL = 0;
-   dirMatrixSTPtr->lenScoreUL = 0;
+   dirMatrixSTPtr->lenScoreSL = 0;
 } /*init_dirMatrixSC*/
 
 /*-------------------------------------------------------\
@@ -169,7 +170,7 @@ freeHeap_dirMatrix(
 |   - matrixSTPtr
 |     o pointer to a dirMatrix structure to get alignment
 |       from
-|   - indexUL:
+|   - indexSL:
 |     o index of last base in the alignment
 |     o 0 to use index from matirxSTPtr
 |   - revBl:
@@ -198,7 +199,7 @@ freeHeap_dirMatrix(
 signed char
 getAln_dirMatrix(
    struct dirMatrix *matrixSTPtr,
-   unsigned long indexUL,
+   signed long indexSL,
    signed char revBl,
    struct seqST *qrySTPtr,
    struct seqST *refSTPtr,
@@ -233,7 +234,7 @@ getAln_dirMatrix(
 
    unsigned int qryPosUI = 0;
    unsigned int refPosUI = 0;
-   unsigned int lenRefUI = matrixSTPtr->lenRefUL;
+   unsigned int lenRefUI = matrixSTPtr->refLenSL;
 
    signed char *qrySeqStr =
                (signed char *) qrySTPtr->seqStr;
@@ -255,26 +256,26 @@ getAln_dirMatrix(
 
    *numAnonUI = 0;
 
-   if(! indexUL)
-      indexUL = matrixSTPtr->indexUL; /*no index input*/
+   if(! indexSL)
+      indexSL = matrixSTPtr->indexSL; /*no index input*/
 
    qryPosUI =
       (unsigned int)
       qryCoord_indexToCoord(
          (unsigned long) lenRefUI,
-         indexUL
+         indexSL
       );
 
    refPosUI =
       (unsigned int)
       refCoord_indexToCoord(
          (unsigned long) lenRefUI,
-         indexUL
+         indexSL
       );
 
    /*bases not aligned by user*/
-   refSeqStr += matrixSTPtr->refOffsetUL;
-   qrySeqStr += matrixSTPtr->qryOffsetUL;
+   refSeqStr += matrixSTPtr->refOffsetSL;
+   qrySeqStr += matrixSTPtr->qryOffsetSL;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun05 Sec03:
@@ -300,17 +301,17 @@ getAln_dirMatrix(
 
    blank_samEntry(samSTPtr);
 
-   if(qryPosUI + 1 < qrySTPtr->lenSeqUL)
+   if(qryPosUI + 1 < qrySTPtr->seqLenSL)
    { /*If: need to add ending softmasked bases*/
       samSTPtr->cigTypeStr[0] = 'S';
 
       samSTPtr->cigArySI[0] =
-         qrySTPtr->lenSeqUL - qryPosUI - 1;
-         /*-1 to account for lenSeqUL being index 1 and
+         qrySTPtr->seqLenSL - qryPosUI - 1;
+         /*-1 to account for seqLenSL being index 1 and
          `   qryPosUI being index 0
          */
-      samSTPtr->numMaskUI =
-         qrySTPtr->lenSeqUL - qryPosUI - 1;
+      samSTPtr->maskCntUI =
+         qrySTPtr->seqLenSL - qryPosUI - 1;
    } /*If: need to add ending softmasked bases*/
 
    /*else is set to null*/
@@ -332,12 +333,10 @@ getAln_dirMatrix(
    matchBl = *tmpStr;
    *tmpStr = '\0';
 
-   samSTPtr->lenQryIdUC = 
-      cpDelim_ulCp(
+   samSTPtr->qryIdLenUC = 
+      cpStr_ulCp(
          (signed char *) samSTPtr->qryIdStr, 
-         (signed char *) qrySTPtr->idStr + tmpUC,
-         0,
-         0
+         (signed char *) qrySTPtr->idStr + tmpUC
       ); /*copy read id*/
 
    *tmpStr = matchBl;
@@ -359,12 +358,10 @@ getAln_dirMatrix(
    matchBl = *tmpStr;
    *tmpStr = '\0';
 
-   samSTPtr->lenRefIdUC = 
-      cpDelim_ulCp(
+   samSTPtr->refIdLenUC = 
+      cpStr_ulCp(
          (signed char *) samSTPtr->refIdStr, 
-         (signed char *) refSTPtr->idStr + tmpUC,
-         0,
-         0
+         (signed char *) refSTPtr->idStr + tmpUC
       ); /*copy read id*/
 
    *tmpStr = matchBl;
@@ -374,7 +371,7 @@ getAln_dirMatrix(
    *   - copy query sequence
    \*****************************************************/
 
-   if(samSTPtr->lenSeqBuffUI < qrySTPtr->lenSeqUL)
+   if(samSTPtr->seqSizeUI < qrySTPtr->seqLenSL)
    { /*If: I need more memory for the sequence*/
       free(samSTPtr->seqStr);
       samSTPtr->seqStr = 0;
@@ -382,24 +379,24 @@ getAln_dirMatrix(
       samSTPtr->seqStr =
          (signed char *)
          malloc(
-              (qrySTPtr->lenSeqUL+1024)
+              (qrySTPtr->seqLenSL+1024)
             * sizeof(signed char)
          );
 
       if(! samSTPtr->seqStr)
          goto memErr_fun05_sec07;
 
-      samSTPtr->lenSeqBuffUI = qrySTPtr->lenSeqUL + 1023;
+      samSTPtr->seqSizeUI = qrySTPtr->seqLenSL + 1023;
       tmpStr = 0;
    } /*If: I need more memory for the sequence*/
 
    cpLen_ulCp(
       samSTPtr->seqStr,
       qrySTPtr->seqStr,
-      qrySTPtr->lenSeqUL
+      qrySTPtr->seqLenSL
    );
 
-   samSTPtr->readLenUI = qrySTPtr->lenSeqUL;
+   samSTPtr->readLenUI = qrySTPtr->seqLenSL;
 
    /*convert the index to a real sequence*/
    indexToSeq_alnSet(samSTPtr->seqStr);
@@ -409,9 +406,9 @@ getAln_dirMatrix(
    *   - copy query q-score entry
    \*****************************************************/
 
-   if(qrySTPtr->lenQUL)
+   if(qrySTPtr->qLenSL)
    { /*If: have q-score entry*/
-      if(samSTPtr->lenQBuffUI < qrySTPtr->lenQUL)
+      if(samSTPtr->qSizeUI < qrySTPtr->qLenSL)
       { /*If: I need more memory for the sequence*/
          free(samSTPtr->qStr);
          samSTPtr->qStr = 0;
@@ -419,14 +416,14 @@ getAln_dirMatrix(
          samSTPtr->qStr =
             (signed char *)
             malloc(
-                 (qrySTPtr->lenQUL + 1024)
+                 (qrySTPtr->qLenSL + 1024)
                * sizeof(signed char)
             );
 
          if(! samSTPtr->qStr)
             goto memErr_fun05_sec07;
 
-         samSTPtr->lenQBuffUI = qrySTPtr->lenQUL + 1023;
+         samSTPtr->qSizeUI = qrySTPtr->qLenSL + 1023;
       } /*If: I need more memory for the sequence*/
 
       cpQEntry_samEntry(
@@ -435,7 +432,7 @@ getAln_dirMatrix(
          1 /*need to make sure histogram is blanked*/
       );
 
-      samSTPtr->readLenUI = qrySTPtr->lenSeqUL;
+      samSTPtr->readLenUI = qrySTPtr->seqLenSL;
    } /*If: have q-score entry*/
 
    else
@@ -481,7 +478,7 @@ getAln_dirMatrix(
    *   - check cig memory + start loop cigar fill loop
    \*****************************************************/
 
-   dirMatrixSC += indexUL;
+   dirMatrixSC += indexSL;
 
    while(*dirMatrixSC != def_mvStop_alnDefs)
    { /*Loop: trace alignment path*/
@@ -492,12 +489,12 @@ getAln_dirMatrix(
       `   one resize effects the entire program
       */
       if(
-         samSTPtr->lenCigUI + 3 >= samSTPtr->lenCigBuffUI
+         samSTPtr->cigLenUI + 3 >= samSTPtr->cigSizeUI
       ){ /*If: want more cigar memory*/
          tmpStr =
             realloc(
                samSTPtr->cigTypeStr,
-               (samSTPtr->lenCigUI + expandCig_fun05)
+               (samSTPtr->cigLenUI + expandCig_fun05)
                   * sizeof(signed char)
             );
          if(! tmpStr)
@@ -508,15 +505,15 @@ getAln_dirMatrix(
             (signed char *)
             realloc(
                samSTPtr->cigArySI,
-               (samSTPtr->lenCigUI + expandCig_fun05)
+               (samSTPtr->cigLenUI + expandCig_fun05)
                   * sizeof(signed int)
             );
          if(! tmpStr)
             goto memErr_fun05_sec07;
          samSTPtr->cigArySI = (signed int *) tmpStr;
 
-         samSTPtr->lenCigBuffUI = samSTPtr->lenCigUI;
-         samSTPtr->lenCigBuffUI += (expandCig_fun05 - 8);
+         samSTPtr->cigSizeUI = samSTPtr->cigLenUI;
+         samSTPtr->cigSizeUI += (expandCig_fun05 - 8);
       } /*If: want more cigar memory*/
 
       /**************************************************\
@@ -532,26 +529,26 @@ getAln_dirMatrix(
          case def_mvIns_alnDefs:
          /*Case: is a insertion*/
             if(
-                  samSTPtr->cigTypeStr[samSTPtr->lenCigUI]
+                  samSTPtr->cigTypeStr[samSTPtr->cigLenUI]
                != 'I'
             ){ /*If: need to make new cigar entry*/
                if(
-                  samSTPtr->cigTypeStr[samSTPtr->lenCigUI]
-               ) ++samSTPtr->lenCigUI; /*if not null*/
+                  samSTPtr->cigTypeStr[samSTPtr->cigLenUI]
+               ) ++samSTPtr->cigLenUI; /*if not null*/
 
                samSTPtr->cigTypeStr[
-                  samSTPtr->lenCigUI
+                  samSTPtr->cigLenUI
                ] = 'I';
 
                samSTPtr->cigArySI[
-                  samSTPtr->lenCigUI
+                  samSTPtr->cigLenUI
                ] = 1;
             } /*If: need to make new cigar entry*/
 
             else
-               ++samSTPtr->cigArySI[samSTPtr->lenCigUI];
+               ++samSTPtr->cigArySI[samSTPtr->cigLenUI];
 
-            ++samSTPtr->numInsUI;
+            ++samSTPtr->insCntUI;
 
             --qryPosUI;
             dirMatrixSC -= (lenRefUI + 1);
@@ -579,35 +576,35 @@ getAln_dirMatrix(
                   !!(matchBl & def_anonymous_alnDefs);
 
                matchBl = '='; /*match*/
-               ++samSTPtr->numMatchUI;
+               ++samSTPtr->matchCntUI;
 
             } /*If: had a match*/
 
             else
             { /*Else: had a mismatch*/
                matchBl = 'X'; /*mismatch*/
-               ++samSTPtr->numSnpUI;
+               ++samSTPtr->snpCntUI;
             } /*Else: had a mismatch*/
 
             if(
-                  samSTPtr->cigTypeStr[samSTPtr->lenCigUI]
+                  samSTPtr->cigTypeStr[samSTPtr->cigLenUI]
                != matchBl
             ){ /*If: need to make new cigar entry*/
                if(
-                  samSTPtr->cigTypeStr[samSTPtr->lenCigUI]
-               ) ++samSTPtr->lenCigUI; /*if not null*/
+                  samSTPtr->cigTypeStr[samSTPtr->cigLenUI]
+               ) ++samSTPtr->cigLenUI; /*if not null*/
 
                samSTPtr->cigTypeStr[
-                  samSTPtr->lenCigUI
+                  samSTPtr->cigLenUI
                ] = matchBl;
 
                samSTPtr->cigArySI[
-                  samSTPtr->lenCigUI
+                  samSTPtr->cigLenUI
                ] = 1;
             } /*If: need to make new cigar entry*/
 
             else
-               ++samSTPtr->cigArySI[samSTPtr->lenCigUI];
+               ++samSTPtr->cigArySI[samSTPtr->cigLenUI];
 
             --refPosUI;
             --qryPosUI;
@@ -626,26 +623,26 @@ getAln_dirMatrix(
          case def_mvDel_alnDefs:
          /*Case: is a deletion*/
             if(
-                  samSTPtr->cigTypeStr[samSTPtr->lenCigUI]
+                  samSTPtr->cigTypeStr[samSTPtr->cigLenUI]
                != 'D'
             ){ /*If: need to make new cigar entry*/
                if(
-                  samSTPtr->cigTypeStr[samSTPtr->lenCigUI]
-               ) ++samSTPtr->lenCigUI; /*if not null*/
+                  samSTPtr->cigTypeStr[samSTPtr->cigLenUI]
+               ) ++samSTPtr->cigLenUI; /*if not null*/
 
                samSTPtr->cigTypeStr[
-                  samSTPtr->lenCigUI
+                  samSTPtr->cigLenUI
                ] = 'D';
 
                samSTPtr->cigArySI[
-                  samSTPtr->lenCigUI
+                  samSTPtr->cigLenUI
                ] = 1;
             } /*If: need to make new cigar entry*/
 
             else
-               ++samSTPtr->cigArySI[samSTPtr->lenCigUI];
+               ++samSTPtr->cigArySI[samSTPtr->cigLenUI];
 
-            ++samSTPtr->numDelUI;
+            ++samSTPtr->delCntUI;
             ++samSTPtr->alnReadLenUI;
 
             --refPosUI;
@@ -689,11 +686,11 @@ getAln_dirMatrix(
 
    if(qryPosUI > 0)
    { /*If: need to add starting softmasked bases*/
-      ++samSTPtr->lenCigUI;
-      samSTPtr->cigTypeStr[samSTPtr->lenCigUI] = 'S';
+      ++samSTPtr->cigLenUI;
+      samSTPtr->cigTypeStr[samSTPtr->cigLenUI] = 'S';
 
-      samSTPtr->cigArySI[samSTPtr->lenCigUI] = qryPosUI;
-      samSTPtr->numMaskUI += qryPosUI;
+      samSTPtr->cigArySI[samSTPtr->cigLenUI] = qryPosUI;
+      samSTPtr->maskCntUI += qryPosUI;
    } /*If: need to add starting softmasked bases*/
 
    /*****************************************************\
@@ -704,32 +701,21 @@ getAln_dirMatrix(
    if(! revBl)
    { /*If: need to reverse (ivert) cigar*/
       qryPosUI = 0;
-      refPosUI = samSTPtr->lenCigUI;
+      refPosUI = samSTPtr->cigLenUI;
 
       while(qryPosUI < refPosUI)
       { /*Loop: invert the cigar to forward direction*/
-         /*swap was from standfords bithacking guide*/
-
-         /*this allows ref ^ qry to give qry value*/
+         samSTPtr->cigTypeStr[qryPosUI] ^=
+            samSTPtr->cigTypeStr[refPosUI];
+         samSTPtr->cigTypeStr[refPosUI] ^=
+            samSTPtr->cigTypeStr[qryPosUI];
          samSTPtr->cigTypeStr[qryPosUI] ^=
             samSTPtr->cigTypeStr[refPosUI];
 
          samSTPtr->cigArySI[qryPosUI] ^=
             samSTPtr->cigArySI[refPosUI];
-
-         /*this (ref ^ qry) sets ref position to qry value
-         `  it also allows qry ^ ref to give rev
-         */
-         samSTPtr->cigTypeStr[refPosUI] ^=
-            samSTPtr->cigTypeStr[qryPosUI];
-
          samSTPtr->cigArySI[refPosUI] ^=
             samSTPtr->cigArySI[qryPosUI];
-
-         /*this (qry ^ ref) sets qry position to ref*/
-         samSTPtr->cigTypeStr[qryPosUI] ^=
-            samSTPtr->cigTypeStr[refPosUI];
-
          samSTPtr->cigArySI[qryPosUI] ^=
             samSTPtr->cigArySI[refPosUI];
 
@@ -748,7 +734,7 @@ getAln_dirMatrix(
    else
    { /*Else: reverse complement sequence*/
       seqDoNotFreeST.seqStr = samSTPtr->seqStr;
-      seqDoNotFreeST.lenSeqUL = samSTPtr->readLenUI;
+      seqDoNotFreeST.seqLenSL = samSTPtr->readLenUI;
 
       if(
             samSTPtr->qStr[0] != '*'
@@ -756,22 +742,22 @@ getAln_dirMatrix(
          && samSTPtr->qStr[0] != '\0'
       ){ /*If: have q-score entry*/
          seqDoNotFreeST.qStr = samSTPtr->qStr;
-         seqDoNotFreeST.lenQUL = samSTPtr->readLenUI;
+         seqDoNotFreeST.qLenSL = samSTPtr->readLenUI;
       } /*If: have q-score entry*/
 
       else
       { /*Else: do not have q-score entry*/
          seqDoNotFreeST.qStr = 0;
-         seqDoNotFreeST.lenQUL = 0;
+         seqDoNotFreeST.qLenSL = 0;
       } /*Else: do not have q-score entry*/
 
       revComp_seqST(&seqDoNotFreeST);
 
       seqDoNotFreeST.seqStr = 0;
-      seqDoNotFreeST.lenSeqUL = 0;
+      seqDoNotFreeST.seqLenSL = 0;
 
       seqDoNotFreeST.qStr = 0;
-      seqDoNotFreeST.lenQUL = 0;
+      seqDoNotFreeST.qLenSL = 0;
    } /*Else: reverse complement sequence*/
 
 
@@ -780,10 +766,10 @@ getAln_dirMatrix(
    *   - make sure cigar length is index 1 (not 0)
    \*****************************************************/
 
-   if(samSTPtr->cigTypeStr[samSTPtr->lenCigUI] != '\0')
+   if(samSTPtr->cigTypeStr[samSTPtr->cigLenUI] != '\0')
    { /*If: is index 0*/
-      ++samSTPtr->lenCigUI; /*convert to index 1*/
-      samSTPtr->cigTypeStr[samSTPtr->lenCigUI] = '\0';
+      ++samSTPtr->cigLenUI; /*convert to index 1*/
+      samSTPtr->cigTypeStr[samSTPtr->cigLenUI] = '\0';
    } /*If: is index 0*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -804,19 +790,19 @@ getAln_dirMatrix(
 
    tmpStr = (signed char *) samSTPtr->extraStr;
 
-   samSTPtr->lenExtraUI +=
+   samSTPtr->extraLenUI +=
       cpDelim_charCp(
-         (signed char *) &tmpStr[samSTPtr->lenExtraUI],
+         (signed char *) &tmpStr[samSTPtr->extraLenUI],
          (signed char *) "NM:i:",
          '\0'
       ); /*copy edit distance*/
 
-   samSTPtr->lenExtraUI +=
+   samSTPtr->extraLenUI +=
       numToStr(
-         (signed char *) &tmpStr[samSTPtr->lenExtraUI],
-         samSTPtr->numSnpUI
-            + samSTPtr->numDelUI
-            + samSTPtr->numInsUI
+         (signed char *) &tmpStr[samSTPtr->extraLenUI],
+         samSTPtr->snpCntUI
+            + samSTPtr->delCntUI
+            + samSTPtr->insCntUI
       ); /*find edit distance*/
 
    /*****************************************************\
@@ -824,18 +810,18 @@ getAln_dirMatrix(
    *   - add AS (score) flag
    \*****************************************************/
 
-   tmpStr[samSTPtr->lenExtraUI++] = '\t';
+   tmpStr[samSTPtr->extraLenUI++] = '\t';
 
-   samSTPtr->lenExtraUI +=
+   samSTPtr->extraLenUI +=
       cpDelim_charCp(
-         (signed char *) &tmpStr[samSTPtr->lenExtraUI],
+         (signed char *) &tmpStr[samSTPtr->extraLenUI],
          (signed char *) "AS:i:",
           '\0'
       ); /*copy assembler score*/
 
-   samSTPtr->lenExtraUI +=
+   samSTPtr->extraLenUI +=
       numToStr(
-         (signed char *) &tmpStr[samSTPtr->lenExtraUI],
+         (signed char *) &tmpStr[samSTPtr->extraLenUI],
          matrixSTPtr->scoreSL /  def_scoreAdj_alnDefs
       ); /*get alignment score*/
 
@@ -844,18 +830,18 @@ getAln_dirMatrix(
    *   - add nn (anonymoys bases) flag
    \*****************************************************/
 
-   tmpStr[samSTPtr->lenExtraUI++] = '\t';
+   tmpStr[samSTPtr->extraLenUI++] = '\t';
 
-   samSTPtr->lenExtraUI +=
+   samSTPtr->extraLenUI +=
       cpDelim_charCp(
-         (signed char *) &tmpStr[samSTPtr->lenExtraUI],
+         (signed char *) &tmpStr[samSTPtr->extraLenUI],
          (signed char *) "nn:i:",
          '\0'
       ); /*copy number anonymous bases*/
 
-   samSTPtr->lenExtraUI +=
+   samSTPtr->extraLenUI +=
       numToStr(
-         (signed char *) &tmpStr[samSTPtr->lenExtraUI],
+         (signed char *) &tmpStr[samSTPtr->extraLenUI],
          *numAnonUI
       ); /*get number anonymous bases*/
 
@@ -878,7 +864,7 @@ getAln_dirMatrix(
 |   - matrixSTPtr
 |     o pointer to a dirMatrix structure to get alignment
 |       from
-|   - indexUL:
+|   - indexSL:
 |     o index of last base in the alignment
 |     o 0 to use index from matirxSTPtr
 |   - revBl:
@@ -897,7 +883,7 @@ getAln_dirMatrix(
 |       each cigar entry
 |   - cigPosUI:
 |     o position at in cigar
-|   - lenCigUI:
+|   - cigLenUI:
 |     o pointer to unsigned int with length of the cigar
 |       buffer
 |   - refStartUI:
@@ -906,7 +892,7 @@ getAln_dirMatrix(
 |   - numAnonUI:
 |     o pointer to unsigned in to hold the number of
 |       anonymous bases (matches only)
-|   - numMaskUI:
+|   - maskCntUI:
 |     o pointer to unsigned long to hold number of
 |       maksed bases
 |   - delAtEndBl:
@@ -918,12 +904,12 @@ getAln_dirMatrix(
 |   - Modifies:
 |     o cigTypeStr to have the cigar entry types
 |     o cigArySI to have the length of each cigar entry
-|     o lenCigUI if cigTypeStr and cigArySI needed to be
+|     o cigLenUI if cigTypeStr and cigArySI needed to be
 |       resized
 |     o refStartUI to have first reference base in cigar
 |     o numAnonUI to have number of matching anonymous
 |       bases
-|     o numMaskUI to have number of masked bases
+|     o maskCntUI to have number of masked bases
 |   - Returns:
 |     o new position in cigar
 |     o -1 for memory error (only error possible)
@@ -931,17 +917,17 @@ getAln_dirMatrix(
 signed long
 getCig_dirMatrix(
    struct dirMatrix *matrixSTPtr,
-   unsigned long indexUL,
+   signed long indexSL,
    signed char revBl,
    struct seqST *qrySTPtr,
    struct seqST *refSTPtr,
    signed char **cigTypeStr,
    signed int **cigArySI,
    unsigned int cigPosUI,
-   unsigned int *lenCigUI,
+   unsigned int *cigLenUI,
    unsigned int *refStartUI,
    unsigned int *numAnonUI,
-   unsigned int *numMaskUI,
+   unsigned int *maskCntUI,
    signed char delAtEndBl,
    struct alnSet *alnSetSTPtr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
@@ -972,7 +958,7 @@ getCig_dirMatrix(
 
    unsigned int qryPosUI = 0;
    unsigned int refPosUI = 0;
-   unsigned int lenRefUI = matrixSTPtr->lenRefUL;
+   unsigned int lenRefUI = matrixSTPtr->refLenSL;
    unsigned int startUI = cigPosUI;
 
    signed char *qrySeqStr =
@@ -990,32 +976,32 @@ getCig_dirMatrix(
    ^   - find sequence start and ending positions
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   if(*refStartUI < matrixSTPtr->refOffsetUL)
-      *refStartUI += matrixSTPtr->refOffsetUL;
+   if(*refStartUI < matrixSTPtr->refOffsetSL)
+      *refStartUI += matrixSTPtr->refOffsetSL;
       /*likely user did not account for offset*/
 
    *numAnonUI = 0;
 
-   if(! indexUL)
-      indexUL = matrixSTPtr->indexUL; /*no index input*/
+   if(! indexSL)
+      indexSL = matrixSTPtr->indexSL; /*no index input*/
 
    qryPosUI =
       (unsigned int)
       qryCoord_indexToCoord(
          (unsigned long) lenRefUI,
-         indexUL
+         indexSL
       );
 
    refPosUI =
       (unsigned int)
       refCoord_indexToCoord(
          (unsigned long) lenRefUI,
-         indexUL
+         indexSL
       );
 
    /*bases not aligned by user*/
-   refSeqStr += matrixSTPtr->refOffsetUL;
-   qrySeqStr += matrixSTPtr->qryOffsetUL;
+   refSeqStr += matrixSTPtr->refOffsetSL;
+   qrySeqStr += matrixSTPtr->qryOffsetSL;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun06 Sec03:
@@ -1031,13 +1017,13 @@ getCig_dirMatrix(
        /*forward sequence mean backwards cigars*/
    } /*If: cigar entry already here*/
 
-   if( refPosUI < (matrixSTPtr->lenRefUL - 1) )
+   if( refPosUI < (matrixSTPtr->refLenSL - 1) )
    { /*If: missing bases at end*/
       if(revBl)
       { /*If: reverse complement sequence*/
          /*find start offset*/
-         *refStartUI = matrixSTPtr->refEndUL - refPosUI;
-         *refStartUI += matrixSTPtr->refOffsetUL;
+         *refStartUI = matrixSTPtr->refEndSL - refPosUI;
+         *refStartUI += matrixSTPtr->refOffsetSL;
       } /*If: reverse complement sequence*/
 
       else if(delAtEndBl)
@@ -1048,22 +1034,22 @@ getCig_dirMatrix(
          (*cigTypeStr)[cigPosUI] = 'D';
 
          (*cigArySI)[cigPosUI] =
-            matrixSTPtr->refEndUL
-               - matrixSTPtr->refOffsetUL
+            matrixSTPtr->refEndSL
+               - matrixSTPtr->refOffsetSL
                - refPosUI;
       } /*Else: foward sequence (deletions at end)*/
    } /*If: missing bases at end*/
 
-   if(qryPosUI + 1 < matrixSTPtr->lenQryUL)
+   if(qryPosUI + 1 < matrixSTPtr->qryLenSL)
    { /*If: need to add ending softmasked bases*/
       if((*cigTypeStr)[cigPosUI] > 32)
          ++cigPosUI;
 
       (*cigTypeStr)[cigPosUI] = 'S';
       (*cigArySI)[cigPosUI] =
-         matrixSTPtr->lenQryUL - qryPosUI;
+         matrixSTPtr->qryLenSL - qryPosUI;
 
-      *numMaskUI += matrixSTPtr->lenQryUL - qryPosUI;
+      *maskCntUI += matrixSTPtr->qryLenSL - qryPosUI;
    } /*If: need to add ending softmasked bases*/
 
    /*else is set to null*/
@@ -1088,7 +1074,7 @@ getCig_dirMatrix(
    *   - check cig memory + start loop cigar fill loop
    \*****************************************************/
 
-   dirMatrixSC += indexUL;
+   dirMatrixSC += indexSL;
 
    while(*dirMatrixSC != def_mvStop_alnDefs)
    { /*Loop: trace alignment path*/
@@ -1098,7 +1084,7 @@ getCig_dirMatrix(
       `   I often keep the same samEntry struct, so
       `   one resize effects the entire program
       */
-      if((cigPosUI + 3) >= *lenCigUI )
+      if((cigPosUI + 3) >= *cigLenUI )
       { /*If: want more cigar memory*/
          tmpStr =
             realloc(
@@ -1121,7 +1107,7 @@ getCig_dirMatrix(
             goto memErr_fun06_sec07;
          *cigArySI = (signed int *) tmpStr;
 
-         *lenCigUI += (expandCig_fun06 - 8);
+         *cigLenUI += (expandCig_fun06 - 8);
       } /*If: want more cigar memory*/
 
       /**************************************************\
@@ -1240,8 +1226,8 @@ getCig_dirMatrix(
    if(
          revBl
       &&
-           (refPosUI + matrixSTPtr->refOffsetUL)
-         < matrixSTPtr->refEndUL
+           (refPosUI + matrixSTPtr->refOffsetSL)
+         < matrixSTPtr->refEndSL
       && delAtEndBl
    ){ /*If: deletions at end*/
       
@@ -1274,7 +1260,7 @@ getCig_dirMatrix(
       (*cigTypeStr)[cigPosUI] = 'S';
 
       (*cigArySI)[cigPosUI] = qryPosUI;
-      *numMaskUI += qryPosUI;
+      *maskCntUI += qryPosUI;
    } /*If: need to add starting softmasked bases*/
 
    /*****************************************************\

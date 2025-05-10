@@ -61,6 +61,7 @@
 
 #include "../genLib/base10str.h"
 #include "../genLib/ulCp.h"
+#include "../genLib/fileFun.h"
 
 /*no .c files*/
 #include "../genLib/endLine.h"
@@ -126,7 +127,7 @@ freeHeap_alnSet(
 unsigned long
 readScoreFile_alnSet(
     struct alnSet *alnSetSTPtr, /*score matrix to change*/
-    void *scoreFILE         /*File scoring matrix scores*/
+    void *inFILE         /*File scoring matrix scores*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun07 TOC: readScoreFile_alnSet
    '  o fun07 sec01:
@@ -151,6 +152,7 @@ readScoreFile_alnSet(
 
    unsigned char colUC = 0;
    unsigned char rowUC = 0;
+   signed long lenSL = 0;
 
    buffStr[def_lenBuff_fun07 - 1] = '\0';
    buffStr[def_lenBuff_fun07 - 2] = '\0';
@@ -171,35 +173,31 @@ readScoreFile_alnSet(
    ^  - Read in line and check if comment
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   while(
-      fgets(
-         (char *) buffStr,
-         1024,
-         scoreFILE
-      )
-   ){ /*Loop: read in scores*/
+   while(1)
+   { /*Loop: read in scores*/
+      lenSL =
+         getLine_fileFun(inFILE, buffStr, 1024, &lenSL);
+      if(! lenSL)
+         break;
        
-       if(buffStr[0] == '/' && buffStr[1] == '/')
-       { /*On a comment, move onto the next line*/
-           scoreSS = endLine_ulCp(buffStr);
+      if(buffStr[0] == '/' && buffStr[1] == '/')
+      { /*On a comment, move onto the next line*/
+          --lenSL;
 
-           while(buffStr[scoreSS] == '\0')
-           { /*Loop: read in more buffer*/
-               buffStr[def_lenBuff_fun07 - 2] = '\0';
+          while(buffStr[lenSL] == '\0')
+          { /*Loop: read in more buffer*/
+             lenSL =
+                getLine_fileFun(
+                   inFILE,
+                   buffStr,
+                   1024,
+                   &lenSL
+                );
+             --lenSL;
+          } /*Loop: read in more buffer*/
 
-               tmpStr =
-                  (signed char *)
-                  fgets(
-                     (char *) buffStr,
-                     1024,
-                     (FILE *) scoreFILE
-                  );
-
-              scoreSS = endLine_ulCp(buffStr);
-           } /*Loop: read in more buffer*/
-
-           continue;
-       } /*On a comment, move onto the next line*/
+          continue;
+      } /*On a comment, move onto the next line*/
 
        /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
        ^ Fun07 Sec04:
@@ -214,7 +212,7 @@ readScoreFile_alnSet(
            continue;                        /*Blank line*/
 
        if(buffStr[0] < 64 && buffStr[2] < 64)
-           return ftell(scoreFILE);  /*Invalid character*/
+           return ftell(inFILE);  /*Invalid character*/
        
        tmpStr +=
            strToSS_base10str(
@@ -230,25 +228,19 @@ readScoreFile_alnSet(
        ); /*Add the score to the matrix*/
 
        if(tmpStr == &buffStr[3])
-           return ftell(scoreFILE);         /*No score*/
+           return ftell(inFILE);         /*No score*/
 
        scoreSS = endLine_ulCp(buffStr);
 
        while(
-              buffStr[scoreSS] != '\0'
-           && buffStr[scoreSS] != '\n'
-           && buffStr[scoreSS] != '\r'
+              buffStr[lenSL] != '\n'
+           && buffStr[lenSL] != '\r'
        ){ /*Loop: get next line*/
-
-           tmpStr =
-              (signed char *)
-              fgets(
-                 (char *) buffStr,
-                 1024,
-                 (FILE *) scoreFILE
-              );
-
-           scoreSS = endLine_ulCp(buffStr);
+          lenSL =
+             getLine_fileFun(inFILE,buffStr,1024,&lenSL);
+           if(! lenSL)
+              break;
+           --lenSL;
        }  /*Loop: get next line*/
    } /*Loop: read in scores*/
 
@@ -296,8 +288,7 @@ readMatchFile_alnSet(
 
    #define def_lenBuff_fun08 1024
    signed char buffStr[def_lenBuff_fun08];
-   signed char *tmpStr = 0;
-   unsigned int tmpUI = 0;
+   signed long lenSL = 0;
 
    unsigned char colUC = 0;
    unsigned char rowUC = 0;
@@ -321,30 +312,34 @@ readMatchFile_alnSet(
    ^  - Read in line and check if comment
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   while(
-      fgets((char *) buffStr, 1024, (FILE *) matchFILE)
-   ){ /*While I have matchs to read in*/
+   while(1)
+   { /*While I have matchs to read in*/
+      lenSL =
+         getLine_fileFun(
+            matchFILE,
+            buffStr,
+            1024,
+            &lenSL
+          );
+       if(! lenSL)
+          goto ret_fun08_sec04;
+       --lenSL;
        
        if(buffStr[0] == '/' && buffStr[1] == '/')
        { /*On a comment, move onto the next line*/
-           tmpStr = buffStr;
 
-           while(*tmpStr == '\0')
+           while(! buffStr[lenSL])
            { /*While have more buffer to read in*/
-
-               /*avoids ignoring fget warning, but
-               `  has unused fget warning, so found a use
-               `  for tmpStr
-               */
-               tmpStr =
-                  (signed char *)
-                  fgets(
-                     (char *) buffStr,
-                     1024,
-                     (FILE *) matchFILE
+              lenSL =
+                 getLine_fileFun(
+                    matchFILE,
+                    buffStr,
+                    1024,
+                    &lenSL
                   );
-
-              tmpStr += endLine_ulCp(buffStr);
+               if(! lenSL)
+                  goto ret_fun08_sec04;
+              --lenSL;
            } /*While have more buffer to read in*/
 
            continue;
@@ -373,29 +368,25 @@ readMatchFile_alnSet(
          alnSetSTPtr
        ); /*Add the match to the matrix*/
 
-       tmpUI = endLine_ulCp(buffStr);
-
        while(
-              buffStr[tmpUI] != '\0'
-           && buffStr[tmpUI] != '\n'
-           && buffStr[tmpUI] != '\r'
+              buffStr[lenSL] != '\n'
+           && buffStr[lenSL] != '\r'
        ){ /*Loop: get next line*/
-           /*avoids ignoring fget warning, but
-           `  has unused fget warning
-           */
-           tmpStr =
-              (signed char *)
-              fgets(
-                 (char *) buffStr,
-                 1024,
-                 (FILE *) matchFILE
+          lenSL =
+             getLine_fileFun(
+                matchFILE,
+                buffStr,
+                1024,
+                &lenSL
               );
-
-          tmpUI = endLine_ulCp(buffStr);
+           if(! lenSL)
+              goto ret_fun08_sec04;
+           --lenSL;
        }  /*Loop: get next line*/
    } /*While I have matchs to read in*/
 
-   return 0;
+   ret_fun08_sec04:;
+      return 0;
 } /*readMatchFile_alnSet*/
 
 /*-------------------------------------------------------\

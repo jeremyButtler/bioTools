@@ -51,6 +51,7 @@
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
 !   - .c  #include "../genLib/strAry.h"
+!   - .c  #include "../genLib/fileFun.h"
 !   - .c  #include "../genBio/tbCon.h"
 !   - .c  #include "../genBio/edDist.h"
 !   - .h  #include "../genLib/genMath.h" .h min macro only
@@ -2230,12 +2231,7 @@ main(
    \*****************************************************/
 
    samHeadHeapStr =
-      getHead_samEntry(
-         &samStackST,
-         &buffHeapStr,
-         &lenBuffUL,
-         samFILE
-      );
+      getHead_samEntry(&samStackST, samFILE);
 
    if(! samHeadHeapStr)
    { /*If: memory error*/
@@ -2361,8 +2357,6 @@ main(
          conHeapListST,
          samHeadHeapStr,
          pgHeadStr,
-         &buffHeapStr,
-         &lenBuffUL,
          conFILE
       );
 
