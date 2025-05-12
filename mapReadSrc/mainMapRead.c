@@ -57,7 +57,6 @@
 !   - .c  #include "../genLib/shellSort.h"
 !   - .c  #include "../genLib/endin.h"
 !   - .c  #include "../genLib/checkSum.h"
-!   - .c  #include "../genLib/strAry.h"
 !   - .c  #include "../genLib/fileFun.h"
 !   - .c  #include "../genBio/kmerFun.h"
 !   - .c  #include "../genAln/indexToCoord.h"

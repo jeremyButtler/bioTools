@@ -38,7 +38,6 @@
 !   - .c  #include "../genLib/ulCp.h"
 !   - .c  #include "../genLib/numToStr.h"
 !   - .c  #include "../genLib/base10str.h"
-!   - .c  #include "../genLib/strAry.h"
 !   - .c  #include "../genLib/fileFun.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/

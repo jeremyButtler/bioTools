@@ -48,7 +48,6 @@
 !   o .c  #include "../genLIb/numToStr.h"
 !   o .c  #include "../genLib/ulCp.h"
 !   o .c  #include "../genLib/shellSort.h"
-!   o .c  #include "../genLib/strAry.h"
 !   o .c  #include "../genLib/fileFun.h"
 !   o .h  #include "../genBio/ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/

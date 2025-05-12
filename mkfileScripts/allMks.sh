@@ -77,7 +77,7 @@ bash "../$retDirStr/allOSMkfiles.sh" samToAln mainSamToAln samToAln charCp ../bi
 cd "../$retDirStr" || exit;
 
 cd ../tbConSrc || exit;
-bash "../$retDirStr/allOSMkfiles.sh" tbCon mainTbCon tbCon charCp ../bioTools.h ../genLib/endLine.h ../genLib/genMath.h ../genBio/tbConDefs.h
+bash "../$retDirStr/allOSMkfiles.sh" tbCon mainTbCon samRef tbCon charCp ../bioTools.h ../genLib/endLine.h ../genLib/genMath.h ../genBio/tbConDefs.h
 cd "../$retDirStr" || exit;
 
 cd ../tranSeqSrc || exit;

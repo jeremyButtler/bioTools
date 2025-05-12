@@ -96,12 +96,21 @@ To avoid new line and carraige return issues I have
 
 ```
 /*get off line endings*/
-if(bufferStr[index] == '\r')
-   ++index;
 if(bufferStr[index] == '\n')
+{ /*If: new line line break*/
    ++index;
-if(bufferStr[index] == '\r')
+
+   if(bufferStr[index] == '\r')
+      ++index;
+} /*If: new line line break*/
+
+else if(bufferStr[index] == '\r')
+} /*Else If: carriage return line break*/
    ++index;
+
+   if(bufferStr[index] == '\n')
+      ++index;
+} /*Else If: carriage return line break*/
 ```
 
 # Build systems
@@ -835,6 +844,36 @@ getNumbers(x){
      return error
 }
 ```
+
+## Weird things I have noticed
+
+One trick I have picked up is that .o and .a files will be
+  included in static compile steps, even when you are not
+  using the functions that call them. For example:
+
+Say we have library 1:
+
+```
+#include "someLib.h"
+
+add(int x, int y){ return x + y;};
+use_somLib(int x, int y){ return somLib(x + y);};
+```
+
+Even if I never use `use_someLib` in my final program, the
+  `someLib` .o files will be included. At one or two
+  points I have broken libraries up at logical points to
+  prevent this bloat. The two I have done are dealing
+  with `.gz` files in gzSeqST instead of seqST and
+  splitting `samEntry` into `samEntry` and `samRef`.
+
+I guess what I have learned is if there is a logical
+  splits and the extra libraries are rarely used in other
+  .c files, then split them into smaller units.
+
+I would avoid using `fileFun`, but that is to critical for
+  what I do. Otherwise I could reduce programs the used
+  it (most, if not all) by 4kb.
 
 # Summary
 

@@ -7,10 +7,171 @@ Here to give an idea of how to use the libraries in
 # TOC: Table Of Contents
 
 - genBio TOC: Table Of Contents
+  - [samRef](#samEntry)
+    - get reference ids and lengths from samfile header
   - [samEntry](#samEntry)
     - has structure to hold sam file entries
   - [seqST](#seqST)
     - has structure to read in fastq or fasta files
+
+# samRef
+
+Has structure and function to scan sam file header and
+  find/extract reference ids and lengths.
+
+# refs_samRef:
+
+Has the list of references and their lengths found in the
+  sam file header.
+
+- lenAryUI array that has all the reference lengths
+- idAryStr has the reference names
+  - this is a c-string array from ../genLib/strAry.c, so
+    you will need to use get_strAry() (fun03
+    ../genLib/strAry.c) to get ids out of it.
+- numRefUI has the number of references in lenAryUI and
+  idAryStr
+  
+### refs_samRef workflow
+
+The workflow for a refs_samRef struct is similar to a
+  samEntry struct. You first initialize the struct, then
+  setup initial memory. After that you can read in a
+  samEntry header or add references one by one. You can
+  then search the structure for references. Finally you
+  will free the struct.
+
+You can initialize a refs_samRef struct with
+  `init_refs_samRef(refs_samRefPointer);`.
+
+You can then setup memory using 
+
+```
+init_refs_samRef(refs_samRefPointer);
+if(setup_refs_samRef(refs_samRefPointer);
+   /*deal with memory errors*/
+```
+
+You can then read the headers from a sam file using
+  getRefLen_samEntry. This will read the headers until
+  it hits the frist sequence.
+
+- Input:
+  - pointer to a `refs_samRef` structure to store
+    lengths and reference ids in
+  - pointer to a samEntry to get lines
+    - will be set to first sequence line
+  - FILE pointer to sam file to get references from
+  - FILE pointer to file to print headers to
+    - use 0/null to not print headers
+  - c-string pointer to get non-reference header entries
+    - resized as needed (ok if pointer is set to 0)
+  - unsinged long pointer to get/has header c-string size
+
+- Output:
+  - Returns 0 for no errors
+  - Returns def_memErr_samEntry for memory errors
+  - Returns def_fileErr_samEntry for file errors
+  - stores header in input c-string
+  - updates unsigned long pointer to header c-string is
+    resized
+
+You can then find references in the refs_samRef struct
+  using findRef_refs_samRef. The input is the id to
+  search for and teh refs_samRef struct to search. The
+  output is the index of the reference or a negative
+  number if no referene was found.
+
+Finally you can free the refs_samRef structure using
+  freeStack_refs_samRef (for variables in struct) or
+  with freeHeap_refs_samRef (for entire struct). If
+  you use freeHeap_refs_samRef, remember to set you
+  structure pointer to null.
+
+```
+freeStack_refs_samRef(refs_samRefPointer);
+```
+
+```
+freeHeap_refs_samRef(refs_samRefPointer);
+refs_samRefPointer = 0;
+```
+
+### refs_samRef example
+
+```
+#ifdef PLAN9
+  #include <u.h>
+  #include <libc.h>
+#else
+  #include <stdlib.h>
+#endif
+
+#include <stdio.h>
+#include "samEntry.h"
+
+
+int
+main(
+){
+
+   signed char errorSC = 0;
+   signed char *headerStr = 0;
+   unsigned long headerSizeUL = 0;
+   signed long indexSL = 0;
+   
+   struct refs_samRef refsStruct;
+   struct samEntry samStruct;
+   
+   FILE *samFILE = fopen("file.sam", "r");
+   
+   init_refs_samRef(&refsStruct);
+   init_samEntry(&samStruct);
+   
+   if(! samFILE)
+      /*deal with file errors*/
+   if(setup_samEntry(&samStruct)
+      /*deal with memory errors*/
+   if(setup_refs_samRef(&refsStruct))
+      /*deal with memory errors*/
+   
+   errorSC =
+      getRefLen_samRef(
+         &refStruct,
+         &samStruct, /*set to first read in sam file*/
+         samFILE,
+         0,      /*not printing headers to output file*/
+         &headerStr,
+         &headerSizeUL
+      );
+   
+   indexSL =
+     findRef_refs_samRef(&refStruct,samStruct.refIdStr);
+   
+   if(indexSL < 0)
+      /*likely umapped read (reference not in header)*/
+   else
+   { /*Else: found reference, print reference length*/
+      printf(
+         "%s\t%li\n",
+         refStruct.idAryStr[indexSL],
+         refStruct.lenAryUI[indexSL]
+      );
+   } /*Else: found reference, print reference length*/
+   
+   freeStack_samEntry(&samStruct);
+   freeStack_refs_samRef(&refStruct);
+   fclose(samFILE);
+   samFILE = 0;
+   
+   if(headerStr)
+      free(headerStr);
+   headerStr = 0;
+   
+   return 0;
+}
+```
+
 
 # samEntry
 
@@ -19,10 +180,6 @@ Has the samEntry structure, which is for reading in
   used to print sam file entries as stats (filtsam
   -out-stats), as fastq's, as sam files, or as fasta
   files.
-
-Also has refs_samEntry, which is used to hold reference
-  sequences length and name. This is stored in the header.
-  This is mainly here for tbCon.
 
 ## Error types:
 
@@ -486,159 +643,6 @@ main(
       freeStack_samEntry(&samStruct);
 
       return errorSC;
-}
-```
-
-## refs_samEntry:
-
-Not likely used often, but holds the list of references
-  and their lengths found in the sam file header.
-
-- lenAryUI array that has all the reference lengths
-- idAryStr has the reference names
-  - this is a c-string array from ../genLib/strAry.c, so
-    you will need to use get_strAry() (fun03
-    ../genLib/strAry.c) to get ids out of it.
-- numRefUI has the number of references in lenAryUI and
-  idAryStr
-  
-### refs_samEntry workflow
-
-The workflow for a refs_samEntry struct is similar to a
-  samEntry struct. You first initialize the struct, then
-  setup initial memory. After that you can read in a
-  samEntry header or add references one by one. You can
-  then search the structure for references. Finally you
-  will free the struct.
-
-You can initialize a refs_samEntry struct with
-  `init_refs_samEntry(refs_samEntryPointer);`.
-
-You can then setup memory using 
-
-```
-init_refs_samEntry(refs_samEntryPointer);
-if(setup_refs_samEntry(refs_samEntryPointer);
-   /*deal with memory errors*/
-```
-
-You can then read the headers from a sam file using
-  getRefLen_samEntry. This will read the headers until
-  it hits the frist sequence.
-
-- Input:
-  - pointer to a `refs_samEntry` structure to store
-    lengths and reference ids in
-  - pointer to a samEntry to get lines
-    - will be set to first sequence line
-  - FILE pointer to sam file to get references from
-  - FILE pointer to file to print headers to
-    - use 0/null to not print headers
-  - c-string pointer to get non-reference header entries
-    - resized as needed (ok if pointer is set to 0)
-  - unsinged long pointer to get/has header c-string size
-
-- Output:
-  - Returns 0 for no errors
-  - Returns def_memErr_samEntry for memory errors
-  - Returns def_fileErr_samEntry for file errors
-  - stores header in input c-string
-  - updates unsigned long pointer to header c-string is
-    resized
-
-You can then find references in the refs_samEntry struct
-  using findRef_refs_samEntry. The input is the id to
-  search for and teh refs_samEntry struct to search. The
-  output is the index of the reference or a negative
-  number if no referene was found.
-
-Finally you can free the refs_samEntry structure using
-  freeStack_refs_samEntry (for variables in struct) or
-  with freeHeap_refs_samEntry (for entire struct). If
-  you use freeHeap_refs_samEntry, remember to set you
-  structure pointer to null.
-
-```
-freeStack_refs_samEntry(refs_samEntryPointer);
-```
-
-```
-freeHeap_refs_samEntry(refs_samEntryPointer);
-refs_samEntryPointer = 0;
-```
-
-### refs_samEntry example
-
-```
-#ifdef PLAN9
-  #include <u.h>
-  #include <libc.h>
-#else
-  #include <stdlib.h>
-#endif
-
-#include <stdio.h>
-#include "samEntry.h"
-
-
-int
-main(
-){
-
-   signed char errorSC = 0;
-   signed char *headerStr = 0;
-   unsigned long headerSizeUL = 0;
-   signed long indexSL = 0;
-   
-   struct refs_samEntry refsStruct;
-   struct samEntry samStruct;
-   
-   FILE *samFILE = fopen("file.sam", "r");
-   
-   init_refs_samEntry(&refsStruct);
-   init_samEntry(&samStruct);
-   
-   if(! samFILE)
-      /*deal with file errors*/
-   if(setup_samEntry(&samStruct)
-      /*deal with memory errors*/
-   if(setup_refs_samEntry(&refsStruct))
-      /*deal with memory errors*/
-   
-   errorSC =
-      getRefLen_samEntry(
-         &refStruct,
-         &samStruct, /*set to first read in sam file*/
-         samFILE,
-         0,      /*not printing headers to output file*/
-         &headerStr,
-         &headerSizeUL
-      );
-   
-   indexSL =
-     findRef_refs_samEntry(&refStruct,samStruct.refIdStr);
-   
-   if(indexSL < 0)
-      /*likely umapped read (reference not in header)*/
-   else
-   { /*Else: found reference, print reference length*/
-      printf(
-         "%s\t%li\n",
-         refStruct.idAryStr[indexSL],
-         refStruct.lenAryUI[indexSL]
-      );
-   } /*Else: found reference, print reference length*/
-   
-   freeStack_samEntry(&samStruct);
-   freeStack_refs_samEntry(&refStruct);
-   fclose(samFILE);
-   samFILE = 0;
-   
-   if(headerStr)
-      free(headerStr);
-   headerStr = 0;
-   
-   return 0;
 }
 ```
 

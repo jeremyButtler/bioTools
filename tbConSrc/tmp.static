@@ -1,9 +1,9 @@
 LD=cc
-coreCFLAGS= -O3 -std=c89 -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wcast-align -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
+coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wcast-align -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
 CFLAGS=-DNONE
 NAME=tbCon
 PREFIX=/usr/local/bin
-O=o.unix
+O=o.static
 
 genBio=../genBio
 genLib=../genLib
@@ -28,10 +28,9 @@ mainTbCon.$O: \
 	$(genBio)/samRef.$O \
 	$(genBio)/tbCon.$O \
 	$(genLib)/charCp.$O \
-	../bioTools.h \
-	../genLib/endLine.h \
+	../genBio/tbConDefs.h \
 	../genLib/genMath.h \
-	../genBio/tbConDefs.h
+	../bioTools.h
 		$(CC) -o mainTbCon.$O -c \
 			$(coreCFLAGS) $(CFLAGS) mainTbCon.c
 
@@ -114,7 +113,7 @@ $(genLib)/base10str.$O: \
 
 install:
 	mv $(NAME) $(PREFIX)
-	chmod a+x $(PREFIX)\/$(NAME)
+	chmod a+x $(PREFIX)/$(NAME)
 
 clean:
 	rm $(objFiles)

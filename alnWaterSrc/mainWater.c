@@ -50,7 +50,6 @@
 !   o .c  #include "../genLib/ulCp.h"
 !   o .c  #include "../genLib/numToStr.h"
 !   o .c  #include "../genLib/shellSort.h"
-!   o .c  #include "../genLib/strAry.h"
 !   o .c  #include "../genLib/fileFun.h"
 !   o .c  #include "../genAln/indexToCoord.h"
 !   o .h  #include "../genLib/genMath.h" (not using .c)

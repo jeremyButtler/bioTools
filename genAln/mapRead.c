@@ -124,7 +124,6 @@
 ! Hidden libraries
 !   - .c  #include "../genLib/base10Str.h"
 !   - .c  #include "../genLib/charCp.h"
-!   - .c  #include "../genLib/strAry.h"
 !   - .c  #include "../genLib/fileFun.h"
 !   - .c  #include "../genAln/indexToCoord.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"

@@ -11,6 +11,7 @@ genBio=..\genBio
 genLib=..\genLib
 
 objFiles= \
+   $(genBio)\samRef.$O \
    $(genBio)\tbCon.$O \
    $(genLib)\charCp.$O \
    $(genBio)\samEntry.$O \
@@ -26,6 +27,7 @@ $(NAME): mainTbCon.$O
 
 mainTbCon.$O: \
 	mainTbCon.c \
+	$(genBio)\samRef.$O \
 	$(genBio)\tbCon.$O \
 	$(genLib)\charCp.$O \
 	../bioTools.h \
@@ -34,6 +36,16 @@ mainTbCon.$O: \
 	../genBio/tbConDefs.h
 		$(CC) /Fo:mainTbCon.$O  \
 			$(coreCFLAGS) $(CFLAGS) mainTbCon.c
+
+$(genBio)\samRef.$O: \
+	$(genBio)\samRef.c 	$(genBio)\samRef.h \
+	$(genBio)\samEntry.$O \
+	$(genLib)\strAry.$O \
+	$(genLib)\base10str.$O \
+	$(genLib)\endLine.h
+		$(CC) /Fo:$(genBio)\samRef.$O \
+			 $(coreCFLAGS) $(CFLAGS) \
+			$(genBio)\samRef.c
 
 $(genBio)\tbCon.$O: \
 	$(genBio)\tbCon.c \

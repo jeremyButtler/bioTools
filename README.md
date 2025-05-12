@@ -271,6 +271,12 @@ My general libraries.
 
 # Updates:
 
+- 2025-05-12:
+  - separate samEntry into the core samEntry reading
+    system (samEntry) and syste to read in references
+    from sam file headers (samRef). This reduces compile
+    size of each program by 4kb, saving 200 to 300kb in
+    static binrary sizes.
 - 2025-05-09:
   - fixed bug in fastq read part of primFind + push all
     changes since 2025-04-30

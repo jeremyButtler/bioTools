@@ -666,20 +666,22 @@ inflateDep="$inflateDep ulCp $ulCpDep";
 #   o sec03 sub03 cat07:
 #     - samEntry
 #   o sec03 sub03 cat08:
-#     - adjCoords
+#     - samRef
 #   o sec03 sub03 cat09:
-#     - cigToEqx
+#     - adjCoords
 #   o sec03 sub03 cat10:
-#     - maskPrim
+#     - cigToEqx
 #   o sec03 sub03 cat11:
-#     - trimSam
+#     - maskPrim
 #   o sec03 sub03 cat12:
-#     - ampDepth
+#     - trimSam
 #   o sec03 sub03 cat13:
-#     - tbCon
+#     - ampDepth
 #   o sec03 sub03 cat14:
-#     - edDist
+#     - tbCon
 #   o sec03 sub03 cat15:
+#     - edDist
+#   o sec03 sub03 cat16:
 #     - rmHomo
 #*********************************************************
 
@@ -816,6 +818,26 @@ samEntryDep="$samEntryDep base10str $base10strDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat08:
+#   - samRef
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+samRefStr="${genBioStr}samRef.\$O: \\
+	${genBioStr}samRef.c \
+	${genBioStr}samRef.h \\
+	${genBioStr}samEntry.\$O \\
+	${genLibStr}strAry.\$O \\
+	${genLibStr}base10str.\$O \\
+	${genLibStr}endLine.h
+		$ccStr ${dashOStr}${genBioStr}samRef.\$O \\
+			$dashCStr $coreFlagsStr $cFlagsStr \\
+			${genBioStr}samRef.c";
+
+samRefObj="${genBioStr}samRef.\$O";
+samRefDep="samEntry $samEntryDep strAry $strAryDep";
+samRefDep="$samRefDep base10str $base10strDep";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub03 Cat09:
 #   - adjCoords
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -833,7 +855,7 @@ adjCoordsDep="geneCoord $geneCoordDep";
 adjCoordsDep="$adjCoordsDep samEntry $samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat09:
+# Sec03 Sub03 Cat10:
 #   - cigToEqx
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -849,7 +871,7 @@ cigToEqxObj="${genBioStr}cigToEqx.\$O";
 cigToEqxDep="samEntry $samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat10:
+# Sec03 Sub03 Cat11:
 #   - maskPrim
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -867,7 +889,7 @@ maskPrimDep="samEntry $samEntryDep";
 maskPrimDep="$maskPrimDep shellSort shellSortDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat11:
+# Sec03 Sub03 Cat12:
 #   - trimSam
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -883,7 +905,7 @@ trimSamObj="${genBioStr}trimSam.\$O";
 trimSamDep="samEntry samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat12:
+# Sec03 Sub03 Cat13:
 #   - ampDepth
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -901,7 +923,7 @@ ampDepthDep="geneCoord $geneCoordDep";
 ampDepthDep="$ampDepthDep samEntry $samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat13:
+# Sec03 Sub03 Cat14:
 #   - tbCon
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -920,7 +942,7 @@ tbConObj="${genBioStr}tbCon.\$O";
 tbConDep="samEntry $samEntryDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat14:
+# Sec03 Sub03 Cat15:
 #   - edDist
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -940,7 +962,7 @@ edDistObj="${genBioStr}edDist.\$O";
 edDistDep="samEntry $samEntryDep seqST $seqSTDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub03 Cat15:
+# Sec03 Sub03 Cat16:
 #   - rmHomo
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1751,20 +1773,22 @@ do # Loop: get dependencies
    #   o sec04 sub04 cat07:
    #     - samEntry
    #   o sec04 sub04 cat08:
-   #     - adjCoords
+   #     - samRef
    #   o sec04 sub04 cat09:
-   #     - cigToEqx
+   #     - adjCoords
    #   o sec04 sub04 cat10:
-   #     - maskPrim
+   #     - cigToEqx
    #   o sec04 sub04 cat11:
-   #     - trimSam
+   #     - maskPrim
    #   o sec04 sub04 cat12:
-   #     - ampDepth
+   #     - trimSam
 	#   o sec04 sub04 cat13:
-   #     - tbCon
+   #     - ampDepth
 	#   o sec04 sub04 cat14:
-   #     - edDist
+   #     - tbCon
 	#   o sec04 sub04 cat15:
+   #     - edDist
+	#   o sec04 sub04 cat16:
    #     - rmHomo
    #******************************************************
 
@@ -1956,6 +1980,33 @@ do # Loop: get dependencies
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
    # Sec04 Sub04 Cat08:
+   #   - samRef
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "samRef" ]; then
+   # Else If: samRef library
+      if [ "$samRefBl" = "" ]; then
+         cmdStr="$cmdStr$newLineStr$samRefStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}${samRefObj}";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$samRefObj";
+         fi
+
+         samRefBl=1;
+         depStr="$depStr $samRefDep";
+      fi
+
+      if [ "$genBioBl" -lt 1 ]; then
+         genBioBl=1;
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
+      fi
+   # Else If: samRef library
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub04 Cat09:
    #   - adjCoords
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1982,7 +2033,7 @@ do # Loop: get dependencies
    # Else If: adjCoords library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat09:
+   # Sec04 Sub04 Cat10:
    #   - cigToEqx
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2010,7 +2061,7 @@ do # Loop: get dependencies
    # Else If: cigToEqx library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat10:
+   # Sec04 Sub04 Cat11:
    #   - maskPrim
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2037,7 +2088,7 @@ do # Loop: get dependencies
    # Else If: maskPrim library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat11:
+   # Sec04 Sub04 Cat12:
    #   - trimSam
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2065,7 +2116,7 @@ do # Loop: get dependencies
    # Else If: trimSam library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat12:
+   # Sec04 Sub04 Cat13:
    #   - ampDepth
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2092,7 +2143,7 @@ do # Loop: get dependencies
    # If: ampDepth library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat13:
+   # Sec04 Sub04 Cat14:
    #   - tbCon
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2120,7 +2171,7 @@ do # Loop: get dependencies
    # If: tbCon library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat14:
+   # Sec04 Sub04 Cat15:
    #   - edDist
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2147,7 +2198,7 @@ do # Loop: get dependencies
    # If: edDist library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub04 Cat15:
+   # Sec04 Sub04 Cat16:
    #   - rmHomo
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

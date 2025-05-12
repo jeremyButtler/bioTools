@@ -35,6 +35,7 @@
 #include "../genLib/strAry.h"
 
 #include "../genBio/samEntry.h"
+#include "../genBio/samRef.h"
 #include "../genBio/tbCon.h"
 
 /*only using .h file (no .c or not using .c)*/
@@ -1445,8 +1446,6 @@ main(
 
    /*Non-user input*/
    /*For the sam file*/
-   signed char *buffHeapStr = 0;
-   unsigned long lenBuffUL = 0;
    unsigned long ulRead = 0;
    struct samEntry samStackST;
  
@@ -1459,7 +1458,7 @@ main(
    signed char errSC = 0;
    signed int numFragSI = 0;
    struct samEntry *samHeapAryST = 0;
-   struct refs_samEntry refStackST; /*for ref list*/
+   struct refs_samRef refStackST; /*for ref list*/
    unsigned int numMaskUI = 0;
       /*throw away, # masked bases*/
 
@@ -1481,7 +1480,7 @@ main(
 
    init_set_tbCon(&setStackST);
    init_samEntry(&samStackST);
-   init_refs_samEntry(&refStackST);
+   init_refs_samRef(&refStackST);
 
    /*****************************************************\
    * Main Sec02 Sub02:
@@ -1605,7 +1604,7 @@ main(
 
 
    errSC =
-      setup_refs_samEntry(
+      setup_refs_samRef(
          &refStackST,
          128
    );
@@ -1630,8 +1629,6 @@ main(
       getRefLen_samEntry(
          &refStackST, /*will have refernce ids/lengths*/
          &samStackST, /*will have first read in file*/
-         &buffHeapStr,/*buffer for reading sam file*/
-         &lenBuffUL,  /*current size of buffer*/
          samFILE,     /*has headers to process*/
          outFILE,     /*save all headers to this file*/
          0,    /*do not save headers*/
@@ -1664,10 +1661,6 @@ main(
       } /*Else: memory error*/
 
    } /*If: had error*/
-
-   free(buffHeapStr);
-   buffHeapStr = 0;
-   lenBuffUL = 0;
 
    /*****************************************************\
    * Main Sec03 Sub05:
@@ -1814,7 +1807,7 @@ main(
        \*************************************************/
 
        indexSL =
-          findRef_refs_samEntry(
+          findRef_refs_samRef(
              samStackST.refIdStr,
              &refStackST
           );
@@ -1823,7 +1816,7 @@ main(
        { /*If: reference is not in list*/
           indexSL =
              (signed long)
-             addRef_samEntry(
+             addRef_samRef(
                 samStackST.refIdStr,
                 samStackST.readLenUI + 128,
                 &refStackST,
@@ -2144,11 +2137,6 @@ main(
 
    cleanUp_main_sec06_sub04:;
 
-      if(buffHeapStr)
-         free(buffHeapStr);
-      buffHeapStr = 0;
-      lenBuffUL = 0;
-
       /*free consensuses*/
       for(
          siIter = 0;
@@ -2163,7 +2151,7 @@ main(
       samHeapAryST = 0;
 
       freeStack_samEntry(&samStackST);
-      freeStack_refs_samEntry(&refStackST);
+      freeStack_refs_samRef(&refStackST);
       freeStack_set_tbCon(&setStackST);
 
 
