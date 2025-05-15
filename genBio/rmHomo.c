@@ -31,6 +31,7 @@
 !   - std #include <stdio.h>
 !   - .c  #include "../genLib/base10str.h"
 !   - .c  #include "../genLib/numToStr.h"
+!   - .c  #include "../genLib/strAry.h"
 !   - .c  #include "../genLib/fileFun.h"
 !   - .h  #include "../genLib/endLine.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
@@ -533,35 +534,32 @@ indel_rmHomo(
    uiCig = 0;
 
    for(
-     cpCigUI = 0;
+     cpCigUI = 1;
      cpCigUI < samSTPtr->cigLenUI;
      ++cpCigUI
    ){ /*Loop: merge duplicate cigar entries*/
-      samSTPtr->cigTypeStr[uiCig] =
-         samSTPtr->cigTypeStr[cpCigUI];
-      samSTPtr->cigArySI[uiCig] =
-         samSTPtr->cigArySI[cpCigUI];
-
-      if(! cpCigUI)
-      { /*If: first cigar entry*/
-         ++uiCig;
-         continue;
-      } /*If: first cigar entry*/
-
       if(
-            samSTPtr->cigTypeStr[uiCig - 1]
-         == samSTPtr->cigTypeStr[uiCig]
+            samSTPtr->cigTypeStr[uiCig]
+         == samSTPtr->cigTypeStr[cpCigUI]
       ){ /*If: can merge cigar entries*/
-         samSTPtr->cigArySI[uiCig - 1] +=
-            samSTPtr->cigArySI[uiCig];
+         samSTPtr->cigArySI[uiCig] +=
+            samSTPtr->cigArySI[cpCigUI];
       }  /*If: can merge cigar entries*/
 
       else
+      { /*Else: moving to next cigar entry*/
          ++uiCig;
+         samSTPtr->cigTypeStr[uiCig] =
+            samSTPtr->cigTypeStr[cpCigUI];
+         samSTPtr->cigArySI[uiCig] =
+            samSTPtr->cigArySI[cpCigUI];
+      } /*Else: moving to next cigar entry*/
    }  /*Loop: merge duplicate cigar entries*/
 
+   ++uiCig;
    samSTPtr->cigLenUI = uiCig;
    samSTPtr->cigArySI[uiCig] = '\0';
+   samSTPtr->cigTypeStr[uiCig] = '\0';
 
    /*****************************************************\
    * Fun01 Sec04 Sub02:

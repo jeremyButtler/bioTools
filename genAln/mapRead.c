@@ -124,6 +124,7 @@
 ! Hidden libraries
 !   - .c  #include "../genLib/base10Str.h"
 !   - .c  #include "../genLib/charCp.h"
+!   - .c  #include "../genLib/strAry.h"
 !   - .c  #include "../genLib/fileFun.h"
 !   - .c  #include "../genAln/indexToCoord.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
@@ -1051,23 +1052,11 @@ addRef_ref_mapRead(
    ^   - copy kmers into sorted array and sort kmers
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   /*this older method is much slower, due to accessing
-   ` index's every time
-   */
-   /*sortKmerIndex_mapRead(
-      refSTPtr->kmerArySI,
-      refSTPtr->indexArySI,
-      refSTPtr->lenSI
-   );*/ /*makes indexArySI into an index array that is
-      `  sorted by kmer (uses kmerArySI as a guide [does
-      `  nothing to it])
-      */
-
    uiTwinSort_shellSort(
       (unsigned int *) refSTPtr->kmerArySI,
       (unsigned int *) refSTPtr->indexArySI,
       0,
-      refSTPtr->lenSI
+      refSTPtr->lenSI - 1
    ); /*using unsigned int to force -1's to end of array*/
 
    refSTPtr->lenSI =

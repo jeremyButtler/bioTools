@@ -413,7 +413,7 @@ fi # check makefile type
 #   o sec03 sub06:
 #     - genGenoType libraries
 #   o sec03 sub07:
-#     - code for freezeTB (genFreezeTB)
+#     - misc code in own folders
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 #*********************************************************
@@ -1281,14 +1281,14 @@ cgMLSTDep="edDist $edDistDep ptrAry $ptrAryDep";
 
 #*********************************************************
 # Sec03 Sub07:
-#   - code for freezeTB (genFreezeTB)
+#   - misc code in own folders
 #   o sec03 sub07 cat01:
-#     - 
+#     - k2TaxaId
 #*********************************************************
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub07 Cat01:
-#   - 
+#   - k2TaxaId
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 tmpStr="..${slashSC}k2TaxaIdSrc${slashSC}k2TaxaId";

@@ -3024,13 +3024,13 @@ pstats_samEntry(
       fprintf(
         (FILE *) (outFILE),
         "%s\t%s\t%u\t%u\t%u\t%u\t%u",
-        (samSTPtr)->qryIdStr,
-        (samSTPtr)->refIdStr,
-        (samSTPtr)->flagUS,
-        (samSTPtr)->mapqUC,
-        (samSTPtr)->refStartUI + 1,
-        (samSTPtr)->readLenUI,
-        (samSTPtr)->alnReadLenUI
+        samSTPtr->qryIdStr,
+        samSTPtr->refIdStr,
+        samSTPtr->flagUS,
+        samSTPtr->mapqUC,
+        samSTPtr->refStartUI + 1,
+        samSTPtr->readLenUI,
+        samSTPtr->alnReadLenUI
       );
 
       /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\

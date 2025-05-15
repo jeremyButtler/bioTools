@@ -80,6 +80,7 @@
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries
 !   o .c  #include "../genLib/base10str.h"
+!   o .c  #include "../genLib/strAry.h"
 !   o .c  #include "../genLib/fileFun.h"
 !   o .h  #include "ntTo5Bit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -2765,6 +2766,7 @@ noFragCollapse_tbCon(
 |   - Returns:
 |     o 0 for success
 |     o def_fileErr_tbConDefs for file errors
+|     o def_noMap_tbConDefs if conNtAryST is null or 0
 \-------------------------------------------------------*/
 char
 pvar_tbCon(
@@ -2806,11 +2808,10 @@ pvar_tbCon(
    ^   - Print out the header
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   if(
-         ! outStr
-      || *outStr == '*'
-   ) outFILE = stdout;
-
+   if(! outStr)
+      outFILE = stdout;
+   else if(*outStr == '*')
+      outFILE = stdout;
    else
    { /*Else: I need to open a file*/
       outFILE =
@@ -2834,6 +2835,9 @@ pvar_tbCon(
        "\tpercSupport\tmasked\tkeptBases\ttotalBases%s",
        str_endLine
    );
+
+   if(! conNtAryST)
+      goto noFile_fun15_sec04;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun15 Sec03:
@@ -3080,18 +3084,20 @@ pvar_tbCon(
    errSC = 0;
    goto cleanUp_fun15_sec04;
 
+   noFile_fun15_sec04:;
+      errSC = def_noMap_tbConDefs;
+      goto cleanUp_fun15_sec04;
+
    fileErr_fun15_sec04:;
-   errSC = def_fileErr_tbConDefs;
-   goto cleanUp_fun15_sec04;
+      errSC = def_fileErr_tbConDefs;
+      goto cleanUp_fun15_sec04;
 
    cleanUp_fun15_sec04:;
+      if(outFILE != stdout)
+         fclose(outFILE);
+      outFILE = 0;
 
-   if(outFILE != stdout)
-      fclose(outFILE);
-
-   outFILE = 0;
-
-   return errSC;
+      return errSC;
 } /*pConBasAry*/
 
 /*=======================================================\

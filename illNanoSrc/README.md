@@ -136,25 +136,32 @@ You can use `part-overlap` to merge profiles that share
   1. num_var: number variant positions coverd by profile
   2. num_overlap: number of other profiles that share at
      least 1 variant position with this profile
-  3. min_diff: minimum difference between overlapping
+  3. prof_depth: number reads supporting profile
+  4. read_depth: number reads mapping to this profile and
+     all overlapping profiles
+  5. min_diff: minimum difference between overlapping
      profiles
-  4. avg_diff: average difference between overlapping
+  6. avg_diff: average difference between overlapping
      profiles
-  5. max_diff: maximum difference between overlapping
+  7. max_diff: maximum difference between overlapping
      profiles
-  6. profile: profile (position_nucleotide)
+  8. profile: profile (position_nucleotide)
      - this includes bases that are variants and not
        varaints
      - position1Base1_position2Base2_...positionNBaseN
-  7. var_depth: depth for each variant position in the
+  9. var_depth: depth for each variant position in the
      profile (does not count X's)
     - position1:depth1_postion2:depth2_...positionN:depthN
-  8. x_var_depth: depth for each variant position in the
+  10. x_var_depth: depth for each variant position in the
      profile that has a 'X' (only counts X's)
     - position1:depth1_postion2:depth2_...positionN:depthN
 
 # Updates:
 
+- 2025-05-13:
+  - added in read_depth (total reads mapping to bases in
+    profile) and prof_depth (number reads with profile) to
+    the `-out-uniq file.tsv` output.
 - 2024-10-10:
   - fixed issues with some profiles not being merged when
     should be

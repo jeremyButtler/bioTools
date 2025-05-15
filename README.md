@@ -271,6 +271,9 @@ My general libraries.
 
 # Updates:
 
+- 2025-05-13:
+  - added new columns into illNanos `-out-uniq file.tsv` 
+    output
 - 2025-05-12:
   - separate samEntry into the core samEntry reading
     system (samEntry) and syste to read in references
