@@ -33,8 +33,8 @@ mainSamToAln.$O: \
 	$(genLib)\charCp.$O \
 	../bioTools.h \
 	../genLib/endLine.h
-		$(CC) /Fo:mainSamToAln.$O  \
-			$(coreCFLAGS) $(CFLAGS) mainSamToAln.c
+		$(CC) /Fo:mainSamToAln.$O \
+			$(CFLAGS) $(coreCFLAGS) mainSamToAln.c
 
 $(genAln)\samToAln.$O: \
 	$(genAln)\samToAln.c \
@@ -43,14 +43,14 @@ $(genAln)\samToAln.$O: \
 	$(genBio)\seqST.$O \
 	$(genAln)\alnSet.$O
 		$(CC) /Fo:$(genAln)\samToAln.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)\samToAln.c
 
 $(genLib)\charCp.$O: \
 	$(genLib)\charCp.c \
 	$(genLib)\charCp.h
 		$(CC) /Fo:$(genLib)\charCp.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\charCp.c
 
 $(genAln)\alnSet.$O: \
@@ -62,14 +62,14 @@ $(genAln)\alnSet.$O: \
 	$(genAln)\alnDefs.h \
 	$(genLib)\endLine.h
 		$(CC) /Fo:$(genAln)\alnSet.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)\alnSet.c
 
 $(genLib)\base10str.$O: \
 	$(genLib)\base10str.c \
 	$(genLib)\base10str.h
 		$(CC) /Fo:$(genLib)\base10str.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\base10str.c
 
 $(genLib)\fileFun.$O: \
@@ -77,14 +77,14 @@ $(genLib)\fileFun.$O: \
 	$(genLib)\fileFun.h \
 	$(genLib)\ulCp.$O
 		$(CC) /Fo:$(genLib)\fileFun.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\fileFun.c
 
 $(genLib)\ulCp.$O: \
 	$(genLib)\ulCp.c \
 	$(genLib)\ulCp.h
 		$(CC) /Fo:$(genLib)\ulCp.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\ulCp.c
 
 $(genBio)\samEntry.$O: \
@@ -96,7 +96,7 @@ $(genBio)\samEntry.$O: \
 	$(genBio)\ntTo5Bit.h \
 	$(genLib)\endLine.h
 		$(CC) /Fo:$(genBio)\samEntry.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)\samEntry.c
 
 $(genLib)\strAry.$O: \
@@ -104,14 +104,14 @@ $(genLib)\strAry.$O: \
 	$(genLib)\strAry.h \
 	$(genLib)\ulCp.$O
 		$(CC) /Fo:$(genLib)\strAry.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\strAry.c
 
 $(genLib)\numToStr.$O: \
 	$(genLib)\numToStr.c \
 	$(genLib)\numToStr.h
 		$(CC) /Fo:$(genLib)\numToStr.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\numToStr.c
 
 $(genBio)\seqST.$O: \
@@ -119,7 +119,7 @@ $(genBio)\seqST.$O: \
 	$(genBio)\seqST.h \
 	$(genLib)\fileFun.$O
 		$(CC) /Fo:$(genBio)\seqST.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)\seqST.c
 
 install:

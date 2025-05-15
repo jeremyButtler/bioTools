@@ -31,8 +31,8 @@ mainMemwater.$O: \
 	../bioTools.h \
 	../genLib/endLine.h \
 	../genAln/alnDefs.h
-		$CC -o mainMemwater.$O  \
-			$coreCFLAGS $CFLAGS mainMemwater.c
+		$CC -o mainMemwater.$O \
+			$CFLAGS $coreCFLAGS mainMemwater.c
 
 $genAln/memwater.$O: \
 	$genAln/memwater.c \
@@ -41,7 +41,7 @@ $genAln/memwater.$O: \
 	$genBio/seqST.$O \
 	$genLib/genMath.h
 		$CC -o $genAln/memwater.$O \
-			 $coreCFLAGS $CFLAGS \
+			$CFLAGS $coreCFLAGS \
 			$genAln/memwater.c
 
 $genBio/kmerCnt.$O: \
@@ -51,14 +51,14 @@ $genBio/kmerCnt.$O: \
 	$genBio/ntTo2Bit.h \
 	$genLib/genMath.h
 		$CC -o $genBio/kmerCnt.$O \
-			 $coreCFLAGS $CFLAGS \
+			$CFLAGS $coreCFLAGS \
 			$genBio/kmerCnt.c
 
 $genLib/charCp.$O: \
 	$genLib/charCp.c \
 	$genLib/charCp.h
 		$CC -o $genLib/charCp.$O \
-			 $coreCFLAGS $CFLAGS \
+			$CFLAGS $coreCFLAGS \
 			$genLib/charCp.c
 
 $genAln/alnSet.$O: \
@@ -70,14 +70,14 @@ $genAln/alnSet.$O: \
 	$genAln/alnDefs.h \
 	$genLib/endLine.h
 		$CC -o $genAln/alnSet.$O \
-			 $coreCFLAGS $CFLAGS \
+			$CFLAGS $coreCFLAGS \
 			$genAln/alnSet.c
 
 $genLib/base10str.$O: \
 	$genLib/base10str.c \
 	$genLib/base10str.h
 		$CC -o $genLib/base10str.$O \
-			 $coreCFLAGS $CFLAGS \
+			$CFLAGS $coreCFLAGS \
 			$genLib/base10str.c
 
 $genLib/fileFun.$O: \
@@ -85,21 +85,21 @@ $genLib/fileFun.$O: \
 	$genLib/fileFun.h \
 	$genLib/ulCp.$O
 		$CC -o $genLib/fileFun.$O \
-			 $coreCFLAGS $CFLAGS \
+			$CFLAGS $coreCFLAGS \
 			$genLib/fileFun.c
 
 $genLib/ulCp.$O: \
 	$genLib/ulCp.c \
 	$genLib/ulCp.h
 		$CC -o $genLib/ulCp.$O \
-			 $coreCFLAGS $CFLAGS \
+			$CFLAGS $coreCFLAGS \
 			$genLib/ulCp.c
 
 $genAln/indexToCoord.$O: \
 	$genAln/indexToCoord.c \
 	$genAln/indexToCoord.h
 		$CC -o $genAln/indexToCoord.$O \
-			 $coreCFLAGS $CFLAGS \
+			$CFLAGS $coreCFLAGS \
 			$genAln/indexToCoord.c
 
 $genBio/seqST.$O: \
@@ -107,7 +107,7 @@ $genBio/seqST.$O: \
 	$genBio/seqST.h \
 	$genLib/fileFun.$O
 		$CC -o $genBio/seqST.$O \
-			 $coreCFLAGS $CFLAGS \
+			$CFLAGS $coreCFLAGS \
 			$genBio/seqST.c
 
 install:

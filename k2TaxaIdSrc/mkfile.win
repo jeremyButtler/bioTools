@@ -28,8 +28,8 @@ mainK2TaxaId.$O: \
 	..\k2TaxaIdSrc\k2TaxaId.$O \
 	../bioTools.h \
 	../genLib/endLine.h
-		$(CC) /Fo:mainK2TaxaId.$O  \
-			$(coreCFLAGS) $(CFLAGS) mainK2TaxaId.c
+		$(CC) /Fo:mainK2TaxaId.$O \
+			$(CFLAGS) $(coreCFLAGS) mainK2TaxaId.c
 
 ..\k2TaxaIdSrc\k2TaxaId.$O: \
 	..\k2TaxaIdSrc\k2TaxaId.c ..\k2TaxaIdSrc\k2TaxaId.h \
@@ -39,22 +39,22 @@ mainK2TaxaId.$O: \
 	$(genLib)\numToStr.$O \
 	$(genLib)\base10str.$O \
 	$(genLib)\genMath.$O
-		$(CC) /Fo:..\k2TaxaIdSrc\k2TaxaId.$O  \
-			$(coreCFLAGS) $(CFLAGS) ..\k2TaxaIdSrc\k2TaxaId.c
+		$(CC) /Fo:..\k2TaxaIdSrc\k2TaxaId.$O \
+			$(CFLAGS) $(coreCFLAGS) ..\k2TaxaIdSrc\k2TaxaId.c
 
 $(genLib)\fileFun.$O: \
 	$(genLib)\fileFun.c \
 	$(genLib)\fileFun.h \
 	$(genLib)\ulCp.$O
 		$(CC) /Fo:$(genLib)\fileFun.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\fileFun.c
 
 $(genLib)\ulCp.$O: \
 	$(genLib)\ulCp.c \
 	$(genLib)\ulCp.h
 		$(CC) /Fo:$(genLib)\ulCp.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\ulCp.c
 
 $(genLib)\ptrAry.$O: \
@@ -62,35 +62,35 @@ $(genLib)\ptrAry.$O: \
 	$(genLib)\ptrAry.h \
 	$(genLib)\ulCp.$O
 		$(CC) /Fo:$(genLib)\ptrAry.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\ptrAry.c
 
 $(genLib)\base10str.$O: \
 	$(genLib)\base10str.c \
 	$(genLib)\base10str.h
 		$(CC) /Fo:$(genLib)\base10str.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\base10str.c
 
 $(genLib)\numToStr.$O: \
 	$(genLib)\numToStr.c \
 	$(genLib)\numToStr.h
 		$(CC) /Fo:$(genLib)\numToStr.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\numToStr.c
 
 $(genLib)\genMath.$O: \
 	$(genLib)\genMath.c \
 	$(genLib)\genMath.h
 		$(CC) /Fo:$(genLib)\genMath.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\genMath.c
 
 $(genLib)\shellSort.$O: \
 	$(genLib)\shellSort.c \
 	$(genLib)\shellSort.h
 		$(CC) /Fo:$(genLib)\shellSort.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\shellSort.c
 
 install:

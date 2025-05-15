@@ -92,7 +92,9 @@ Table: character(s) for each OS's line break. By hobby
   OS I mean research/hobby, so unlikely to be seen.
 
 To avoid new line and carraige return issues I have
-  started to look for all cases.
+  started to look for all cases. However, for printing,
+  Windows will treat `\r\n` as two lines. So, only print
+  a `\n`.
 
 ```
 /*get off line endings*/

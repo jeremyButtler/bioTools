@@ -24,15 +24,15 @@ revCmp.$O: \
 	$(genBio)\seqST.$O \
 	../bioTools.h \
 	../genLib/endLine.h
-		$(CC) /Fo:revCmp.$O  \
-			$(coreCFLAGS) $(CFLAGS) revCmp.c
+		$(CC) /Fo:revCmp.$O \
+			$(CFLAGS) $(coreCFLAGS) revCmp.c
 
 $(genBio)\seqST.$O: \
 	$(genBio)\seqST.c \
 	$(genBio)\seqST.h \
 	$(genLib)\fileFun.$O
 		$(CC) /Fo:$(genBio)\seqST.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)\seqST.c
 
 $(genLib)\fileFun.$O: \
@@ -40,14 +40,14 @@ $(genLib)\fileFun.$O: \
 	$(genLib)\fileFun.h \
 	$(genLib)\ulCp.$O
 		$(CC) /Fo:$(genLib)\fileFun.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\fileFun.c
 
 $(genLib)\ulCp.$O: \
 	$(genLib)\ulCp.c \
 	$(genLib)\ulCp.h
 		$(CC) /Fo:$(genLib)\ulCp.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\ulCp.c
 
 install:

@@ -45,7 +45,6 @@ genFreezeTBBl="";
 coreFlagsStr=""; # CFLAGS
 ccStr="";     # CC
 dashOStr="";  # -o
-dashCStr="";  # -c
 spaceStr="   ";  # spacing for objFiles entry
 newLineStr="";# holds new line to add between commands
 warnStr="-Wall -Wextra -Wpedantic"; # warnings
@@ -178,12 +177,14 @@ fi
 #   things I do (such as pointer casting used in ulCp)
 warnStr="$warnStr -Wundef";
 warnStr="$warnStr -Waggregate-return -Wwrite-strings";
-warnStr="$warnStr -Wstrict-prototypes -Wcast-align";
+warnStr="$warnStr -Wstrict-prototypes";
 warnStr="$warnStr -Wpointer-arith -Wshadow"
 warnStr="$warnStr -Wunreachable-code -Winit-self"
    # -Wfloat-eqaul messes up numToStr. I am comparing
    #   floats to see if there is a decimal, so float == 0
    #   is safe
+   # -Wcast-align warns about ulCp on Mac's clang. I know
+   #   it works on Mac so removing
 
 #*********************************************************
 # Sec02 Sub01:
@@ -195,7 +196,7 @@ then # If: debugging make file
    headStr="$headStr\nCC=cc";
    headStr="LD=cc";
    headStr="$headStr\ncoreCFLAGS= -O0 -std=c89 -g";
-   headStr="$headStr -Werror $warnStr";
+   headStr="$headStr -Werror $warnStr -c";
    headStr="$headStr\nCFLAGS=-DNONE";
    headStr="$headStr\nNAME=$nameStr";
    headStr="$headStr\nPREFIX=/usr/local/bin";
@@ -212,7 +213,6 @@ then # If: debugging make file
    cFlagsStr="\$(CFLAGS)";
    ccStr="\$(CC)";
    dashOStr="-o ";
-   dashCStr="-c";
 
    installStr="";
 
@@ -236,6 +236,7 @@ then # Else If: general unix make file
    headStr="$headStr\nCC=cc";
    headStr="LD=cc";
    headStr="$headStr\ncoreCFLAGS= -O3 -std=c89 $warnStr";
+   headStr=" -c";
    headStr="$headStr\nCFLAGS=-DNONE";
    headStr="$headStr\nNAME=$nameStr";
    headStr="$headStr\nPREFIX=/usr/local/bin";
@@ -252,7 +253,6 @@ then # Else If: general unix make file
    cFlagsStr="\$(CFLAGS)";
    ccStr="\$(CC)";
    dashOStr="-o ";
-   dashCStr="-c";
 
    installStr="install:"
    installStr="$installStr\n\tmv \$(NAME) \$(PREFIX)"
@@ -279,7 +279,7 @@ then # Else If: static unix make file
    headStr="$headStr\nCC=cc";
    headStr="LD=cc";
    headStr="$headStr\ncoreCFLAGS= -O3 -std=c89 -static";
-   headStr="$headStr $warnStr";
+   headStr="$headStr $warnStr -c";
    headStr="$headStr\nCFLAGS=-DNONE";
    headStr="$headStr\nNAME=$nameStr";
    headStr="$headStr\nPREFIX=/usr/local/bin";
@@ -296,7 +296,6 @@ then # Else If: static unix make file
    cFlagsStr="\$(CFLAGS)";
    ccStr="\$(CC)";
    dashOStr="-o ";
-   dashCStr="-c";
 
    installStr="install:"
    installStr="$installStr\n\tmv \$(NAME) \$(PREFIX)"
@@ -338,7 +337,6 @@ then # Else If: windows make file
    cFlagsStr="\$(CFLAGS)";
    ccStr="\$(CC)";
    dashOStr="/Fo:";
-   #dashCStr="/c";
 
    installStr="install:"
    installStr="$installStr\n\tmove \$(NAME) \$(PREFIX)"
@@ -377,7 +375,6 @@ then # Else If: plan9 make file
    cFlagsStr="\$CFLAGS";
    ccStr="\$CC";
    dashOStr="-o ";
-   dashCStr="";
 
    installStr="install:"
    installStr="$installStr\n\tmv \$(NAME) \$(PREFIX)"
@@ -462,7 +459,7 @@ numToStr="${genLibStr}numToStr.\$O: \\
 	${genLibStr}numToStr.c \\
 	${genLibStr}numToStr.h
 		$ccStr ${dashOStr}${genLibStr}numToStr.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genLibStr}numToStr.c"
 
 numToStrObj="${genLibStr}numToStr.\$O";
@@ -477,7 +474,7 @@ base10Str="${genLibStr}base10str.\$O: \\
 	${genLibStr}base10str.c \\
 	${genLibStr}base10str.h
 		$ccStr ${dashOStr}${genLibStr}base10str.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genLibStr}base10str.c"
 
 base10strObj="${genLibStr}base10str.\$O";
@@ -492,7 +489,7 @@ ulCpStr="${genLibStr}ulCp.\$O: \\
 	${genLibStr}ulCp.c \\
 	${genLibStr}ulCp.h
 		$ccStr ${dashOStr}${genLibStr}ulCp.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genLibStr}ulCp.c"
 
 ulCpObj="${genLibStr}ulCp.\$O";
@@ -507,7 +504,7 @@ charCpStr="${genLibStr}charCp.\$O: \\
 	${genLibStr}charCp.c \\
 	${genLibStr}charCp.h
 		$ccStr ${dashOStr}${genLibStr}charCp.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genLibStr}charCp.c"
 
 charCpObj="${genLibStr}charCp.\$O";
@@ -522,7 +519,7 @@ genMathStr="${genLibStr}genMath.\$O: \\
 	${genLibStr}genMath.c \\
 	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genLibStr}genMath.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genLibStr}genMath.c"
 
 genMathObj="${genLibStr}genMath.\$O";
@@ -537,7 +534,7 @@ shellSortStr="${genLibStr}shellSort.\$O: \\
 	${genLibStr}shellSort.c \\
 	${genLibStr}shellSort.h
 		$ccStr ${dashOStr}${genLibStr}shellSort.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genLibStr}shellSort.c"
 
 shellSortObj="${genLibStr}shellSort.\$O";
@@ -552,7 +549,7 @@ endinStr="${genLibStr}endin.\$O: \\
 	${genLibStr}endin.c \\
 	${genLibStr}endin.h
 		$ccStr ${dashOStr}${genLibStr}endin.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genLibStr}endin.c"
 
 endinObj="${genLibStr}endin.\$O";
@@ -568,7 +565,7 @@ checkSumStr="${genLibStr}checkSum.\$O: \\
 	${genLibStr}checkSum.h \\
 	${genLibStr}endin.\$O
 	$ccStr ${dashOStr}${genLibStr}checkSum.\$O \\
-		$dashCStr $coreFlagsStr $cFlagsStr \\
+		$cFlagsStr $coreFlagsStr \\
 		${genLibStr}checkSum.c";
 
 
@@ -585,7 +582,7 @@ strAryStr="${genLibStr}strAry.\$O: \\
 	${genLibStr}strAry.h \\
 	${genLibStr}ulCp.\$O
 		$ccStr ${dashOStr}${genLibStr}strAry.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genLibStr}strAry.c";
 
 
@@ -602,7 +599,7 @@ ptrAryStr="${genLibStr}ptrAry.\$O: \\
 	${genLibStr}ptrAry.h \\
 	${genLibStr}ulCp.\$O
 		$ccStr ${dashOStr}${genLibStr}ptrAry.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genLibStr}ptrAry.c";
 
 
@@ -619,7 +616,7 @@ fileFunStr="${genLibStr}fileFun.\$O: \\
 	${genLibStr}fileFun.h \\
 	${genLibStr}ulCp.\$O
 		$ccStr ${dashOStr}${genLibStr}fileFun.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genLibStr}fileFun.c";
 
 
@@ -639,7 +636,7 @@ inflateStr="${genLibStr}inflate.\$O: \\
 	${genLibStr}genMath.\$O \\
 	${genLibStr}endLine.h
 		$ccStr ${dashOStr}${genLibStr}inflate.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genLibStr}inflate.c";
 
 
@@ -697,7 +694,7 @@ codonFunStr="${genBioStr}codonFun.\$O: \\
 	${genBioStr}ntTo2Bit.h \\
 	${genBioStr}revNtTo2Bit.h
 		$ccStr ${dashOStr}${genBioStr}codonFun.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}codonFun.c"
 
 codonFunObj="${genBioStr}codonFun.\$O";
@@ -713,7 +710,7 @@ kmerFunStr="${genBioStr}kmerFun.\$O: \\
 	${genBioStr}kmerFun.h \\
 	${genBioStr}kmerBit.h
 		$ccStr ${dashOStr}${genBioStr}kmerFun.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}kmerFun.c"
 
 kmerFunObj="${genBioStr}kmerFun.\$O";
@@ -729,7 +726,7 @@ seqSTStr="${genBioStr}seqST.\$O: \\
 	${genBioStr}seqST.h \\
 	${genLibStr}fileFun.\$O
 		$ccStr ${dashOStr}${genBioStr}seqST.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}seqST.c";
 
 
@@ -747,7 +744,7 @@ gzSeqSTStr="${genBioStr}gzSeqST.\$O: \\
 	${genBioStr}seqST.\$O \\
  	${genLibStr}inflate.\$O
 		$ccStr ${dashOStr}${genBioStr}gzSeqST.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}gzSeqST.c";
 
 
@@ -766,7 +763,7 @@ kmerCntStr="${genBioStr}kmerCnt.\$O: \\
 	${genBioStr}ntTo2Bit.h \\
 	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genBioStr}kmerCnt.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}kmerCnt.c";
 
 
@@ -786,7 +783,7 @@ geneCoordStr="${genBioStr}geneCoord.\$O: \\
 	${genLibStr}charCp.\$O \\
 	${genLibStr}genMath.h
 	$ccStr ${dashOStr}${genBioStr}geneCoord.\$O \\
-		$dashCStr $coreFlagsStr $cFlagsStr \\
+		$cFlagsStr $coreFlagsStr \\
 		${genBioStr}geneCoord.c";
 
 geneCoordObj="${genBioStr}geneCoord.\$O";
@@ -808,7 +805,7 @@ samEntryStr="${genBioStr}samEntry.\$O: \\
 	${genBioStr}ntTo5Bit.h \\
 	${genLibStr}endLine.h
 		$ccStr ${dashOStr}${genBioStr}samEntry.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}samEntry.c";
 
 samEntryObj="${genBioStr}samEntry.\$O";
@@ -829,7 +826,7 @@ samRefStr="${genBioStr}samRef.\$O: \\
 	${genLibStr}base10str.\$O \\
 	${genLibStr}endLine.h
 		$ccStr ${dashOStr}${genBioStr}samRef.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}samRef.c";
 
 samRefObj="${genBioStr}samRef.\$O";
@@ -847,7 +844,7 @@ adjCoordsStr="${genBioStr}adjCoords.\$O: \\
 	${genBioStr}geneCoord.\$O \\
 	${genBioStr}samEntry.\$O
 		$ccStr ${dashOStr}${genBioStr}adjCoords.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}adjCoords.c";
 
 adjCoordsObj="${genBioStr}adjCoords.\$O";
@@ -864,7 +861,7 @@ cigToEqxStr="${genBioStr}cigToEqx.\$O: \\
 	${genBioStr}cigToEqx.h \\
 	${genBioStr}samEntry.\$O
 		$ccStr ${dashOStr}${genBioStr}cigToEqx.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}cigToEqx.c";
 
 cigToEqxObj="${genBioStr}cigToEqx.\$O";
@@ -881,7 +878,7 @@ maskPrimStr="${genBioStr}maskPrim.\$O: \\
 	${genBioStr}samEntry.\$O \\
 	${genLibStr}shellSort.\$O
 		$ccStr ${dashOStr}${genBioStr}maskPrim.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}maskPrim.c";
 
 maskPrimObj="${genBioStr}maskPrim.\$O";
@@ -898,7 +895,7 @@ trimSamStr="${genBioStr}trimSam.\$O: \\
 	${genBioStr}trimSam.h \\
 	${genBioStr}samEntry.\$O
 		$ccStr ${dashOStr}${genBioStr}trimSam.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}trimSam.c";
 
 trimSamObj="${genBioStr}trimSam.\$O";
@@ -915,7 +912,7 @@ ampDepthStr="${genBioStr}ampDepth.\$O: \\
 	${genBioStr}geneCoord.\$O \\
 	${genBioStr}samEntry.\$O
 		$ccStr ${dashOStr}${genBioStr}ampDepth.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}ampDepth.c";
 
 ampDepthObj="${genBioStr}ampDepth.\$O";
@@ -935,7 +932,7 @@ tbConStr="${genBioStr}tbCon.\$O: \\
 	${genLibStr}genMath.h \\
 	${genLibStr}endLine.h
 		$ccStr ${dashOStr}${genBioStr}tbCon.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}tbCon.c";
 
 tbConObj="${genBioStr}tbCon.\$O";
@@ -954,7 +951,7 @@ edDistStr="${genBioStr}edDist.\$O: \\
 	${genLibStr}genMath.h \\
 	${genLibStr}endLine.h
 		$ccStr ${dashOStr}${genBioStr}edDist.\$O \\
-		$dashCStr $coreFlagsStr $cFlagsStr \\
+		$cFlagsStr $coreFlagsStr \\
 		${genBioStr}edDist.c";
 
 
@@ -972,7 +969,7 @@ rmHomoStr="${genBioStr}rmHomo.\$O: \\
 	${genBioStr}samEntry.\$O \\
 	${genBioStr}seqST.\$O
 		$ccStr ${dashOStr}${genBioStr}rmHomo.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genBioStr}rmHomo.c";
 
 
@@ -1011,7 +1008,7 @@ indexToCoordStr="${genAlnStr}indexToCoord.\$O: \\
 	${genAlnStr}indexToCoord.c \\
 	${genAlnStr}indexToCoord.h
 		$ccStr ${dashOStr}${genAlnStr}indexToCoord.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genAlnStr}indexToCoord.c";
 
 
@@ -1032,7 +1029,7 @@ alnSetStr="${genAlnStr}alnSet.\$O: \\
 	${genAlnStr}alnDefs.h \\
 	${genLibStr}endLine.h
 		$ccStr ${dashOStr}${genAlnStr}alnSet.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genAlnStr}alnSet.c";
 
 
@@ -1052,7 +1049,7 @@ dirMatrixStr="${genAlnStr}dirMatrix.\$O: \\
 	${genBioStr}seqST.\$O \\
 	${genLibStr}charCp.\$O
 		$ccStr ${dashOStr}${genAlnStr}dirMatrix.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genAlnStr}dirMatrix.c";
 
 
@@ -1073,7 +1070,7 @@ waterStr="${genAlnStr}water.\$O: ${genAlnStr}water.c \\
 	${genAlnStr}dirMatrix.\$O \\
 	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genAlnStr}water.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genAlnStr}water.c";
 
 
@@ -1090,7 +1087,7 @@ needleStr="${genAlnStr}needle.\$O: \\
 	${genAlnStr}dirMatrix.\$O \\
 	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genAlnStr}needle.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genAlnStr}needle.c";
 
 
@@ -1109,7 +1106,7 @@ memwaterStr="${genAlnStr}memwater.\$O: \\
 	${genBioStr}seqST.\$O \\
 	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genAlnStr}memwater.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genAlnStr}memwater.c";
 
 
@@ -1130,7 +1127,7 @@ kmerFindStr="${genAlnStr}kmerFind.\$O: \\
 	${genLibStr}genMath.h \\
 	${genBioStr}kmerBit.h
 		$ccStr ${dashOStr}${genAlnStr}kmerFind.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genAlnStr}kmerFind.c";
 
 
@@ -1150,7 +1147,7 @@ samToAlnStr="${genAlnStr}samToAln.\$O: \\
 	${genBioStr}seqST.\$O \\
 	${genAlnStr}alnSet.\$O
 		$ccStr ${dashOStr}${genAlnStr}samToAln.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genAlnStr}samToAln.c";
 
 
@@ -1174,7 +1171,7 @@ mapReadStr="${genAlnStr}mapRead.\$O: \\
 	${genAlnStr}defsMapRead.h  \\
 	${genLibStr}genMath.h
 	 	$ccStr ${dashOStr}${genAlnStr}mapRead.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genAlnStr}mapRead.c";
 
 
@@ -1208,7 +1205,7 @@ illNanoStr="${genClustStr}illNano.\$O: \\
 	${genClustStr}illNano.h \\
 	${genBioStr}samEntry.\$O
 		$ccStr ${dashOStr}${genClustStr}illNano.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genClustStr}illNano.c;
 ";
 
@@ -1229,7 +1226,7 @@ clustSTStr="${genClustStr}clustST.\$O: \\
 	${genBioStr}edDist.\$O \\
 	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genClustStr}clustST.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genClustStr}clustST.c
 ";
 
@@ -1247,7 +1244,7 @@ edClustStr="${genClustStr}edClust.\$O: \\
 	${genClustStr}edClust.h \\
 	${genClustStr}clustST.\$O
 		$ccStr ${dashOStr}${genClustStr}edClust.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genClustStr}edClust.c
 ";
 
@@ -1272,7 +1269,7 @@ cgMLSTStr="${genGenoTypeStr}cgMLST.\$O: \\
 	${genBioStr}edDist.\$O \\
 	${genLibStr}ptrAry.\$O
 		$ccStr ${dashOStr}${genGenoTypeStr}cgMLST.\$O \\
-			$dashCStr $coreFlagsStr $cFlagsStr \\
+			$cFlagsStr $coreFlagsStr \\
 			${genGenoTypeStr}cgMLST.c
 ";
 
@@ -1300,8 +1297,8 @@ k2TaxaIdStr="$tmpStr.\$O: \\
 	${genLibStr}numToStr.\$O \\
 	${genLibStr}base10str.\$O \\
 	${genLibStr}genMath.\$O
-		$ccStr $dashOStr$tmpStr.\$O $dashCStr \\
-			$coreFlagsStr $cFlagsStr $tmpStr.c";
+		$ccStr $dashOStr$tmpStr.\$O \\
+			$cFlagsStr $coreFlagsStr $tmpStr.c";
 
 k2TaxaIdObj="$tmpStr.\$O";
 k2TaxaIdDep="fileFun $fileFunDep";
@@ -2685,8 +2682,8 @@ objFilesStr="$objFilesStr \\\\\n$spaceStr$mainFileStr.\$O";
 
 # need to complete compiler part of main file command
 mainCmdStr="$mainCmdStr
-		$ccStr ${dashOStr}$mainFileStr.\$O $dashCStr \\
-			$coreFlagsStr $cFlagsStr $mainFileStr.c
+		$ccStr ${dashOStr}$mainFileStr.\$O \\
+			$cFlagsStr $coreFlagsStr $mainFileStr.c
 "
 
 {

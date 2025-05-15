@@ -1,5 +1,4 @@
-LD=cc
-coreCFLAGS= -O3 -std=c89 -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wcast-align -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
+ -c
 CFLAGS=-DNONE
 NAME=memwater
 PREFIX=/usr/local/bin
@@ -32,8 +31,8 @@ mainMemwater.$O: \
 	../bioTools.h \
 	../genLib/endLine.h \
 	../genAln/alnDefs.h
-		$(CC) -o mainMemwater.$O -c \
-			$(coreCFLAGS) $(CFLAGS) mainMemwater.c
+		$(CC) -o mainMemwater.$O \
+			$(CFLAGS) $(coreCFLAGS) mainMemwater.c
 
 $(genAln)/memwater.$O: \
 	$(genAln)/memwater.c \
@@ -42,7 +41,7 @@ $(genAln)/memwater.$O: \
 	$(genBio)/seqST.$O \
 	$(genLib)/genMath.h
 		$(CC) -o $(genAln)/memwater.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)/memwater.c
 
 $(genBio)/kmerCnt.$O: \
@@ -52,14 +51,14 @@ $(genBio)/kmerCnt.$O: \
 	$(genBio)/ntTo2Bit.h \
 	$(genLib)/genMath.h
 		$(CC) -o $(genBio)/kmerCnt.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/kmerCnt.c
 
 $(genLib)/charCp.$O: \
 	$(genLib)/charCp.c \
 	$(genLib)/charCp.h
 		$(CC) -o $(genLib)/charCp.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/charCp.c
 
 $(genAln)/alnSet.$O: \
@@ -71,14 +70,14 @@ $(genAln)/alnSet.$O: \
 	$(genAln)/alnDefs.h \
 	$(genLib)/endLine.h
 		$(CC) -o $(genAln)/alnSet.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)/alnSet.c
 
 $(genLib)/base10str.$O: \
 	$(genLib)/base10str.c \
 	$(genLib)/base10str.h
 		$(CC) -o $(genLib)/base10str.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/base10str.c
 
 $(genLib)/fileFun.$O: \
@@ -86,21 +85,21 @@ $(genLib)/fileFun.$O: \
 	$(genLib)/fileFun.h \
 	$(genLib)/ulCp.$O
 		$(CC) -o $(genLib)/fileFun.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/fileFun.c
 
 $(genLib)/ulCp.$O: \
 	$(genLib)/ulCp.c \
 	$(genLib)/ulCp.h
 		$(CC) -o $(genLib)/ulCp.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/ulCp.c
 
 $(genAln)/indexToCoord.$O: \
 	$(genAln)/indexToCoord.c \
 	$(genAln)/indexToCoord.h
 		$(CC) -o $(genAln)/indexToCoord.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)/indexToCoord.c
 
 $(genBio)/seqST.$O: \
@@ -108,7 +107,7 @@ $(genBio)/seqST.$O: \
 	$(genBio)/seqST.h \
 	$(genLib)/fileFun.$O
 		$(CC) -o $(genBio)/seqST.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/seqST.c
 
 install:

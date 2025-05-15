@@ -1,5 +1,4 @@
-LD=cc
-coreCFLAGS= -O3 -std=c89 -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wcast-align -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
+ -c
 CFLAGS=-DNONE
 NAME=adjCoordsSrc
 PREFIX=/usr/local/bin
@@ -29,8 +28,8 @@ mainAdjCoords.$O: \
 	$(genLib)/charCp.$O \
 	../bioTools.h \
 	../genLib/endLine.h
-		$(CC) -o mainAdjCoords.$O -c \
-			$(coreCFLAGS) $(CFLAGS) mainAdjCoords.c
+		$(CC) -o mainAdjCoords.$O \
+			$(CFLAGS) $(coreCFLAGS) mainAdjCoords.c
 
 $(genBio)/adjCoords.$O: \
 	$(genBio)/adjCoords.c \
@@ -38,14 +37,14 @@ $(genBio)/adjCoords.$O: \
 	$(genBio)/geneCoord.$O \
 	$(genBio)/samEntry.$O
 		$(CC) -o $(genBio)/adjCoords.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/adjCoords.c
 
 $(genLib)/charCp.$O: \
 	$(genLib)/charCp.c \
 	$(genLib)/charCp.h
 		$(CC) -o $(genLib)/charCp.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/charCp.c
 
 $(genBio)/geneCoord.$O: \
@@ -56,7 +55,7 @@ $(genBio)/geneCoord.$O: \
 	$(genLib)/charCp.$O \
 	$(genLib)/genMath.h
 	$(CC) -o $(genBio)/geneCoord.$O \
-		-c $(coreCFLAGS) $(CFLAGS) \
+		$(CFLAGS) $(coreCFLAGS) \
 		$(genBio)/geneCoord.c
 
 $(genLib)/fileFun.$O: \
@@ -64,14 +63,14 @@ $(genLib)/fileFun.$O: \
 	$(genLib)/fileFun.h \
 	$(genLib)/ulCp.$O
 		$(CC) -o $(genLib)/fileFun.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/fileFun.c
 
 $(genLib)/base10str.$O: \
 	$(genLib)/base10str.c \
 	$(genLib)/base10str.h
 		$(CC) -o $(genLib)/base10str.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/base10str.c
 
 $(genBio)/samEntry.$O: \
@@ -83,14 +82,14 @@ $(genBio)/samEntry.$O: \
 	$(genBio)/ntTo5Bit.h \
 	$(genLib)/endLine.h
 		$(CC) -o $(genBio)/samEntry.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/samEntry.c
 
 $(genLib)/ulCp.$O: \
 	$(genLib)/ulCp.c \
 	$(genLib)/ulCp.h
 		$(CC) -o $(genLib)/ulCp.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/ulCp.c
 
 $(genLib)/strAry.$O: \
@@ -98,14 +97,14 @@ $(genLib)/strAry.$O: \
 	$(genLib)/strAry.h \
 	$(genLib)/ulCp.$O
 		$(CC) -o $(genLib)/strAry.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/strAry.c
 
 $(genLib)/numToStr.$O: \
 	$(genLib)/numToStr.c \
 	$(genLib)/numToStr.h
 		$(CC) -o $(genLib)/numToStr.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/numToStr.c
 
 install:

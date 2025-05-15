@@ -1,5 +1,5 @@
 LD=cc
-coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wcast-align -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
+coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self -c
 CFLAGS=-DNONE
 NAME=edClust
 PREFIX=/usr/local/bin
@@ -35,15 +35,15 @@ mainEdClust.$O: \
 	../bioTools.h \
 	../genLib/endLine.h \
 	../genBio/tbConDefs.h
-		$(CC) -o mainEdClust.$O -c \
-			$(coreCFLAGS) $(CFLAGS) mainEdClust.c
+		$(CC) -o mainEdClust.$O \
+			$(CFLAGS) $(coreCFLAGS) mainEdClust.c
 
 $(genClust)/edClust.$O: \
 	$(genClust)/edClust.c \
 	$(genClust)/edClust.h \
 	$(genClust)/clustST.$O
 		$(CC) -o $(genClust)/edClust.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genClust)/edClust.c
 
 
@@ -52,14 +52,14 @@ $(genBio)/seqST.$O: \
 	$(genBio)/seqST.h \
 	$(genLib)/fileFun.$O
 		$(CC) -o $(genBio)/seqST.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/seqST.c
 
 $(genLib)/charCp.$O: \
 	$(genLib)/charCp.c \
 	$(genLib)/charCp.h
 		$(CC) -o $(genLib)/charCp.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/charCp.c
 
 $(genClust)/clustST.$O: \
@@ -70,7 +70,7 @@ $(genClust)/clustST.$O: \
 	$(genBio)/edDist.$O \
 	$(genLib)/genMath.h
 		$(CC) -o $(genClust)/clustST.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genClust)/clustST.c
 
 
@@ -83,7 +83,7 @@ $(genBio)/samEntry.$O: \
 	$(genBio)/ntTo5Bit.h \
 	$(genLib)/endLine.h
 		$(CC) -o $(genBio)/samEntry.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/samEntry.c
 
 $(genLib)/fileFun.$O: \
@@ -91,14 +91,14 @@ $(genLib)/fileFun.$O: \
 	$(genLib)/fileFun.h \
 	$(genLib)/ulCp.$O
 		$(CC) -o $(genLib)/fileFun.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/fileFun.c
 
 $(genLib)/ulCp.$O: \
 	$(genLib)/ulCp.c \
 	$(genLib)/ulCp.h
 		$(CC) -o $(genLib)/ulCp.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/ulCp.c
 
 $(genLib)/strAry.$O: \
@@ -106,21 +106,21 @@ $(genLib)/strAry.$O: \
 	$(genLib)/strAry.h \
 	$(genLib)/ulCp.$O
 		$(CC) -o $(genLib)/strAry.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/strAry.c
 
 $(genLib)/numToStr.$O: \
 	$(genLib)/numToStr.c \
 	$(genLib)/numToStr.h
 		$(CC) -o $(genLib)/numToStr.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/numToStr.c
 
 $(genLib)/base10str.$O: \
 	$(genLib)/base10str.c \
 	$(genLib)/base10str.h
 		$(CC) -o $(genLib)/base10str.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/base10str.c
 
 $(genBio)/tbCon.$O: \
@@ -131,7 +131,7 @@ $(genBio)/tbCon.$O: \
 	$(genLib)/genMath.h \
 	$(genLib)/endLine.h
 		$(CC) -o $(genBio)/tbCon.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/tbCon.c
 
 $(genBio)/edDist.$O: \
@@ -142,7 +142,7 @@ $(genBio)/edDist.$O: \
 	$(genLib)/genMath.h \
 	$(genLib)/endLine.h
 		$(CC) -o $(genBio)/edDist.$O \
-		-c $(coreCFLAGS) $(CFLAGS) \
+		$(CFLAGS) $(coreCFLAGS) \
 		$(genBio)/edDist.c
 
 install:

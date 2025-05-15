@@ -1,5 +1,4 @@
-LD=cc
-coreCFLAGS= -O3 -std=c89 -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wcast-align -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
+ -c
 CFLAGS=-DNONE
 NAME=mapRead
 PREFIX=/usr/local/bin
@@ -42,8 +41,8 @@ mainMapRead.$O: \
 	$(genAln)/mapRead.$O \
 	$(genBio)/gzSeqST.$O \
 	../bioTools.h
-		$(CC) -o mainMapRead.$O -c \
-			$(coreCFLAGS) $(CFLAGS) mainMapRead.c
+		$(CC) -o mainMapRead.$O \
+			$(CFLAGS) $(coreCFLAGS) mainMapRead.c
 
 $(genAln)/mapRead.$O: \
 	$(genAln)/mapRead.c \
@@ -56,7 +55,7 @@ $(genAln)/mapRead.$O: \
 	$(genAln)/defsMapRead.h  \
 	$(genLib)/genMath.h
 	 	$(CC) -o $(genAln)/mapRead.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)/mapRead.c
 
 $(genBio)/gzSeqST.$O: \
@@ -65,7 +64,7 @@ $(genBio)/gzSeqST.$O: \
 	$(genBio)/seqST.$O \
  	$(genLib)/inflate.$O
 		$(CC) -o $(genBio)/gzSeqST.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/gzSeqST.c
 
 $(genAln)/needle.$O: \
@@ -73,7 +72,7 @@ $(genAln)/needle.$O: \
 	$(genAln)/dirMatrix.$O \
 	$(genLib)/genMath.h
 		$(CC) -o $(genAln)/needle.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)/needle.c
 
 $(genAln)/dirMatrix.$O: \
@@ -84,7 +83,7 @@ $(genAln)/dirMatrix.$O: \
 	$(genBio)/seqST.$O \
 	$(genLib)/charCp.$O
 		$(CC) -o $(genAln)/dirMatrix.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)/dirMatrix.c
 
 $(genAln)/alnSet.$O: \
@@ -96,14 +95,14 @@ $(genAln)/alnSet.$O: \
 	$(genAln)/alnDefs.h \
 	$(genLib)/endLine.h
 		$(CC) -o $(genAln)/alnSet.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)/alnSet.c
 
 $(genLib)/base10str.$O: \
 	$(genLib)/base10str.c \
 	$(genLib)/base10str.h
 		$(CC) -o $(genLib)/base10str.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/base10str.c
 
 $(genLib)/fileFun.$O: \
@@ -111,21 +110,21 @@ $(genLib)/fileFun.$O: \
 	$(genLib)/fileFun.h \
 	$(genLib)/ulCp.$O
 		$(CC) -o $(genLib)/fileFun.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/fileFun.c
 
 $(genLib)/ulCp.$O: \
 	$(genLib)/ulCp.c \
 	$(genLib)/ulCp.h
 		$(CC) -o $(genLib)/ulCp.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/ulCp.c
 
 $(genAln)/indexToCoord.$O: \
 	$(genAln)/indexToCoord.c \
 	$(genAln)/indexToCoord.h
 		$(CC) -o $(genAln)/indexToCoord.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)/indexToCoord.c
 
 $(genBio)/samEntry.$O: \
@@ -137,7 +136,7 @@ $(genBio)/samEntry.$O: \
 	$(genBio)/ntTo5Bit.h \
 	$(genLib)/endLine.h
 		$(CC) -o $(genBio)/samEntry.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/samEntry.c
 
 $(genLib)/strAry.$O: \
@@ -145,14 +144,14 @@ $(genLib)/strAry.$O: \
 	$(genLib)/strAry.h \
 	$(genLib)/ulCp.$O
 		$(CC) -o $(genLib)/strAry.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/strAry.c
 
 $(genLib)/numToStr.$O: \
 	$(genLib)/numToStr.c \
 	$(genLib)/numToStr.h
 		$(CC) -o $(genLib)/numToStr.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/numToStr.c
 
 $(genBio)/seqST.$O: \
@@ -160,21 +159,21 @@ $(genBio)/seqST.$O: \
 	$(genBio)/seqST.h \
 	$(genLib)/fileFun.$O
 		$(CC) -o $(genBio)/seqST.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/seqST.c
 
 $(genLib)/charCp.$O: \
 	$(genLib)/charCp.c \
 	$(genLib)/charCp.h
 		$(CC) -o $(genLib)/charCp.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/charCp.c
 
 $(genAln)/water.$O: $(genAln)/water.c \
 	$(genAln)/dirMatrix.$O \
 	$(genLib)/genMath.h
 		$(CC) -o $(genAln)/water.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)/water.c
 
 $(genBio)/kmerFun.$O: \
@@ -182,14 +181,14 @@ $(genBio)/kmerFun.$O: \
 	$(genBio)/kmerFun.h \
 	$(genBio)/kmerBit.h
 		$(CC) -o $(genBio)/kmerFun.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/kmerFun.c
 
 $(genLib)/shellSort.$O: \
 	$(genLib)/shellSort.c \
 	$(genLib)/shellSort.h
 		$(CC) -o $(genLib)/shellSort.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/shellSort.c
 
 $(genLib)/inflate.$O: \
@@ -200,7 +199,7 @@ $(genLib)/inflate.$O: \
 	$(genLib)/genMath.$O \
 	$(genLib)/endLine.h
 		$(CC) -o $(genLib)/inflate.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/inflate.c
 
 $(genLib)/checkSum.$O: \
@@ -208,21 +207,21 @@ $(genLib)/checkSum.$O: \
 	$(genLib)/checkSum.h \
 	$(genLib)/endin.$O
 	$(CC) -o $(genLib)/checkSum.$O \
-		-c $(coreCFLAGS) $(CFLAGS) \
+		$(CFLAGS) $(coreCFLAGS) \
 		$(genLib)/checkSum.c
 
 $(genLib)/endin.$O: \
 	$(genLib)/endin.c \
 	$(genLib)/endin.h
 		$(CC) -o $(genLib)/endin.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/endin.c
 
 $(genLib)/genMath.$O: \
 	$(genLib)/genMath.c \
 	$(genLib)/genMath.h
 		$(CC) -o $(genLib)/genMath.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/genMath.c
 
 install:

@@ -1121,7 +1121,7 @@ mk_ref_mapRead(
       goto err_fun18;
    else if(! seqSTPtr->seqStr)
       goto err_fun18;
-   else if(! seqSTPtr->seqStr[0] == '\0')
+   else if(! seqSTPtr->seqStr[0])
       goto err_fun18;
    else if(! setSTPtr)
       goto err_fun18;

@@ -28,15 +28,15 @@ mainTrimSam.$O: \
 	$(genBio)\trimSam.$O \
 	../bioTools.h \
 	../genLib/endLine.h
-		$(CC) /Fo:mainTrimSam.$O  \
-			$(coreCFLAGS) $(CFLAGS) mainTrimSam.c
+		$(CC) /Fo:mainTrimSam.$O \
+			$(CFLAGS) $(coreCFLAGS) mainTrimSam.c
 
 $(genBio)\trimSam.$O: \
 	$(genBio)\trimSam.c \
 	$(genBio)\trimSam.h \
 	$(genBio)\samEntry.$O
 		$(CC) /Fo:$(genBio)\trimSam.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)\trimSam.c
 
 $(genBio)\samEntry.$O: \
@@ -48,7 +48,7 @@ $(genBio)\samEntry.$O: \
 	$(genBio)\ntTo5Bit.h \
 	$(genLib)\endLine.h
 		$(CC) /Fo:$(genBio)\samEntry.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)\samEntry.c
 
 $(genLib)\fileFun.$O: \
@@ -56,14 +56,14 @@ $(genLib)\fileFun.$O: \
 	$(genLib)\fileFun.h \
 	$(genLib)\ulCp.$O
 		$(CC) /Fo:$(genLib)\fileFun.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\fileFun.c
 
 $(genLib)\ulCp.$O: \
 	$(genLib)\ulCp.c \
 	$(genLib)\ulCp.h
 		$(CC) /Fo:$(genLib)\ulCp.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\ulCp.c
 
 $(genLib)\strAry.$O: \
@@ -71,21 +71,21 @@ $(genLib)\strAry.$O: \
 	$(genLib)\strAry.h \
 	$(genLib)\ulCp.$O
 		$(CC) /Fo:$(genLib)\strAry.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\strAry.c
 
 $(genLib)\numToStr.$O: \
 	$(genLib)\numToStr.c \
 	$(genLib)\numToStr.h
 		$(CC) /Fo:$(genLib)\numToStr.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\numToStr.c
 
 $(genLib)\base10str.$O: \
 	$(genLib)\base10str.c \
 	$(genLib)\base10str.h
 		$(CC) /Fo:$(genLib)\base10str.$O \
-			 $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\base10str.c
 
 install:

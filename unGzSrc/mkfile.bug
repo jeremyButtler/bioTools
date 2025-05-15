@@ -1,5 +1,5 @@
 LD=cc
-coreCFLAGS= -O0 -std=c89 -g -Werror -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wcast-align -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
+coreCFLAGS= -O0 -std=c89 -g -Werror -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self -c
 CFLAGS=-DNONE
 NAME=unGz
 PREFIX=/usr/local/bin
@@ -22,8 +22,8 @@ unGz.$O: \
 	unGz.c \
 	$(genLib)/inflate.$O \
 	../bioTools.h
-		$(CC) -o unGz.$O -c \
-			$(coreCFLAGS) $(CFLAGS) unGz.c
+		$(CC) -o unGz.$O \
+			$(CFLAGS) $(coreCFLAGS) unGz.c
 
 $(genLib)/inflate.$O: \
 	$(genLib)/inflate.c \
@@ -33,7 +33,7 @@ $(genLib)/inflate.$O: \
 	$(genLib)/genMath.$O \
 	$(genLib)/endLine.h
 		$(CC) -o $(genLib)/inflate.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/inflate.c
 
 $(genLib)/checkSum.$O: \
@@ -41,28 +41,28 @@ $(genLib)/checkSum.$O: \
 	$(genLib)/checkSum.h \
 	$(genLib)/endin.$O
 	$(CC) -o $(genLib)/checkSum.$O \
-		-c $(coreCFLAGS) $(CFLAGS) \
+		$(CFLAGS) $(coreCFLAGS) \
 		$(genLib)/checkSum.c
 
 $(genLib)/endin.$O: \
 	$(genLib)/endin.c \
 	$(genLib)/endin.h
 		$(CC) -o $(genLib)/endin.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/endin.c
 
 $(genLib)/genMath.$O: \
 	$(genLib)/genMath.c \
 	$(genLib)/genMath.h
 		$(CC) -o $(genLib)/genMath.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/genMath.c
 
 $(genLib)/ulCp.$O: \
 	$(genLib)/ulCp.c \
 	$(genLib)/ulCp.h
 		$(CC) -o $(genLib)/ulCp.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/ulCp.c
 
 

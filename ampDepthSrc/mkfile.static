@@ -1,5 +1,5 @@
 LD=cc
-coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wcast-align -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
+coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self -c
 CFLAGS=-DNONE
 NAME=ampDepth
 PREFIX=/usr/local/bin
@@ -33,8 +33,8 @@ mainAmpDepth.$O: \
 	ampDepthDefs.h \
 	../bioTools.h \
 	../genLib/endLine.h
-		$(CC) -o mainAmpDepth.$O -c \
-			$(coreCFLAGS) $(CFLAGS) mainAmpDepth.c
+		$(CC) -o mainAmpDepth.$O \
+			$(CFLAGS) $(coreCFLAGS) mainAmpDepth.c
 
 $(genBio)/ampDepth.$O: \
 	$(genBio)/ampDepth.c \
@@ -42,7 +42,7 @@ $(genBio)/ampDepth.$O: \
 	$(genBio)/geneCoord.$O \
 	$(genBio)/samEntry.$O
 		$(CC) -o $(genBio)/ampDepth.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/ampDepth.c
 
 $(genBio)/trimSam.$O: \
@@ -50,21 +50,21 @@ $(genBio)/trimSam.$O: \
 	$(genBio)/trimSam.h \
 	$(genBio)/samEntry.$O
 		$(CC) -o $(genBio)/trimSam.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/trimSam.c
 
 $(genLib)/charCp.$O: \
 	$(genLib)/charCp.c \
 	$(genLib)/charCp.h
 		$(CC) -o $(genLib)/charCp.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/charCp.c
 
 $(genLib)/base10str.$O: \
 	$(genLib)/base10str.c \
 	$(genLib)/base10str.h
 		$(CC) -o $(genLib)/base10str.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/base10str.c
 
 $(genBio)/geneCoord.$O: \
@@ -75,7 +75,7 @@ $(genBio)/geneCoord.$O: \
 	$(genLib)/charCp.$O \
 	$(genLib)/genMath.h
 	$(CC) -o $(genBio)/geneCoord.$O \
-		-c $(coreCFLAGS) $(CFLAGS) \
+		$(CFLAGS) $(coreCFLAGS) \
 		$(genBio)/geneCoord.c
 
 $(genLib)/fileFun.$O: \
@@ -83,7 +83,7 @@ $(genLib)/fileFun.$O: \
 	$(genLib)/fileFun.h \
 	$(genLib)/ulCp.$O
 		$(CC) -o $(genLib)/fileFun.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/fileFun.c
 
 $(genBio)/samEntry.$O: \
@@ -95,14 +95,14 @@ $(genBio)/samEntry.$O: \
 	$(genBio)/ntTo5Bit.h \
 	$(genLib)/endLine.h
 		$(CC) -o $(genBio)/samEntry.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/samEntry.c
 
 $(genLib)/ulCp.$O: \
 	$(genLib)/ulCp.c \
 	$(genLib)/ulCp.h
 		$(CC) -o $(genLib)/ulCp.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/ulCp.c
 
 $(genLib)/strAry.$O: \
@@ -110,14 +110,14 @@ $(genLib)/strAry.$O: \
 	$(genLib)/strAry.h \
 	$(genLib)/ulCp.$O
 		$(CC) -o $(genLib)/strAry.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/strAry.c
 
 $(genLib)/numToStr.$O: \
 	$(genLib)/numToStr.c \
 	$(genLib)/numToStr.h
 		$(CC) -o $(genLib)/numToStr.$O \
-			-c $(coreCFLAGS) $(CFLAGS) \
+			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)/numToStr.c
 
 install:
