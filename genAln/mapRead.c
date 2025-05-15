@@ -274,6 +274,9 @@ freeStack_chains_mapRead(
    if(chainsSTPtr->scoreArySI)
       free(chainsSTPtr->scoreArySI);
 
+   if(chainsSTPtr->gapScoreArySI)
+      free(chainsSTPtr->gapScoreArySI);
+
    if(chainsSTPtr->nextArySI)
       free(chainsSTPtr->nextArySI);
 
