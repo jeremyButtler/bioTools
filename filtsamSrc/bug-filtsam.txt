@@ -1,4 +1,4 @@
 #b ../generalLib/samEntryStruct.c:1435
 
 #r -sam test.sam -coords 0,$,pncA
-r -coords 2289231,2289241 -sam BC33Pnca.sam -coord-trim
+r -coords 2289231,2289251 -sam BC33Pnca.sam -coord-trim

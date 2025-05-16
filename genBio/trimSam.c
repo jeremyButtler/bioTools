@@ -351,6 +351,9 @@ coords_trimSam(
    siEndCig = siCig;
    cigEndBaseSI = cigBaseOnSI;
 
+   if(samSTPtr->refEndUI < (unsigned int) endSI)
+      endSI = samSTPtr->refEndUI;
+
    findRefPos_samEntry(
       samSTPtr,
       &siEndCig,
