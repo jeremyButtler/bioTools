@@ -271,6 +271,9 @@ My general libraries.
 
 # Updates:
 
+- 2025-05-16:
+  - fixed filtsams `-coord-trim` to trim by coordinates
+    coorrectly
 - 2025-05-13:
   - added new columns into illNanos `-out-uniq file.tsv` 
     output
