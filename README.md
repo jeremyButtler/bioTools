@@ -271,6 +271,9 @@ My general libraries.
 
 # Updates:
 
+- 2025-05-19:
+  - fixed issue with filtsam `-coord-trim` setting
+    reference position to the base ended on
 - 2025-05-16:
   - fixed filtsams `-coord-trim` to trim by coordinates
     coorrectly
