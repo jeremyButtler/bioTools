@@ -82,7 +82,6 @@
 #include "../genLib/base10str.h"
 #include "../genLib/numToStr.h"
 #include "../genLib/ulCp.h"
-#include "../genLib/strAry.h"
 #include "../genLib/fileFun.h"
 
 /*These have no .c files*/
