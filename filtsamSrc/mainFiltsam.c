@@ -1169,9 +1169,16 @@ getCoords_mainFiltsam(
    ^   - open input file
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   inFILE = fopen((char *) fileStr, "r");
-   if(! inFILE)
-      goto fileErr_fun04_sec04;
+   if(! fileStr)
+      inFILE = stdin;
+   else if(fileStr[0] == '-')
+      inFILE = stdin;
+   else
+   { /*Else: input file provided*/
+      inFILE = fopen((char *) fileStr, "r");
+      if(! inFILE)
+         goto fileErr_fun04_sec04;
+   } /*Else: input file provided*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun04 Sec03:

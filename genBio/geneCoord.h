@@ -209,7 +209,7 @@ sort_geneCoord(
 |    o The index of the starting position
 |    o -1 if there was no gene
 \-------------------------------------------------------*/
-int
+signed int
 findStart_geneCoord(
    struct geneCoord *geneST,
    unsigned int qryUI,

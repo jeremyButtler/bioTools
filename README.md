@@ -271,6 +271,10 @@ My general libraries.
 
 # Updates:
 
+- 2025-05-23
+  - minor fixes to samEntry and tbCon .c files
+  - findRefPos_samEntry (in genBio/samEntry.c) can now
+    search backwards
 - 2025-05-19:
   - fixed issue with filtsam `-coord-trim` setting
     reference position to the base ended on

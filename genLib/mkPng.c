@@ -1485,15 +1485,14 @@ pIDAT_st_mkPng(
    ^   - write IDAT header
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   tmpUS = pngSTPtr->pixPerByteUC;
-   tmpUS *= pngSTPtr->widthUS;
-   ++tmpUS;
-   tmpUS += 5;
-   tmpUS *= pngSTPtr->heightUS;
-   tmpUS += 6;
+   /*size of png to print out ot header*/
+   tmpUS = 5 + pngSTPtr->pixPerByteUC; /*(5 + bpl)*/
+   tmpUS *= pngSTPtr->heightUS; /*(5 + bpl) * height)*/
+   tmpUS += 6;           /*2 + heigth * (5 + bpl) + 4)*/
 
    addUint_mkPng(tmpUS, outFILE);
-   
+      /*size of png, comes before idat header*/
+
    crc32Byte_checkSum('I', crc32UI);
    crc32Byte_checkSum('D', crc32UI);
    crc32Byte_checkSum('A', crc32UI);
