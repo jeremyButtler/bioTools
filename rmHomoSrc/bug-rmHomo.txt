@@ -1,5 +1,5 @@
 b mainRmHomo.c:1181
 
-#r -sam test.sam -ref /usr/local/share/freezeTBFiles/NC000962.fa
-r -homo 2 -sam qry.sam -ref ref.fa
+r -homo 3 -sam test.sam -ref /usr/local/share/freezeTBFiles/NC000962.fa > del.sam
+#r -homo 2 -sam qry.sam -ref ref.fa
 

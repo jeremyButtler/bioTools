@@ -271,6 +271,12 @@ My general libraries.
 
 # Updates:
 
+- 2025-05-26
+  - fixed bug were rmHomo was not keeping refernce and
+    query sequence in sync
+  - fixed -coord-trim in filtssam not updating
+    match, snp, del, ins, soft mask, and number aligned
+    reference bases
 - 2025-05-23
   - minor fixes to samEntry and tbCon .c files
   - findRefPos_samEntry (in genBio/samEntry.c) can now

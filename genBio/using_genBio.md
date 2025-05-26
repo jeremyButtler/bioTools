@@ -7,12 +7,262 @@ Here to give an idea of how to use the libraries in
 # TOC: Table Of Contents
 
 - genBio TOC: Table Of Contents
+  - [codonFun](#codonTbl)
+    - convert bases or sequences to amino acids
+  - [codonTbl](#codonTbl)
+    - table for converting sequences to bases
+  - [ntTo2Bit](#ntTo2Bit)
+    - converts nucleotide to 0 to 4 for look up tables
+      - 4 means anonymous base of some kind
+  - [revNtTo2Bit](#ntTo2Bit)
+    - ntTo2Bit, but for reverse complementing a sequence
   - [samRef](#samEntry)
     - get reference ids and lengths from samfile header
   - [samEntry](#samEntry)
     - has structure to hold sam file entries
   - [seqST](#seqST)
     - has structure to read in fastq or fasta files
+
+# codonFun
+
+Codon fun contains a set of functions to convert bases or
+  amino acid sequences. It is really a wrapper around
+  codonTbl, ntTo2Bit, and revNtTo2Bit.
+
+## single amino acid conversion
+
+The codonToAA_codonFun function takes in three bases
+  (signed characters) and returns the matching single
+  letter amino acid.
+
+```
+signed char *sequenceStr = "atg";
+signed char aminoAcid =
+   codonToAA_codonFun(
+      sequenceStr[0],
+      sequenceStr[1],
+      sequenceStr[2]
+   );
+```
+
+The revCodonToAA_codonFun function takes in three bases
+  (signed characters) and returns the matching, reverse
+  complement single letter amino acid.
+
+```
+signed char *sequenceStr = "atg";
+signed char reverse_complement_aminoAcid =
+   revCodonToAA_codonFun(
+      sequenceStr[0],
+      sequenceStr[1],
+      sequenceStr[2]
+   );
+```
+
+## sequence translation (to amino acids)
+
+The sequenceToAA_codonFun function translates a sequence.
+
+| Input | Use                                     |
+|:------|:----------------------------------------|
+|  1st  | c-string with sequence to traslate      |
+|  2nd  | c-string to hold translated sequence    |
+|  3rd  | position to start translation (index 0) |
+|  4th  | position to end translation (index 0)   |
+
+Table: inputs for sequenceToAA_codonFun
+
+Make sure the 2nd input (gets ammino acid sequence) is
+  large enough to hold the translated sequence
+  (1 + sequence length / 3)
+
+```
+signed char *sequenceStr = "atgccctaa";
+signed char *aminoAcidStr[16];
+signed long lengthAASL = 0;
+
+lengthAASL = 
+   seqToAA_codonFun(
+      sequenceStr,
+      aminoAcidStr,
+      0,
+      0
+   );
+```
+
+## misc functions
+
+You can also convert a three letter amino acid to a one
+  letter using aaTripToChar_codonFun. This takes a
+  c-string and returns the single letter amino acid code
+  as a signed char or 0 if the input code was not an
+  amino acid.
+
+```
+signed char *threeLetterStr = "Met";
+signed char aaSC = aaTripToChar_codonFun(threeLetterStr);
+
+if(! aaSC)
+   /*DEAL WITH INVALID CODES*/
+```
+
+You can check if the codon is a bacterial start codon
+  with codon with bactStart_codonFun, or for reverse
+  complement bactRevStart_codonFun. The input is three
+  base and the output is bacterial 1 if is a start codon
+  or 0 if not.
+
+```
+signed char *seqStr = "atg";
+
+if(bactStart_codonFun(seqStr[0], seqStr[1], seqStr[2]))
+   /*have start codon*/
+else
+   /*not a start codon*/
+
+if(bactRevStart_codonFun(seqStr[0], seqStr[1], seqStr[2]))
+   /*have reversee complement start codon*/
+else
+   /*not a reverese complement start codon*/
+```
+
+# codonTbl
+
+The codon table is a lookup table to convert three bases
+  into an amino acid. It uses single letter amino acid
+  symbols. There is a list of the symbols and a codon
+  table at the bottom of the file. The tables name is
+  codonTbl and it takes in three index (bases). You can
+  convert an ascii base to a lookup value using ntTo2Bit
+  or revNtTo2Bit. The return value is the ammino acid
+  letter (x for any) as a signed char.
+
+See [ntTo2Bit](#ntTo2Bit) or [revNtTo2Bit](#revNtTo2Bit)
+  for an example of how to use codonTbl.
+
+# ntTo2Bit
+
+Is a lookup table to convert nucleotides to array lookup
+  index's. The lookup table is called ntTo2Bit. It takes
+  in a unsigned character and returns the converted
+  nucleotide back as an unsigned character.
+
+| Nucleotide  | Return                 |
+|:------------|:-----------------------|
+| T           | def_t_ntTo2Bit         |
+| C           | def_c_ntTo2Bit         |
+| A           | def_a_ntTo2Bit         |
+| G           | def_g_ntTo2Bit         |
+| other input | def_err3rdBit_ntTo2Bit |
+
+Simple example; printing a translated sequence:
+
+```
+#ifdef PLAN9
+   #include <u.h>
+   #include <libc.h>
+#endif
+
+#include <stdio.h>
+#include "ntTo2Bit.h"
+#include "codonTbl.h"
+
+int
+main(
+){
+   signed char *sequenceStr = "atgccc";
+   unsigned char ntUC = 0;
+   unsigned char ntAryUC[16];
+   unsigned char indexUC = 0;
+   
+   while(sequenceStr[ntUC])
+      ntAryUC[ntUC] =
+         ntTo2Bit[ (unsigned char) sequenceStr[ntUC++] ];
+
+   indexAryUC[ntUC] = '\0';
+   indexAryUC[ntUC + 1] = '\0';
+   indexAryUC[ntUC + 2] = '\0';
+
+   ntUC = 0;
+
+   while(indexAryUC[ntUC])
+   { /*Loop: convert index to amino acids*/
+      putc(
+         stdout,
+         codonTbl[
+              ntAryUC[ntUC]      /*part of codonTbl line*/
+            ][ntAryUC[ntUC + 1]  /*part of codonTbl line*/
+            ][ntAryUC[ntUC + 2]  /*part of codonTbl line*/
+         ] /*end of codonTbl line*/
+      );
+      ntUC += 3; /*move to next amino acid
+   } /*Loop: convert index to amino acids*/
+}
+```
+
+# revNtTo2Bit
+
+Is a lookup table to reverese complement and convert
+  nucleotides to array lookup index's. The lookup table is
+  called revNtTo2Bit. It takes in a unsigned character and
+  returns the converted nucleotide back as an unsigned
+  character.
+
+| Nucleotide  | Return                    |
+|:------------|:--------------------------|
+| T           | def_a_revNtTo2Bit         |
+| C           | def_g_revNtTo2Bit         |
+| A           | def_t_revNtTo2Bit         |
+| G           | def_c_revNtTo2Bit         |
+| other input | def_err3rdBit_revNtTo2Bit |
+
+Simple example; printing a translated, reverse complement
+  sequence:
+
+```
+#ifdef PLAN9
+   #include <u.h>
+   #include <libc.h>
+#endif
+
+#include <stdio.h>
+#include "ntTo2Bit.h"
+#include "codonTbl.h"
+
+int
+main(
+){
+   signed char *sequenceStr = "atgccc";
+   unsigned char ntUC = 0;
+   unsigned char indexUC = 5;
+   unsigned char ntAryUC[16];
+   unsigned char indexUC = 0;
+   
+   while(sequenceStr[ntUC])
+      ntAryUC[indexUC++] =
+         revNtTo2Bit[(unsigned char) sequenceStr[ntUC++]];
+         /*filling in backwards to reverese sequence*/
+
+   indexAryUC[ntUC] = '\0';
+   indexAryUC[ntUC + 1] = '\0';
+   indexAryUC[ntUC + 2] = '\0';
+
+   ntUC = 0;
+
+   while(indexAryUC[ntUC])
+   { /*Loop: convert index to amino acids*/
+      putc(
+         stdout,
+         codonTbl[
+              ntAryUC[ntUC]     /*part of codonTbl line*/
+            ][ntAryUC[ntUC + 1] /*part of codonTbl line*/
+            ][ntAryUC[ntUC + 2] /*part of codonTbl line*/
+         ] /*end of codonTbl line*/
+      );
+      ntUC += 3; /*move to next amino acid
+   } /*Loop: convert index to amino acids*/
+}
+```
 
 # samRef
 
@@ -361,8 +611,9 @@ You can find the sequence position of a reference position
   - int pointer to cigar entry currently on
   - int pointer to number of bases left in the cigar entry
     (what have I not moved past)
-  - the reference position to find (target)
-  - int poiter to the current reference position
+  - reference position to find (target)
+    - can be forwards or backwards
+  - int pointer to the current reference position
     - this is updated to the target position or the last
       reference base in the sequence
   - int poiter to the current sequence position
@@ -427,11 +678,9 @@ Swapping is done lazely, so pointers are swapped instead
 
 If you modify the q-score entry in a samEntry struct, then
   you can update thm with findQScores_samEntry (fun08
-  samEntry.c/h). However, before calling, make sure you
-  blank your q-score histogram (qHistUI) in your samEntry
-  struct. This takes in a pointer to a samEntry struct to
-  update and returns nothing. It will blank and then
-  update all q-score values in the structure.
+  samEntry.c/h). This takes in a pointer to a samEntry
+  struct to update and returns nothing. It will blank and
+  then update all q-score values in the structure.
 
 **q-score copy**
 
@@ -741,3 +990,58 @@ When finished with the seqST structure array, you can
   provide the array and the number of seqST structers in
   the array.
 
+## seqST example
+
+Here is a quick example the reverse complements every
+  read in a fastq file. Not very usefull, but gives an
+  idea of the workflow.
+
+```
+#ifdef PLAN9
+   #include <u.h>
+   #include <libc.h>
+#endif
+
+#include <stdio.h>
+#include "seqST.h"
+
+int
+main(
+){
+   signed char errorSC = 0;
+   struct seqST sequenceStruct;
+   FILE *fastqFILE = fopen("file.fastq", "r");
+
+   init_seqST(sequenceStruct);
+
+   if(! fastqFILE)
+      /*HANDEL FILE ERRORS*/
+
+   while(! errorSC)
+   { /*Loop: read in fastq sequences*/
+      errorSC = getFq_seqST(fastqFILE, &sequenceStruct);
+      if(errorSC)
+         break;
+      revComp_seqST(&sequenceStruct);
+      fprintf(
+          stdout,
+          "@%s\n%s\n+\n%s",
+          sequenceStruct.idStr,
+          sequenceStruct.seqStr,
+          sequenceStruct.qStr
+      );
+   } /*Loop: read in fastq sequences*/
+
+   if(errorSC == def_EOF_seqST)
+      ;
+   else if(errorSC != def_memErr_seqST)
+      /*handel memory errors*/
+   else
+      /*handel file errors*/
+
+   freeStack_seqST(&sequenceStruct);
+   fclose(fastqFILE);
+   fastqFILE = 0;
+   return 0;
+}
+```
