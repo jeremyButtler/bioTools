@@ -998,6 +998,10 @@ int main(
    signed long startSL = 0;
    signed long endSL = 0;
 
+   signed long tmpStartSL = 0;
+   signed long tmpEndSL = 0;
+   signed long revEndSL = 0;
+
    signed char orf1Bl = def_ORF1_tranSeq;
    signed char orf2Bl = def_ORF2_tranSeq;
    signed char orf3Bl = def_ORF3_tranSeq;
@@ -1222,6 +1226,14 @@ int main(
          goto nextSeq_main_sec03_sub09;
          /*can not translate*/
 
+      tmpStartSL = startSL;
+      if(seqStackST.seqLenSL < endSL)
+         tmpEndSL = seqStackST.seqLenSL;
+      else if(! endSL)
+         tmpEndSL = seqStackST.seqLenSL;
+      else
+         tmpEndSL = endSL;
+
       /***************************************************\
       * Main Sec03 Sub03:
       *  - translate reading frame 1
@@ -1233,8 +1245,8 @@ int main(
             seqToAA_codonFun(
                seqStackST.seqStr,
                aaHeapStr,
-               startSL,
-               endSL
+               tmpStartSL,
+               tmpEndSL
             ); /*Get the aa sequence for ORF 1*/
       
          if(lenAaSL == def_unkownNt_codonFun)
@@ -1243,8 +1255,10 @@ int main(
 
          fprintf(
             (FILE *) outFILE,
-            ">%s-ORF1%s%s%s",
+            ">%s-ORF1\tstart=%li\tend=%li%s%s%s",
             seqStackST.idStr,
+            tmpStartSL,
+            tmpEndSL,
             str_endLine,
             aaHeapStr,
             str_endLine
@@ -1262,8 +1276,8 @@ int main(
             seqToAA_codonFun(
                seqStackST.seqStr,
                aaHeapStr,
-               startSL + 1,
-               endSL
+               tmpStartSL + 1,
+               tmpEndSL
             );
       
          if(lenAaSL == def_unkownNt_codonFun)
@@ -1272,8 +1286,10 @@ int main(
 
          fprintf(
             (FILE *) outFILE,
-            ">%s-ORF2%s%s%s",
+            ">%s-ORF2\tstart=%li\tend=%li%s%s%s",
             seqStackST.idStr,
+            tmpStartSL + 1,
+            tmpEndSL,
             str_endLine,
             aaHeapStr,
             str_endLine
@@ -1291,8 +1307,8 @@ int main(
             seqToAA_codonFun(
                seqStackST.seqStr,
                aaHeapStr,
-               startSL + 2,
-               endSL
+               tmpStartSL + 2,
+               tmpEndSL
             );
       
          if(lenAaSL == def_unkownNt_codonFun)
@@ -1301,8 +1317,10 @@ int main(
 
          fprintf(
             (FILE *) outFILE,
-            ">%s-ORF3%s%s%s",
+            ">%s-ORF3\tstart=%li\tend=%li%s%s%s",
             seqStackST.idStr,
+            tmpStartSL + 2,
+            tmpEndSL,
             str_endLine,
             aaHeapStr,
             str_endLine
@@ -1315,11 +1333,32 @@ int main(
       \***************************************************/
 
       /*Check if I am printing the reverse reading frames*/
-      if(
-            orf4Bl
-         || orf5Bl
-         || orf6Bl
-      ) revComp_seqST(&seqStackST);
+      if(orf4Bl || orf5Bl || orf6Bl)
+      { /*If: need to reverse complment the sequence*/
+         revComp_seqST(&seqStackST);
+
+         if(! startSL && ! endSL)
+            ; /*entire sequence no conversion needed*/
+
+         else if(startSL && endSL)
+         { /*Else If: adjust and swap coordinates*/
+            /*need to refind stat and end coordinates*/
+            tmpStartSL = seqStackST.seqLenSL - tmpEndSL;
+            revEndSL = seqStackST.seqLenSL - startSL;
+         } /*Else If: adjust and swap coordinates*/
+
+         else if(startSL)
+         { /*Else If: only using starting coordinate*/
+            revEndSL = seqStackST.seqLenSL - startSL;
+            tmpStartSL = 0;
+         } /*Else If: only using starting coordinate*/
+
+         else
+         { /*Else: only using ending coordinate*/
+            tmpStartSL = seqStackST.seqLenSL - tmpEndSL;
+            revEndSL = 0;
+         } /*Else: only using ending coordinate*/
+      }  /*If: need to reverse complment the sequence*/
 
       else
          goto nextSeq_main_sec03_sub09;
@@ -1335,8 +1374,8 @@ int main(
             seqToAA_codonFun(
                seqStackST.seqStr,
                aaHeapStr,
-               startSL,
-               endSL
+               tmpStartSL,
+               revEndSL
             );
       
          if(lenAaSL == def_unkownNt_codonFun)
@@ -1345,8 +1384,16 @@ int main(
 
          fprintf(
             (FILE *) outFILE,
-            ">%s-ORF4%s%s%s",
+            ">%s-ORF4\trev_start=%li\trev_end=%li",
             seqStackST.idStr,
+            tmpStartSL,
+            revEndSL
+         );
+         fprintf(
+            (FILE *) outFILE,
+            "\tfor_start=%li\tfor_end=%li%s%s%s",
+            startSL,
+            tmpEndSL,
             str_endLine,
             aaHeapStr,
             str_endLine
@@ -1364,8 +1411,8 @@ int main(
             seqToAA_codonFun(
                seqStackST.seqStr,
                aaHeapStr,
-               startSL + 1,
-               endSL
+               tmpStartSL + 1,
+               revEndSL
             );
       
          if(lenAaSL == def_unkownNt_codonFun)
@@ -1374,8 +1421,17 @@ int main(
 
          fprintf(
             (FILE *) outFILE,
-            ">%s-ORF5%s%s%s",
+            ">%s-ORF5\trev_start=%li\trev_end=%li",
             seqStackST.idStr,
+            tmpStartSL + 1,
+            revEndSL
+         );
+
+         fprintf(
+            (FILE *) outFILE,
+            "\tfor_start=%li\tfor_end=%li%s%s%s",
+            startSL,
+            tmpEndSL - 1,
             str_endLine,
             aaHeapStr,
             str_endLine
@@ -1393,8 +1449,8 @@ int main(
             seqToAA_codonFun(
                seqStackST.seqStr,
                aaHeapStr,
-               startSL + 2,
-               endSL
+               tmpStartSL + 2,
+               revEndSL
             );
       
          if(lenAaSL == def_unkownNt_codonFun)
@@ -1403,8 +1459,16 @@ int main(
 
          fprintf(
             (FILE *) outFILE,
-            ">%s-ORF6%s%s%s",
+            ">%s-ORF6\trev_start=%li\trev_end=%li",
             seqStackST.idStr,
+            tmpStartSL + 2,
+            revEndSL
+         );
+         fprintf(
+            (FILE *) outFILE,
+            "\tfor_start=%li\tfor_end=%li%s%s%s",
+            startSL,
+            tmpEndSL - 2,
             str_endLine,
             aaHeapStr,
             str_endLine

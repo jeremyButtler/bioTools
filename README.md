@@ -271,6 +271,10 @@ My general libraries.
 
 # Updates:
 
+- 2025-05-27
+  - fixed bug in tranSeq were reverse reading frames
+    (4 to 6) did not use the correct coordiantes when
+    `-start` and `-end` were used
 - 2025-05-26
   - fixed bug were rmHomo was not keeping refernce and
     query sequence in sync
@@ -418,6 +422,11 @@ My general libraries.
 5. add SIMD support to mapRead
    - likely will happen once get freezeTB to more polished
      state
+6. ampDepth
+   - allow ampDepth to print read depth for each position
+   - set non-coordinate input to print depth for amplicons
+     (no breaks in depths)
+   
 
 # Thanks
 
