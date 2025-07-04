@@ -147,7 +147,7 @@ adler32Byte_checkSum(
    signed int *twoSIPtr   /*second value in adler32*/
 );
 
-#define adler32Finish_checkSum(oneMac, twoMac) ((twoMac) << 16 | (oneMac))
+#define adler32Finish_checkSum(oneMac, twoMac) ( ((twoMac) << 16) | (oneMac))
 
 /*-------------------------------------------------------\
 | Fun08: crc32_checkSum
@@ -195,7 +195,7 @@ crc32Byte_checkSum(
 |   - Returns:
 |     o finalized crc32 checksum
 \-------------------------------------------------------*/
-#define crc32Finish_checkSum(crc32Mac) ((unsigned int) (crc32Mac) ^ 0xffffffff)
+#define crc32Finish_checkSum(crc32Mac) ((unsigned int) ~(crc32Mac))
 
 /*-------------------------------------------------------\
 | Fun11: mkCrc32Tbl_checkSum

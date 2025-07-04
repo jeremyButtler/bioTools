@@ -26,6 +26,7 @@ all:
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C tbConSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C tranSeqSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C trimSamSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C unGzSrc;
 
 install:
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C adjCoordsSrc install;
@@ -49,6 +50,7 @@ install:
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C tbConSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C tranSeqSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C trimSamSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C unGzSrc install;
 
 clean:
 	rm */*.$O

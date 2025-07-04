@@ -145,12 +145,13 @@ calcDepth_st_mkPng(
    struct st_mkPng *pngSTPtr /*has bit depth values*/
 ){
    signed char changeSC = 0;
-
+   /*goto bit8_fun02_DELETE;*/ /*DELETE*/
    if(pngSTPtr->numColUC > 16)
    { /*If: 8 bit color scheme*/
       if(pngSTPtr->pixDepthUC != 8)
          changeSC = 1;
 
+      /*bit8_fun02_DELETE:;*/ /*DELETE*/
       pngSTPtr->pixDepthUC = 8;
       pngSTPtr->pixPerByteUC = 1;
       pngSTPtr->shiftUC = 0;
@@ -255,7 +256,7 @@ addCol_st_mkPng(
 
    if( indexSS >= pngSTPtr->numColUC )
    { /*If: added a new color*/
-      ++(pngSTPtr->numColUC);
+      ++pngSTPtr->numColUC;
 
       /*check if bit depth is same*/
       if( calcDepth_st_mkPng(pngSTPtr) )
@@ -454,6 +455,16 @@ init_st_mkPng(
       3,                   /*fourth index*/
       &errSC               /*ignore*/
    );
+
+   /*DELETE*/
+   /*for(errSC = 4; errSC < 16; ++errSC)
+   {
+      pngSTPtr->redAryUC[errSC] = 0;
+      pngSTPtr->bluAryUC[errSC] = 0;
+      pngSTPtr->greAryUC[errSC] = 0;
+      ++pngSTPtr->numColUC;
+   }
+   errSC = 0;*/ /*DELETE*/
      
 
    /*set number of used bytes*/
@@ -1362,8 +1373,7 @@ pPLTE_st_mkPng(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*add color pallete size to header*/
-   uiCol = 4 + (pngSTPtr->numColUC * 3);
-      /*4 for header, * 3 for color pallete*/
+   uiCol = (pngSTPtr->numColUC * 3);
 
    addUint_mkPng(uiCol, outFILE);
       /*CRC does not include chunk length section*/
@@ -1470,42 +1480,51 @@ pIDAT_st_mkPng(
    signed int sumTwoSI = 0;
 
    signed long pixelSL = 0;
-   signed long endSL = 0;
+   signed long totalPixelSL = 0;
+   signed long pixCntSL = 0;
 
    unsigned int crc32UI = 0xffffffff;
    unsigned short pixPerRowUS =
       1 + (unsigned short) pngSTPtr->widthUS;
-
-   unsigned short sizeUS =
-       pngSTPtr->heightUS / pngSTPtr->pixPerByteUC;
-      /*think recording number of bytes per column*/
 
    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\
    ^ Fun19 Sec02:
    ^   - write IDAT header
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   /*size of png to print out ot header*/
-   tmpUS = 5 + pngSTPtr->pixPerByteUC; /*(5 + bpl)*/
-   tmpUS *= pngSTPtr->heightUS; /*(5 + bpl) * height)*/
-   tmpUS += 6;           /*2 + heigth * (5 + bpl) + 4)*/
 
-   addUint_mkPng(tmpUS, outFILE);
-      /*size of png, comes before idat header*/
+   /*find the number of bytes at the end of all rows*/
+   pixelSL = pngSTPtr->numPixelSL / pngSTPtr->widthUS;
+   pixelSL += 6; /*filter + 5 bytes of zlib flags*/
+
+   /*find the total pixels + extra bytes in the image*/
+   totalPixelSL = pngSTPtr->heightUS * pngSTPtr->widthUS;
+   totalPixelSL += pixelSL;
+
+   /*finish finding number of bytes in the idat entry*/
+   pixelSL += pngSTPtr->numPixelSL;
+   pixelSL += 6; /*ending 6 btyes*/
+
+   addUint_mkPng(pixelSL, outFILE);
+      /*size of png, before idat header (not in crc)
+      `   This has the number of bytes in the idat
+      `   entry. This includes the 6 bytes at the end
+      `   of each row
+      */
 
    crc32Byte_checkSum('I', crc32UI);
    crc32Byte_checkSum('D', crc32UI);
    crc32Byte_checkSum('A', crc32UI);
    crc32Byte_checkSum('T', crc32UI);
    crc32Byte_checkSum(0x78, crc32UI);
-   crc32Byte_checkSum(0x01, crc32UI);
+   crc32Byte_checkSum(0xda, crc32UI);
    
    fputc('I', (FILE *) outFILE);
    fputc('D', (FILE *) outFILE);
    fputc('A', (FILE *) outFILE);
    fputc('T', (FILE *) outFILE);
    fputc(0x78, (FILE *) outFILE);
-   fputc(0x01, (FILE *) outFILE);
+   fputc(0xda, (FILE *) outFILE);
 
    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\
    ^ Fun19 Sec03:
@@ -1530,24 +1549,21 @@ pIDAT_st_mkPng(
    +   - start loop & deal with non-last row end of row
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   endSL = pngSTPtr->numPixelSL >> pngSTPtr->shiftUC;
-      /*number bytes in png image*/
-
    indexUI = 0;
    pixelSL = 0;
 
-   while(pixelSL < endSL)
+   while(totalPixelSL > 0)
    { /*Loop: add pixels to crc32*/
       
       if(! indexUI)
       { /*If: line header*/
-         if(pixelSL > (signed long) pixPerRowUS)
+         if(totalPixelSL - 5 > (signed long) pixPerRowUS)
          { /*If: not last row*/
             fputc('\0', (FILE *) outFILE);
             crc32UI = crc32Byte_checkSum('\0', crc32UI);
 
-            /*bytes per pixel (index so only 1) */
-            tmpUS = 1; /*pixel is in entire byte*/
+            /*bits in one line*/
+            tmpUS = usToLittle_endin(pixPerRowUS);
             tmpAryUC = (unsigned char *) &tmpUS;
             crc32UI =
                crc32Byte_checkSum(tmpAryUC[0], crc32UI);
@@ -1557,7 +1573,7 @@ pIDAT_st_mkPng(
             fputc(tmpAryUC[1], (FILE *) outFILE);
 
 
-            tmpUS = ~1; /*pixel is in entire byte*/
+            tmpUS = ~tmpUS;
             tmpAryUC = (unsigned char *) &tmpUS;
             crc32UI =
                crc32Byte_checkSum(tmpAryUC[0], crc32UI);
@@ -1569,12 +1585,12 @@ pIDAT_st_mkPng(
             /*no filter marker*/
             crc32UI = crc32Byte_checkSum(0, crc32UI);
             fputc(0, (FILE *) outFILE);
-                /*row header; no pixel*/
+                /*row header for uncompressed*/
 
             /*add no-fitler to adler*/
             adler32Byte_checkSum(0, &sumOneSI, &sumTwoSI);
 
-            --sizeUS;
+            totalPixelSL -= 6;
          } /*If: not last row*/
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
@@ -1587,8 +1603,8 @@ pIDAT_st_mkPng(
             fputc('\1', (FILE *) outFILE);
             crc32UI = crc32Byte_checkSum('\1', crc32UI);
 
-            /*write offset (number bytes in last row)*/
-            tmpUS = sizeUS; /*pixel is in entire byte*/
+            /*write offset (number pixels in last row)*/
+            tmpUS = usToLittle_endin(totalPixelSL - 5);
             tmpAryUC = (unsigned char *) &tmpUS;
             crc32UI =
                crc32Byte_checkSum(tmpAryUC[0], crc32UI);
@@ -1598,7 +1614,7 @@ pIDAT_st_mkPng(
             fputc(tmpAryUC[1], (FILE *) outFILE);
 
 
-            tmpUS = ~sizeUS; /*pixel is in entire byte*/
+            tmpUS = ~tmpUS; /*pixel is in entire byte*/
             tmpAryUC = (unsigned char *) &tmpUS;
             crc32UI =
                crc32Byte_checkSum(tmpAryUC[0], crc32UI);
@@ -1606,27 +1622,15 @@ pIDAT_st_mkPng(
                crc32Byte_checkSum(tmpAryUC[1], crc32UI);
             fputc(tmpAryUC[0], (FILE *) outFILE);
             fputc(tmpAryUC[1], (FILE *) outFILE);
-
 
             crc32UI = crc32Byte_checkSum(0, crc32UI);
             fputc(0, (FILE *) outFILE);
-                /*row header; no pixel*/
-
-            tmpUS = sizeUS; /*pixel is in entire byte*/
-            tmpAryUC = (unsigned char *) &tmpUS;
-            adler32Byte_checkSum(
-               tmpAryUC[0],
-               &sumOneSI,
-               &sumTwoSI
-            );
-            adler32Byte_checkSum(
-               tmpAryUC[0],
-               &sumOneSI,
-               &sumTwoSI
-            );
-
-            --sizeUS;
+                /*row header for uncompressed*/
+            adler32Byte_checkSum(0, &sumOneSI, &sumTwoSI);
+               /*add no-fitler to adler*/
+            totalPixelSL -= 6;
          } /*Else: is last row*/
+         pixCntSL += 6; /*DELETE*/
       } /*If: line header*/
 
       /**************************************************\
@@ -1651,9 +1655,10 @@ pIDAT_st_mkPng(
       );
 
       /*move to next pixel*/
-      --sizeUS;
-      indexUI = (indexUI + 1) % pngSTPtr->widthUS;
+      totalPixelSL -= pngSTPtr->pixPerByteUC;
+      indexUI += (indexUI + 1) % pngSTPtr->widthUS;
 
+      ++pixCntSL; /*DELETE*/
       ++pixelSL;
    }  /*Loop: add pixels to crc32*/
 
@@ -1664,6 +1669,7 @@ pIDAT_st_mkPng(
 
    /*add adler sum to crc32*/
       indexUI = adler32Finish_checkSum(sumOneSI,sumTwoSI);
+      indexUI = uiToBig_endin(indexUI);
       tmpAryUC = (unsigned char *) &indexUI;
 
       crc32UI = crc32Byte_checkSum(tmpAryUC[0], crc32UI);

@@ -70,6 +70,8 @@ struct str_ptrAry;
 #define def_mergeUpBl_k2TaxaId ((signed char) 1)
 #define def_mergeDownBl_k2TaxaId ((signed char) 2)
 #define def_skip_k2TaxaId ((signed char) 4)
+#define def_lowDepth_k2TaxaId ((signed char) 8)
+    /*mark as low read depth, for print lowest level*/
 
 /*-------------------------------------------------------\
 | ST01: taxa_k2TaxaId
@@ -325,8 +327,8 @@ readReport_k2TaxaId(
 |   - prefixStr:
 |     o c-string with prefix to name files with
 |   - pUnclassBl:
-|     0 1: print unclassifed reads
-|     0 0: do not print unclassifed reads
+|     o 1: print unclassifed reads
+|     o 0: do not print unclassifed reads
 |   - inFILE:
 |     o FILE pointer to kraken2 tsv output with read ids
 |       and their taxnomic assignments

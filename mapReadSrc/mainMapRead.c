@@ -1884,7 +1884,7 @@ input_mainMapRead(
             goto done_fun03_sec03;
             /*at stdout redirect to file*/
 
-         testFILE = fopen(argAryStr[siArg], "r");
+         testFILE = fopen(argAryStr[siArg], "rb");
 
          if(! testFILE)
             goto invalidFile_fun03_sec03;
@@ -2206,7 +2206,7 @@ main(
    +   - open reference file
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   seqFILE = fopen((char *) refFileStr, "r");
+   seqFILE = fopen((char *) refFileStr, "rb");
 
    if(! seqFILE)
    { /*If: could not open reference*/
@@ -2405,7 +2405,7 @@ main(
 
       else
       { /*Else: getting input from file*/
-         seqFILE = fopen(argAryStr[qryFileIndexSI], "r");
+         seqFILE = fopen(argAryStr[qryFileIndexSI], "rb");
 
          if(! seqFILE)
             goto noFile_main_sec05;

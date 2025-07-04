@@ -68,6 +68,9 @@ all:
 	cd trimSamSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
+	cd unGzSrc
+	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
+	cd ..
 
 install:
 	cd adjCoordsSrc
@@ -131,6 +134,9 @@ install:
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
 	cd trimSamSrc
+	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
+	cd ..
+	cd unGzSrc
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
 

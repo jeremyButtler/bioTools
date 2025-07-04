@@ -1,5 +1,4 @@
-b mainK2TaxaId.c:1058
-b mainK2TaxaId.c:1047
+b mainK2TaxaId.c:1255
 
 # for barcode 11 a pseudomonas is added in
 #b k2TaxaId.c:1014 if retTaxaHeapST->codeArySL[retTaxaHeapST->numTaxaSL] == 286
@@ -8,16 +7,20 @@ b mainK2TaxaId.c:1047
 #r -id barcode12.kraken2.assignments.tsv -report barcode12.kraken2.report.txt -prefix delete/delete
 #r -id barcode11.kraken2.assignments.tsv -report barcode11.kraken2.report.txt -prefix delete/delete
 #r -start P -end G7 -id testId.tsv -report testRep.tsv -prefix delete/delete
-r -report ~/files/analysis/Eric-TB-project/2024-bethel/01-input/01-kraken/barcode04.kraken2.report.txt -id ~/files/analysis/Eric-TB-project/2024-bethel/01-input/01-kraken/barcode04.kraken2.assignments.tsv
+#r -report test-report.txt -id test-output.txt -no-merge-root -no-merge-tip -prefix delete -end G
+r -report test-report.txt -id test-output.txt -no-merge-root -prefix delete -end G
 
 define pTaxa
    set $siCnt = 0
 
    while($siCnt < taxaHeapST->numTaxaSL)
       printf "%s", taxaHeapST->idAryST->strAry[$siCnt]
+      printf "\t%i", taxaHeapST->levelArySS[$siCnt]
+      printf "\t%i", taxaHeapST->backTrackArySL[$siCnt]
       printf "\t%li", taxaHeapST->codeArySL[$siCnt]
-      printf "\t%li", taxaHeapST->backTrackArySL[$siCnt]
       printf "\t%i\n", taxaHeapST->mergeAryBl[$siCnt]
       set $siCnt = $siCnt + 1
    end
 end
+
+# looking at  1763-Mycobacterium

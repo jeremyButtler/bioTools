@@ -2855,12 +2855,12 @@ p_samEntry(
    fputc('\t', (FILE *) samFILE);
 
    /*PNEXT*/
-   lenSI = numToStr(buffStr, samSTPtr->pNextSI);
+   lenSI = signed_numToStr(buffStr, samSTPtr->pNextSI);
    buffStr[lenSI++] = '\t';
    fwrite(buffStr, char_fun15, lenSI, samFILE);
 
    /*TLEN*/
-   lenSI = numToStr(buffStr, samSTPtr->tLenSI);
+   lenSI = signed_numToStr(buffStr, samSTPtr->tLenSI);
    buffStr[lenSI++] = '\t';
    fwrite(buffStr, char_fun15, lenSI, samFILE);
 

@@ -271,6 +271,25 @@ My general libraries.
 
 # Updates:
 
+- 2025-07-04:
+  - unGz; fixed XLEN (extra entry length) being wrong
+    endin format (reason why unGz errored out on Illumina
+    fastq.gz files)
+   - unGz and mapRead now use binary ("rb" instead of "r")
+     to read files. Needed on Windows
+   - k2TaxaId bug were when -no-merge-root is used, but
+     not -no-merge-tip in kraken2 reports causes one taxa
+     to get multiple non-target read ids
+     - this was due to the back track array being set to
+       0 (first taxa) instead of -1
+- 2025-06-30:
+  - fixed negative tlen values be printed as very large
+    numbers
+- 2025-06-11:
+  - k2TaxaId fixed inifinite loop issue
+    with `-no-merge-root` and setup so so
+    that `-no-merge-root -no-merge-tip` will print any
+    taxa at or after `-end <taxa level>`
 - 2025-05-27
   - fixed bug in tranSeq were reverse reading frames
     (4 to 6) did not use the correct coordiantes when
@@ -426,6 +445,9 @@ My general libraries.
    - allow ampDepth to print read depth for each position
    - set non-coordinate input to print depth for amplicons
      (no breaks in depths)
+7. unGz
+   - has issue printing last Illumina reads in windows
+     for stdout (not sure about stdout)
    
 
 # Thanks

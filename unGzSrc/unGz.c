@@ -241,7 +241,7 @@ main(
 
    while(argSI < numArgsSI)
    { /*Loop: inflate gz files*/
-      inFILE = fopen(argAryStr[argSI], "r");
+      inFILE = fopen(argAryStr[argSI], "rb");
       if(! inFILE)
          goto openErr_main_sec04;
 

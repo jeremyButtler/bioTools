@@ -204,6 +204,8 @@ setup_taxa_k2TaxaId(
    struct taxa_k2TaxaId *taxaSTPtr,
    signed long numElmSL
 ){
+   signed long slIndex = 0;
+
    /*make sure all memory is freeded first*/
    freeStack_taxa_k2TaxaId(taxaSTPtr);
 
@@ -223,13 +225,12 @@ setup_taxa_k2TaxaId(
 
 
    taxaSTPtr->backTrackArySL =
-      calloc(
-         numElmSL,
-         sizeof(signed long)
-      );
-
+      malloc(numElmSL * sizeof(signed long));
    if(! taxaSTPtr->backTrackArySL)
       goto memErr_fun05;
+   for(slIndex = 0; slIndex < numElmSL; ++slIndex)
+      taxaSTPtr->backTrackArySL[slIndex] = -1;
+         /*so I know I am not backtracking*/
 
 
    taxaSTPtr->mergeAryBl =
@@ -379,7 +380,8 @@ realloc_taxa_k2TaxaId(
       taxaSTPtr->indexArySL[slIter] = 0;
       taxaSTPtr->levelArySS[slIter] = 0;
       taxaSTPtr->mergeAryBl[slIter] = 0;
-      taxaSTPtr->backTrackArySL[slIter] = 0;
+      taxaSTPtr->backTrackArySL[slIter] = -1;
+         /*-1 so I know I am not backtracking*/
       taxaSTPtr->codeArySL[slIter] = 0;
    }  /*Loop: initialize arrays*/
 
@@ -652,7 +654,7 @@ getLevel_k2TaxaId(
 |     o 0: only keep ids mapping to its level
 |   - mergeTipBl:
 |     o 1: merge closer to tip not-targted taxa or low
-|       depth taxa
+|          depth taxa
 |     o 0: do not merge
 |   - errSCPtr:
 |     o pointer to signed char to have errors
@@ -1087,6 +1089,10 @@ readReport_k2TaxaId(
              ){ /*Else If: to little read depth*/
                  retTaxaHeapST->mergeAryBl[
                       retTaxaHeapST->numTaxaSL
+                    ] |= def_lowDepth_k2TaxaId;
+
+                 retTaxaHeapST->mergeAryBl[
+                      retTaxaHeapST->numTaxaSL
                    ] |= def_mergeDownBl_k2TaxaId;
 
                 if(! mergeRootBl)
@@ -1137,6 +1143,10 @@ readReport_k2TaxaId(
                   readDepthUL < minDepthUL
                || percDepthF < minPercDepthF
             ){ /*If: to little read depth (merge only*/
+                 retTaxaHeapST->mergeAryBl[
+                      retTaxaHeapST->numTaxaSL
+                    ] |= def_lowDepth_k2TaxaId;
+
                 retTaxaHeapST->mergeAryBl[
                      retTaxaHeapST->numTaxaSL
                   ] |= def_mergeUpBl_k2TaxaId; /*merging*/
@@ -1188,7 +1198,7 @@ readReport_k2TaxaId(
          +    - move to next id (non-merbge
          \++++++++++++++++++++++++++++++++++++++++++++++*/
 
-         else if(levelSS == endLevSS)
+         else if(levelSS >= endLevSS)
             ++retTaxaHeapST->numTaxaSL;
             /*not merging, so only want lowest level*/
      } /*If: at desired tree depth for print*/
@@ -1328,8 +1338,13 @@ pTaxaId_k2TaxaIds(
 |   - prefixStr:
 |     o c-string with prefix to name files with
 |   - pUnclassBl:
-|     0 1: print unclassifed reads
-|     0 0: do not print unclassifed reads
+|     o 1: print unclassifed reads
+|     o 0: do not print unclassifed reads
+|   - pMergeTipsBl:
+|     o 1: if trying to merge tip into a non-existent
+|          tip (deeper in tree), then print the tip if
+|          does not have def_lowDepth_k2TaxaId flag
+|     o 0: only print non-skip, non-merge reads
 |   - inFILE:
 |     o FILE pointer to kraken2 tsv output with read ids
 |       and their taxnomic assignments
@@ -1589,7 +1604,12 @@ pIds_k2TaxaId(
                   goto nextLine_fun12_sec03_sub07;
             } /*If: nothing to backtrack to*/
 
-            indexSL = taxaSTPtr->backTrackArySL[indexSL];
+            if(! indexSL)
+               goto nextLine_fun12_sec03_sub07;
+               /*nothing to merge into*/
+            else
+               indexSL =
+                  taxaSTPtr->backTrackArySL[indexSL];
          } /*Loop: find taxa to merge into*/
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\

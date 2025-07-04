@@ -89,6 +89,10 @@ You can controll the range of taxa printed by using
   `-start` (nearest to root of tree) and `-end`
   (nearest to tip of tree).
 
+When using `-no-merge-root` to avoid merging root ids
+  into the tips, make sure you set `-end` to a less
+  specific level, such as `-end S` instead of `-end S15`.
+
 By default k2TaxaId merges reads into the taxa levels
   nearest the tip (`-end`). This may mean multiple read
   ids may be assigned to multiple files. You can disable
@@ -100,6 +104,10 @@ Also by default k2TaxaId merges reads after `-end` into
 
 # Updates:
 
+- 2025-06-11:
+  - fixed inifinite loop issue with `-no-merge-root` and
+    setup so so that `-no-merge-root -no-merge-tip` will
+    print any taxa at or after `-end <taxa level>`
 - 2024-12-04:
   - fixed issues with missing ids from levels or ids
     assigned to wrong taxa
