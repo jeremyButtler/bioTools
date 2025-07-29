@@ -35,6 +35,9 @@ all:
 	cd k2TaxaIdSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
+	cd leftAlnSrc
+	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
+	cd ..
 	cd mapReadSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
@@ -101,6 +104,9 @@ install:
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
 	cd k2TaxaIdSrc
+	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
+	cd ..
+	cd leftAlnSrc
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
 	cd mapReadSrc

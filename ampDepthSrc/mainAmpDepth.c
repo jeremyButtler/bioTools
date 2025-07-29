@@ -52,6 +52,7 @@
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 signed char *globalExtraCol = (signed char *) "out";
+#define def_pdepth_mainAmpDepth 1
 
 /*-------------------------------------------------------\
 | Fun01: pversoin_mainAmpDepth
@@ -155,8 +156,12 @@ void phelp_mainAmpDepth(
    ^   o fun02 sec02 sub03:
    ^     - Print out the -out entry (output file)
    ^   o fun02 sec02 sub04:
-   ^     - Print out the -min-depth entry (min read depth)
+   ^     - print read depths
    ^   o fun02 sec02 sub05:
+   ^     - print all read depths
+   ^   o fun02 sec02 sub06:
+   ^     - Print out the -min-depth entry (min read depth)
+   ^   o fun02 sec02 sub07:
    ^     - Print out the -flag entry (string for column 1)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
@@ -293,6 +298,36 @@ void phelp_mainAmpDepth(
 
    /*****************************************************\
    * Fun02 Sec02 Sub04:
+   *   - print read depths
+   \*****************************************************/
+
+   if(def_pdepth_mainAmpDepth)
+      fprintf(
+         (FILE *) outFILE,
+         "  -pdepth: [Optional; Yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "  -pdepth: [Optional; No]%s",
+         str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o print depth for bases instead of summary%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o do -psum and -gene-tbl to print summary%s",
+      str_endLine
+   );
+
+   /*****************************************************\
+   * Fun02 Sec02 Sub06:
    *   - Print out the -min-depth entry (min read depth)
    \*****************************************************/
 
@@ -316,7 +351,7 @@ void phelp_mainAmpDepth(
    );
 
    /*****************************************************\
-   * Fun02 Sec02 Sub05:
+   * Fun02 Sec02 Sub07:
    *   - Print out the -flag entry (string for column 1)
    \*****************************************************/
 
@@ -471,6 +506,9 @@ void phelp_mainAmpDepth(
 |     o pointer to hold the file to output the tsv to
 |   - minDepthSI:
 |     o minimum read depth to not split up an amplicon
+|   - pDepthBlPtr:
+|     o signed char pointer to get 1 if user wanted
+|       read depths printed
 |   - extraColStr:
 |     o will point to the flag (c-string) to add to the
 |       first column of the output tsv
@@ -490,6 +528,7 @@ input_ampDepth(
    signed char **samStr,  /*name/path to sam file*/
    signed char **outStr,  /*name/path to output file*/
    signed int *minDepthSI,/*min depth to use*/
+   signed char *pDepthBlPtr, /*print read depths*/
    signed char **extraColStr /*flag to add for data*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
@@ -528,15 +567,15 @@ input_ampDepth(
    ^   - get user input
    ^   o fun03 sec01 sub01:
    ^     - get file io and start loo;
-   ^   o fun03 sec01 sub02:
-   ^     - get flag and min depth
    ^   o fun03 sec01 sub03:
-   ^     - help message requests
+   ^     - get flag and min depth
    ^   o fun03 sec01 sub04:
-   ^     - version number requests
+   ^     - help message requests
    ^   o fun03 sec01 sub05:
-   ^     - invalid input
+   ^     - version number requests
    ^   o fun03 sec01 sub06:
+   ^     - invalid input
+   ^   o fun03 sec01 sub07:
    ^     - move to next argument
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -582,6 +621,27 @@ input_ampDepth(
 
       /**************************************************\
       * Fun03 Sec01 Sub02:
+      *   - check if printing summary or depths
+      \**************************************************/
+
+      else if(
+         ! eql_charCp(
+            (signed char *) "-pdepth",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
+         )
+      ) *pDepthBlPtr = 1;
+
+      else if(
+         ! eql_charCp(
+            (signed char *) "-psum",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
+         )
+      ) *pDepthBlPtr = 0;
+
+      /**************************************************\
+      * Fun03 Sec01 Sub03:
       *   - get flag and min depth
       \**************************************************/
 
@@ -626,7 +686,7 @@ input_ampDepth(
       } /*Else If: output file input*/
 
       /**************************************************\
-      * Fun03 Sec01 Sub03:
+      * Fun03 Sec01 Sub04:
       *   - help message requests
       \**************************************************/
 
@@ -686,7 +746,7 @@ input_ampDepth(
       } /*Else If: user wanted help message*/
 
       /**************************************************\
-      * Fun03 Sec01 Sub04:
+      * Fun03 Sec01 Sub05:
       *   - version number requests
       \**************************************************/
 
@@ -746,7 +806,7 @@ input_ampDepth(
       } /*Else If: user wanted version number*/
 
       /**************************************************\
-      * Fun03 Sec01 Sub05:
+      * Fun03 Sec01 Sub06:
       *   - invalid input
       \**************************************************/
 
@@ -763,7 +823,7 @@ input_ampDepth(
       } /*Else: invalid input*/
 
       /**************************************************\
-      * Fun03 Sec01 Sub06:
+      * Fun03 Sec01 Sub07:
       *   - move to next argument
       \**************************************************/
 
@@ -836,6 +896,8 @@ main(
    signed char *outStr = 0;
    signed int minDepthSI = def_minDepth_ampDepthDefs;
    signed char *extraColStr = globalExtraCol;
+   signed char pDepthBl = def_pdepth_mainAmpDepth;
+   signed char refStr[256];
 
    signed char errSC = 0;  /*Error report*/
    unsigned long errUL = 0;
@@ -845,6 +907,9 @@ main(
 
    signed int *readMapHeapArySI = 0;
       /*Mapped region of reads*/
+   signed int *swapArySI = 0;
+   signed int tmpSI = 0;
+   signed int readMapSizeSI = 0;
    signed int offTargSI = 0;
    signed int noMapSI = 0;
 
@@ -874,6 +939,7 @@ main(
    \*****************************************************/
 
    init_samEntry(&samStackST);
+   refStr[0] = 0;
 
    /*****************************************************\
    * Main Sec02 Sub02:
@@ -888,6 +954,7 @@ main(
          &samStr,     /*Name/path to sam file*/
          &outStr,     /*Name/path to output file*/
          &minDepthSI,  /*Min depth to use*/
+         &pDepthBl,    /*print depth or summary report*/
          &extraColStr /*Flag to add for data*/
      ); /*Get the user input*/
 
@@ -967,48 +1034,59 @@ main(
    *   - get gene coordinates
    \*****************************************************/
 
-   genesHeapST =
-      getCoords_geneCoord(
-         geneTblFileStr,
-         &numGenesSI,
-         &errUL
-      ); /*Get the gene coordinates from the file*/
-
-   if(! genesHeapST)
-   { /*If: I had an error*/
-      if(errUL & def_fileErr_geneCoord)
-      { /*If: This was an file error*/;
-         fprintf(
-            stderr,
-            "Could not open %s%s",
+   if(geneTblFileStr)
+   { /*If: filtering by gene*/
+      genesHeapST =
+         getCoords_geneCoord(
             geneTblFileStr,
-            str_endLine
-         );
-      } /*If: This was an file error*/
+            &numGenesSI,
+            &errUL
+         ); /*Get the gene coordinates from the file*/
 
-      else if(errUL & def_memErr_geneCoord)
-      { /*Else If: This was an memory error*/;
-         fprintf(
-            stderr,
-            "Memory error when reading in %s%s",
-            geneTblFileStr,
-            str_endLine
-         );
-      } /*Else If: This was an memory error*/
+      if(! genesHeapST)
+      { /*If: I had an error*/
+         if(errUL & def_fileErr_geneCoord)
+         { /*If: This was an file error*/;
+            fprintf(
+               stderr,
+               "Could not open %s%s",
+               geneTblFileStr,
+               str_endLine
+            );
+         } /*If: This was an file error*/
 
-      else if(errUL & def_invalidEntry_geneCoord)
-      { /*Else If: This was an memory error*/;
-         fprintf(
-            stderr,
-            "Line number %lu in %s is not valid%s",
-            (errUL >> 8),
-            geneTblFileStr,
-            str_endLine
-         );
-      } /*Else If: This was an memory error*/
+         else if(errUL & def_memErr_geneCoord)
+         { /*Else If: This was an memory error*/;
+            fprintf(
+               stderr,
+               "Memory error when reading in %s%s",
+               geneTblFileStr,
+               str_endLine
+            );
+         } /*Else If: This was an memory error*/
 
-      goto err_main_sec06_sub02;
-   } /*If: I had an error*/
+         else if(errUL & def_invalidEntry_geneCoord)
+         { /*Else If: This was an memory error*/;
+            fprintf(
+               stderr,
+               "Line number %lu in %s is not valid%s",
+               (errUL >> 8),
+               geneTblFileStr,
+               str_endLine
+            );
+         } /*Else If: This was an memory error*/
+
+         goto err_main_sec06_sub02;
+      } /*If: I had an error*/
+   } /*If: filtering by gene*/
+
+   else
+   { /*Else: no gene filtering*/
+      genesHeapST = 0;
+      pDepthBl = 1; /*can not print sumary since no
+                    ` genes to summarize
+                    */
+   } /*Else: no gene filtering*/
 
    /*****************************************************\
    * Main Sec03 Sub02:
@@ -1028,16 +1106,19 @@ main(
       goto err_main_sec06_sub02;
    } /*If: had memory error*/
  
-   offTargSI = genesHeapST->endAryUI[numGenesSI] + 2;
+   if(genesHeapST)
+      readMapSizeSI = genesHeapST->endAryUI[numGenesSI]+2;
      /*These are genes that did not map to the end of the
      ` gene range, but still mapped to the reference
      ` The + 2 is to account for index 1 and to ensure
      `   thre array ends in 0
      */
+   else
+      readMapSizeSI = 4096;
 
    readMapHeapArySI =
       calloc(
-         offTargSI,
+         readMapSizeSI,
          sizeof(unsigned int)
       );
 
@@ -1093,6 +1174,38 @@ main(
       *   - add to histogram, & get next read
       \**************************************************/
 
+      if(
+        samStackST.refEndUI > (unsigned int) readMapSizeSI
+      ){ /*If: array needs to be larger*/
+         swapArySI =
+           realloc(
+              readMapHeapArySI,
+              (samStackST.refEndUI + 1032)
+                * sizeof(signed int)
+           );
+         if(! swapArySI)
+         { /*If: had a memory error*/
+            fprintf(
+               stderr,
+               "Memory error (main sec04 sub02)%s",
+               str_endLine
+            );
+
+            goto err_main_sec06_sub02;
+         } /*If: had a memory error*/
+
+         readMapHeapArySI = swapArySI;
+         swapArySI = 0;
+         tmpSI = readMapSizeSI;
+         readMapSizeSI = samStackST.refEndUI + 1024;
+
+         while(tmpSI < readMapSizeSI)
+            readMapHeapArySI[tmpSI++] = 0;
+      }  /*If: array needs to be larger*/
+
+      if(! refStr[0])
+         cpDelim_charCp(refStr, samStackST.refIdStr, 0);
+
       addRead_ampDepth(
          &samStackST,
          genesHeapST,
@@ -1131,18 +1244,35 @@ main(
 	^  - print histogram and finish cleaning up
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   phead_ampDepth(outFILE);
+   if(pDepthBl)
+   { /*If: printing read depth report*/
+      pDepthHead_ampDepth(outFILE);
 
-   phist_ampDepth(
-      (signed int *) readMapHeapArySI,
-      minDepthSI,
-      genesHeapST,
-      numGenesSI,
-      offTargSI,
-      noMapSI,
-      extraColStr,
-      outFILE
-   ); /*Print out the histogram*/
+      pdepth_ampDepth(
+         (signed int *) readMapHeapArySI,
+         readMapSizeSI,
+         minDepthSI,
+         refStr,
+         extraColStr,
+         outFILE
+      );
+   } /*If: printing read depth report*/
+
+   else
+   { /*Else If: printing summary report*/
+      phead_ampDepth(outFILE);
+
+      phist_ampDepth(
+         (signed int *) readMapHeapArySI,
+         minDepthSI,
+         genesHeapST,
+         numGenesSI,
+         offTargSI,
+         noMapSI,
+         extraColStr,
+         outFILE
+      ); /*Print out the histogram*/
+   } /*Else If: printing summary report*/
 
    if(outFILE != stdout)
       fclose(outFILE);

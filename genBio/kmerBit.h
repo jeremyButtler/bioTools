@@ -42,7 +42,7 @@
 |     bit being used for anonymous bases and the 4th bit
 |     for errors
 |   - this will generate a warning if not used. Bit of
-|     a pain, but need the table to be publice
+|     a pain, but need the table to be public
 \-------------------------------------------------------*/
 static unsigned char alnNtTo_kmerBit[] =
 {

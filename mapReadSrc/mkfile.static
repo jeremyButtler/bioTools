@@ -1,3 +1,5 @@
+
+CC=cc
 LD=cc
 coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self -c
 CFLAGS=-DNONE
@@ -12,6 +14,7 @@ genLib=../genLib
 
 objFiles= \
    $(genAln)/mapRead.$O \
+   $(genBio)/rmHomo.$O \
    $(genBio)/gzSeqST.$O \
    $(genAln)/needle.$O \
    $(genAln)/dirMatrix.$O \
@@ -40,8 +43,10 @@ $(NAME): mainMapRead.$O
 mainMapRead.$O: \
 	mainMapRead.c \
 	$(genAln)/mapRead.$O \
+	$(genBio)/rmHomo.$O \
 	$(genBio)/gzSeqST.$O \
-	../bioTools.h
+	../bioTools.h \
+	../genLib/endLine.h
 		$(CC) -o mainMapRead.$O \
 			$(CFLAGS) $(coreCFLAGS) mainMapRead.c
 
@@ -58,6 +63,15 @@ $(genAln)/mapRead.$O: \
 	 	$(CC) -o $(genAln)/mapRead.$O \
 			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)/mapRead.c
+
+$(genBio)/rmHomo.$O: \
+	$(genBio)/rmHomo.c \
+	$(genBio)/rmHomo.h \
+	$(genBio)/samEntry.$O \
+	$(genBio)/seqST.$O
+		$(CC) -o $(genBio)/rmHomo.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genBio)/rmHomo.c
 
 $(genBio)/gzSeqST.$O: \
 	$(genBio)/gzSeqST.c \

@@ -1,6 +1,6 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
 ' mainNeedle SOF: Start Of File
-'   - does a using a waterman smith aligment
+'   - does a using a Needleman Wunsch aligment
 '   o header:
 '     - included libraries
 '   o fun01: pversion_mainNeedle
@@ -118,7 +118,7 @@ phelp_mainNeedle(
 
    fprintf(
       (FILE *) outFILE,
-      "mainNeedle -qry query.fa -ref ref.fa > out.aln%s",
+      "mainNeedle -qry query.fa -ref ref.fa > out.sam%s",
       str_endLine
 
    );
@@ -222,13 +222,13 @@ phelp_mainNeedle(
 
    fprintf(
       (FILE *) outFILE,
-      "  -out out.aln: [stdout]%s",
+      "  -out out.sam: [stdout]%s",
       str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o file to print alignment to%s",
+      "    o file to print alignment to (as sam file)%s",
       str_endLine
    );
 

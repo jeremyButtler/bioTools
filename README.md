@@ -241,6 +241,11 @@ The programs are built and debugged on Linux and then
     - finds Illumina variants from tbCon tsv file and then
       finds nanopore reads mapping Illumina profile
     - works on linux and complies plan9 (not tested)
+  - leftAln (freezeTB):
+    - left aligns indels in homopolymers
+    - most read mappers will do this automaticlly, so it
+      is this is a one off program that is really for
+      mapRead
   - maskPrim (freezeTB):
     - mask primer sites by coordinates (for sam file)
     - tsv file with coordinates is needed
@@ -271,6 +276,13 @@ My general libraries.
 
 # Updates:
 
+- 2025-07-28:
+  - added printing of read depths to ampDepth
+    - no longer just summary
+- 2025-07-21:
+  - added leftAln for left alignment in homopolymers
+  - mapRead now uses leftAln to do left indel alignment
+    - left indel alignment is on by default
 - 2025-07-04:
   - unGz; fixed XLEN (extra entry length) being wrong
     endin format (reason why unGz errored out on Illumina
@@ -430,22 +442,25 @@ My general libraries.
      projects like bioTools (many programs referencing the
      same set of libraries)
 2. add in hirschberg/myers miller (personal project)
-   - need to modify hirsch from alnSeq for new style
-     and OS portablility. So, conversion project, with a
-     bith of thought.
+   - currently not giving optimal alignments, needs
+     further debuging
 3. add in my memWater matrix scan from alnSeq (personal
    project)
 4. add using_this_code guides (using in C code) for
    programs and libraries
-   - less likely to happen, lot of work for shoddy guides
+   - genLib is complete, but should be merged into
+     individual files with a centeral table of contents
+     file like I am doing in genBio
+   - genBio needs table of contents file and guides for
+     several files still
+   - genAln has nothing
+   - genClust has nothing
+   - seqById has nothing
+   - k2TaxaId has nothing
 5. add SIMD support to mapRead
    - likely will happen once get freezeTB to more polished
      state
-6. ampDepth
-   - allow ampDepth to print read depth for each position
-   - set non-coordinate input to print depth for amplicons
-     (no breaks in depths)
-7. unGz
+6. unGz
    - has issue printing last Illumina reads in windows
      for stdout (not sure about stdout)
    

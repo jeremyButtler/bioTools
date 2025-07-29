@@ -15,6 +15,7 @@ all:
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C filtsamSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C illNanoSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C k2TaxaIdSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C leftAlnSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C mapReadSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C maskPrimSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C memwaterSrc;
@@ -39,6 +40,7 @@ install:
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C filtsamSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C illNanoSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C k2TaxaIdSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C leftAlnSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C mapReadSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C maskPrimSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C memwaterSrc install;

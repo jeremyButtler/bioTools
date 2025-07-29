@@ -234,9 +234,9 @@ then # If: debugging make file
 elif [ "$osStr" = "unix" ];
 then # Else If: general unix make file
    headStr="$headStr\nCC=cc";
-   headStr="LD=cc";
-   headStr="$headStr\ncoreCFLAGS= -O3 -std=c89 $warnStr";
-   headStr=" -c";
+   headStr="$headStr\nLD=cc";
+   headStr="$headStr\ncoreCFLAGS= -O3 -std=c89 $warnStr -c";
+   headStr="$headStr -c";
    headStr="$headStr\nCFLAGS=-DNONE";
    headStr="$headStr\nNAME=$nameStr";
    headStr="$headStr\nPREFIX=/usr/local/bin";
@@ -277,7 +277,7 @@ then # Else If: general unix make file
 elif [ "$osStr" = "static" ];
 then # Else If: static unix make file
    headStr="$headStr\nCC=cc";
-   headStr="LD=cc";
+   headStr="$headStr\nLD=cc";
    headStr="$headStr\ncoreCFLAGS= -O3 -std=c89 -static";
    headStr="$headStr $warnStr -c";
    headStr="$headStr\nCFLAGS=-DNONE";
@@ -990,12 +990,14 @@ rmHomoDep="samEntry $samEntryDep seqST $seqSTDep";
 #   o sec03 sub04 cat05:
 #     - needle
 #   o sec03 sub04 cat06:
-#     - memwater
+#     - hirschberg
 #   o sec03 sub04 cat07:
-#     - kmerFind
+#     - memwater
 #   o sec03 sub04 cat08:
-#     - samToAln
+#     - kmerFind
 #   o sec03 sub04 cat09:
+#     - samToAln
+#   o sec03 sub04 cat10:
 #     - mapRead
 #*********************************************************
 
@@ -1066,7 +1068,9 @@ dirMatrixDep="$dirMatrixDep charCp $charCpDep";
 #   - water
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-waterStr="${genAlnStr}water.\$O: ${genAlnStr}water.c \\
+waterStr="${genAlnStr}water.\$O: \\
+	${genAlnStr}water.c \\
+	${genAlnStr}water.h \\
 	${genAlnStr}dirMatrix.\$O \\
 	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genAlnStr}water.\$O \\
@@ -1084,6 +1088,7 @@ waterDep="dirMatrix $dirMatrixDep";
 
 needleStr="${genAlnStr}needle.\$O: \\
 	${genAlnStr}needle.c \\
+	${genAlnStr}needle.h \\
 	${genAlnStr}dirMatrix.\$O \\
 	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genAlnStr}needle.\$O \\
@@ -1096,11 +1101,33 @@ needleDep="dirMatrix $dirMatrixDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub04 Cat06:
+#   - hirschberg
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+hirschbergStr="${genAlnStr}hirschberg.\$O: \\
+	${genAlnStr}hirschberg.c \\
+	${genAlnStr}hirschberg.h \\
+	${genAlnStr}alnSet.\$O \\
+	${genBioStr}samEntry.\$O \\
+	${genBioStr}seqST.\$O \\
+	${genLibStr}genMath.h
+		$ccStr ${dashOStr}${genAlnStr}hirschberg.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genAlnStr}hirschberg.c";
+
+
+hirschbergObj="${genAlnStr}hirschberg.\$O";
+hirschbergDep="samEntry $samEntryDep alnSet $alnSetDep";
+hirschbergDep="$hirschbergDep alnSet $alnSetDep";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub04 Cat07:
 #   - memwater
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 memwaterStr="${genAlnStr}memwater.\$O: \\
 	${genAlnStr}memwater.c \\
+	${genAlnStr}memwater.h \\
 	${genAlnStr}alnSet.\$O \\
 	${genAlnStr}indexToCoord.\$O \\
 	${genBioStr}seqST.\$O \\
@@ -1116,12 +1143,13 @@ memwaterDep="$memwaterDep $indexToCoordDep";
 memwaterDep="$memwaterDep seqST $seqSTDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub04 Cat07:
+# Sec03 Sub04 Cat08:
 #   - kmerFind
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 kmerFindStr="${genAlnStr}kmerFind.\$O: \\
 	${genAlnStr}kmerFind.c \\
+	${genAlnStr}kmerFind.h \\
 	${genAlnStr}memwater.\$O \\
 	${genLibStr}shellSort.\$O \\
 	${genLibStr}genMath.h \\
@@ -1136,7 +1164,7 @@ kmerFindDep="memwater $memwaterDep";
 kmerFindDep="$kmerFindDep shellSort $shellSortDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub04 Cat08:
+# Sec03 Sub04 Cat09:
 #   - samToAln
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1156,7 +1184,7 @@ samToAlnDep="alnSet $alnSetDep samEntry $samEntryDep";
 samToAlnDep="$samToAlnDep seqST $seqSTDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub04 Cat09:
+# Sec03 Sub04 Cat10:
 #   - mapRead
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2235,11 +2263,15 @@ do # Loop: get dependencies
    #   o sec04 sub05 cat05:
    #     - needle
    #   o sec04 sub05 cat06:
-   #     - memwater
+   #     - hirschberg
    #   o sec04 sub05 cat07:
-   #     - kmerFind
+   #     - memwater
    #   o sec04 sub05 cat08:
+   #     - kmerFind
+   #   o sec04 sub05 cat09:
    #     - samToAln
+   #   o sec04 sub05 cat10:
+   #     - mapRead
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2381,6 +2413,33 @@ do # Loop: get dependencies
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
    # Sec04 Sub05 Cat06:
+   #   - hirschberg
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "hirschberg" ]; then
+   # Else If: hirschberg library
+      if [ "$hirschbergBl" = "" ]; then
+         cmdStr="$cmdStr$newLineStr$hirschbergStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}${hirschbergObj}";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$hirschbergObj";
+         fi
+
+         hirschbergBl=1;
+         depStr="$depStr $hirschbergDep";
+      fi
+
+      if [ "$genAlnBl" -lt 1 ]; then
+         genAlnBl=1;
+         libPathStr="$libPathStr\ngenAln=..${slashSC}genAln";
+      fi
+   # Else If: hirschberg library
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub05 Cat07:
    #   - memwater
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2407,7 +2466,7 @@ do # Loop: get dependencies
    # Else If: memwater library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub05 Cat07:
+   # Sec04 Sub05 Cat08:
    #   - kmerFind
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2435,7 +2494,7 @@ do # Loop: get dependencies
    # Else If: kmerFin library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub05 Cat08:
+   # Sec04 Sub05 Cat09:
    #   - samToAln
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2462,7 +2521,7 @@ do # Loop: get dependencies
    # Else If: samToAln library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub05 Cat09:
+   # Sec04 Sub05 Cat10:
    #   - mapRead
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

@@ -118,7 +118,7 @@ phelp_mainWater(
 
    fprintf(
       (FILE *) outFILE,
-      "mainWater -qry query.fa -ref ref.fa > out.aln%s",
+      "mainWater -qry query.fa -ref ref.fa > out.sam%s",
       str_endLine
    );
 
@@ -221,13 +221,13 @@ phelp_mainWater(
 
    fprintf(
       (FILE *) outFILE,
-      "  -out out.aln: [stdout]%s",
+      "  -out out.sam: [stdout]%s",
       str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o file to print alignment to%s",
+      "    o file to print alignment to (as sam file)%s",
       str_endLine
    );
 

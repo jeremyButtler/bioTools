@@ -36,8 +36,42 @@ You will need a tsv file with the reference gene
 You can print the help message for ampDepth
   with `ampDepth -h`.
 
-Print the help message for graphAmpDepth with
-  `graphAmpDepth -h`.
+For ampDepth you have two modes. You can either do a
+  summary `-psum`, which procudes a table of read depths
+  for a set of genes/targets in a gene table `-gene-tbl`.
+  The other (default) option is to print the depths for
+  each base. You can still filter reads by the `-gene-tbl`
+  file while printing depths.
+
+You can make graphs from the summary by using
+  the graphAmpDepth.r Rscript. To get the help message
+  do `Rscript graphAmpDepth.r -h`.
+
+## summary:
+
+```
+# Map the reads to the reference
+minimap2 -a -x map-ont ref.fasta reads.fastq > out.sam;
+
+## Change the label in column one to filtered
+ampDepth -flag Filtered -psum -gene-tbl gene-tbl.tsv -sam out.sam -out out.tsv;
+
+# Build the graphs
+graphAmpDepth.r -stats out.tsv -who ../freezeTbFiles/who-2023.tsv;
+```
+
+## printing depths
+
+These will print only the read depths above the minimum
+  read depth threshold.
+
+```
+# Map the reads to the reference
+minimap2 -a -x map-ont ref.fasta reads.fastq > out.sam;
+
+## Change the label in column one to filtered
+ampDepth -flag Filtered -sam out.sam -out out.tsv;
+```
 
 ```
 # Map the reads to the reference
@@ -45,9 +79,16 @@ minimap2 -a -x map-ont ref.fasta reads.fastq > out.sam;
 
 ## Change the label in column one to filtered
 ampDepth -flag Filtered -gene-tbl gene-tbl.tsv -sam out.sam -out out.tsv;
+```
 
-# Build the graphs
-graphAmpDepth.r -stats out.tsv -who ../freezeTbFiles/who-2023.tsv;
+To print all positions, do
+
+```
+# Map the reads to the reference
+minimap2 -a -x map-ont ref.fasta reads.fastq > out.sam;
+
+## Change the label in column one to filtered
+ampDepth -flag Filtered -pall-depth -sam out.sam -out out.tsv;
 ```
 
 ## Gene table:

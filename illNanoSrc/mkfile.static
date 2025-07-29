@@ -1,3 +1,5 @@
+
+CC=cc
 LD=cc
 coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self -c
 CFLAGS=-DNONE

@@ -1,4 +1,7 @@
- -c
+
+CC=cc
+LD=cc
+coreCFLAGS= -O3 -std=c89 -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self -c -c
 CFLAGS=-DNONE
 NAME=tranSeq
 PREFIX=/usr/local/bin

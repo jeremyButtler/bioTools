@@ -13,6 +13,8 @@
 '     - checks if input was the version number request
 '   o fun05: input_mainSamToAln
 '     - gets user input
+'   o main:
+'     - driver function for samToAln
 '   o license:
 '     - Licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/

@@ -40,6 +40,7 @@
 #include "../genBio/seqST.h"
 #include "../genBio/gzSeqST.h"
 #include "../genBio/samEntry.h"
+#include "../genBio/rmHomo.h"
 
 #include "../genAln/alnSet.h"
 #include "../genAln/mapRead.h"
@@ -77,6 +78,9 @@
 #define def_refOutIndex_mainMapRead 2
 
 #define def_quick_mainMapRead 1 /*1: quick method*/
+
+#define def_leftAln_mainMapRead 1
+   /*do left alignments on reads*/
 
 /*-------------------------------------------------------\
 | Fun01: pversion_mainMapRead
@@ -435,6 +439,8 @@ phelp_mainMapRead(
    *     - min percent length
    *   o fun02 sec02 sub05 cat15:
    *     - chain mininum percent query bases
+   *   o fun02 sec02 sub05 cat16:
+   *     - left alingment for homopolymer indels
    \*****************************************************/
    
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -783,6 +789,36 @@ phelp_mainMapRead(
       str_endLine
    );
 
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub05 Cat16:
+   +   - left alingment for homopolymer indels
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(def_leftAln_mainMapRead)
+      fprintf(
+         (FILE *) outFILE,
+         "    -left-aln: [Optional; Yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "    -left-aln: [Optional; No]%s",
+         str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o left align indels in homopolymers%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o disable with `-no-left-aln`%s",
+      str_endLine
+   );
+
    /*****************************************************\
    * Fun02 Sec02 Sub06:
    *   - help message and version number
@@ -840,6 +876,9 @@ phelp_mainMapRead(
 |   - fxPosSIPtr:
 |     o signed int pointer to get index of first fastx
 |       file in arguments
+|   - leftAlnBlPtr:
+|     o signed char pointer to be set to 1 if doing left
+|       homopolymer indel alignment or 0 if not
 |   - setSTPtr:
 |     o set_mapRead pointer with settings to modify
 | Output:
@@ -861,6 +900,7 @@ input_mainMapRead(
    signed char *refFlagSCPtr,   /*reference file type*/
    signed char **outFileStrPtr, /*gets output file*/
    signed int *fxPosSIPtr,      /*fastx file position*/
+   signed char *leftAlnBlPtr,   /*1: left alignment*/
    struct set_mapRead *setSTPtr /*gets settings*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
@@ -1793,6 +1833,25 @@ input_mainMapRead(
          } /*If: overflow*/
       }  /*Else If: min percent length*/
 
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec02 Sub03 Cat14:
+      +   - left alignment for homopolymer indels
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-left-aln",
+            (signed char *) argAryStr[siArg]
+         )
+      ) *leftAlnBlPtr = 1;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-no-left-aln",
+            (signed char *) argAryStr[siArg]
+         )
+      ) *leftAlnBlPtr = 0;
+
       /**************************************************\
       * Fun03 Sec02 Sub04:
       *   - help message
@@ -2018,6 +2077,7 @@ main(
    signed char errSC = 0;
    signed char forErrSC = 0;
    signed char revErrSC = 0;
+   signed char leftAlnBl = def_leftAln_mainMapRead;
 
    signed int qryFileIndexSI = 0;    /*first query file*/
 
@@ -2109,6 +2169,7 @@ main(
          &refFlagSC,        /*tells if indexed reference*/
          &outFileStr,       /*output file path*/
          &qryFileIndexSI,
+         &leftAlnBl,
          &setStackST        /*settings for mapping*/
       ); /*get user input*/
 
@@ -2531,9 +2592,42 @@ main(
             forSamStackST.flagUS |= 256;
 
          if(! forErrSC && forScoreSL > revScoreSL)
+         { /*If: printing forward alignment*/
+            if(leftAlnBl)
+            { /*If: doing left alignment*/
+               /*is an ineffecent way of doing this, but
+               `  avoids this step in the interal read
+               `  mapper
+               */
+               seqToIndex_alnSet(forSamStackST.seqStr);
+               leftAlnIndel_rmHomo(
+                  &forSamStackST,
+                  refStackST.seqSTPtr->seqStr
+               );
+               indexToSeq_alnSet(forSamStackST.seqStr);
+            } /*If: doing left alignment*/
+
             p_samEntry(&forSamStackST, 0, outFILE);
+         } /*If: printing forward alignment*/
+
          else if(! revErrSC && revScoreSL > forScoreSL)
+         { /*Else If: printing reverse alignment*/
+            if(leftAlnBl)
+            { /*If: doing left alignment*/
+               /*is an ineffecent way of doing this, but
+               `  avoids this step in the interal read
+               `  mapper
+               */
+               seqToIndex_alnSet(revSamStackST.seqStr);
+               leftAlnIndel_rmHomo(
+                  &revSamStackST,
+                  refStackST.seqSTPtr->seqStr
+               );
+               indexToSeq_alnSet(revSamStackST.seqStr);
+            } /*If: doing left alignment*/
+
             p_samEntry(&revSamStackST, 0, outFILE);
+         } /*Else If: printing reverse alignment*/
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
          + Main Sec04 Sub03 Cat04:
