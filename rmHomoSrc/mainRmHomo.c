@@ -846,7 +846,11 @@ main(
    signed char maskSC = def_mask_mainRmHomo;
    signed char scanBl = def_scan_mainRmHomo;
 
-   struct seqST refStackST; /*holds reference sequence*/
+   /*variables for refernce sequences*/
+   struct seqST *refHeapAryST = 0;
+   signed long refLenSL = 0;
+   signed long refSizeSL = 0;
+   signed long indexSL = 0; /*index of reference*/
 
    /*for reading sam files*/
    struct samEntry samStackST;
@@ -888,7 +892,6 @@ main(
    \*****************************************************/
 
    init_samEntry(&samStackST);
-   init_seqST(&refStackST);
 
    /*****************************************************\
    * Main Sec02 Sub02:
@@ -992,65 +995,65 @@ main(
    +   - get reference sequence
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   errSC = getFa_seqST(samFILE, &refStackST);
+   refHeapAryST =
+      readFaFile_seqST(
+         samFILE,
+         &refLenSL,
+         &refSizeSL,
+         &errSC
+      ); /*get all references*/
 
    if(samFILE != stdin)
      fclose(samFILE);
    samFILE = 0;
 
    if(errSC)
-   { /*If: had an error or EOF*/
-      if(
-            errSC == def_EOF_seqST
-         && refStackST.seqStr[0] != '\0'
-      ) ; /*no error (one sequence in file*/
-
+   { /*If: had error*/
+      if(errSC == def_memErr_seqST)
+         fprintf(
+            stderr,
+            "memory error reading -ref %s%s",
+            refFileStr,
+            str_endLine
+         );
+      else if(errSC == def_fileErr_seqST)
+         fprintf(
+            stderr,
+            "-ref %s is not a fasta file%s",
+            refFileStr,
+            str_endLine
+         );
       else
-      { /*Else: have a reall error*/
-         if(errSC == def_memErr_seqST)
-            fprintf(
-               stderr,
-               "memory error reading -ref %s%s",
-               refFileStr,
-               str_endLine
-            );
-         else if(errSC == def_EOF_seqST)
-            fprintf(
-               stderr,
-               "nothing in -ref %s%s",
-               refFileStr,
-               str_endLine
-            );
-         else if(errSC == def_fileErr_seqST)
-            fprintf(
-               stderr,
-               "-ref %s is not a fasta file%s",
-               refFileStr,
-               str_endLine
-            );
-         else
-            fprintf(
-               stderr,
-               "fist entry in -ref %s has bad line%s",
-               refFileStr,
-               str_endLine
-            );
+         fprintf(
+            stderr,
+            "fist entry in -ref %s has bad line%s",
+            refFileStr,
+            str_endLine
+         );
 
-         goto err_main_sec05;
-      } /*Else: have a reall error*/
-         
-   } /*If: had an error or EOF*/
+      goto err_main_sec05;
+   } /*If: had error*/
 
    /*I need to convert the reference id to what would be
    `  seen in a sam file; no >, and ends after first
    `  white space
    */
-   errSC = (refStackST.idStr[0] == '>');
-   refStackST.idLenSL =
-      cpWhite_ulCp(
-         &refStackST.idStr[0],
-         &refStackST.idStr[(unsigned char) errSC]
-      );
+   for(seqSL = 0; seqSL < refLenSL; ++seqSL)
+   { /*Loop: remove white space from names*/
+      errSC = refHeapAryST[seqSL].idStr[0] == '>';
+      errSC |= refHeapAryST[seqSL].idStr[0] == '@';
+
+      refHeapAryST[seqSL].idLenSL =
+         cpWhite_ulCp(
+            refHeapAryST[seqSL].idStr,
+            &refHeapAryST[seqSL].idStr[
+              (unsigned char) errSC
+            ]
+         );
+   } /*Loop: remove white space from names*/
+
+   seqSL = 0;
+   sort_seqST(refHeapAryST, refLenSL);
 
    /*****************************************************\
    * Main Sec02 Sub06:
@@ -1166,13 +1169,27 @@ main(
          && samStackST.extraStr[2] == 'Q'
          && samStackST.extraStr[3] == '\t'
       ){ /*Else If: sequence entry (check if reference)*/
+         
+         for(
+				indexSL = 7;
+            samStackST.extraStr[indexSL] > 33;
+            ++indexSL
+         ) ;
+
+         errSC = samStackST.extraStr[indexSL];
+         samStackST.extraStr[indexSL] = 0;
+
          if(
-            eqlWhite_ulCp(
-               refStackST.idStr,
-               &samStackST.extraStr[7]
-            )
+            search_seqST(
+               refHeapAryST,
+               &samStackST.extraStr[7],
+               refLenSL
+            ) < 0
          ) goto nextEntry_main_sec03_sub02_cat01;
            /*not reference sequence entry*/
+
+         samStackST.extraStr[indexSL] = errSC;
+         errSC = 0;
       }  /*Else If: sequence entry (check if reference)*/
 
       /*print the header*/
@@ -1281,13 +1298,16 @@ main(
          goto nextRead_main_sec04_sub04;
       else if(samStackST.flagUS & 4)
          goto nextRead_main_sec04_sub04;
-      else if(
-         eqlWhite_ulCp(
-            refStackST.idStr,
-            samStackST.refIdStr
-         )
-      ) goto nextRead_main_sec04_sub04;
-        /*read mapped to different reference*/
+
+      indexSL =
+         search_seqST(
+            refHeapAryST,
+            samStackST.refIdStr,
+            refLenSL
+         );
+      if(indexSL < 0)
+         goto nextRead_main_sec04_sub04;
+         /*read mapped to different reference*/
 
       /**************************************************\
       * Main Sec04 Sub02:
@@ -1333,7 +1353,7 @@ main(
       if(
          indel_rmHomo(
             &samStackST,
-            refStackST.seqStr,
+            refHeapAryST[indexSL].seqStr,
             homoLenSI,
             indelLenSI,
             maskSC,
@@ -1410,7 +1430,7 @@ main(
 
    ret_main_sec05:;
       freeStack_samEntry(&samStackST);
-      freeStack_seqST(&refStackST);
+      freeHeapAry_seqST(refHeapAryST, refLenSL);
 
       if(buffHeapStr)
          free(buffHeapStr);

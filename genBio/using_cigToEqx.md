@@ -17,13 +17,10 @@ Files: cigToEqx.c and cigToEqx.h
   - fileFun from genLib
   - endLine.h from genLib
 
-/*These have no .c files*/
-#include "../genLib/endLine.h" /*for OS line breaks*/
-
 You should be familar with the samEntry library
-  (samEntry.c/h and using_samEntry.md). It might be
+  (samEntry.c/h and using\_samEntry.md). It might be
   also helpfull to have some familiarity with seqST
-  (using_seqST.md), but is not needed.
+  (using\_seqST.md), but is not needed.
 
 # cigToEqx
 
@@ -39,7 +36,7 @@ cigToEqx has the cigToEqx function to convert non-eqx
      - this does not need to be in "ATGC" format, but it
        does need to match the sequence in the samEntry
        structure
-       - for example, I have used my indexToSeq_alnSet()
+       - for example, I have used my indexToSeq\_alnSet()
          function (genAln/alnSet.c/h) to convert the
          sequences to numbers and then run them through
          this. You could also convert the sequences two

@@ -21,15 +21,15 @@ Files: samRef.c and samRef.h
   - ntTo5Bit from genBio
 
 You should be familar with the samEntry struct (see
-  using_samEntry.md) and strAry (see
-  ../genLib/using_genLib.h) before using samRef.
+  using\_samEntry.md) and strAry (see
+  ../genLib/using\_genLib.h) before using samRef.
 
 # samRef
 
 Has structure and function to scan sam file header and
   find/extract reference ids and lengths.
 
-# refs_samRef:
+# refs\_samRef:
 
 Has the list of references and their lengths found in the
   sam file header.
@@ -37,21 +37,21 @@ Has the list of references and their lengths found in the
 - lenAryUI array that has all the reference lengths
 - idAryStr has the reference names
   - this is a c-string array from ../genLib/strAry.c, so
-    you will need to use get_strAry() (fun03
+    you will need to use get\_strAry() (fun03
     ../genLib/strAry.c) to get ids out of it.
 - numRefUI has the number of references in lenAryUI and
   idAryStr
   
-### refs_samRef workflow
+### refs\_samRef workflow
 
-The workflow for a refs_samRef struct is similar to a
+The workflow for a refs\_samRef struct is similar to a
   samEntry struct. You first initialize the struct, then
   setup initial memory. After that you can read in a
   samEntry header or add references one by one. You can
   then search the structure for references. Finally you
   will free the struct.
 
-You can initialize a refs_samRef struct with
+You can initialize a refs\_samRef struct with
   `init_refs_samRef(refs_samRefPointer);`.
 
 You can then setup memory using 
@@ -63,11 +63,11 @@ if(setup_refs_samRef(refs_samRefPointer);
 ```
 
 You can then read the headers from a sam file using
-  getRefLen_samEntry. This will read the headers until
+  getRefLen\_samEntry. This will read the headers until
   it hits the frist sequence.
 
 - Input:
-  - pointer to a `refs_samRef` structure to store
+  - pointer to a `refs\_samRef` structure to store
     lengths and reference ids in
   - pointer to a samEntry to get lines
     - will be set to first sequence line
@@ -80,22 +80,22 @@ You can then read the headers from a sam file using
 
 - Output:
   - Returns 0 for no errors
-  - Returns def_memErr_samEntry for memory errors
-  - Returns def_fileErr_samEntry for file errors
+  - Returns def\_memErr\_samEntry for memory errors
+  - Returns def\_fileErr\_samEntry for file errors
   - stores header in input c-string
   - updates unsigned long pointer to header c-string is
     resized
 
-You can then find references in the refs_samRef struct
-  using findRef_refs_samRef. The input is the id to
-  search for and teh refs_samRef struct to search. The
+You can then find references in the refs\_samRef struct
+  using findRef\_refs\_samRef. The input is the id to
+  search for and teh refs\_samRef struct to search. The
   output is the index of the reference or a negative
   number if no referene was found.
 
-Finally you can free the refs_samRef structure using
-  freeStack_refs_samRef (for variables in struct) or
-  with freeHeap_refs_samRef (for entire struct). If
-  you use freeHeap_refs_samRef, remember to set you
+Finally you can free the refs\_samRef structure using
+  freeStack\_refs\_samRef (for variables in struct) or
+  with freeHeap\_refs\_samRef (for entire struct). If
+  you use freeHeap\_refs\_samRef, remember to set you
   structure pointer to null.
 
 ```
@@ -107,7 +107,7 @@ freeHeap_refs_samRef(refs_samRefPointer);
 refs_samRefPointer = 0;
 ```
 
-### refs_samRef example
+### refs\_samRef example
 
 ```
 #ifdef PLAN9

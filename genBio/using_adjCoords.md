@@ -21,8 +21,8 @@ Files: adjCoords.c adjCoords.h
   - genMath.h from genLib
 
 You should be familar with the samEntry library
-  (samEntry.c/h and using_samEntry.md) and the geneCoord
-  (geneCoord.c/h and using_geneCoord.md) library.
+  (samEntry.c/h and using\_samEntry.md) and the geneCoord
+  (geneCoord.c/h and using\_geneCoord.md) library.
 
 # Overview:
 

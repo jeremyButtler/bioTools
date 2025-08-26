@@ -19,13 +19,13 @@ Is a lookup table to reverese complement and convert
   returns the converted nucleotide back as an unsigned
   character.
 
-| Nucleotide  | Return                    |
-|:------------|:--------------------------|
-| T           | def_a_revNtTo2Bit         |
-| C           | def_g_revNtTo2Bit         |
-| A           | def_t_revNtTo2Bit         |
-| G           | def_c_revNtTo2Bit         |
-| other input | def_err3rdBit_revNtTo2Bit |
+| Nucleotide  | Return                      |
+|:------------|:----------------------------|
+| T           | def\_a\_revNtTo2Bit         |
+| C           | def\_g\_revNtTo2Bit         |
+| A           | def\_t\_revNtTo2Bit         |
+| G           | def\_c\_revNtTo2Bit         |
+| other input | def\_err3rdBit\_revNtTo2Bit |
 
 Simple example; printing a translated, reverse complement
   sequence:

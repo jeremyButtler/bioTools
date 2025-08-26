@@ -123,7 +123,7 @@ static unsigned char alnNtTo_kmerBit[] =
 `     o convert nucleotide index to bits for kmer
 `   - kmer: mkRoom | getBit:
 `     o add converted nucleotide index to kmer
-`   - kmer & mascMac:
+`   - kmer & maskMac:
 `     o clear any extra bits (not in kmer)
 */
 
@@ -147,7 +147,7 @@ static unsigned char alnNtTo_kmerBit[] =
 `     o add room for new bit
 `   - kmer: mkRoom | ntBitMac:
 `     o add converted nucleotide index to kmer
-`   - kmer & mascMac:
+`   - kmer & maskMac:
 `     o clear any extra bits (not in kmer)
 */
 

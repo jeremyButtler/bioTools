@@ -276,6 +276,8 @@ My general libraries.
 
 # Updates:
 
+- 2025-08-05:
+  - added multi reference support to rmHomo
 - 2025-07-28:
   - added printing of read depths to ampDepth
     - no longer just summary
@@ -446,13 +448,8 @@ My general libraries.
      further debuging
 3. add in my memWater matrix scan from alnSeq (personal
    project)
-4. add using_this_code guides (using in C code) for
+4. add using\_this\_code guides (using in C code) for
    programs and libraries
-   - genLib is complete, but should be merged into
-     individual files with a centeral table of contents
-     file like I am doing in genBio
-   - genBio needs table of contents file and guides for
-     several files still
    - genAln has nothing
    - genClust has nothing
    - seqById has nothing

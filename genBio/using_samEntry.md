@@ -26,15 +26,15 @@ Has the samEntry structure, which is for reading in
 
 ## Error types:
 
-| error                | meaning                     |
-|:---------------------|:----------------------------|
-| 0                    | no error or memory error \* |
-| def_EOF_samEntry     | at end of file              |
-| def_memErr_samEntry  | memory error                |
-| def_fileErr_samEntry | error reading input file    |
-| def_expand_samEntry  | resized input array         |
+| error                  | meaning                     |
+|:-----------------------|:----------------------------|
+| 0                      | no error or memory error    |
+| def\_EOF\_samEntry     | at end of file              |
+| def\_memErr\_samEntry  | memory error                |
+| def\_fileErr\_samEntry | error reading input file    |
+| def\_expand\_samEntry  | resized input array         |
 
-Table: error types returned by samEntry functions. \*
+Table: error types returned by samEntry functions.
   means return message depends on fuction.
 
 Not all functions return all error types. Also, 0 can
@@ -101,13 +101,13 @@ To use a samEntry struct you must first initalize it,
 
 ### samEntry initalize and setup:
 
-You can initializing a samEntry struct with init_samEntry
+You can initializing a samEntry struct with init\_samEntry
   (fun02 samEntry.c/h). This takes in a point to a
   samEntry struct to initialize. There is no return.
 
-To setup a samEntry structure use setup_samEntry (fun03
+To setup a samEntry structure use setup\_samEntry (fun03
   samEntry.c/h). This takes in a samEntry pionter and
-  returns 0 for no errors and memErr_samEntry for memory
+  returns 0 for no errors and memErr\_samEntry for memory
   errors.
 
 You can skip these two steps by using makeSamEntry (fun06
@@ -116,7 +116,7 @@ You can skip these two steps by using makeSamEntry (fun06
   samEntry struct on success.
 
 At times you may need to blank all values in a samEntry
-  struct. To do this use blank_samEntry (fun01
+  struct. To do this use blank\_samEntry (fun01
   samEntry.c/h). This will lazly blank all c-strings and
   the cigar values (first values set to 0), but will fully
   clear the quality score histogram (not mentioned in
@@ -124,12 +124,12 @@ At times you may need to blank all values in a samEntry
 
 ### samEntry freeing:
 
-you can free samEntry structs using freeStack_samEntry
+you can free samEntry structs using freeStack\_samEntry
   (fun04 samEntry.c/h) to free all internal variables or
-  samEntry structs on the stack (call setup_samEntry if
+  samEntry structs on the stack (call setup\_samEntry if
   you plan to reuse).
 
-For heap allocated samEntry structs use freeHeap_samEntry
+For heap allocated samEntry structs use freeHeap\_samEntry
   (fun05 samEntry.c/h). You must set the samEntry
   structure pointer to null/0.
 
@@ -137,15 +137,15 @@ For heap allocated samEntry structs use freeHeap_samEntry
 
 #### samEntry: get sam file entry
 
-You can use get_samEntry (fun12 samEntry.c/h) to get a
+You can use get\_samEntry (fun12 samEntry.c/h) to get a
   sam file entry from a file. This returns 0 for success,
-  def_EOF_samEntry for end of file, def_fileErr_samEntry
-  for an invalid line, and def_memErr_samEntry for memory
-  errors.
+  def\_EOF\_samEntry for end of file,
+  def\_fileErr\_samEntry for an invalid line, and
+   def\_memErr\_samEntry for memory errors.
 
 - Input:
   - samEntry structure pionter to get new entry
-    - this function calls blank_samEntry, so do not worry
+    - this function calls blank\_samEntry, so do not worry
       about this
   - FILE pointer with sam file to get entry from
     - advanced to next line in sam file
@@ -171,9 +171,9 @@ else
 ```
 
 You can also read in a line and convert it to a sam file
-  entry using lineTo_samEntry (fun11 samEntry.c/h). The
+  entry using lineTo\_samEntry (fun11 samEntry.c/h). The
   input is a pointer to a samEntry struct and the c-string
-  to convert. The return values are def_memErr_samEntry
+  to convert. The return values are def\_memErr\_samEntry
   for memory errors or 0 for success.
 
 ```
@@ -193,7 +193,7 @@ if(lineTo_samEntry(samStructPionter, bufferStr))
 #### samEntry: move to target position
 
 You can find the sequence position of a reference position
-  in a samEntry using findRefPos_samEntry (fun13
+  in a samEntry using findRefPos\_samEntry (fun13
   samEntry.c/h). This returns the index of the last
   cigar entry before the current one. It also modifies
   the input to be on the correct base.
@@ -254,7 +254,7 @@ lastCigar =
 #### samEntry: swap entries
 
 You can swap the entries in two samEntry structures using
-  swap_samEntry (fun14 samEntry.c/h). This takes pointers
+  swap\_samEntry (fun14 samEntry.c/h). This takes pointers
   to two samEntry structures to sawp and returns nothing.
 
 Swapping is done lazely, so pointers are swapped instead
@@ -268,7 +268,7 @@ Swapping is done lazely, so pointers are swapped instead
 **q-score update**
 
 If you modify the q-score entry in a samEntry struct, then
-  you can update thm with findQScores_samEntry (fun08
+  you can update thm with findQScores\_samEntry (fun08
   samEntry.c/h). This takes in a pointer to a samEntry
   struct to update and returns nothing. It will blank and
   then update all q-score values in the structure.
@@ -276,7 +276,7 @@ If you modify the q-score entry in a samEntry struct, then
 **q-score copy**
 
 If you need to copy a q-score entry into you samEntry
-  structure, use cpQEntry_samEntry (fun09 samEntry.c/h).
+  structure, use cpQEntry\_samEntry (fun09 samEntry.c/h).
   This function will both copy the q-score entry and
   also update all q-score stats. You must make sure there
   is enough memory before updating the q-scores.
@@ -291,7 +291,7 @@ The return value is the length of the copied c-string.
 **get sam file header**
 
 You can read the entire header for a samEntry struct
-  into a c-string using getHead_samEntry
+  into a c-string using getHead\_samEntry
   (fun20 samEntry.c/h).
 
 - Input:
@@ -307,7 +307,7 @@ You can read the entire header for a samEntry struct
 #### samEntry printing; sam files
 
 You can print a samEntry struct to a sam file using
-  p_samEntry (fun15 samEntry.c/h).
+  p\_samEntry (fun15 samEntry.c/h).
 
 - Input:
   - samEntry structure pointer to print to sam file
@@ -320,16 +320,16 @@ You can print a samEntry struct to a sam file using
 
 #### samEntry printing; fastx files
 
-You can also print to a fastq file using pfq_samEntry (
+You can also print to a fastq file using pfq\_samEntry (
   fun16 samEntry.c/h) or to a fasta file with
-  pfa_samEntry (fun17 samEntry.c/h). Both fuctions take
+  pfa\_samEntry (fun17 samEntry.c/h). Both fuctions take
   a samEntry structure to print and a file to save the
   fastx entry to. There is no return value.
 
 #### samEntry printing; stats
 
 Finally, you can print out the stats in a spread sheet
-  format (filtsam -out-stats) with pstats_samEntry. There
+  format (filtsam -out-stats) with pstats\_samEntry. There
   is not return value.
 
 - Input:

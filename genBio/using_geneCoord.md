@@ -26,15 +26,16 @@ The geneCoord structure is designed to hold the genome
 There are a few pre-defined varibles that are returned or
   can affect how geneCoord works.
 
-- def_lenId_geneCoord: is the number of bytes assigned to
-  each gene/reference id
-  - def_lenId_geneCoord - 1 is the maxium length allowed
+- def\_lenId\_geneCoord: is the number of bytes assigned
+  to each gene/reference id
+  - def\_lenId\_geneCoord - 1 is the maxium length allowed
     for an id/name
-- def_fileErr_geneCoord: returned when file error happend
-- def_invalidEntry_geneCoord: returned when a file had
+- def\_fileErr\_geneCoord: returned when file error
+  happend
+- def\_invalidEntry\_geneCoord: returned when a file had
   an invalid entry
-  - might be combined with def_fileErr_geneCoord
-- def_memErr_geneCoord: returned when a memory error
+  - might be combined with def\_fileErr\_geneCoord
+- def\_memErr\_geneCoord: returned when a memory error
   happened
 
 # geneCoord structure
@@ -66,8 +67,8 @@ The flow of the geneCoord system is read in genes from
 ## Get and freeing gene coords
 
 The frist step is to read in the gene coordinates file
-  with the `getCoords_geneCoord()` function. The file
-  must be in the format of gene_name, reference_name,
+  with the `getCoords\_geneCoord()` function. The file
+  must be in the format of gene\_name, reference\_name,
   direction (`+` = foward, `-` = reverse), first
   reference coordinate, and last reference coordinate.
   The first row should be a header and is always ingored.
@@ -89,8 +90,8 @@ eis	NC_000962.3	-	2714124	2715332
      (index 0, so is really index of the last gene)
   3. unsigned long to hold any errors
      - 0 for no errors
-     - def_fileErr_geneCoord for file errors
-     - def_memErr_geneCoord for memory errors
+     - def\_fileErr\_geneCoord for file errors
+     - def\_memErr\_geneCoord for memory errors
      - anything else for invalid entry error
 - Output:
   - 0 for errors
@@ -167,11 +168,11 @@ The `findStart_geneCoord()` function will find a gene
 
 - Input:
   1. geneCoord structure pointer to search for position
-     (returned from getCoords_geneCoord)
+     (returned from getCoords\_geneCoord)
   2. starting position to search for in the geneCoord
      structure (input 1)
   3. index of last gene in the geneCoord structure
-     (input 2 in getCoords_geneCoord).
+     (input 2 in getCoords\_geneCoord).
 - Output:
   - index of gene that has the starting coordinate
   - -1 if the gene is not in the structure
@@ -249,13 +250,13 @@ You can also look up the gene(s) that may match a range
 
 - Input:
   1. geneCoord structure pointer to search for position
-     (returned from getCoords_geneCoord)
+     (returned from getCoords\_geneCoord)
   2. starting position to search for in the geneCoord
      structure (input 1)
   3. ending position to search for in the geneCoord
      structure (input 1)
   4. index of last gene in the geneCoord structure
-     (input 2 in getCoords_geneCoord).
+     (input 2 in getCoords\_geneCoord).
 - Output:
   - first gene that is in the range
   - -1 if the gene is not in the structure
@@ -346,7 +347,7 @@ You can sort the geneCoordinates structure by name using
 
 - Input:
   1. geneCoord structure pointer to search for position
-     (returned from getCoords_geneCoord)
+     (returned from getCoords\_geneCoord)
   2. 0 to specify the first gene
   3. index of last gene in the geneCoord structure
      (input 1)
@@ -409,7 +410,7 @@ In some cases you may want to undo the sorting you did by
 
 - Input:
   1. geneCoord structure pointer to search for position
-     (returned from getCoords_geneCoord)
+     (returned from getCoords\_geneCoord)
   2. 0 to specify the first gene
   3. index of last gene in the geneCoord structure
      (input 1)
@@ -473,7 +474,7 @@ After sorting by gene name you can search for gene names
 
 - Input:
   1. geneCoord structure pointer to search for position
-     (returned from getCoords_geneCoord)
+     (returned from getCoords\_geneCoord)
   2. c-string with name of gene to search for
   3. index of last gene in the geneCoord structure
      (input 1)

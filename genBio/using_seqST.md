@@ -52,38 +52,40 @@ The workflow for a seqST structure is to initialize, then
 
 ### seqST setup
 
-To initialize a seqST structure use init_seqST (fun07).
+To initialize a seqST structure use init\_seqST (fun07).
   The input is a pointer to a seqST structure to
   initialize.
 
 ### seqST get sequences
 
-You can read a fasta sequence using getFa_seqST (fun03).
+You can read a fasta sequence using getFa\_seqST (fun03).
   The input is a pointer to a seqST structure to hold the
   sequence and a FILE poitner to the file to read from.
-  The output is 0 for no errors, def_EOF_seqST if at end
-  of file (no sequence read in), def_fileErr_seqST for
-  file errors, and `def_fileErr_seqST | def_badLine_seqST`
-  for non-fasta entries.
+  The output is 0 for no errors, def\_EOF\_seqST if at end
+  of file (no sequence read in), def\_fileErr\_seqST for
+  file errors,
+  and `def\_fileErr\_seqST | def\_badLine\_seqST` for
+  non-fasta entries.
 
-You can read a fastq sequence using getFq_seqST (fun03).
+You can read a fastq sequence using getFq\_seqST (fun03).
   The input is a pointer to a seqST structure to hold the
   sequence and a FILE poitner to the file to read from.
-  The output is 0 for no errors, def_EOF_seqST if at end
-  of file (no sequence read in), def_fileErr_seqST for
-  file errors, and `def_fileErr_seqST | def_badLine_seqST`
-  for non-fasta entries.
+  The output is 0 for no errors, def\_EOF\_seqST if at end
+  of file (no sequence read in), def\_fileErr\_seqST for
+  file errors,
+  and `def\_fileErr\_seqST | def\_badLine\_seqST` for
+  non-fasta entries.
 
 ### seqST reverse complement
 
-You can reverse complement a sequence using revComp_seqST.
-  The input is a pionter to a seqST structure to reverse
- complement.
+You can reverse complement a sequence using
+  revComp\_seqST.  The input is a pionter to a seqST
+  structure to reverse complement.
 
 ### seqST read fasta file
 
 You can get every sequence from a fasta file using
-  readFaFile_seqST. The output is a pointer to a seqST
+  readFaFile\_seqST. The output is a pointer to a seqST
   structure array (sorted by id) or 0 for any kind of
   error.
 
@@ -93,18 +95,18 @@ You can get every sequence from a fasta file using
   - signed long pointer get number of seqST structs in
     the returned array
   - signed char pointer to get any errors
-    - set to def_memErr_seqST for memory errors
-    - set to def_fileErr_seqST for file errors
-    - set to `def_fileErr_seqST | def_badLine_seqST`
+    - set to def\_memErr\_seqST for memory errors
+    - set to def\_fileErr\_seqST for file errors
+    - set to `def\_fileErr\_seqST | def\_badLine\_seqST`
       a invalid entry
 
-You can then find sequences by name/id using search_seqST.
-  The input is the sorted seqST structure array to search,
-  the name/id to search for (c-string), and the number
-  of sequences in the array.
+You can then find sequences by name/id using
+  search\_seqST.  The input is the sorted seqST structure
+  array to search, the name/id to search for (c-string),
+  and the number of sequences in the array.
 
 When finished with the seqST structure array, you can
-  free it using freeHeapAry_seqST. You will need to
+  free it using freeHeapAry\_seqST. You will need to
   provide the array and the number of seqST structers in
   the array.
 

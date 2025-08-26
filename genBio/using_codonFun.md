@@ -22,7 +22,7 @@ Codon fun contains a set of functions to convert bases or
 
 ## single amino acid conversion
 
-The codonToAA_codonFun function takes in three bases
+The codonToAA\_codonFun function takes in three bases
   (signed characters) and returns the matching single
   letter amino acid.
 
@@ -52,7 +52,7 @@ signed char reverse_complement_aminoAcid =
 
 ## sequence translation (to amino acids)
 
-The sequenceToAA_codonFun function translates a sequence.
+The sequenceToAA\_codonFun function translates a sequence.
 
 | Input | Use                                     |
 |:------|:----------------------------------------|
@@ -61,7 +61,7 @@ The sequenceToAA_codonFun function translates a sequence.
 |  3rd  | position to start translation (index 0) |
 |  4th  | position to end translation (index 0)   |
 
-Table: inputs for sequenceToAA_codonFun
+Table: inputs for sequenceToAA\_codonFun
 
 Make sure the 2nd input (gets ammino acid sequence) is
   large enough to hold the translated sequence
@@ -84,7 +84,7 @@ lengthAASL =
 ## misc functions
 
 You can also convert a three letter amino acid to a one
-  letter using aaTripToChar_codonFun. This takes a
+  letter using aaTripToChar\_codonFun. This takes a
   c-string and returns the single letter amino acid code
   as a signed char or 0 if the input code was not an
   amino acid.
@@ -98,8 +98,8 @@ if(! aaSC)
 ```
 
 You can check if the codon is a bacterial start codon
-  with codon with bactStart_codonFun, or for reverse
-  complement bactRevStart_codonFun. The input is three
+  with codon with bactStart\_codonFun, or for reverse
+  complement bactRevStart\_codonFun. The input is three
   base and the output is bacterial 1 if is a start codon
   or 0 if not.
 

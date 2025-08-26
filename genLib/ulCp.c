@@ -71,6 +71,7 @@
 '        - swaps two strings until null
 '      o fun27: shift_ulCp
 '        - shifts a substring in a string up or down
+'        - not tested, likely does not work
 '   o license:
 '     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -416,7 +417,6 @@
       return dupTmpStr - dupStr; /*number of char copied*/
    } /*cpWhite_ulCp*/
 #endif
-
 
 /*-------------------------------------------------------\
 | Fun15: lenStr_ulCp

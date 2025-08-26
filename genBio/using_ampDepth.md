@@ -20,12 +20,9 @@ Files: ampDepth.c and ampDepth.h
   - endLine.h from genLib
   - genMath.h from genLib
 
-/*These have no .c files*/
-#include "../genLib/endLine.h" /*for OS line breaks*/
-
 You should be familar with the samEntry library
-  (samEntry.c/h and using_samEntry.md) and the geneCoord
-  (geneCoord.c/h and using_geneCoord.md) library.
+  (samEntry.c/h and using\_samEntry.md) and the geneCoord
+  (geneCoord.c/h and using\_geneCoord.md) library.
 
 # ampDepth
 
@@ -45,9 +42,9 @@ Then you add the reads to the histogram.
 Once all reads are added you can then print out the
   histogram with one of the functions.
 
-## addRead_ampDepth
+## addRead\_ampDepth
 
-The addRead_ampDepth adds a read to the histogram.
+The addRead\_ampDepth adds a read to the histogram.
 
 - Input:
   1. samEntry structure pointer with read to add to the
@@ -83,15 +80,15 @@ After that you can print the summary with
 
 - Input:
   - signed int array with the histgram to print
-    - built using addRead_ampDepth
+    - built using addRead\_ampDepth
   - minimum depth to include the position in the summary
   - geneCoords structure pointer with coordinates used
-    to filter reads (input 2 used with addRead_ampDepth)
+    to filter reads (input 2 used with addRead\_ampDepth)
     - this can not be 0/null
   - number of genes in the geneCoords structure (input 3
-    for addRead_ampDepth)
+    for addRead\_ampDepth)
   - number of off target reads (input 5 from
-    addRead_ampDepth)
+    addRead\_ampDepth)
   - number of unmapped reads
   - c-string with the run/output id
     - no spaces or tabs
@@ -245,7 +242,7 @@ The `pdepth_ampDepth()` function takes a bit more input.
 
 - Input:
   1. signed int array with read depths for each position
-    (input 4 for addRead_ampDepth)
+    (input 4 for addRead\_ampDepth)
   2. size of the read depth array (input 1)
   3. minium read depth to keep a position
   4. c-string with reference name/id

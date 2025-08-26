@@ -24,7 +24,7 @@ The codon table is a lookup table to convert three bases
   or revNtTo2Bit. The return value is the ammino acid
   letter (x for any) as a signed char.
 
-See using_ntTo2Bit.md or using_revNtTo2Bit.md for an
+See using\_ntTo2Bit.md or using\_revNtTo2Bit.md for an
   example of how to use codonTbl.
 
 Simple example; printing a translated sequence:

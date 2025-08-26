@@ -18,13 +18,13 @@ Is a lookup table to convert nucleotides to array lookup
   in a unsigned character and returns the converted
   nucleotide back as an unsigned character.
 
-| Nucleotide  | Return                 |
-|:------------|:-----------------------|
-| T           | def_t_ntTo2Bit         |
-| C           | def_c_ntTo2Bit         |
-| A           | def_a_ntTo2Bit         |
-| G           | def_g_ntTo2Bit         |
-| other input | def_err3rdBit_ntTo2Bit |
+| Nucleotide  | Return                   |
+|:------------|:-------------------------|
+| T           | def\_t\_ntTo2Bit         |
+| C           | def\_c\_ntTo2Bit         |
+| A           | def\_a\_ntTo2Bit         |
+| G           | def\_g\_ntTo2Bit         |
+| other input | def\_err3rdBit\_ntTo2Bit |
 
 Simple example; printing a translated sequence:
 

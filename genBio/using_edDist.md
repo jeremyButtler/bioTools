@@ -34,14 +34,14 @@ The results are often stored in a `res_edDist` structure.
 
 General error types:
 
-| Error Type              | Error Macro (name) |
-|:------------------------|:-------------------|
-| file error              | def_fileErr_edDist |
-| memory error (ran out)  | def_memErr_edDist  |
-| no sequence in samEntry | def_noSeq_edDist   |
-| read was not mapped     | def_noMap_edDist   |
+| Error Type              | Error Macro (name)   |
+|:------------------------|:---------------------|
+| file error              | def\_fileErr\_edDist |
+| memory error (ran out)  | def\_memErr\_edDist  |
+| no sequence in samEntry | def\_noSeq\_edDist   |
+| read was not mapped     | def\_noMap\_edDist   |
 
-## res_edDist structure
+## res\_edDist structure
 
 This structure holds the stats for the edit distance
   function results. Some variables are only used for
@@ -61,16 +61,16 @@ This structure holds the stats for the edit distance
   - probMaxWinUI: maximum percent distance (like probUI)
                   seen in all the windows
              
-## flow of a res_edist structure
+## flow of a res\_edist structure
 
-To setup a res_edDist structure you must first make your
-  structure `struct res_edDist;`. Then you must initialize
-  your `res_edDist` structure. Finally, you can then free
-  the `res_edDist` structure at the end.
+To setup a res\_edDist structure you must first make your
+  structure `struct res\_edDist;`. Then you must
+  initialize your `res\_edDist` structure. Finally, you
+  can then free the `res\_edDist` structure at the end.
 
-You can initialize with init_res_edDist (fun02). The input
-  is a `res_edDist` structure pointer. This function
-  should only be called once.
+You can initialize with init\_res\_edDist (fun02). The
+  input is a `res\_edDist` structure pointer. This
+  function should only be called once.
 
 You can free your `res_edDist` structure with
   `freeStack_res_edDist` (fun03) or `freeHeap_res_edDist`
@@ -129,7 +129,7 @@ The reference edit distance can be found with
       you can either use an eqx cigar, give a reference,
       or not count SNPs
       - you can get a eqx cigare with cigToEqx (see
-        using_cigToEqx.md)
+        using\_cigToEqx.md)
       - in many cases your read mappers allow you to
         output eqx cigars (minimap2 is `--eqx`)
     - or 0 if 
@@ -145,10 +145,10 @@ The reference edit distance can be found with
 
 - Returns:
   - edit distance (0 or greater) for no errors
-  - def_noSeq_edDist (is a negative number) if the
+  - def\_noSeq\_edDist (is a negative number) if the
     read has no sequence
     - this would be a secondary alignment
-  - def_noMap_edDist (is a negative number) if the
+  - def\_noMap\_edDist (is a negative number) if the
     read did not map to the reference genome
 
 ```
@@ -245,8 +245,8 @@ You can get the depth of all reads to a single read in a
 
 - Output:
   - 0 for no errors
-  - def_memErr_edDist for no memory errors
-  - def_fileErr_edDist for file errors 
+  - def\_memErr\_edDist for no memory errors
+  - def\_fileErr\_edDist for file errors 
 
 Another similar function is `addReadToDepth_edDist`
   (fun09), were you add reads individually to the depth
@@ -339,7 +339,7 @@ main(
 ### read to read edit distance
 
 The read to read edit distance can be found with
-  `readCmpDist_edDist` (fun06). It takes several inputs
+  `readCmpDist\_edDist` (fun06). It takes several inputs
   and returns the edit distance between two reads. This
   function is less accurate because it does not attempt
   to re-align the reads. So, differences in the alignments
@@ -348,9 +348,9 @@ The read to read edit distance can be found with
 
 Along with Q-score you can also filter each nucletoide by
   its read depth. However, this requires you to first find
-  the read depths with mkDepthProfile_edDist (see last
+  the read depths with mkDepthProfile\_edDist (see last
   section) or adding each read one by one with
-  addReadToDepth_edDist (see last section).
+  addReadToDepth\_edDist (see last section).
 
 - Input:
   - samEntry structure pointer with the query read
@@ -365,26 +365,26 @@ Along with Q-score you can also filter each nucletoide by
   - minimum overlap (as percentage [0 to 1]) needed to
     find the edit distance between the two reads
   - minimum depth seen in other reads for this position
-    (the depths are stored in the `res_edDist` structure)
+    (the depths are stored in the `res\_edDist` structure)
   - size of one window
     - edDist counts distance by windows (ex 500 base
       windows) and total distance
-  - `res_edDist` structure to store the extra results in
+  - `res\_edDist` structure to store the extra results in
     - ex: window results, overlap, and indel counts
     - includes depthAryUI, which is filled by
-      mkDepthProfile_edDist, addReadToDepth_edDist, or is
+      mkDepthProfile\_edDist, addReadToDepth\_edDist, or is
      0
 
 - Returns:
   - edit distance (0 or greater) for no errors
-  - def_noSeq_edDist (is a negative number) if the
+  - def\_noSeq\_edDist (is a negative number) if the
     read has no sequence
     - this would be a secondary alignment
-  - def_noMap_edDist (is a negative number) if the
+  - def\_noMap\_edDist (is a negative number) if the
     read did not map to the reference genome
-  - def_diffRef_edDist if both query and reference were
+  - def\_diffRef\_edDist if both query and reference were
     mapped to a different genome (reference)
-  - def_noOverlap_edDist if query and reference do not
+  - def\_noOverlap\_edDist if query and reference do not
     have enough overlap
 
 Get edit distances for all other reads to the first read
@@ -466,7 +466,7 @@ main(
 
 # Printing and precentages
 
-The percDist_edDist (fn08) finds the percent distance
+The percDist\_edDist (fn08) finds the percent distance
   between two reads. The formula is
   `100 * (distance / (overlap * expected error rate)`.
   Not very great, but from my experince percentages are
