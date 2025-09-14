@@ -61,7 +61,7 @@
 '     - does an kmer check and alings an single sequence
 '       in an refST_kmerFind structure to see if there is
 '       an match
-'   o fun24: waterFindPrims_kmerFind
+'   o fun23: waterFindPrims_kmerFind
 '     - finds primers in an sequence (from fastx file)
 '       using a slower, but more percise waterman
 '   o fun24: fxFindPrims_kmerFind
@@ -2686,7 +2686,7 @@ findRefInChunk_kmerFind(
 } /*findRefInChunk_kmerFind*/
 
 /*-------------------------------------------------------\
-| Fun24: waterFindPrims_kmerFind
+| Fun23: waterFindPrims_kmerFind
 |   - finds primers in an sequence (from fastx file) using
 |     a slower, but more percise waterman
 | Input:
@@ -2763,19 +2763,19 @@ waterFindPrims_kmerFind(
    unsigned long primEndAryUL[],
    struct alnSet *alnSetPtr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ^ Fun24 TOC:
-   '   o fun24 sec01:
+   ^ Fun23 TOC:
+   '   o fun23 sec01:
    '     - varaible declerations
-   '   o fun24 sec02:
+   '   o fun23 sec02:
    '     - assign sequence to table
-   '   o fun24 sec03:
+   '   o fun23 sec03:
    '     - check sequence for spacers
-   '   o fun24 sec04:
+   '   o fun23 sec04:
    '     - clean up
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun24 Sec01:
+   ^ Fun23 Sec01:
    ^   - varaible declerations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -2794,25 +2794,25 @@ waterFindPrims_kmerFind(
    unsigned long refEndUL = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun24 Sec02:
+   ^ Fun23 Sec02:
    ^   - convert to sequence to index
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    seqToIndex_alnSet(seqSTPtr->seqStr);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun24 Sec03:
+   ^ Fun23 Sec03:
    ^   - check sequence for primers
-   ^   o fun24 sec03 sub01:
+   ^   o fun23 sec03 sub01:
    ^     - start primer loop
-   ^   o fun24 sec03 sub02:
+   ^   o fun23 sec03 sub02:
    ^     - foward alignment of primer
-   ^   o fun24 sec03 sub03:
+   ^   o fun23 sec03 sub03:
    ^     - reverse complement alignment of primer
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun24 Sec03 Sub01:
+   * Fun23 Sec03 Sub01:
    *   - start primer loop
    \*****************************************************/
 
@@ -2823,7 +2823,7 @@ waterFindPrims_kmerFind(
    ){ /*Loop: detect primers in each chunk*/
 
       /**************************************************\
-      * Fun24 Sec03 Sub02:
+      * Fun23 Sec03 Sub02:
       *   - foward alignment of primer
       \**************************************************/
 
@@ -2875,7 +2875,7 @@ waterFindPrims_kmerFind(
       } /*Else: no foward match*/
 
       /**************************************************\
-      * Fun24 Sec03 Sub03:
+      * Fun23 Sec03 Sub03:
       *   - reverse complement alignment of primer
       \**************************************************/
 
@@ -2914,7 +2914,7 @@ waterFindPrims_kmerFind(
    } /*Loop: detect primers in each chunk*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun24 Sec04:
+   ^ Fun23 Sec04:
    ^   - clean up
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
