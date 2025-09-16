@@ -850,6 +850,10 @@ init_alnSet(
    unsigned char rowUC = 0;
 
 
+   alnSetST->lineWrapUI = 58; /*wrap every 58 characters*/
+   alnSetST->pFullAlnBl = 0;  /*remove masked ends*/
+   alnSetST->pBasePosBl = 1;  /*print base coordinates*/
+
    changeGap_alnSet(
       alnSetST,
       def_gapOpen_alnDefs,

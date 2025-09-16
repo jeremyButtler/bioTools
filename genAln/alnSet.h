@@ -65,6 +65,12 @@ typedef struct alnSet
 { /*alnSet*/
    signed long minScoreSL; /*Min score to keep alignment*/
 
+   /*for printing alignments*/
+   unsigned int lineWrapUI;/*length of line before break*/
+   signed char pFullAlnBl;/*print masked bases*/
+   signed char pBasePosBl;/*print start & end coordinate*/
+
+
    /*scoring variables*/
    signed short gapSS;    /*Penalty for starting indel*/
    signed short extendSS; /* Penalty for extending indel*/

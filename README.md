@@ -276,6 +276,9 @@ My general libraries.
 
 # Updates:
 
+- 2025-09-16:
+  - fixed minor bug in samToAln were I removed a variable
+    it need to compile
 - 2025-08-05:
   - added multi reference support to rmHomo
 - 2025-07-28:
