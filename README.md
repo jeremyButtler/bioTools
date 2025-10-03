@@ -224,6 +224,9 @@ The programs are built and debugged on Linux and then
   - cigToEqx (freezeTB):
     - convert regular cigars to eqx cigars
     - works on linux and plan9
+  - diCoords (fluDI):
+    - find large deletions in mapped reads
+    - can also be set to find large insertions to
   - edClust (fluDI/freezeTB):
     - try to cluster reads by edit distance
       - not very sensitive, but kinda works
@@ -276,6 +279,18 @@ My general libraries.
 
 # Updates:
 
+- 2025-10-03:
+  - added the `-p-gene-cover` to ampDepth to print out
+    percent coverage by gene
+- 2025-10-02:
+  - added the memwaterScan to allow detection of multiple
+    alignments.
+    - currently a little to senesitive, needs a filter
+      step
+- 2025-09-23:
+  - realized diCoords in fluDI was used beyond fluDI, so I
+    moved diCoords from fluDI to bioTools. This invovled
+    several minor tweaks.
 - 2025-09-16:
   - fixed minor bug in samToAln were I removed a variable
     it need to compile

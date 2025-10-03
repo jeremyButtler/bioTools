@@ -24,6 +24,10 @@ cd ../cigToEqxSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" cigToEqx mainCigToEqx cigToEqx seqST charCp ../bioTools.h ../genLib/endLine.h
 cd "../$retDirStr" || exit;
 
+cd ../diCoordsSrc || exit;
+sh "../$retDirStr/allOSMkfiles.sh" diCoords mainDICoords diCoords samEntry ../bioTools.h ../genLib/endLine.h
+cd "../$retDirStr" || exit;
+
 cd ../unGzSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" unGz unGz inflate ../bioTools.h
 cd "../$retDirStr" || exit;
@@ -66,6 +70,10 @@ cd "../$retDirStr" || exit;
 
 cd ../memwaterSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" memwater mainMemwater memwater kmerCnt charCp ../bioTools.h ../genLib/endLine.h ../genAln/alnDefs.h
+cd "../$retDirStr" || exit;
+
+cd ../memwaterScanSrc || exit;
+sh "../$retDirStr/allOSMkfiles.sh" memwaterScan mainMemwaterScan memwaterScan base10str ulCp ../bioTools.h
 cd "../$retDirStr" || exit;
 
 cd ../primFindSrc || exit;

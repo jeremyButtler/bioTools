@@ -79,7 +79,7 @@ pversion_mainMemwater(
 ){
    fprintf(
       (FILE *) outFILE,
-      "memwater from bioTools version: %i-02%i-02%i%s",
+      "memwater from bioTools version: %i-%02i-%02i%s",
       def_year_bioTools,
       def_month_bioTools,
       def_day_bioTools,

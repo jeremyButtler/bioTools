@@ -55,8 +55,11 @@
 
 #include <stdio.h>
 
-#include "../genLib/endin.h"
-#include "../genLib/checkSum.h"
+#include "endin.h"
+#include "checkSum.h"
+
+/*.h files only*/
+#include "64bit.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
@@ -98,7 +101,7 @@ blank_st_mkPng(
    struct st_mkPng *pngSTPtr
 ){
    signed long slPix = 0;
-   ul_mkPng *pixAryUL = 0;
+   ul_64bit *pixAryUL = 0;
 
    if(! pngSTPtr)
       return;
@@ -109,7 +112,7 @@ blank_st_mkPng(
       /*not as fast as SIMD, but faster then byte by byte
       `  and is always present
       */
-      pixAryUL = (ul_mkPng *) pngSTPtr->pixelAryUC;
+      pixAryUL = (ul_64bit *) pngSTPtr->pixelAryUC;
 
       for(
          slPix = 0;
@@ -145,7 +148,7 @@ calcDepth_st_mkPng(
    struct st_mkPng *pngSTPtr /*has bit depth values*/
 ){
    signed char changeSC = 0;
-   /*goto bit8_fun02_DELETE;*/ /*DELETE*/
+
    if(pngSTPtr->numColUC > 16)
    { /*If: 8 bit color scheme*/
       if(pngSTPtr->pixDepthUC != 8)
@@ -419,6 +422,9 @@ init_st_mkPng(
    pngSTPtr->numPixelSL =
       pngSTPtr->widthUS * pngSTPtr->heightUS;
 
+   pngSTPtr->numColUC = 0;
+   pngSTPtr->pixDepthUC = 0;
+
    /*set the color scheme*/
    addCol_st_mkPng(
       pngSTPtr,
@@ -613,18 +619,16 @@ setup_st_mkPng(
    if(heightUS)
       pngSTPtr->heightUS = heightUS;
 
-   pngSTPtr->numPixelSL =
-      pngSTPtr->widthUS * pngSTPtr->heightUS;
-
    /*make sure every row ends in a byte*/
    pngSTPtr->widthUS +=
       pngSTPtr->widthUS % pngSTPtr->pixPerByteUC;
 
+   pngSTPtr->numPixelSL =
+      pngSTPtr->widthUS * pngSTPtr->heightUS;
 
    /*find number of pixels in png*/
    pngSTPtr->numPixelSL = pngSTPtr->widthUS;
    pngSTPtr->numPixelSL *= pngSTPtr->heightUS;
-   pngSTPtr->numPixelSL >>= pngSTPtr->shiftUC;
 
 
    /*find number of bytes needed for png size*/
@@ -748,179 +752,21 @@ addPixel_st_mkPng(
    signed long xSL,           /*x coordinate (pixels)*/
    signed long ySL,           /*y coordiante (pixels)*/
    signed char colUC          /*color of bar*/
-){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun11 addBar_st_mkPng
-   '   - adds a single pixel to a st_mkPng image
-   '   o fun11 sec01:
-   '     - variable declarations
-   '   o fun11 sec02:
-   '     - set up mask
-   '   o fun11 sec02:
-   '     - create color stamp
-   '   o fun11 sec03:
-   '     - add color
-   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+){
+   if(xSL > (signed long) pngSTPtr->widthUS)
+      goto overflow_fun11;
+   if(ySL > (signed long) pngSTPtr->heightUS)
+      goto overflow_fun11;
 
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec01:
-   ^   - variable declarations
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   /*doing byte copies to get my system down, latter I
-   `   plan to add multi-byte steps
-   */
-   signed long startSL = xSL + (ySL * xSL);
-   unsigned char bitUC = 0;  /*bit pixel is at*/
-   unsigned char maskUC = 0;
-   unsigned char *byteUCPtr = 0;
-   
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec02:
-   ^   - set up mask
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   if(startSL >= pngSTPtr->numPixelSL)
-      return def_overflow_mkPng;
-
-   /*find bit for pixel*/
-   bitUC = (startSL & pngSTPtr->pixPerByteUC);
-   bitUC <<= pngSTPtr->shiftUC;
-   /*Logic:
-   `   - targeting second pixel (xx) in 11xx 1111
-   `   - or second pixel in 4 bit (xxxx) 1111 xxxx
-   `   - pixPos: startSL & pixPerByteUC:
-   `     o pixel position of byte, deals with larg index's
-   `     o 1bit: 7 & 8 = 7
-   `     o 1bit: 6 & 8 = 6
-   `     o 1bit: 5 & 8 = 5
-   `     o 1bit: 4 & 8 = 4
-   `     o 1bit: 3 & 8 = 3
-   `     o 1bit: 2 & 8 = 2
-   `     o 1bit: 1 & 8 = 1
-   `     o 1bit: 0 & 8 = 0
-
-   `     o 2bit: 0 & 4 = 0
-   `     o 2bit: 3 & 4 = 3
-   `     o 2bit: 2 & 4 = 2
-   `     o 2bit: 1 & 4 = 1
-   `     o 2bit: 0 & 4 = 0
-   `
-   `     o 4bit: 1 & 2 = 1
-   `     o 4bit: 0 & 2 = 0
-   `
-   `     o 8bit: 1 & 1 = 0
-   `
-   `     o large index example 102 & 0xff = 2
-   `   - shift << shiftUC
-   `     o this gives the position of the first bit of
-   `       the target pixel
-   `     o 1bit: 8 << 0 = 8
-   `     o 1bit: 7 << 0 = 7
-   `     o 1bit: 6 << 0 = 6
-   `     o 1bit: 5 << 0 = 5
-   `     o 1bit: 4 << 0 = 4
-   `     o 1bit: 3 << 0 = 3
-   `     o 1bit: 2 << 0 = 2
-   `     o 1bit: 1 << 0 = 1
-   `     o 1bit: 0 << 0 = 0
-
-   `     o 2bit: 3 << 1 = 6
-   `     o 2bit: 2 << 1 = 4
-   `     o 2bit: 1 << 1 = 2
-   `     o 2bit: 0 << 1 = 0
-
-   `     o 4bit: 1 << 2 = 4
-   `     o 4bit: 0 << 2 = 0
-   `
-   `     o 8bit: 0 << 2 = 0
-   */
-
-   maskUC =
-          ( (unsigned char) -1 )
-       >> ( (sizeof(unsigned char) << 3) - bitUC );
-   /*Logic:
-   `   - (sizeof(uchar) << 3) - bitUC
-   `     o sizeof(uchar) << 3 goes to 8
-   `     o 8 - keepBit is target pixel bit + bits after
-   `     o 1bit, 7th bit: 8 - 7 = 1
-   `     o 1bit, 6th bit: 8 - 6 = 2
-   `     o 1bit, 5th bit: 8 - 5 = 3
-   `     o 1bit, 4th bit: 8 - 4 = 4
-   `     o 1bit, 3rd bit: 8 - 3 = 5
-   `     o 1bit, 2nd bit: 8 - 2 = 6
-   `     o 1bit, 1st bit: 8 - 1 = 7
-   `     o 1bit, 0th bit: 8 - 0 = 8
-
-   `     o 2bit, 3rd bit: 8 - 6 = 2
-   `     o 2bit, 2nd bit: 8 - 4 = 4
-   `     o 2bit, 1st bit: 8 - 2 = 6
-   `     o 2bit, 0th bit: 8 - 0 = 8
-   `
-   `     o 4bit, 1st bit: 8 - 4 = 4
-   `     o 4bit, 0th bit: 8 - 0 = 8
-
-   `     o 8bit, 0th bit: 8 - 0 = 8
-   `   - (uchar) -1 >> lastKeepBit:
-   `     o adds 11's until startBit (first target pixel
-   `       bit)
-   `     o 1bit, 7th bit: -1 << 1 = 1111 1110
-   `     o 1bit, 6th bit: -1 << 2 = 1111 1100
-   `     o 1bit, 5th bit: -1 << 3 = 1111 1000
-   `     o 1bit, 4th bit: -1 << 4 = 1111 0000
-   `     o 1bit, 3rd bit: -1 << 5 = 1110 0000
-   `     o 1bit, 2nd bit: -1 << 6 = 1100 0000
-   `     o 1bit, 1st bit: -1 << 7 = 1000 0000
-   `     o 1bit, 0th bit: -1 << 8 = 0000 0000
-
-   `     o 2bit, 3rd bit: -1 << 2 = 1111 1100
-   `     o 2bit, 2nd bit: -1 << 4 = 1111 0000
-   `     o 2bit, 1st bit: -1 << 6 = 1100 0000
-   `     o 2bit, 0th bit: -1 << 8 = 0000 0000
-
-   `     o 4bit, 1st bit: -1 << 4 = 1111 0000
-   `     o 4bit, 0th bit: -1 << 8 = 0000 0000
-
-   `     o 8bit, 0th bit: -1 << 8 = 0000 0000
-   */
-
-   maskUC |= ( ((unsigned char) -1) << bitUC );
-      /*Logic
-      `   - endMask: (uchar) -1 << bitUC:
-      `     o 2bit, 3rd bit: -1 << 2 = 0011 1111
-      `     o 2bit, 2nd bit: -1 << 4  = 0000 1111
-      `     o 2bit, 1st bit: -1 << 6  = 0000 0011
-      `     o 2bit, 0th bit: -1 << 8  = 0000 0000
-      `
-      `     o bitUC is last bit in target pixel, by
-      `       1 by this I get ones for every bit after
-      `       bitUC, but zero for bitUC and before
-      `   - maskUC | endMask:
-      `     o sets the ending bits of maskUC to 1,
-      `       this leaves only the target bits as 0
-      */
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun11 Sec03:
-   ^   - add color
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   byteUCPtr =
-        pngSTPtr->pixelAryUC
-      + (startSL >> pngSTPtr->shiftUC);
-      /* startSL >> shiftUC
-      `   - byte I need to shift two (if no extra bytes)
-      ` (startSL >> shiftUC)
-      `   - byte I need to change
-      */
-
-
-   *byteUCPtr &= maskUC;          /*clear target bits*/
-   maskUC = (colUC << bitUC);     /*add color to mask*/
-   *byteUCPtr |= maskUC;          /*add color*/
+   ySL *= pngSTPtr->widthUS;
+   ySL += xSL;
+   pngSTPtr->pixelAryUC[ySL] = colUC;
 
    return 0;
-}  /*addBar_st_mkPng*/
+
+   overflow_fun11:;
+      return def_overflow_mkPng;
+}  /*addPixel_st_mkPng*/
 
 /*-------------------------------------------------------\
 | Fun12: addBar_st_mkPng
@@ -972,14 +818,14 @@ addBar_st_mkPng(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   ul_mkPng maskStartUL = 0;/*mask to clear start*/
-   ul_mkPng colStartUL = 0; /*color stamp for mask start*/
+   ul_64bit maskStartUL = 0;/*mask to clear start*/
+   ul_64bit colStartUL = 0; /*color stamp for mask start*/
 
-   ul_mkPng maskEndUL = 0;  /*ending mask to clear bits*/
-   ul_mkPng colEndUL = 0;   /*color stamp for mask end*/
+   ul_64bit maskEndUL = 0;  /*ending mask to clear bits*/
+   ul_64bit colEndUL = 0;   /*color stamp for mask end*/
 
-   ul_mkPng colByteUL = 0;  /*byte full of color*/
-   ul_mkPng *pixAryUL = (ul_mkPng *) pngSTPtr->pixelAryUC;
+   ul_64bit colByteUL = 0;  /*byte full of color*/
+   ul_64bit *pixAryUL = (ul_64bit *) pngSTPtr->pixelAryUC;
      /*pixel array as long*/
 
    signed long startSL = 0;    /*start of bar on row*/
@@ -987,7 +833,10 @@ addBar_st_mkPng(
    signed long cpIndexSL = 0;  /*index copying at*/
    signed long lenRowSL = 0;   /*length of one row*/
 
+   signed int pixelsPerLongSI = 0;
+
    unsigned char bitUC = 0;    /*for building mask*/
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun12 Sec02:
    ^   - setup + create color stamp
@@ -1004,63 +853,72 @@ addBar_st_mkPng(
    *   - check if have overflow and find row length
    \*****************************************************/
 
-   startSL = (signed long) widthUS;
-   startSL *= ySL;       /*gives pixels till row*/
-   startSL += xSL;       /*gives frist pixel*/
-   startSL += widthUS;   /*gives last pixel*/
-
-   if( startSL > pngSTPtr->numPixelSL)
+   if(widthUS + xSL >= pngSTPtr->widthUS)
       goto overflow_fun12;
-
+   if(heightUS + ySL >= pngSTPtr->heightUS)
+      goto overflow_fun12;
 
    /*this is safe because setup enforces that width must
    `   be a multiple of bits per byte
    */
-   lenRowSL = pngSTPtr->widthUS >> pngSTPtr->shiftUC;
-   lenRowSL >>= sizeof(ul_mkPng); /*bytes to longs*/
+   lenRowSL = byteLenToULLen_64bit(pngSTPtr->widthUS);
+      /*get number of longs in a row*/
 
    /*****************************************************\
    * Fun12 Sec02 Sub02:
    *   - find start, end, and setup masks
    \*****************************************************/
 
+   pixelsPerLongSI =
+      (pngSTPtr->pixPerByteUC * sizeof(ul_64bit));
    startSL = xSL;
    endSL = startSL + widthUS;
 
-   bitUC =
-        startSL
-      & (pngSTPtr->pixPerByteUC * sizeof(ul_mkPng));
-   bitUC <<= (pngSTPtr->shiftUC * sizeof(ul_mkPng));
-
-   /*build mask*/
+   /*_________________build_start_mask__________________*/
    maskStartUL =
-         ((ul_mkPng) -1)
-      >> ((sizeof(ul_mkPng) << 3) - bitUC);
+        def_bitsInUL_64bit
+      - (xSL % pixelsPerLongSI) * pngSTPtr->pixDepthUC;
+      /*find number of pixels not changing at start*/
+   maskStartUL = ((ul_64bit) -1) >> maskStartUL;
+   maskStartUL = ulToLittle_endin(maskStartUL);
+      /*make sure is in little endin format*/
 
-   maskEndUL = ((ul_mkPng) -1) << bitUC;
+   /*_________________build_end_mask____________________*/
+   maskEndUL =
+         pixelsPerLongSI
+      - ((xSL + widthUS) % pixelsPerLongSI);
+      /*gives number of extra pixels at end*/
+   maskEndUL *= pngSTPtr->pixDepthUC;
+      /*convert the pixel count to number of bits*/
 
+   if(maskEndUL == (unsigned int) pixelsPerLongSI)
+      maskEndUL = 0;
+   maskEndUL = ((ul_64bit) -1) << maskEndUL;
+   maskEndUL = ulToLittle_endin(maskEndUL);
+      /*make sure is in little endin format*/
 
+   /*_________________find_positions____________________*/
    /*convert start and end to bytes*/
-   startSL >>= (pngSTPtr->shiftUC * sizeof(ul_mkPng));
-   endSL >>= (pngSTPtr->shiftUC * sizeof(ul_mkPng));
-
+   startSL = byteLenToULLen_64bit(startSL);
+   endSL = byteLenToULLen_64bit(endSL);
 
    /*move to first pixel to change position*/
-   pixAryUL +=
-         (ySL * pngSTPtr->widthUS)
-      >> (pngSTPtr->pixPerByteUC * sizeof(ul_mkPng));
-      /*moves to y coordinate (ingores extra bytes)*/
+   pixAryUL += ySL * lenRowSL;
 
    /*****************************************************\
    * Fun12 Sec02 Sub03:
    *   - setup color stamps
    \*****************************************************/
 
-   for(
-      bitUC = 0;
-      bitUC < (pngSTPtr->pixDepthUC  * sizeof(ul_mkPng));
-      bitUC += pngSTPtr->pixDepthUC
-   ) colByteUL |= ( ((ul_mkPng) colUC) << bitUC );
+   if(pixelsPerLongSI >= 2)
+      colUC = (colUC << 4);
+   if(pixelsPerLongSI >= 4)
+      colUC = colUC << 2;
+   if(pixelsPerLongSI >= 8)
+      colUC = colUC << 1;
+
+   for(bitUC = 0; bitUC < sizeof(ul_64bit); ++bitUC)
+      colByteUL |= (((ul_64bit) colUC) << (bitUC <<3));
 
    colStartUL = ~maskStartUL;
    colStartUL &= colByteUL;
@@ -1087,17 +945,13 @@ addBar_st_mkPng(
    if(startSL == endSL)
    { /*If: only coloring one limb*/
 
-      for(
-        xSL = ySL;
-        xSL < heightUS;
-        ++xSL
-      ){ /*Loop: apply color*/
+      for(xSL = ySL; xSL < heightUS; ++xSL)
+      { /*Loop: apply color*/
          pixAryUL[startSL] &= maskStartUL;
          pixAryUL[startSL] |= colStartUL;
 
          pixAryUL += lenRowSL;
       }  /*Loop: apply color*/
-
    } /*If: only coloring one limb*/
 
    /*****************************************************\
@@ -1108,11 +962,8 @@ addBar_st_mkPng(
    else if((startSL + 1) == endSL)
    { /*Else If: only coloring two limbs*/
 
-      for(
-        xSL = ySL;
-        xSL < heightUS;
-        ++xSL
-      ){ /*Loop: apply color*/
+      for(xSL = ySL; xSL < heightUS; ++xSL)
+      { /*Loop: apply color*/
          pixAryUL[startSL] &= maskStartUL;
          pixAryUL[startSL] |= colStartUL;
 
@@ -1121,7 +972,6 @@ addBar_st_mkPng(
 
          pixAryUL += lenRowSL;
       }  /*Loop: apply color*/
-
    } /*Else If: only coloring two limbs*/
 
    /*****************************************************\
@@ -1132,11 +982,8 @@ addBar_st_mkPng(
    else
    { /*Else If: coloring three or more limbs*/
 
-      for(
-        xSL = ySL;
-        xSL < heightUS;
-        ++xSL
-      ){ /*Loop: apply color*/
+      for(xSL = ySL; xSL < heightUS; ++xSL)
+      { /*Loop: apply color*/
          pixAryUL[startSL] &= maskStartUL;
          pixAryUL[startSL] |= colStartUL;
 
@@ -1149,7 +996,6 @@ addBar_st_mkPng(
 
          pixAryUL += lenRowSL;
       }  /*Loop: apply color*/
-
    } /*Else If: coloring three or more  limbs*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -1475,17 +1321,20 @@ pIDAT_st_mkPng(
    unsigned char *tmpAryUC = 0;
    unsigned short tmpUS = 0;
    unsigned int indexUI = 0;
+   unsigned short rowUS = 0;
+
+   unsigned char bitUC = 0;
+   unsigned char outUC = 0;
 
    signed int sumOneSI = 1;
    signed int sumTwoSI = 0;
 
    signed long pixelSL = 0;
    signed long totalPixelSL = 0;
-   signed long pixCntSL = 0;
+   unsigned short endRowUS =
+      pngSTPtr->widthUS / pngSTPtr->pixPerByteUC;
 
    unsigned int crc32UI = 0xffffffff;
-   unsigned short pixPerRowUS =
-      1 + (unsigned short) pngSTPtr->widthUS;
 
    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\
    ^ Fun19 Sec02:
@@ -1493,19 +1342,13 @@ pIDAT_st_mkPng(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
 
-   /*find the number of bytes at the end of all rows*/
-   pixelSL = pngSTPtr->numPixelSL / pngSTPtr->widthUS;
-   pixelSL += 6; /*filter + 5 bytes of zlib flags*/
-
    /*find the total pixels + extra bytes in the image*/
-   totalPixelSL = pngSTPtr->heightUS * pngSTPtr->widthUS;
-   totalPixelSL += pixelSL;
+   totalPixelSL =
+        (pngSTPtr->heightUS * endRowUS)
+      + (pngSTPtr->heightUS * def_lenZlibHeader_mkPng)
+      + def_lenZlibHeader_mkPng;
 
-   /*finish finding number of bytes in the idat entry*/
-   pixelSL += pngSTPtr->numPixelSL;
-   pixelSL += 6; /*ending 6 btyes*/
-
-   addUint_mkPng(pixelSL, outFILE);
+   addUint_mkPng(totalPixelSL, outFILE);
       /*size of png, before idat header (not in crc)
       `   This has the number of bytes in the idat
       `   entry. This includes the 6 bytes at the end
@@ -1551,115 +1394,77 @@ pIDAT_st_mkPng(
 
    indexUI = 0;
    pixelSL = 0;
+   goto addZlibHeader_fun19_sec03_sub01_cat01;
 
-   while(totalPixelSL > 0)
+   /*height is index 1*/
+   while(rowUS < pngSTPtr->heightUS)
    { /*Loop: add pixels to crc32*/
-      
-      if(! indexUI)
-      { /*If: line header*/
-         if(totalPixelSL - 5 > (signed long) pixPerRowUS)
-         { /*If: not last row*/
-            fputc('\0', (FILE *) outFILE);
-            crc32UI = crc32Byte_checkSum('\0', crc32UI);
 
-            /*bits in one line*/
-            tmpUS = usToLittle_endin(pixPerRowUS);
-            tmpAryUC = (unsigned char *) &tmpUS;
-            crc32UI =
-               crc32Byte_checkSum(tmpAryUC[0], crc32UI);
-            crc32UI =
-               crc32Byte_checkSum(tmpAryUC[1], crc32UI);
-            fputc(tmpAryUC[0], (FILE *) outFILE);
-            fputc(tmpAryUC[1], (FILE *) outFILE);
+      if(! (pixelSL % pngSTPtr->widthUS) )
+      { /*If: end of the row*/
+         ++rowUS;
 
-
-            tmpUS = ~tmpUS;
-            tmpAryUC = (unsigned char *) &tmpUS;
-            crc32UI =
-               crc32Byte_checkSum(tmpAryUC[0], crc32UI);
-            crc32UI =
-               crc32Byte_checkSum(tmpAryUC[1], crc32UI);
-            fputc(tmpAryUC[0], (FILE *) outFILE);
-            fputc(tmpAryUC[1], (FILE *) outFILE);
-
-            /*no filter marker*/
-            crc32UI = crc32Byte_checkSum(0, crc32UI);
-            fputc(0, (FILE *) outFILE);
-                /*row header for uncompressed*/
-
-            /*add no-fitler to adler*/
-            adler32Byte_checkSum(0, &sumOneSI, &sumTwoSI);
-
-            totalPixelSL -= 6;
-         } /*If: not last row*/
-
-         /*++++++++++++++++++++++++++++++++++++++++++++++\
-         + Fun19 Sec03 Sub01 Cat02:
-         +   - deal with last row (end of file row)
-         \++++++++++++++++++++++++++++++++++++++++++++++*/
-
-         else
-         { /*Else: is last row*/
+         addZlibHeader_fun19_sec03_sub01_cat01:;
+         if(rowUS == pngSTPtr->heightUS - 1)
+         { /*If: on the last row*/
             fputc('\1', (FILE *) outFILE);
             crc32UI = crc32Byte_checkSum('\1', crc32UI);
+         } /*If: on the last row*/
 
-            /*write offset (number pixels in last row)*/
-            tmpUS = usToLittle_endin(totalPixelSL - 5);
-            tmpAryUC = (unsigned char *) &tmpUS;
-            crc32UI =
-               crc32Byte_checkSum(tmpAryUC[0], crc32UI);
-            crc32UI =
-               crc32Byte_checkSum(tmpAryUC[1], crc32UI);
-            fputc(tmpAryUC[0], (FILE *) outFILE);
-            fputc(tmpAryUC[1], (FILE *) outFILE);
+         else if(rowUS < pngSTPtr->heightUS)
+         { /*Else: not last row*/
+            fputc('\0', (FILE *) outFILE);
+            crc32UI = crc32Byte_checkSum('\0', crc32UI);
+         } /*Else: not last row*/
+
+         else
+            break;
+
+         /*bits in one line*/
+         tmpUS = usToLittle_endin(endRowUS + 1);
+         tmpAryUC = (unsigned char *) &tmpUS;
+         crc32UI =
+            crc32Byte_checkSum(tmpAryUC[0], crc32UI);
+         crc32UI =
+            crc32Byte_checkSum(tmpAryUC[1], crc32UI);
+         fputc(tmpAryUC[0], (FILE *) outFILE);
+         fputc(tmpAryUC[1], (FILE *) outFILE);
 
 
-            tmpUS = ~tmpUS; /*pixel is in entire byte*/
-            tmpAryUC = (unsigned char *) &tmpUS;
-            crc32UI =
-               crc32Byte_checkSum(tmpAryUC[0], crc32UI);
-            crc32UI =
-               crc32Byte_checkSum(tmpAryUC[1], crc32UI);
-            fputc(tmpAryUC[0], (FILE *) outFILE);
-            fputc(tmpAryUC[1], (FILE *) outFILE);
+         tmpUS = ~tmpUS;
+         tmpAryUC = (unsigned char *) &tmpUS;
+         crc32UI =
+            crc32Byte_checkSum(tmpAryUC[0], crc32UI);
+         crc32UI =
+            crc32Byte_checkSum(tmpAryUC[1], crc32UI);
+         fputc(tmpAryUC[0], (FILE *) outFILE);
+         fputc(tmpAryUC[1], (FILE *) outFILE);
 
-            crc32UI = crc32Byte_checkSum(0, crc32UI);
-            fputc(0, (FILE *) outFILE);
-                /*row header for uncompressed*/
-            adler32Byte_checkSum(0, &sumOneSI, &sumTwoSI);
-               /*add no-fitler to adler*/
-            totalPixelSL -= 6;
-         } /*Else: is last row*/
-         pixCntSL += 6; /*DELETE*/
-      } /*If: line header*/
+         /*no filter marker*/
+         crc32UI = crc32Byte_checkSum(0, crc32UI);
+         fputc(0, (FILE *) outFILE);
+             /*row header for uncompressed*/
+
+         /*add no-fitler to adler*/
+         adler32Byte_checkSum(0, &sumOneSI, &sumTwoSI);
+      } /*If: end of the row*/
 
       /**************************************************\
       * Fun19 Sec03 Sub02:
-      *   - add pixe to row
+      *   - add pixel to row
       \**************************************************/
 
-      fputc(
-         pngSTPtr->pixelAryUC[pixelSL],
-         (FILE *) outFILE
-      );
+      outUC = 0;
 
-      crc32UI =
-          crc32Byte_checkSum(
-             pngSTPtr->pixelAryUC[pixelSL],
-             crc32UI
-          );
-      adler32Byte_checkSum(
-         pngSTPtr->pixelAryUC[pixelSL],
-         &sumOneSI,
-         &sumTwoSI
-      );
+      for(
+         bitUC = 0;
+         bitUC < def_bitsPerChar_64bit;
+         bitUC += pngSTPtr->pixDepthUC
+      ) outUC |= (pngSTPtr->pixelAryUC[pixelSL++]<<bitUC);
 
-      /*move to next pixel*/
-      totalPixelSL -= pngSTPtr->pixPerByteUC;
-      indexUI += (indexUI + 1) % pngSTPtr->widthUS;
-
-      ++pixCntSL; /*DELETE*/
-      ++pixelSL;
+      fputc(outUC, (FILE *) outFILE);
+      crc32UI = crc32Byte_checkSum(outUC, crc32UI);
+      adler32Byte_checkSum(outUC, &sumOneSI, &sumTwoSI);
    }  /*Loop: add pixels to crc32*/
 
    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\

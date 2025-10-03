@@ -1,0 +1,1173 @@
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+' mainDICoords SOF: Start Of File
+'   - driver function to get di coordinates
+'   o header:
+'     - included libraries and definitions
+'   o fun01: pversion_mainDICoords
+'     - prints version number
+'   o fun02: phelp_mainDICoords
+'     - prints help message
+'   o fun03: input_mainDICoords
+'     - gets user input from an array of c-strings
+'   o main:
+'     - main driver function to get DI coordinates
+'   o license:
+'     - Licensing for this code (public domain / mit)
+\~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+/*-------------------------------------------------------\
+| Header:
+|   - included libraries and definitions
+\-------------------------------------------------------*/
+
+#ifdef PLAN9
+   #include <u.h>
+   #include <libc.h>
+#else
+   #include <stdlib.h>
+#endif
+
+#include <stdio.h>
+
+#include "../genLib/base10str.h"
+#include "../genLib/ulCp.h"
+#include "../genBio/samEntry.h"
+#include "../genBio/diCoords.h"
+
+/*.h files only*/
+#include "../bioTools.h"
+#include "../genLib/endLine.h"
+
+/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
+! Hidden libraries:
+!   o .c  #include "../genLib/numToStr.h"
+!   o .c  #include "../genLib/fileFun.h"
+!   o .h  #include "../genBio/ntTo5Bit.h"
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+
+#define def_minDIDelLen_mainDICoords 20
+   /*minimum deletion size to count as a DI event*/
+
+#define def_minPadNt_mainDICoords 12
+   /*minimum bases at end/start needed to count a DI
+   `   this is here to avoid large DI and then 4 matches
+   */
+
+#define def_pNonDI_mainDICoords 0
+   /*print non-DI entries*/
+
+/*what type of indels to target*/
+#define def_pDel_mainDICoords 1
+#define def_pIns_mainDICoords 0
+
+/*-------------------------------------------------------\
+| Fun01: pversion_mainDICoords
+|   - prints version number
+| Input:
+|   - outFILE:
+|     o file to print version number to
+| Output:
+|   - Prints:
+|     o version number to outFILE
+\-------------------------------------------------------*/
+void
+pversion_mainDICoords(
+   void *outFILE
+){
+   fprintf(
+      (FILE *) outFILE,
+      "diCoords from bioTools version: %i-%02i-%02i%s",
+      def_year_bioTools,
+      def_month_bioTools,
+      def_day_bioTools,
+      str_endLine
+   );
+} /*pversion_mainDICoords*/
+
+/*-------------------------------------------------------\
+| Fun02: phelp_mainDICoords
+|   - prints help message
+| Input:
+|   - outFILE:
+|     o file to print help message to
+| Output:
+|   - Prints:
+|     o help message to outFILE
+\-------------------------------------------------------*/
+void
+phelp_mainDICoords(
+   void *outFILE
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun02 TOC:
+   '   - prints help message
+   '   o fun02 sec01:
+   '     - usage block
+   '   o fun02 sec02:
+   '     - input block
+   '   o fun02 sec03:
+   '     - output block
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun02 Sec01:
+   ^   - usage block
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   fprintf(
+      (FILE *) outFILE,
+      "mainDICoords -sam reads.sam > out.tsv"
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "  - find coordinates of flu DIs in mapped reads%s",
+      str_endLine
+   );
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun02 Sec02:
+   ^   - input block
+   ^   o fun02 sec02 sub01:
+   ^     - input header
+   ^   o fun02 sec02 sub02:
+   ^     - file io input
+   ^   o fun02 sec02 sub03:
+   ^     - DI filter settings
+   ^   o fun02 sec02 sub04:
+   ^     - print settings
+   ^   o fun02 sec02 sub05:
+   ^     - help and version number
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Fun02 Sec02 Sub01:
+   *   - input header
+   \*****************************************************/
+
+   fprintf((FILE *) outFILE, "Input:%s", str_endLine);
+
+   /*****************************************************\
+   * Fun02 Sec02 Sub02:
+   *   - file io input
+   \*****************************************************/
+
+   /*input*/
+   fprintf(
+      (FILE *) outFILE,
+      "  -sam reads.sam: [Required]%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o sam file with mapped reads to search%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o use \"-sam -\" for stdin%s",
+      str_endLine
+   );
+
+   /*output*/
+   fprintf(
+      (FILE *) outFILE,
+      "  -out out.tsv: [Optinal: stdout]%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o file to output to%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o use \"-out -\" for stdout%s",
+      str_endLine
+   );
+
+   /*****************************************************\
+   * Fun02 Sec02 Sub03:
+   *   - DI filter settings
+   \*****************************************************/
+
+    /*print min del size*/
+   fprintf(
+      (FILE *) outFILE,
+      "  -min-del %u: [Optinal; %u]%s",
+      def_minDIDelLen_mainDICoords,
+      def_minDIDelLen_mainDICoords,
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o minimum number of deleted bases to flag a%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      deletion as a DI event%s",
+      str_endLine
+   );
+
+   /*min nucleotides at start/end of sequence*/
+   fprintf(
+      (FILE *) outFILE,
+      "  -min-nt-pad %u: [Optinal; %u]%s",
+      def_minPadNt_mainDICoords,
+      def_minPadNt_mainDICoords,
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o minimum number of matches, SNPs, and%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      insertions needed at start/end of read%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      before counting large deltions as DI%s",
+      str_endLine
+   );
+
+   /*****************************************************\
+   * Fun02 Sec02 Sub04:
+   *   - print settings
+   \*****************************************************/
+
+   if(def_pDel_mainDICoords)
+      fprintf(
+         (FILE *) outFILE,
+         "  -pdel: [Optional yes]%s",
+      str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "  -pdel: [Optional no]%s",
+      str_endLine
+      );
+
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o search and print large deletions%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o disable with \"-no-pdel\"%s",
+      str_endLine
+   );
+
+   if(def_pIns_mainDICoords)
+      fprintf(
+         (FILE *) outFILE,
+         "  -pins: [Optional yes]%s",
+      str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "  -pins: [Optional no]%s",
+      str_endLine
+      );
+
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o search and print large insertions%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o disable with \"-no-pins\"%s",
+      str_endLine
+   );
+
+
+   /*print non-DI reads*/
+   if(def_pNonDI_mainDICoords)
+      fprintf(
+         (FILE *) outFILE,
+         "  -non-di: [Optinal; Yes]%s",
+      str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "  -non-di: [Optinal; No]%s",
+      str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o print entries with no DI events%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o disable with \"-di-only\"%s",
+      str_endLine
+   );
+
+   /*****************************************************\
+   * Fun02 Sec02 Sub05:
+   *   - help and version number
+   \*****************************************************/
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -h: print this help message%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -v: print the version number%s",
+      str_endLine
+   );
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun02 Sec03:
+   ^   - output block
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   fprintf(
+      (FILE *) outFILE,
+      "Output:%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "  - tsv with read id, reference name,%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    DI start coordinate, and DI end coordinate%s",
+      str_endLine
+   );
+} /*phelp_mainDICoords*/
+
+/*-------------------------------------------------------\
+| Fun03: input_mainDICoords
+|   - gets user input from an array of c-strings
+| Input:
+|   - numArgsSI:
+|     o number of arguments input
+|   - argAryStr:
+|     o array of c-strings with user input
+|   - samFileStrPtr:
+|     o pointer to c-sting to point to sam file name
+|   - outFileStrPtr:
+|     o pointer to c-sting to point to output file name
+|   - minDILenUIPtr:
+|     o pointer to unsigned int to hold the minimum
+|       deletion length to be a DI event
+|   - minPadNtUIPtr:
+|     o pointer to unsigned int to hold the minimum
+|       number of nucleotides before/after a large DI
+|       event
+|   - pNoDIBlPtr:
+|     o pointer to signed char (1: print non-DI read ids)
+|   - indelFlagSCPtr:
+|     o set to indel type to look for and print
+|       - 1: to keep deletions
+|       - 2: to keep insertions
+|       - 3: to keep both detetions and insertions
+| Output:
+|   - Modifies:
+|     o all variables except numArgsSI and argAryStr to
+|       hold/point to user input
+|   - Returns:
+|     o 0 for no errors
+|     o 1 for printed version number or help message
+|     o 2 for invalid input
+\-------------------------------------------------------*/
+signed char
+input_mainDICoords(
+   int numArgsSI,                /*number of arguments*/
+   char *argAryStr[],            /*has input arguments*/
+   signed char **samFileStrPtr,  /*will have sam file*/
+   signed char **outFileStrPtr,  /*will have out file*/
+   unsigned int *minDILenUIPtr,  /*will have min DI len*/
+   unsigned int *minPadNtUIPtr,  /*ends non-del length*/
+   signed char *pNoDIBlPtr,      /*1 if keeping non-DI*/
+   signed char *indelFlagSCPtr/*keep:1 del; 2 ins; 3 all*/
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   '   o fun03 sec01:
+   '     - variable declarations
+   '   o fun03 sec02:
+   '     - check if user input something
+   '   o fun03 sec03:
+   '     - get user input
+   '   o fun03 sec04:
+   '     - clean up and return
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec01:
+   ^   - variable declarations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   signed char errSC = 0;
+   signed int siArg = 1;
+   signed char *tmpStr = 0;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec02:
+   ^   - check if user input something
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(numArgsSI <= 1)
+   { /*If: nothing input*/
+      phelp_mainDICoords(stdout);
+      goto phelp_fun03_sec04;
+   } /*If: nothing input*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec03:
+   ^   - get user input
+   ^   o fun03 sec03 sub01:
+   ^     - start loop and general input
+   ^   o fun03 sec03 sub02:
+   ^     - check for help messages
+   ^   o fun03 sec03 sub03:
+   ^     - check for version number requests
+   ^   o fun03 sec03 sub04:
+   ^     - invalid entry and move to next entry
+   \\<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Fun03 Sec03 Sub01:
+   *   - start loop and general input
+   \*****************************************************/
+
+   while(siArg < numArgsSI)
+   { /*Loop: get user input*/
+      if(
+         ! eqlNull_ulCp(
+            (signed char *) "-sam",
+            (signed char *) argAryStr[siArg]
+         )
+      ){ /*If: is the sam file name*/
+         ++siArg;
+         *samFileStrPtr =
+            (signed char *) argAryStr[siArg];
+      } /*If: is the sam file name*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-out",
+            (signed char *) argAryStr[siArg]
+         )
+      ){ /*Else If: is the output file name*/
+         ++siArg;
+         *outFileStrPtr =
+            (signed char *) argAryStr[siArg];
+      } /*Else If: is the output file name*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-pdel",
+            (signed char *) argAryStr[siArg]
+         )
+      ) *indelFlagSCPtr |= 1;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-no-pdel",
+            (signed char *) argAryStr[siArg]
+         )
+      ) *indelFlagSCPtr &= ~1;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-pins",
+            (signed char *) argAryStr[siArg]
+         )
+      ) *indelFlagSCPtr |= 2;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-no-pins",
+            (signed char *) argAryStr[siArg]
+         )
+      ) *indelFlagSCPtr &= ~2;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-non-di",
+            (signed char *) argAryStr[siArg]
+         )
+      ) *pNoDIBlPtr = 1;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-di-only",
+            (signed char *) argAryStr[siArg]
+         )
+      ) *pNoDIBlPtr = 0;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-min-del",
+            (signed char *) argAryStr[siArg]
+         )
+      ){ /*Else If: is the minimum DI deletion lenght*/
+         ++siArg;
+
+         tmpStr = (signed char *) argAryStr[siArg];
+
+         tmpStr +=
+            strToUI_base10str(
+               (signed char *) argAryStr[siArg],
+               minDILenUIPtr
+            );
+
+         if(*tmpStr != '\0')
+         { /*If: had non-numeric entry*/
+            fprintf(
+               stderr,
+               "-min-del %s is non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
+            );
+ 
+            goto invalidInput_fun03_sec04;
+         } /*If: had non-numeric entry*/
+      } /*Else If: is the minimum DI deletion lenght*/
+
+      else if(
+         
+         ! eqlNull_ulCp(
+            (signed char *) "-min-nt-pad",
+            (signed char *) argAryStr[siArg]
+         )
+      ){ /*Else If: is the minimum DI deletion length*/
+         ++siArg;
+
+         tmpStr = (signed char *) argAryStr[siArg];
+
+         tmpStr +=
+            strToUI_base10str(
+               (signed char *) argAryStr[siArg],
+               minPadNtUIPtr
+            );
+
+         if(*tmpStr != '\0')
+         { /*If: had non-numeric entry*/
+            fprintf(
+               stderr,
+               "-min-nt-pad %s; non-numeric or to big%s",
+               argAryStr[siArg],
+               str_endLine
+            );
+ 
+            goto invalidInput_fun03_sec04;
+         } /*If: had non-numeric entry*/
+      } /*Else If: is the minimum DI deletion length*/
+
+      /**************************************************\
+      * Fun03 Sec03 Sub02:
+      *   - check for help messages
+      \**************************************************/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-h",
+            (signed char *) argAryStr[siArg]
+         )
+      ) goto phelp_fun03_sec04;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "--h",
+            (signed char *) argAryStr[siArg]
+         )
+      ) goto phelp_fun03_sec04;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "help",
+            (signed char *) argAryStr[siArg]
+         )
+      ) goto phelp_fun03_sec04;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-help",
+            (signed char *) argAryStr[siArg]
+         )
+      ) goto phelp_fun03_sec04;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "--help",
+            (signed char *) argAryStr[siArg]
+         )
+      ) goto phelp_fun03_sec04;
+
+      /**************************************************\
+      * Fun03 Sec03 Sub03:
+      *   - check for version number requests
+      \**************************************************/
+      
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-v",
+            (signed char *) argAryStr[siArg]
+         )
+      ) goto pversion_fun03_sec04;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "--v",
+            (signed char *) argAryStr[siArg]
+         )
+      ) goto pversion_fun03_sec04;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "version",
+            (signed char *) argAryStr[siArg]
+         )
+      ) goto pversion_fun03_sec04;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-version",
+            (signed char *) argAryStr[siArg]
+         )
+      ) goto pversion_fun03_sec04;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "--version",
+            (signed char *) argAryStr[siArg]
+         )
+      ) goto pversion_fun03_sec04;
+
+      /**************************************************\
+      * Fun03 Sec03 Sub04:
+      *   - invalid entry and move to next entry
+      \**************************************************/
+
+      else
+      { /*Else: uknown input*/
+         fprintf(
+            stderr,
+            "%s is not recongized%s",
+            argAryStr[siArg],
+            str_endLine
+         );
+ 
+         goto invalidInput_fun03_sec04;
+      } /*Else: uknown input*/
+
+      ++siArg;
+   } /*Loop: get user input*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec04:
+   ^   - clean up and return
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   errSC = 0;
+   goto cleanUp_fun03_sec04;
+
+   phelp_fun03_sec04:;
+      phelp_mainDICoords(stdout);
+      errSC = 1;
+      goto cleanUp_fun03_sec04;
+   pversion_fun03_sec04:;
+      pversion_mainDICoords(stdout);
+      errSC = 1;
+      goto cleanUp_fun03_sec04;
+
+   invalidInput_fun03_sec04:;
+      errSC = 2;
+      goto cleanUp_fun03_sec04;
+
+   cleanUp_fun03_sec04:;
+   return(errSC);
+} /*input_mainDICoords*/
+
+/*-------------------------------------------------------\
+| Main:
+|   - main driver function to get DI coordinates
+| Input:
+|   - numArgsSI:
+|     o number of arguments the user input
+|   - argAryStr:
+|     o array of c-strings with user input
+| Output:
+|   - Prints:
+|     o tsv with ids, number DI events & coordiantes
+\-------------------------------------------------------*/
+int
+main(
+   int numArgsSI,
+   char *argAryStr[]
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Main TOC:
+   '   - main driver function to get DI coordinates
+   '   o main sec01:
+   '     - variable declerations
+   '   o main sec02:
+   '     - initialize structs, get input, setup memory
+   '   o main sec03:
+   '     - get coordinates
+   '   o main sec04:
+   '     - clean up
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Main Sec01:
+   ^   - variable declerations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   signed char *samFileStr = 0;
+   signed char *outFileStr = 0;
+
+   unsigned int minDILenUI = def_minDIDelLen_mainDICoords;
+   unsigned int minPadNtUI = def_minPadNt_mainDICoords;
+
+   signed char pNoDIBl = def_pNonDI_mainDICoords;
+
+   signed char indelFlagSC =
+      def_pDel_mainDICoords | def_pIns_mainDICoords;
+      /*if printing deletions/indels*/
+
+   signed char errSC = 0;
+
+   unsigned int *startHeapAryUI = 0;
+   unsigned int *endHeapAryUI = 0;
+   unsigned int *delSizeHeapAryUI = 0;
+   signed char *indelHeapArySC = 0;
+   unsigned int lenArysUI = 0;
+   signed int numDIsSI = 0;
+
+   struct samEntry samStackST;
+   signed char *buffHeapStr = 0; /*buffer for sam file*/
+   unsigned long numEntryUL = 0;
+      /*number reads in sam file*/
+
+   FILE *samFILE = 0;
+   FILE *outFILE = 0;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Main Sec02:
+   ^   - initialize structs, get input, setup memory
+   ^   o main sec02 sub01:
+   ^     - initialize structures
+   ^   o main sec02 sub02:
+   ^     - get input
+   ^   o main sec02 sub03:
+   ^     - allocate memory
+   ^   o main sec02 sub04:
+   ^     - open sam file
+   ^   o main sec02 sub05:
+   ^     - open output file
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Main Sec02 Sub01:
+   *   - initialize structures
+   \*****************************************************/
+
+   init_samEntry(&samStackST);
+
+   /*****************************************************\
+   * Main Sec02 Sub02:
+   *   - get input
+   \*****************************************************/
+
+   errSC =
+      input_mainDICoords(
+         numArgsSI,     /*number of arguments*/
+         argAryStr,     /*has input arguments*/
+         &samFileStr,   /*will have sam file*/
+         &outFileStr,   /*will have out file*/
+         &minDILenUI,   /*will have min DI len*/
+         &minPadNtUI,   /*min pad length to count DI*/
+         &pNoDIBl,      /*1 if keeping non-DI*/
+         &indelFlagSC
+     ); /*get user input*/
+
+   if(errSC)
+   { /*If: had error*/
+      --errSC; /*help message/version error to no error*/
+      goto cleanUp_sec04_sub04;
+   } /*If: had error*/
+
+   /*****************************************************\
+   * Main Sec02 Sub03:
+   *   - allocate memory
+   \*****************************************************/
+
+   setup_samEntry(&samStackST);
+
+   /*****************************************************\
+   * Main Sec02 Sub04:
+   *   - open sam file
+   \*****************************************************/
+
+   if(
+         ! samFileStr
+      || *samFileStr == '-'
+   ) samFILE = stdin;
+
+   else
+   { /*Else: user provided a sam file*/
+      samFILE =
+         fopen(
+            (char *) samFileStr,
+            "r"
+         );
+
+      if(! samFILE)
+      { /*If: no sam file*/
+         fprintf(
+            stderr,
+            "could not open -sam %s%s",
+            samFileStr,
+            str_endLine
+         );
+
+         goto fileErr_main_sec04_sub03;
+      } /*If: no sam file*/
+   } /*Else: user provided a sam file*/
+
+   /*****************************************************\
+   * Main Sec02 Sub05:
+   *   - open output file
+   \*****************************************************/
+
+   if(
+         ! outFileStr
+      || *outFileStr == '-'
+   ) outFILE = stdout;
+
+   else
+   { /*Else: user provided an output file*/
+      outFILE =
+         fopen(
+            (char *) outFileStr,
+            "r"
+         );
+
+      if(! outFILE)
+      { /*If: no output file*/
+         fprintf(
+            stderr,
+            "could not open -sam %s%s",
+            outFileStr,
+            str_endLine
+         );
+
+         goto fileErr_main_sec04_sub03;
+      } /*If: no output file*/
+   } /*Else: user provided an output file*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Main Sec03:
+   ^   - get coordinates
+   ^   o main sec03 sub01:
+   ^     - get first sam file entry and start loop
+   ^   o main sec03 sub02:
+   ^     - remove comments, and non-primary aligned reads
+   ^   o main sec03 sub04:
+   ^     - move to the next entry in the sam file
+   ^   o main sec03 sub05:
+   ^     - after loop; check for errors
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Main Sec03 Sub01:
+   *   - get first sam file entry and start loop
+   \*****************************************************/
+
+   pDIHead_diCoords(outFILE);
+   errSC = get_samEntry(&samStackST, samFILE);
+
+   while(! errSC)
+   { /*Loop: find DI events and coordinates*/
+
+      /**************************************************\
+      * Main Sec03 Sub02:
+      *   - remove comments, and non-primary aligned reads
+      \**************************************************/
+
+      ++numEntryUL;
+
+      if(samStackST.extraStr[0] == '@')
+         goto nextEntry_main_sec03_sub04;
+
+      if(samStackST.flagUS & (4 | 256 | 2048))
+         goto nextEntry_main_sec03_sub04;
+         /* Explenation:
+         `   - 4 = unmapped read
+         `   - 256 = secondary alignment (alternative),
+         `   - 2048 = supplemental alignment (diff ref)
+         */
+          
+      /**************************************************\
+      * Main Sec03 Sub03:
+      *   - scan for DI entries
+      \**************************************************/
+
+      numDIsSI =
+         get_diCoords(
+            &samStackST,
+            minDILenUI,
+            minPadNtUI,
+            indelFlagSC,
+            &startHeapAryUI,
+            &endHeapAryUI,
+            &delSizeHeapAryUI,
+            &indelHeapArySC,
+            &lenArysUI
+        ); /*find DI events and their coordinates*/
+   
+      if(numDIsSI < 0)
+      { /*If: memory error*/
+         fprintf(
+            stderr,
+            "MEMORY error on -sam %s line number %lu%s",
+            samFileStr,
+            numEntryUL,
+            str_endLine
+         );
+
+         goto memErr_main_sec04_sub02;
+      } /*If: memory error*/
+
+      if(numDIsSI > 0 || pNoDIBl)
+      { /*If: printing out read*/
+         pDI_diCoords(
+            samStackST.qryIdStr,
+            samStackST.refIdStr,
+            startHeapAryUI,
+            endHeapAryUI,
+            delSizeHeapAryUI,
+            indelHeapArySC,
+            numDIsSI,
+            samStackST.refStartUI,
+            samStackST.refEndUI,
+            outFILE
+        );
+      } /*If: printing out read*/
+
+      /**************************************************\
+      * Main Sec03 Sub04:
+      *   - move to the next entry in the sam file
+      \**************************************************/
+      nextEntry_main_sec03_sub04:;
+         errSC = get_samEntry(&samStackST, samFILE);
+   } /*Loop: find DI events and coordinates*/
+
+   /*****************************************************\
+   * Main Sec03 Sub05:
+   *   - after loop; check for errors
+   \*****************************************************/
+
+   if(errSC != 1)
+   { /*If: had memory error*/
+      fprintf(
+         stderr,
+         "MEMORY ERROR on line %lu of -sam %s%s",
+         numEntryUL,
+         samFileStr,
+         str_endLine
+      );
+
+      goto memErr_main_sec04_sub02;
+   } /*If: had memory error*/
+
+   if(! numEntryUL)
+   { /*If: had no sam file entrys*/
+      fprintf(
+         stderr,
+         "-sam %s has no mapped reads%s",
+         samFileStr,
+         str_endLine
+      );
+
+      goto memErr_main_sec04_sub02;
+   } /*If: had no sam file entrys*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Main Sec04:
+   ^   - clean up
+   ^   o main sec04 sub01:
+   ^     - no error clean up
+   ^   o main sec04 sub02:
+   ^     - memory error clean up
+   ^   o main sec04 sub03:
+   ^     - file error clean up
+   ^   o main sec04 sub04:
+   ^     - variable clean up (all errors and no errors)
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Main Sec04 Sub01:
+   *   - no error clean up
+   \*****************************************************/
+
+   errSC = 0;
+   goto cleanUp_sec04_sub04;
+
+   /*****************************************************\
+   * Main Sec04 Sub02:
+   *   - memory error clean up
+   \*****************************************************/
+
+   memErr_main_sec04_sub02:;
+      errSC = -1;
+      goto cleanUp_sec04_sub04;
+
+   /*****************************************************\
+   * Main Sec04 Sub03:
+   *   - file error clean up
+   \*****************************************************/
+
+   fileErr_main_sec04_sub03:;
+      errSC = 2;
+      goto cleanUp_sec04_sub04;
+
+   /*****************************************************\
+   * Main Sec04 Sub04:
+   *   - variable clean up (all errors and no errors)
+   \*****************************************************/
+
+   cleanUp_sec04_sub04:;
+      if(
+            samFILE
+         && samFILE != stdin
+         && samFILE != stdout
+      ) fclose(samFILE);
+
+      samFILE = 0;
+
+      if(
+            outFILE
+         && outFILE != stdin
+         && outFILE != stdout
+      ) fclose(outFILE);
+
+      outFILE = 0;
+
+      if(startHeapAryUI)
+         free(startHeapAryUI);
+      startHeapAryUI = 0;
+
+      if(endHeapAryUI)
+         free(endHeapAryUI);
+      endHeapAryUI = 0;
+
+      if(delSizeHeapAryUI)
+         free(delSizeHeapAryUI);
+      delSizeHeapAryUI = 0;
+
+      if(indelHeapArySC)
+         free(indelHeapArySC);
+      indelHeapArySC = 0;
+
+      if(buffHeapStr)
+         free(buffHeapStr);
+      buffHeapStr = 0;
+
+      freeStack_samEntry(&samStackST);
+
+      return errSC;
+} /*main*/
+
+/*=======================================================\
+: License:
+: 
+: This code is under the unlicense (public domain).
+:   However, for cases were the public domain is not
+:   suitable, such as countries that do not respect the
+:   public domain or were working with the public domain
+:   is inconvient / not possible, this code is under the
+:   MIT license.
+: 
+: Public domain:
+: 
+: This is free and unencumbered software released into the
+:   public domain.
+: 
+: Anyone is free to copy, modify, publish, use, compile,
+:   sell, or distribute this software, either in source
+:   code form or as a compiled binary, for any purpose,
+:   commercial or non-commercial, and by any means.
+: 
+: In jurisdictions that recognize copyright laws, the
+:   author or authors of this software dedicate any and
+:   all copyright interest in the software to the public
+:   domain. We make this dedication for the benefit of the
+:   public at large and to the detriment of our heirs and
+:   successors. We intend this dedication to be an overt
+:   act of relinquishment in perpetuity of all present and
+:   future rights to this software under copyright law.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO
+:   EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM,
+:   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+:   CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+:   IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+:   DEALINGS IN THE SOFTWARE.
+: 
+: For more information, please refer to
+:   <https://unlicense.org>
+: 
+: MIT License:
+: 
+: Copyright (c) 2024 jeremyButtler
+: 
+: Permission is hereby granted, free of charge, to any
+:   person obtaining a copy of this software and
+:   associated documentation files (the "Software"), to
+:   deal in the Software without restriction, including
+:   without limitation the rights to use, copy, modify,
+:   merge, publish, distribute, sublicense, and/or sell
+:   copies of the Software, and to permit persons to whom
+:   the Software is furnished to do so, subject to the
+:   following conditions:
+: 
+: The above copyright notice and this permission notice
+:   shall be included in all copies or substantial
+:   portions of the Software.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+:   EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+:   FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+:   AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+:   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+:   USE OR OTHER DEALINGS IN THE SOFTWARE.
+\=======================================================*/

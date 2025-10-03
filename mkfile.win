@@ -20,6 +20,9 @@ all:
 	cd cigToEqxSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
+	cd diCoordsSrc
+	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
+	cd ..
 	cd edClustSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
@@ -45,6 +48,9 @@ all:
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
 	cd memwaterSrc
+	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
+	cd ..
+	cd memwaterScanSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
 	cd primFindSrc
@@ -91,6 +97,9 @@ install:
 	cd cigToEqxSrc
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
+	cd diCoordsSrc
+	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
+	cd ..
 	cd edClustSrc
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
@@ -116,6 +125,9 @@ install:
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
 	cd memwaterSrc
+	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
+	cd ..
+	cd memwaterScanSrc
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
 	cd primFindSrc

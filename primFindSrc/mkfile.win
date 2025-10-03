@@ -41,6 +41,7 @@ mainPrimFind.$O: \
 
 $(genAln)\kmerFind.$O: \
 	$(genAln)\kmerFind.c \
+	$(genAln)\kmerFind.h \
 	$(genAln)\memwater.$O \
 	$(genLib)\shellSort.$O \
 	$(genLib)\genMath.h \
@@ -68,6 +69,7 @@ $(genLib)\charCp.$O: \
 
 $(genAln)\memwater.$O: \
 	$(genAln)\memwater.c \
+	$(genAln)\memwater.h \
 	$(genAln)\alnSet.$O \
 	$(genAln)\indexToCoord.$O \
 	$(genBio)\seqST.$O \

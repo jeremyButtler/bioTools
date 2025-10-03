@@ -41,6 +41,7 @@ mainNeedle.$O: \
 
 $genAln/needle.$O: \
 	$genAln/needle.c \
+	$genAln/needle.h \
 	$genAln/dirMatrix.$O \
 	$genLib/genMath.h
 		$CC -o $genAln/needle.$O \

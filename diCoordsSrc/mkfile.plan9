@@ -1,0 +1,94 @@
+</$objtype/mkfile
+coreCFLAGS=-DPLAN9
+CFLAGS=-DNONE
+NAME=diCoords
+PREFIX=$home/bin
+
+genBio=../genBio
+genLib=../genLib
+
+objFiles= \
+   $genBio/diCoords.$O \
+   $genBio/samEntry.$O \
+   $genLib/fileFun.$O \
+   $genLib/ulCp.$O \
+   $genLib/strAry.$O \
+   $genLib/numToStr.$O \
+   $genLib/base10str.$O \
+   mainDICoords.$O
+
+$(NAME): mainDICoords.$O
+	$LD -o $NAME $objFiles
+
+mainDICoords.$O: \
+	mainDICoords.c \
+	$genBio/diCoords.$O \
+	$genBio/samEntry.$O \
+	../bioTools.h \
+	../genLib/endLine.h
+		$CC -o mainDICoords.$O \
+			$CFLAGS $coreCFLAGS mainDICoords.c
+
+$genBio/diCoords.$O: \
+	$genBio/diCoords.c \
+	$genBio/diCoords.h \
+	$genBio/samEntry.$O
+		$CC -o $genBio/diCoords.$O \
+			$CFLAGS $coreCFLAGS \
+			$genBio/diCoords.c
+
+$genBio/samEntry.$O: \
+	$genBio/samEntry.c 	$genBio/samEntry.h \
+	$genLib/fileFun.$O \
+	$genLib/strAry.$O \
+	$genLib/base10str.$O \
+	$genLib/numToStr.$O \
+	$genBio/ntTo5Bit.h \
+	$genLib/endLine.h
+		$CC -o $genBio/samEntry.$O \
+			$CFLAGS $coreCFLAGS \
+			$genBio/samEntry.c
+
+$genLib/fileFun.$O: \
+	$genLib/fileFun.c \
+	$genLib/fileFun.h \
+	$genLib/ulCp.$O
+		$CC -o $genLib/fileFun.$O \
+			$CFLAGS $coreCFLAGS \
+			$genLib/fileFun.c
+
+$genLib/ulCp.$O: \
+	$genLib/ulCp.c \
+	$genLib/ulCp.h
+		$CC -o $genLib/ulCp.$O \
+			$CFLAGS $coreCFLAGS \
+			$genLib/ulCp.c
+
+$genLib/strAry.$O: \
+	$genLib/strAry.c \
+	$genLib/strAry.h \
+	$genLib/ulCp.$O
+		$CC -o $genLib/strAry.$O \
+			$CFLAGS $coreCFLAGS \
+			$genLib/strAry.c
+
+$genLib/numToStr.$O: \
+	$genLib/numToStr.c \
+	$genLib/numToStr.h
+		$CC -o $genLib/numToStr.$O \
+			$CFLAGS $coreCFLAGS \
+			$genLib/numToStr.c
+
+$genLib/base10str.$O: \
+	$genLib/base10str.c \
+	$genLib/base10str.h
+		$CC -o $genLib/base10str.$O \
+			$CFLAGS $coreCFLAGS \
+			$genLib/base10str.c
+
+install:
+	mv $(NAME) $(PREFIX)
+	chmod a+x $(PREFIX)/$(NAME)
+
+clean:
+	rm $(objFiles)

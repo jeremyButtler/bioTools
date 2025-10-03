@@ -53,6 +53,9 @@
 
 signed char *globalExtraCol = (signed char *) "out";
 #define def_pdepth_mainAmpDepth 1
+   /*0 is gene table, 1 is read depth table, 2 is the
+   `  the gene coverage table
+   */
 
 /*-------------------------------------------------------\
 | Fun01: pversoin_mainAmpDepth
@@ -160,8 +163,10 @@ void phelp_mainAmpDepth(
    ^   o fun02 sec02 sub05:
    ^     - print all read depths
    ^   o fun02 sec02 sub06:
-   ^     - Print out the -min-depth entry (min read depth)
+   ^     - gene percent coverage option
    ^   o fun02 sec02 sub07:
+   ^     - Print out the -min-depth entry (min read depth)
+   ^   o fun02 sec02 sub08:
    ^     - Print out the -flag entry (string for column 1)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
@@ -328,6 +333,36 @@ void phelp_mainAmpDepth(
 
    /*****************************************************\
    * Fun02 Sec02 Sub06:
+   *   - gene percent coverage option
+   \*****************************************************/
+
+   if(def_pdepth_mainAmpDepth == 2)
+      fprintf(
+         (FILE *) outFILE,
+         "  -p-gene-cover: [Optional; Yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "  -p-gene-cover: [Optional; No]%s",
+         str_endLine
+      );
+
+   fprintf(
+     (FILE *) outFILE,
+     "    o prints out percent coverage for each gene%s",
+     str_endLine
+   );
+   fprintf(
+     (FILE *) outFILE,
+     "      in the -gene-tbl file%s",
+     str_endLine
+   );
+
+
+   /*****************************************************\
+   * Fun02 Sec02 Sub07:
    *   - Print out the -min-depth entry (min read depth)
    \*****************************************************/
 
@@ -351,7 +386,7 @@ void phelp_mainAmpDepth(
    );
 
    /*****************************************************\
-   * Fun02 Sec02 Sub07:
+   * Fun02 Sec02 Sub08:
    *   - Print out the -flag entry (string for column 1)
    \*****************************************************/
 
@@ -367,7 +402,6 @@ void phelp_mainAmpDepth(
      "    o Flag to add to the first column%s",
      str_endLine
    );
-
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun02 Sec03:
@@ -639,6 +673,14 @@ input_ampDepth(
             (signed char) '\0'
          )
       ) *pDepthBlPtr = 0;
+
+      else if(
+         ! eql_charCp(
+            (signed char *) "-p-gene-cover",
+            (signed char *) argAryStr[siArg],
+            (signed char) '\0'
+         )
+      ) *pDepthBlPtr = 2;
 
       /**************************************************\
       * Fun03 Sec01 Sub03:
@@ -1244,7 +1286,7 @@ main(
 	^  - print histogram and finish cleaning up
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   if(pDepthBl)
+   if(pDepthBl == 1)
    { /*If: printing read depth report*/
       pDepthHead_ampDepth(outFILE);
 
@@ -1257,6 +1299,17 @@ main(
          outFILE
       );
    } /*If: printing read depth report*/
+
+   else if(pDepthBl == 2)
+   { /*Else If: printing gene percent coverate report*/
+      pGeneCoverage_ampDepth(
+         (signed int *) readMapHeapArySI,
+         minDepthSI,
+         genesHeapST,
+         numGenesSI,
+         outFILE
+      );
+   } /*Else If: printing gene percent coverate report*/
 
    else
    { /*Else If: printing summary report*/

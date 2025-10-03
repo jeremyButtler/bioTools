@@ -88,7 +88,7 @@ To print all positions, do
 minimap2 -a -x map-ont ref.fasta reads.fastq > out.sam;
 
 ## Change the label in column one to filtered
-ampDepth -flag Filtered -pall-depth -sam out.sam -out out.tsv;
+ampDepth -flag Filtered -pdepth -sam out.sam -out out.tsv;
 ```
 
 ## Gene table:

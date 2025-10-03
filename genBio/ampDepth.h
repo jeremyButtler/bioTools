@@ -163,6 +163,36 @@ pdepth_ampDepth(
    void *outFILE            /*output file*/
 );
 
+/*-------------------------------------------------------\
+| Fun07: pGeneCoverage_ampDepth
+|   - prints percent gene coverage and start/mid/end
+| Input
+|   - depthArySI:
+|     o signed int array with read depths
+|   - minDepthSI:
+|     o minimum read depth to count as covered
+|   - geneCoordSTPtr:
+|     o geneCoord struct with gene coordinates to print
+|   - numGenesSI:
+|     o number of genes in geneCoordSTPtr
+|   - outFILE:
+|     o FILE * pointer to print to
+| Output:
+|   - Prints:
+|     o percent coverage and starts/ends to outFILE
+|   - Returns:
+|     o 0 for no errors
+|     o 1 for memory errors
+\-------------------------------------------------------*/
+signed char
+pGeneCoverage_ampDepth(
+   signed int *depthArySI, /*histogram of read depths*/
+   signed int minDepthSI,  /*min depth to print*/
+   struct geneCoord *geneCoordSTPtr, /*gene coordinates*/
+   signed int numGenesSI,            /*number of genes*/
+   void *outFILE           /*file to print to*/
+);
+
 #endif
 
 /*=======================================================\

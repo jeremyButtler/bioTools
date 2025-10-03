@@ -40,7 +40,9 @@ mainWater.$O: \
 		$(CC) -o mainWater.$O \
 			$(CFLAGS) $(coreCFLAGS) mainWater.c
 
-$(genAln)/water.$O: $(genAln)/water.c \
+$(genAln)/water.$O: \
+	$(genAln)/water.c \
+	$(genAln)/water.h \
 	$(genAln)/dirMatrix.$O \
 	$(genLib)/genMath.h
 		$(CC) -o $(genAln)/water.$O \

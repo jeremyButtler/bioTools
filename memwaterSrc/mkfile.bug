@@ -37,6 +37,7 @@ mainMemwater.$O: \
 
 $(genAln)/memwater.$O: \
 	$(genAln)/memwater.c \
+	$(genAln)/memwater.h \
 	$(genAln)/alnSet.$O \
 	$(genAln)/indexToCoord.$O \
 	$(genBio)/seqST.$O \

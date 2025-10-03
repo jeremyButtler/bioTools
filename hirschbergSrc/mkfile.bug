@@ -11,6 +11,7 @@ genLib=../genLib
 
 objFiles= \
    $(genAln)/hirschberg.$O \
+   $(genBio)/seqST.$O \
    $(genBio)/kmerCnt.$O \
    $(genLib)/charCp.$O \
    $(genBio)/samEntry.$O \
@@ -20,7 +21,6 @@ objFiles= \
    $(genLib)/numToStr.$O \
    $(genLib)/base10str.$O \
    $(genAln)/alnSet.$O \
-   $(genBio)/seqST.$O \
    mainHirschberg.$O
 
 $(NAME): mainHirschberg.$O
@@ -29,6 +29,7 @@ $(NAME): mainHirschberg.$O
 mainHirschberg.$O: \
 	mainHirschberg.c \
 	$(genAln)/hirschberg.$O \
+	$(genBio)/seqST.$O \
 	$(genBio)/kmerCnt.$O \
 	$(genLib)/charCp.$O \
 	../bioTools.h \
@@ -46,6 +47,14 @@ $(genAln)/hirschberg.$O: \
 		$(CC) -o $(genAln)/hirschberg.$O \
 			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)/hirschberg.c
+
+$(genBio)/seqST.$O: \
+	$(genBio)/seqST.c \
+	$(genBio)/seqST.h \
+	$(genLib)/fileFun.$O
+		$(CC) -o $(genBio)/seqST.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genBio)/seqST.c
 
 $(genBio)/kmerCnt.$O: \
 	$(genBio)/kmerCnt.c \
@@ -124,14 +133,6 @@ $(genAln)/alnSet.$O: \
 		$(CC) -o $(genAln)/alnSet.$O \
 			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)/alnSet.c
-
-$(genBio)/seqST.$O: \
-	$(genBio)/seqST.c \
-	$(genBio)/seqST.h \
-	$(genLib)/fileFun.$O
-		$(CC) -o $(genBio)/seqST.$O \
-			$(CFLAGS) $(coreCFLAGS) \
-			$(genBio)/seqST.c
 
 
 

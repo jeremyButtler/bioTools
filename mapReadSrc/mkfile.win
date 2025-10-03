@@ -84,6 +84,7 @@ $(genBio)\gzSeqST.$O: \
 
 $(genAln)\needle.$O: \
 	$(genAln)\needle.c \
+	$(genAln)\needle.h \
 	$(genAln)\dirMatrix.$O \
 	$(genLib)\genMath.h
 		$(CC) /Fo:$(genAln)\needle.$O \
@@ -184,7 +185,9 @@ $(genLib)\charCp.$O: \
 			$(CFLAGS) $(coreCFLAGS) \
 			$(genLib)\charCp.c
 
-$(genAln)\water.$O: $(genAln)\water.c \
+$(genAln)\water.$O: \
+	$(genAln)\water.c \
+	$(genAln)\water.h \
 	$(genAln)\dirMatrix.$O \
 	$(genLib)\genMath.h
 		$(CC) /Fo:$(genAln)\water.$O \

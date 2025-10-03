@@ -8,6 +8,7 @@ all:
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C alnWaterSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C ampDepthSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C cigToEqxSrc;
+	make CFLAGS="$CFLAGS" -f mkfileplan9 -C diCoordsSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C edClustSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C edDistSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C filtsamSrc;
@@ -17,6 +18,7 @@ all:
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C mapReadSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C maskPrimSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C memwaterSrc;
+	make CFLAGS="$CFLAGS" -f mkfileplan9 -C memwaterScanSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C primFindSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C revCmpSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C rmHomoSrc;
@@ -33,6 +35,7 @@ install:
 	make PREFIX="$PREFIX" -f mkfileplan9 -C alnWaterSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C ampDepthSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C cigToEqxSrc install;
+	make PREFIX="$PREFIX" -f mkfileplan9 -C diCoordsSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C edClustSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C edDistSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C filtsamSrc install;
@@ -42,6 +45,7 @@ install:
 	make PREFIX="$PREFIX" -f mkfileplan9 -C mapReadSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C maskPrimSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C memwaterSrc install;
+	make PREFIX="$PREFIX" -f mkfileplan9 -C memwaterScanSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C primFindSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C revCmpSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C rmHomoSrc install;

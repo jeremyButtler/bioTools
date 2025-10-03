@@ -680,6 +680,8 @@ inflateDep="$inflateDep ulCp $ulCpDep";
 #     - edDist
 #   o sec03 sub03 cat16:
 #     - rmHomo
+#   o sec03 sub03 cat17:
+#     - diCoords
 #*********************************************************
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -976,6 +978,23 @@ rmHomoStr="${genBioStr}rmHomo.\$O: \\
 rmHomoObj="${genBioStr}rmHomo.\$O";
 rmHomoDep="samEntry $samEntryDep seqST $seqSTDep";
 
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub03 Cat17:
+#   - diCoords
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+diCoordsStr="${genBioStr}diCoords.\$O: \\
+	${genBioStr}diCoords.c \\
+	${genBioStr}diCoords.h \\
+	${genBioStr}samEntry.\$O
+		$ccStr ${dashOStr}${genBioStr}diCoords.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genBioStr}diCoords.c";
+
+
+diCoordsObj="${genBioStr}diCoords.\$O";
+diCoordsDep="samEntry $samEntryDep";
+
 #*********************************************************
 # Sec03 Sub04:
 #   - genAln libraries
@@ -994,10 +1013,12 @@ rmHomoDep="samEntry $samEntryDep seqST $seqSTDep";
 #   o sec03 sub04 cat07:
 #     - memwater
 #   o sec03 sub04 cat08:
-#     - kmerFind
+#     - memwaterScan
 #   o sec03 sub04 cat09:
-#     - samToAln
+#     - kmerFind
 #   o sec03 sub04 cat10:
+#     - samToAln
+#   o sec03 sub04 cat11:
 #     - mapRead
 #*********************************************************
 
@@ -1144,6 +1165,28 @@ memwaterDep="$memwaterDep seqST $seqSTDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub04 Cat08:
+#   - memwaterScan
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+memwaterScanStr="${genAlnStr}memwaterScan.\$O: \\
+	${genAlnStr}memwaterScan.c \\
+	${genAlnStr}memwaterScan.h \\
+	${genAlnStr}alnSet.\$O \\
+	${genAlnStr}indexToCoord.\$O \\
+	${genBioStr}seqST.\$O \\
+	${genLibStr}genMath.h
+		$ccStr ${dashOStr}${genAlnStr}memwaterScan.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genAlnStr}memwaterScan.c";
+
+
+memwaterScanObj="${genAlnStr}memwaterScan.\$O";
+memwaterScanDep="alnSet $alnSetDep indexToCoord";
+memwaterScanDep="$memwaterScanDep $indexToCoordDep";
+memwaterScanDep="$memwaterScanDep seqST $seqSTDep";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub04 Cat09:
 #   - kmerFind
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1164,7 +1207,7 @@ kmerFindDep="memwater $memwaterDep";
 kmerFindDep="$kmerFindDep shellSort $shellSortDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub04 Cat09:
+# Sec03 Sub04 Cat10:
 #   - samToAln
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1184,7 +1227,7 @@ samToAlnDep="alnSet $alnSetDep samEntry $samEntryDep";
 samToAlnDep="$samToAlnDep seqST $seqSTDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Sec03 Sub04 Cat10:
+# Sec03 Sub04 Cat11:
 #   - mapRead
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1815,6 +1858,8 @@ do # Loop: get dependencies
    #     - edDist
 	#   o sec04 sub04 cat16:
    #     - rmHomo
+	#   o sec04 sub04 cat17:
+   #     - diCoords
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2249,6 +2294,33 @@ do # Loop: get dependencies
       fi
    # If: rmHomo library
 
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub04 Cat17:
+   #   - diCoords
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "diCoords" ]; then
+   # If: diCoords library
+      if [ "$diCoordsBl" = "" ]; then
+         cmdStr="$cmdStr$newLineStr$diCoordsStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}${diCoordsObj}";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$diCoordsObj";
+         fi
+
+         diCoordsBl=1;
+         depStr="$depStr $diCoordsDep";
+      fi
+
+      if [ "$genBioBl" -lt 1 ]; then
+         genBioBl=1;
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
+      fi
+   # If: diCoords library
+
    #******************************************************
    # Sec04 Sub05:
    #   - genAln libraries
@@ -2266,11 +2338,11 @@ do # Loop: get dependencies
    #     - hirschberg
    #   o sec04 sub05 cat07:
    #     - memwater
-   #   o sec04 sub05 cat08:
-   #     - kmerFind
    #   o sec04 sub05 cat09:
-   #     - samToAln
+   #     - kmerFind
    #   o sec04 sub05 cat10:
+   #     - samToAln
+   #   o sec04 sub05 cat11:
    #     - mapRead
    #******************************************************
 
@@ -2467,6 +2539,33 @@ do # Loop: get dependencies
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
    # Sec04 Sub05 Cat08:
+   #   - memwaterScan
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "memwaterScan" ]; then
+   # Else If: memwaterScan library
+      if [ "$memwaterScanBl" = "" ]; then
+         cmdStr="$cmdStr$newLineStr$memwaterScanStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}${memwaterScanObj}";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$memwaterScanObj";
+         fi
+
+         memwaterScanBl=1;
+         depStr="$depStr $memwaterScanDep";
+      fi
+
+      if [ "$genAlnBl" -lt 1 ]; then
+         genAlnBl=1;
+         libPathStr="$libPathStr\ngenAln=..${slashSC}genAln";
+      fi
+   # Else If: memwaterScan library
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub05 Cat09:
    #   - kmerFind
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2494,7 +2593,7 @@ do # Loop: get dependencies
    # Else If: kmerFin library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub05 Cat09:
+   # Sec04 Sub05 Cat10:
    #   - samToAln
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2521,7 +2620,7 @@ do # Loop: get dependencies
    # Else If: samToAln library
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub05 Cat10:
+   # Sec04 Sub05 Cat11:
    #   - mapRead
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

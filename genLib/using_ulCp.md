@@ -1,3 +1,10 @@
+# Goal:
+
+Tell how to copy, get string lengths, compare, and
+  mainpulate strings with the ulCp library.
+
+Files: ulCp.h, ulCp.c, and 64bit.h
+
 # ulCp: overview
 
 ulCp is short for unsigned long copy. It is like charCp,
