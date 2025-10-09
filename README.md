@@ -2,9 +2,9 @@
 
 Holds small tools I have made for biology programs. The
   tools are either niche tools, re-inventing the wheel, or
-  just plain odd. They all should compile on Linux, BSDs,
-  Mac, and Windows. I use them, but I would be suprised if
-  other people used them.
+  odd. They all should compile on Linux, BSDs, Mac, and
+  Windows. I use them, but I would be suprised if other
+  people used them.
 
 These tools are often built to help me with my projects or
   are smaller parts of my projects. I have included the
@@ -176,6 +176,9 @@ The programs are built and debugged on Linux and then
       also uses less memory
     - Watermans are a dime a dozen
     - works on linux and plan9
+  - memwaterScan (stopASF and from alnSeq):
+    - uses a waterman alignment (memwaer) to scan for
+      multiple possible alignments for a query
   - primFind (fluDI/freezeTB):
     - find primers in sequence(s)
     - emboss primer finder program nock off (forgot name)
@@ -189,6 +192,10 @@ The programs are built and debugged on Linux and then
     - `seqkit grep` nock off, but without regular
        expression support and no fasta file support
     - works on linux and plan9
+  - seqStats:
+    - get fastq read length and mean q-scores (median
+      q-scores are off)
+    - also allows read filtering by length and q-scores
   - tbCon (freezeTB):
     - reference based majority consensus that saves the
       cosensus as a sam file (convert cigar to eqx cigar
@@ -207,6 +214,10 @@ The programs are built and debugged on Linux and then
     - this is slower than gunzip, but is here to support
       mapRead
     - tested on linux only
+  - seqStats
+    - get mean q-score for reads and lengths
+    - you can also filter reads in a fastq file by mean
+      q-score and lengths
 - niche or odd programs
   - adjCoords (freezeTB):
     - adjust mapping coordinates from genes to entire
@@ -276,9 +287,22 @@ My general libraries.
 - genAln is for alignment tasks, such as pairwise aligners
   or primer scanning (biology)
 - genClust is for clustering our grouping tasks (biology)
+- notUsed:
+  - These are programs that should not be used. I made
+    them for a task, but that task is no longer relavent.
 
 # Updates:
 
+- 2025-10-09:
+  - added in filter option to memwaterScan to remove
+    nested alignments, also allowing for direction setting
+    on query sequence
+- 2025-10-08:
+  - added the filter opton to seqStats to allow fastq file
+    filtering
+- 2025-10-06:
+  - added the sequence length to the third column of
+    primFind
 - 2025-10-03:
   - added the `-p-gene-cover` to ampDepth to print out
     percent coverage by gene
@@ -464,18 +488,17 @@ My general libraries.
 2. add in hirschberg/myers miller (personal project)
    - currently not giving optimal alignments, needs
      further debuging
-3. add in my memWater matrix scan from alnSeq (personal
-   project)
-4. add using\_this\_code guides (using in C code) for
+3. add using\_this\_code guides (using in C code) for
    programs and libraries
-   - genAln has nothing
+   - genBio is behind again
+   - genAln has little
    - genClust has nothing
    - seqById has nothing
    - k2TaxaId has nothing
-5. add SIMD support to mapRead
-   - likely will happen once get freezeTB to more polished
-     state
-6. unGz
+4. add SIMD support to mapRead and improve speed for
+   larger alignments (very slow for non-reads)
+   - no idea when will do
+5. unGz
    - has issue printing last Illumina reads in windows
      for stdout (not sure about stdout)
    

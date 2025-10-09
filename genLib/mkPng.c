@@ -869,8 +869,8 @@ addBar_st_mkPng(
    *   - find start, end, and setup masks
    \*****************************************************/
 
-   pixelsPerLongSI =
-      (pngSTPtr->pixPerByteUC * sizeof(ul_64bit));
+   pixelsPerLongSI = sizeof(ul_64bit);
+      /*(pngSTPtr->pixPerByteUC * sizeof(ul_64bit));*/
    startSL = xSL;
    endSL = startSL + widthUS;
 
@@ -910,15 +910,11 @@ addBar_st_mkPng(
    *   - setup color stamps
    \*****************************************************/
 
-   if(pixelsPerLongSI >= 2)
-      colUC = (colUC << 4);
-   if(pixelsPerLongSI >= 4)
-      colUC = colUC << 2;
-   if(pixelsPerLongSI >= 8)
-      colUC = colUC << 1;
-
-   for(bitUC = 0; bitUC < sizeof(ul_64bit); ++bitUC)
-      colByteUL |= (((ul_64bit) colUC) << (bitUC <<3));
+   for(
+      bitUC = 0;
+      bitUC < def_bitsInUL_64bit;
+      bitUC += def_bitsPerChar_64bit
+   ) colByteUL |= (((ul_64bit) colUC) << bitUC);
 
    colStartUL = ~maskStartUL;
    colStartUL &= colByteUL;
@@ -942,7 +938,7 @@ addBar_st_mkPng(
    *   - one limb coloring
    \*****************************************************/
 
-   if(startSL == endSL)
+   if(startSL <= endSL)
    { /*If: only coloring one limb*/
 
       for(xSL = ySL; xSL < heightUS; ++xSL)

@@ -18,13 +18,16 @@
 '   o fun05: getCoord_aln_memwaterScan
 '     - gets the coordinates for input base index for an
 '       aln_memwaterScan structure
-'   o fun06: refCoordSort_aln_memwaterScan
+'   o fun07: refCoordSort_aln_memwaterScan
 '     - sorts best bases alignments by reference start,
 '       query start, reference end (closest first), then
-'       query end (closest first), and finally score.
-'       all negatives (non-alignment found) are pushed to
+'       and query end (closest first)
+'     - all negatives (non-alignment found) are pushed to
 '       the end
-'   o fun07 memwaterScan:
+'   o fun08: filter_memwaterScan
+'     - removes low scoring alignments and alignments that
+'       are nested alignments
+'   o fun09 memwaterScan:
 '     - performs a memory efficent Smith Waterman scan
 '       (keep best alignment for each query/reference base)
 '       alignment on a pair of sequences
@@ -190,11 +193,33 @@ getCoord_aln_memwaterScan(
 );
 
 /*-------------------------------------------------------\
-| Fun06: refCoordSort_aln_memwaterScan
+| Fun06: swap_memwaterScan
+|   - swaps position in reference array
+| Input:
+|   - alnSTPtr:
+|     o aln_memwaterScan struct pointer to swap positions
+|   - firstSI:
+|     o first index to swap
+|   - secSI:
+|     o second index to swap
+| Output:
+|   - Modifies:
+|     o scoreArySL, startArySL, endArySL in alnSTPtr to
+|       have firstSI and secSI index's swapped
+\-------------------------------------------------------*/
+void
+swap_memwaterScan(
+   struct aln_memwaterScan *alnSTPtr,
+   signed int firstSI,
+   signed int secSI
+);
+
+/*-------------------------------------------------------\
+| Fun07: refCoordSort_aln_memwaterScan
 |   - sorts best bases alignments by reference start,
 |     query start, reference end (closest first), then
-|     query end (closest first), and finally score.
-|     all negatives (non-alignment found) are pushed to
+|     and query end (closest first)
+|   - all negatives (non-alignment found) are pushed to
 |     the end
 | Input:
 |   - alnSTPtr:
@@ -212,7 +237,37 @@ refCoordSort_aln_memwaterScan(
 );
 
 /*-------------------------------------------------------\
-| Fun07: memwaterScan
+| Fun08: filter_memwaterScan
+|   - removes low scoring alignments and alignments that
+|     are nested alignments
+| Input:
+|   - alnSTPtr:
+|     o pointer to aln_memwaterScan struct with alignments
+|       to filter
+|   - minScoreSL:
+|     o minimum score for an alignment
+|   - minScoreTwoSL:
+|     o second minimum score for an alignment
+|       * use when you are putting a percent minimum score
+|         for minScoreSL
+|       * allows for a hard cutoff and a percent cuttoff
+| Output:
+|   - Modifies:
+|     o startArySL, endArySL, and scoreArySL in alnSTPtr
+|       to only have high scoring, non-nested alignments
+|     o outLenSL to have the new number of alignments
+|   - Returns:
+|     o number of kept alignments
+\-------------------------------------------------------*/
+signed long
+filter_memwaterScan(
+   struct aln_memwaterScan *alnSTPtr,
+   signed long minScoreSL,
+   signed long minScoreTwoSL
+);
+
+/*-------------------------------------------------------\
+| Fun09: memwaterScan
 |   - performs a memory efficent Smith Waterman scan
 |     (keep best alignment for each query/reference base)
 |     alignment on a pair of sequences

@@ -92,6 +92,10 @@ cd ../samToAlnSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" samToAln mainSamToAln samToAln charCp ../bioTools.h ../genLib/endLine.h
 cd "../$retDirStr" || exit;
 
+cd ../seqStatsSrc || exit;
+sh "../$retDirStr/allOSMkfiles.sh" seqStats mainSeqStats seqStats gzSeqST base10str ../bioTools.h
+cd "../$retDirStr" || exit;
+
 cd ../tbConSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" tbCon mainTbCon samRef tbCon charCp ../bioTools.h ../genLib/endLine.h ../genLib/genMath.h ../genBio/tbConDefs.h
 cd "../$retDirStr" || exit;

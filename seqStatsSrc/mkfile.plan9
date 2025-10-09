@@ -1,0 +1,119 @@
+</$objtype/mkfile
+coreCFLAGS=-DPLAN9
+CFLAGS=-DNONE
+NAME=seqStats
+PREFIX=$home/bin
+
+genBio=../genBio
+genLib=../genLib
+
+objFiles= \
+   $genBio/seqStats.$O \
+   $genBio/gzSeqST.$O \
+   $genLib/base10str.$O \
+   $genLib/inflate.$O \
+   $genLib/checkSum.$O \
+   $genLib/endin.$O \
+   $genLib/genMath.$O \
+   $genLib/ulCp.$O \
+   $genBio/seqST.$O \
+   $genLib/fileFun.$O \
+   mainSeqStats.$O
+
+$(NAME): mainSeqStats.$O
+	$LD -o $NAME $objFiles -lm
+
+mainSeqStats.$O: \
+	mainSeqStats.c \
+	$genBio/seqStats.$O \
+	$genBio/gzSeqST.$O \
+	$genLib/base10str.$O \
+	../bioTools.h
+		$CC -o mainSeqStats.$O \
+			$CFLAGS $coreCFLAGS mainSeqStats.c
+
+$genBio/seqStats.$O: \
+	$genBio/seqStats.c \
+	$genBio/seqStats.h \
+	$genLib/endLine.h
+		$CC -o $genBio/seqStats.$O \
+			$CFLAGS $coreCFLAGS $genBio/seqStats.c
+
+$genBio/gzSeqST.$O: \
+	$genBio/gzSeqST.c \
+	$genBio/gzSeqST.h \
+	$genBio/seqST.$O \
+ 	$genLib/inflate.$O
+		$CC -o $genBio/gzSeqST.$O \
+			$CFLAGS $coreCFLAGS \
+			$genBio/gzSeqST.c
+
+$genLib/base10str.$O: \
+	$genLib/base10str.c \
+	$genLib/base10str.h
+		$CC -o $genLib/base10str.$O \
+			$CFLAGS $coreCFLAGS \
+			$genLib/base10str.c
+
+$genLib/inflate.$O: \
+	$genLib/inflate.c \
+	$genLib/inflate.h \
+	$genLib/checkSum.$O \
+	$genLib/ulCp.$O \
+	$genLib/genMath.$O \
+	$genLib/endLine.h
+		$CC -o $genLib/inflate.$O \
+			$CFLAGS $coreCFLAGS \
+			$genLib/inflate.c
+
+$genLib/checkSum.$O: \
+	$genLib/checkSum.c \
+	$genLib/checkSum.h \
+	$genLib/endin.$O
+	$CC -o $genLib/checkSum.$O \
+		$CFLAGS $coreCFLAGS \
+		$genLib/checkSum.c
+
+$genLib/endin.$O: \
+	$genLib/endin.c \
+	$genLib/endin.h
+		$CC -o $genLib/endin.$O \
+			$CFLAGS $coreCFLAGS \
+			$genLib/endin.c
+
+$genLib/genMath.$O: \
+	$genLib/genMath.c \
+	$genLib/genMath.h
+		$CC -o $genLib/genMath.$O \
+			$CFLAGS $coreCFLAGS \
+			$genLib/genMath.c
+
+$genLib/ulCp.$O: \
+	$genLib/ulCp.c \
+	$genLib/ulCp.h
+		$CC -o $genLib/ulCp.$O \
+			$CFLAGS $coreCFLAGS \
+			$genLib/ulCp.c
+
+$genBio/seqST.$O: \
+	$genBio/seqST.c \
+	$genBio/seqST.h \
+	$genLib/fileFun.$O
+		$CC -o $genBio/seqST.$O \
+			$CFLAGS $coreCFLAGS \
+			$genBio/seqST.c
+
+$genLib/fileFun.$O: \
+	$genLib/fileFun.c \
+	$genLib/fileFun.h \
+	$genLib/ulCp.$O
+		$CC -o $genLib/fileFun.$O \
+			$CFLAGS $coreCFLAGS \
+			$genLib/fileFun.c
+
+install:
+	mv $(NAME) $(PREFIX)
+	chmod a+x $(PREFIX)/$(NAME)
+
+clean:
+	rm $(objFiles)

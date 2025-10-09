@@ -1,5 +1,8 @@
 #!/usr/bin/sh
 
+# vcvars32: might set up windows command prompt to get
+#  the developer tools added
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # buildMkfile SOF:
 #   - builds a mkfile for a specific OS
@@ -29,6 +32,9 @@ genAlnStr="";
 genClustStr="";
 genGenoTypeStr="";
 #seqByIdStr=""; add in for k2 taxa
+
+mathLibBl=0;
+mathLibStr="";
 
 # marks if library location was used (bioTools)
 genLibBl=0;
@@ -223,6 +229,7 @@ then # If: debugging make file
    linkStr="$linkStr\n\t\$(LD) ${dashOStr}\$(NAME)";
    linkStr="$linkStr \$(objFiles)";
 
+   mathLibStr="-lm";
    slashSC="/";
 # If: debugging make file
 
@@ -266,6 +273,8 @@ then # Else If: general unix make file
    linkStr="$linkStr\n\t\$(LD) ${dashOStr}\$(NAME)";
    linkStr="$linkStr \$(objFiles)";
 
+   mathLibStr="-lm";
+
    slashSC="/";
 # Else If: general unix make file
 
@@ -308,6 +317,8 @@ then # Else If: static unix make file
    linkStr="$linkStr\n\t\$(LD) ${dashOStr}\$(NAME)";
    linkStr="$linkStr \$(objFiles)";
 
+   mathLibStr="-lm";
+
    slashSC="/";
 # Else If: static unix make file
 
@@ -348,6 +359,8 @@ then # Else If: windows make file
    linkStr="$linkStr\n\t\$(LD) /out:\$(NAME)";
    linkStr="$linkStr \$(objFiles)";
 
+   mathLibStr="-lm";
+
    slashSC="\\";
 # Else If: windows make file
 
@@ -386,6 +399,8 @@ then # Else If: plan9 make file
    linkStr="\$(NAME): $mainFileStr.\$O";
    linkStr="$linkStr\n\t\$LD ${dashOStr}\$NAME";
    linkStr="$linkStr \$objFiles";
+
+   mathLibStr="-lm";
 
    slashSC="/";
 # Else If: plan9 make file
@@ -682,6 +697,8 @@ inflateDep="$inflateDep ulCp $ulCpDep";
 #     - rmHomo
 #   o sec03 sub03 cat17:
 #     - diCoords
+#   o sec03 sub03 cat18:
+#     - seqStats
 #*********************************************************
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -995,6 +1012,22 @@ diCoordsStr="${genBioStr}diCoords.\$O: \\
 diCoordsObj="${genBioStr}diCoords.\$O";
 diCoordsDep="samEntry $samEntryDep";
 
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub03 Cat18:
+#   - seqStats
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+seqStatsStr="${genBioStr}seqStats.\$O: \\
+	${genBioStr}seqStats.c \\
+	${genBioStr}seqStats.h \\
+	${genLibStr}endLine.h
+		$ccStr ${dashOStr}${genBioStr}seqStats.\$O \\
+			$cFlagsStr $coreFlagsStr ${genBioStr}seqStats.c";
+
+
+seqStatsObj="${genBioStr}seqStats.\$O";
+seqStatsDep="";
+
 #*********************************************************
 # Sec03 Sub04:
 #   - genAln libraries
@@ -1020,6 +1053,8 @@ diCoordsDep="samEntry $samEntryDep";
 #     - samToAln
 #   o sec03 sub04 cat11:
 #     - mapRead
+#   o sec03 sub04 cat12:
+#     - demux
 #*********************************************************
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1254,6 +1289,24 @@ mapReadDep="$mapReadDep samEntry $samEntryDep";
 mapReadDep="$mapReadDep seqST $seqSTDep";
 mapReadDep="$mapReadDep kmerFun $kmerFunDep";
 mapReadDep="$mapReadDep shellSort $shellSortDep";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub04 Cat12:
+#   - demux
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+demuxStr="${genAlnStr}demux.\$O: \\
+	${genAlnStr}demux.c \\
+	${genAlnStr}demux.h \\
+	${genAlnStr}kmerFind.\$O \\
+	${genLibStr}endLine.h
+	 	$ccStr ${dashOStr}${genAlnStr}demux.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genAlnStr}demux.c";
+
+
+demuxObj="${genAlnStr}demux.\$O";
+demuxDep="kmerFind $kmerFindDep";
 
 #*********************************************************
 # Sec03 Sub05:
@@ -1860,6 +1913,8 @@ do # Loop: get dependencies
    #     - rmHomo
 	#   o sec04 sub04 cat17:
    #     - diCoords
+	#   o sec04 sub04 cat18:
+   #     - seqStats
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2321,6 +2376,38 @@ do # Loop: get dependencies
       fi
    # If: diCoords library
 
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub04 Cat18:
+   #   - seqStats
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "seqStats" ]; then
+   # If: seqStats library
+      if [ "$seqStatsBl" = "" ]; then
+         cmdStr="$cmdStr$newLineStr$seqStatsStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}${seqStatsObj}";
+
+         if [ "$mathLibBl" -le 0 ]; then
+            linkStr="$linkStr $mathLibStr";
+            mathLibBl=1;
+         fi;
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$seqStatsObj";
+         fi
+
+         seqStatsBl=1;
+         depStr="$depStr $seqStatsDep";
+      fi
+
+      if [ "$genBioBl" -lt 1 ]; then
+         genBioBl=1;
+         libPathStr="$libPathStr\ngenBio=..${slashSC}genBio";
+      fi
+   # If: seqStats library
+
    #******************************************************
    # Sec04 Sub05:
    #   - genAln libraries
@@ -2344,6 +2431,8 @@ do # Loop: get dependencies
    #     - samToAln
    #   o sec04 sub05 cat11:
    #     - mapRead
+   #   o sec04 sub05 cat12:
+   #     - demux
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2646,6 +2735,34 @@ do # Loop: get dependencies
          libPathStr="$libPathStr\ngenClust=..${slashSC}genClust";
       fi
    # Else If: mapRead library
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub05 Cat12:
+   #   - demux
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "demux" ]; then
+   # Else If: demux library
+      if [ "$demuxBl" = "" ]; then
+         cmdStr="$cmdStr$newLineStr$demuxStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}${demuxObj}";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$demuxObj";
+         fi
+
+         demuxBl=1;
+
+         depStr="$depStr $demuxDep";
+      fi
+
+      if [ "$genClustBl" -lt 1 ]; then
+         genClustBl=1;
+         libPathStr="$libPathStr\ngenClust=..${slashSC}genClust";
+      fi
+   # Else If: demux library
 
    #******************************************************
    # Sec04 Sub06:
