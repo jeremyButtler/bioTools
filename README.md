@@ -293,6 +293,11 @@ My general libraries.
 
 # Updates:
 
+- 2025-15-09:
+  - fixed minor bug in primFind output that did not print
+    reference length for reverse paired primers
+  - minor bug were ampDepth with `-p-gene-cover` would not
+    print the last gene in the table
 - 2025-10-09:
   - added in filter option to memwaterScan to remove
     nested alignments, also allowing for direction setting

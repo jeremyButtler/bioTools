@@ -6,6 +6,7 @@ int
 main(
    void
 ){
+   signed int ySI = 0;
    signed char errSC = 0;
    struct st_mkPng *pngSTPtr = mk_st_mkPng(0, 0, 0);
    FILE *outFILE = fopen("del.png", "wb");
@@ -14,6 +15,20 @@ main(
       goto memErr_main;
    if(! outFILE)
       goto fileErr_main;
+
+   for(ySI = 0; ySI < 100; ++ySI)
+   { /*Loop: pixel by pixel add*/
+       addPixel_st_mkPng(pngSTPtr, 14, ySI, 1);
+       addPixel_st_mkPng(pngSTPtr, 15, ySI, 1);
+       addPixel_st_mkPng(pngSTPtr, 16, ySI, 1);
+       addPixel_st_mkPng(pngSTPtr, 17, ySI, 1);
+       addPixel_st_mkPng(pngSTPtr, 18, ySI, 1);
+       addPixel_st_mkPng(pngSTPtr, 19, ySI, 1);
+       addPixel_st_mkPng(pngSTPtr, 20, ySI, 1);
+       addPixel_st_mkPng(pngSTPtr, 21, ySI, 1);
+       addPixel_st_mkPng(pngSTPtr, 22, ySI, 1);
+       addPixel_st_mkPng(pngSTPtr, 23, ySI, 1);
+   } /*Loop: pixel by pixel add*/
 
    addBar_st_mkPng(pngSTPtr, 0, 0, 10, 100, 3);
 

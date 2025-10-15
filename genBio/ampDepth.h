@@ -17,6 +17,8 @@
 '     - prints the header for the read depth output
 '   o fun06: pdepth_ampDepth
 '     - prints the read depth of each base
+'   o fun07: pGeneCoverage_ampDepth
+'     - prints percent gene coverage and start/mid/end
 '   o license:
 '     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -43,7 +45,7 @@ struct geneCoord;
 |     o geneCoord struct pointer with gene/target
 |       coordinates want to extract
 |   - numGenesSI:
-|     o number of genes in coordsSTPtr (index 1)
+|     o number of genes in coordsSTPtr (index 0)
 |   - numOffTargSI:
 |     o number of reads not mapping to a gene coordiante,
 |       but are mapped to the genome
@@ -174,7 +176,7 @@ pdepth_ampDepth(
 |   - geneCoordSTPtr:
 |     o geneCoord struct with gene coordinates to print
 |   - numGenesSI:
-|     o number of genes in geneCoordSTPtr
+|     o number of genes in geneCoordSTPtr (index 0)
 |   - outFILE:
 |     o FILE * pointer to print to
 | Output:

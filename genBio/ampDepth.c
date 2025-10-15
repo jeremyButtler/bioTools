@@ -17,6 +17,8 @@
 '     - prints the header for the read depth output
 '   o fun06: pdepth_ampDepth
 '     - prints the read depth of each base
+'   o fun07: pGeneCoverage_ampDepth
+'     - prints percent gene coverage and start/mid/end
 '   o license:
 '     - Licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -66,7 +68,7 @@
 |       coordinates want to extract
 |     o input 0/null to not filter by genes
 |   - numGenesSI:
-|     o number of genes in coordsSTPtr (index 1)
+|     o number of genes in coordsSTPtr (index 0)
 |   - depthArySI:
 |     o histogram (int array) to add each base to
 |   - numOffTargSI:
@@ -96,7 +98,7 @@ addRead_ampDepth(
             coordsSTPtr,
             samSTPtr->refStartUI,
             samSTPtr->refEndUI,
-            numGenesSI
+            numGenesSI + 1
          );
 
       if(siIndex < 0)
@@ -287,7 +289,7 @@ phist_ampDepth(
          findStart_geneCoord(
             geneCoordSTPtr,
             mapStartSI,
-            numGenesSI
+            numGenesSI + 1
          ); /*Find the index of the gene at the position*/
 
       if(geneIndexSI < 0)
@@ -621,7 +623,7 @@ pdepth_ampDepth(
 |   - geneCoordSTPtr:
 |     o geneCoord struct with gene coordinates to print
 |   - numGenesSI:
-|     o number of genes in geneCoordSTPtr
+|     o number of genes in geneCoordSTPtr (index 0)
 |   - outFILE:
 |     o FILE * pointer to print to
 | Output:
@@ -712,7 +714,7 @@ pGeneCoverage_ampDepth(
    *   - start loop for each gene and get gene coordinates
    \*****************************************************/
 
-   for(geneSI = 0; geneSI < numGenesSI; ++geneSI)
+   for(geneSI = 0; geneSI <= numGenesSI; ++geneSI)
    { /*Loop: go though all genes to print out*/
       posSI = geneCoordSTPtr->startAryUI[geneSI];
       endSI = geneCoordSTPtr->endAryUI[geneSI];
