@@ -3,9 +3,6 @@
 '   - has functions to demultiplexes reads by barcode
 '   o header:
 '     - included libraries
-'   o fun01: sortBarcodes_demux
-'     - sorts a the mapped barcodes by their barcode and
-'       then start coordiante
 '   o .c fun01: sortBarcodes_demux
 '     - sorts the mapped barcodes by their barcode and
 '       then by start coordiante

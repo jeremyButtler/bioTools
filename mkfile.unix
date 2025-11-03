@@ -9,6 +9,7 @@ all:
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C alnNeedleSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C alnWaterSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C ampDepthSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C binSamSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C cigToEqxSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C diCoordsSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C edClustSrc;
@@ -36,6 +37,7 @@ install:
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C alnNeedleSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C alnWaterSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C ampDepthSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C binSamSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C cigToEqxSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C diCoordsSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C edClustSrc install;

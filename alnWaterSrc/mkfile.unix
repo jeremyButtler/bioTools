@@ -22,7 +22,6 @@ objFiles= \
    $(genLib)/fileFun.$O \
    $(genLib)/ulCp.$O \
    $(genAln)/indexToCoord.$O \
-   $(genLib)/strAry.$O \
    $(genLib)/numToStr.$O \
    $(genBio)/seqST.$O \
    mainWater.$O
@@ -64,7 +63,6 @@ $(genBio)/kmerCnt.$O: \
 $(genBio)/samEntry.$O: \
 	$(genBio)/samEntry.c 	$(genBio)/samEntry.h \
 	$(genLib)/fileFun.$O \
-	$(genLib)/strAry.$O \
 	$(genLib)/base10str.$O \
 	$(genLib)/numToStr.$O \
 	$(genBio)/ntTo5Bit.h \
@@ -132,14 +130,6 @@ $(genAln)/indexToCoord.$O: \
 			$(CFLAGS) $(coreCFLAGS) \
 			$(genAln)/indexToCoord.c
 
-$(genLib)/strAry.$O: \
-	$(genLib)/strAry.c \
-	$(genLib)/strAry.h \
-	$(genLib)/ulCp.$O
-		$(CC) -o $(genLib)/strAry.$O \
-			$(CFLAGS) $(coreCFLAGS) \
-			$(genLib)/strAry.c
-
 $(genLib)/numToStr.$O: \
 	$(genLib)/numToStr.c \
 	$(genLib)/numToStr.h
@@ -156,6 +146,7 @@ $(genBio)/seqST.$O: \
 			$(genBio)/seqST.c
 
 install:
+	if [ ! -d "$(PREFIX)" ]; then mkdir -p "$(PREFIX)"; fi;
 	mv $(NAME) $(PREFIX)
 	chmod a+x $(PREFIX)\/$(NAME)
 

@@ -30,7 +30,7 @@ genLibStr="";
 genBioStr="";
 genAlnStr="";
 genClustStr="";
-genGenoTypeStr="";
+genGeneoTypeStr="";
 #seqByIdStr=""; add in for k2 taxa
 
 mathLibBl=0;
@@ -41,7 +41,7 @@ genLibBl=0;
 genBioBl=0;
 genAlnBl=0;
 genClustBl=0;
-genGenoTypeBl=0;
+genGeneoTypeBl=0;
 
 # unique libraryes for freezeTB
 genFreezeTB="";
@@ -212,7 +212,7 @@ then # If: debugging make file
    genBioStr="\$(genBio)/";
    genAlnStr="\$(genAln)/";
    genClustStr="\$(genClust)/";
-   genGenoTypeStr="\$(genGenoType)/";
+   genGeneoTypeStr="\$(genGeneoType)/";
    #seqByIdStr="\$(seqByIdSrc)/"; # adad in for k2Taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
@@ -253,7 +253,7 @@ then # Else If: general unix make file
    genBioStr="\$(genBio)/";
    genAlnStr="\$(genAln)/";
    genClustStr="\$(genClust)/";
-   genGenoTypeStr="\$(genGenoType)/";
+   genGeneoTypeStr="\$(genGeneoType)/";
    #seqByIdStr="\$(seqByIdSrc)/"; # add in for k2Taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
@@ -262,6 +262,9 @@ then # Else If: general unix make file
    dashOStr="-o ";
 
    installStr="install:"
+   installStr="$installStr\n\tif [ ! -d \"\$(PREFIX)\" ];"
+   installStr="$installStr then mkdir -p \"\$(PREFIX)\";"
+   installStr="$installStr fi;"
    installStr="$installStr\n\tmv \$(NAME) \$(PREFIX)"
    installStr="$installStr\n\tchmod a+x \$(PREFIX)"
    installStr="$installStr\/\$(NAME)"
@@ -298,7 +301,7 @@ then # Else If: static unix make file
    genBioStr="\$(genBio)/";
    genAlnStr="\$(genAln)/";
    genClustStr="\$(genClust)/";
-   genGenoTypeStr="\$(genGenoType)/";
+   genGeneoTypeStr="\$(genGeneoType)/";
    #seqByIdStr="\$(seqByIdSrc)/"; add in for k2 taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
@@ -307,6 +310,9 @@ then # Else If: static unix make file
    dashOStr="-o ";
 
    installStr="install:"
+   installStr="$installStr\n\tif [ ! -d \"\$(PREFIX)\" ];"
+   installStr="$installStr then mkdir -p \"\$(PREFIX)\";"
+   installStr="$installStr fi;"
    installStr="$installStr\n\tmv \$(NAME) \$(PREFIX)"
    installStr="$installStr\n\tchmod a+x \$(PREFIX)/\$(NAME)"
 
@@ -341,7 +347,7 @@ then # Else If: windows make file
    genBioStr="\$(genBio)\\\\";
    genAlnStr="\$(genAln)\\\\";
    genClustStr="\$(genClust)\\\\";
-   genGenoTypeStr="\$(genGenoType)\\\\";
+   genGeneoTypeStr="\$(genGeneoType)\\\\";
    #seqByIdStr="\$(seqByIdSrc)\\\\"; # add in for k2Taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
@@ -381,7 +387,7 @@ then # Else If: plan9 make file
    genBioStr="\$genBio/";
    genAlnStr="\$genAln/";
    genClustStr="\$genClust/";
-   genGenoTypeStr="\$(genGenoType)/";
+   genGeneoTypeStr="\$(genGeneoType)/";
    #seqByIdStr="\$seqByIdSrc/"; # add in when in k2Taxa
 
    coreFlagsStr="\$coreCFLAGS";
@@ -423,7 +429,7 @@ fi # check makefile type
 #   o sec03 sub05:
 #     - genClust libraries
 #   o sec03 sub06:
-#     - genGenoType libraries
+#     - genGeneoType libraries
 #   o sec03 sub07:
 #     - misc code in own folders
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -818,7 +824,6 @@ samEntryStr="${genBioStr}samEntry.\$O: \\
 	${genBioStr}samEntry.c \
 	${genBioStr}samEntry.h \\
 	${genLibStr}fileFun.\$O \\
-	${genLibStr}strAry.\$O \\
 	${genLibStr}base10str.\$O \\
 	${genLibStr}numToStr.\$O \\
 	${genBioStr}ntTo5Bit.h \\
@@ -828,7 +833,7 @@ samEntryStr="${genBioStr}samEntry.\$O: \\
 			${genBioStr}samEntry.c";
 
 samEntryObj="${genBioStr}samEntry.\$O";
-samEntryDep="fileFun $fileFunDep strAry $strAryDep";
+samEntryDep="fileFun $fileFunDep";
 samEntryDep="$samEntryDep numToStr $numToStrDep";
 samEntryDep="$samEntryDep base10str $base10strDep";
 
@@ -1348,6 +1353,7 @@ clustSTStr="${genClustStr}clustST.\$O: \\
 	${genBioStr}samEntry.\$O \\
 	${genBioStr}tbCon.\$O \\
 	${genBioStr}edDist.\$O \\
+	${genLibStr}strAry.h \\
 	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genClustStr}clustST.\$O \\
 			$cFlagsStr $coreFlagsStr \\
@@ -1355,7 +1361,9 @@ clustSTStr="${genClustStr}clustST.\$O: \\
 ";
 
 clustSTObj="${genClustStr}clustST.\$O";
-clustSTDep="samEntry $samEntryDep tbCon $tbConDep";
+clustSTDep="strAry $strAryDep";
+clustSTDep="$clustSTDep samEntry $samEntryDep";
+clustSTDep="$clustSTDep tbCon $tbConDep";
 clustSTDep="$clustSTDep edDist $edDistDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1377,27 +1385,75 @@ edClustDep="clustST $clustSTDep";
 
 #*********************************************************
 # Sec03 Sub06:
-#   - genGenoType libraries
+#   - genGeneoType libraries
 #   o sec03 sub06 cat01:
+#     - linST
+#   o sec03 sub06 cat02:
+#     - getLin
+#   o sec03 sub06 cat03:
 #     - cgMLST
 #*********************************************************
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub06 Cat01:
+#   - linST
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+linSTStr="${genGeneoTypeStr}linST.\$O: \\
+	${genGeneoTypeStr}linST.c \\
+	${genGeneoTypeStr}linST.h \\
+	${genLibStr}fileFun.\$O \\
+	${genAlnStr}kmerFind.\$O \\
+	${genAlnStr}alnDefs.h
+		$ccStr ${dashOStr}${genGeneoTypeStr}linST.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genGeneoTypeStr}linST.c
+";
+
+linSTObj="${genGeneoTypeStr}linST.\$O";
+linSTDep="fileFun $fileFunDep";
+linSTDep="$linSTDep kmerFind $kmerFindDep";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub06 Cat02:
+#   - getLin
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+getLinStr="${genGeneoTypeStr}getLin.\$O: \\
+	${genGeneoTypeStr}getLin.c \\
+	${genGeneoTypeStr}getLin.h \\
+	${genGeneoTypeStr}linST.\$O \\
+	${genAlnStr}memwaterScan.\$O \\
+	${genBioStr}samEntry.\$O \\
+	${genBioStr}codonFun.\$O \\
+	${genAlnStr}alnDefs.h
+		$ccStr ${dashOStr}${genGeneoTypeStr}getLin.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genGeneoTypeStr}getLin.c
+";
+
+getLinObj="${genGeneoTypeStr}getLin.\$O";
+getLinDep="linST $linSTDep";
+getLinDep="$getLinDep memwaterScan $memwaterScanDep";
+getLinDep="$getLinDep samEntry $samEntryDep";
+getLinDep="$getLinDep codonFun $codonFunDep";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub06 Cat03:
 #   - cgMLST
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-cgMLSTStr="${genGenoTypeStr}cgMLST.\$O: \\
-	${genGenoTypeStr}cgMLST.c \\
-	${genGenoTypeStr}cgMLST.h \\
+cgMLSTStr="${genGeneoTypeStr}cgMLST.\$O: \\
+	${genGeneoTypeStr}cgMLST.c \\
+	${genGeneoTypeStr}cgMLST.h \\
 	${genBioStr}edDist.\$O \\
 	${genLibStr}ptrAry.\$O
-		$ccStr ${dashOStr}${genGenoTypeStr}cgMLST.\$O \\
+		$ccStr ${dashOStr}${genGeneoTypeStr}cgMLST.\$O \\
 			$cFlagsStr $coreFlagsStr \\
-			${genGenoTypeStr}cgMLST.c
+			${genGeneoTypeStr}cgMLST.c
 ";
 
-cgMLSTObj="${genGenoTypeStr}cgMLST.\$O";
+cgMLSTObj="${genGeneoTypeStr}cgMLST.\$O";
 cgMLSTDep="edDist $edDistDep ptrAry $ptrAryDep";
 
 #*********************************************************
@@ -1448,8 +1504,10 @@ k2TaxaIdDep="$k2TaxaIdDep shellSort $shellSortDep";
 #   o sec04 sub07:
 #     - genClust libraries
 #   o sec04 sub07:
-#     - non-general library files
+#     - genGeneoType library files
 #   o sec04 sub08:
+#     - non-general library files
+#   o sec04 sub09:
 #     - move to next library or dependency
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -2858,13 +2916,71 @@ do # Loop: get dependencies
 
    #******************************************************
    # Sec04 Sub07:
-   #   - genGenoType library files
+   #   - genGeneoType library files
    #   o sec04 sub07 cat01:
+   #     - linST
+   #   o sec04 sub07 cat02:
+   #     - getLin
+   #   o sec04 sub07 cat03:
    #     - cgMLST
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
    # Sec04 Sub07 Cat01:
+   #   - linST
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "linST" ]; then
+   # Else If: linST program
+      if [ "$linSTBl" = "" ]; then
+         cmdStr="$cmdStr$newLineStr$linSTStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}${linSTObj}";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$linSTObj";
+         fi
+
+         linSTBl=1;
+         depStr="$depStr $linSTDep";
+
+         if [ "$genGeneoTypeBl" -lt 1 ]; then
+            genGeneoTypeBl=1;
+            libPathStr="$libPathStr\ngenGeneoType=..${slashSC}genGeneoType";
+         fi
+      fi
+   # Else If: linST program
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub07 Cat02:
+   #   - getLin
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "getLin" ]; then
+   # Else If: getLin program
+      if [ "$getLinBl" = "" ]; then
+         cmdStr="$cmdStr$newLineStr$getLinStr";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}${getLinObj}";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$getLinObj";
+         fi
+
+         getLinBl=1;
+         depStr="$depStr $getLinDep";
+
+         if [ "$genGeneoTypeBl" -lt 1 ]; then
+            genGeneoTypeBl=1;
+            libPathStr="$libPathStr\ngenGeneoType=..${slashSC}genGeneoType";
+         fi
+      fi
+   # Else If: getLin program
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub07 Cat03:
    #   - cgMLST
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2883,9 +2999,9 @@ do # Loop: get dependencies
          cgMLSTBl=1;
          depStr="$depStr $cgMLSTDep";
 
-         if [ "$genGenoTypeBl" -lt 1 ]; then
-            genGenoTypeBl=1;
-            libPathStr="$libPathStr\ngenGenoType=..${slashSC}genGenoType";
+         if [ "$genGeneoTypeBl" -lt 1 ]; then
+            genGeneoTypeBl=1;
+            libPathStr="$libPathStr\ngenGeneoType=..${slashSC}genGeneoType";
          fi
       fi
    # Else If: cgMLST program
@@ -2923,7 +3039,7 @@ do # Loop: get dependencies
    fi # check librarys called
 
    #******************************************************
-   # Sec04 Sub08:
+   # Sec04 Sub09:
    #   - move to next library or dependency
    #******************************************************
 

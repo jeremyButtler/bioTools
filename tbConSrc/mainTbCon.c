@@ -1626,7 +1626,7 @@ main(
    \*****************************************************/
 
    errSC =
-      getRefLen_samEntry(
+      getRefLen_samRef(
          &refStackST, /*will have refernce ids/lengths*/
          &samStackST, /*will have first read in file*/
          samFILE,     /*has headers to process*/

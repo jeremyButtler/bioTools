@@ -20,6 +20,10 @@ cd ../ampDepthSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" ampDepth mainAmpDepth ampDepth trimSam charCp base10str ampDepthDefs.h ../bioTools.h ../genLib/endLine.h
 cd "../$retDirStr" || exit;
 
+cd ../binSamSrc || exit;
+sh "../$retDirStr/allOSMkfiles.sh" binSam mainBinSam samRef ../bioTools.h
+cd "../$retDirStr" || exit;
+
 cd ../cigToEqxSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" cigToEqx mainCigToEqx cigToEqx seqST charCp ../bioTools.h ../genLib/endLine.h
 cd "../$retDirStr" || exit;

@@ -63,11 +63,6 @@ For individual programs:
 
 ```
 # only need to do this step once
-if [ ! -d "/usr/local/bin" ];
-then
-   sudo mkdir -p "/usr/local/bin";
-fi
-
 cd ~/Downloads;
 git clone https://github.com/jeremybuttler/bioTools;
 
@@ -75,6 +70,9 @@ git clone https://github.com/jeremybuttler/bioTools;
 cd ~/Downloads/bioTools/<target-program>;
 make -f mkfile.unix;
 sudo make -f mkfile.unix install;
+
+# to install to a different path do
+#   make -f mkfile.unix PREFIX=<install_path> install;
 ```
 
 ## Windows
@@ -149,6 +147,10 @@ The programs are built and debugged on Linux and then
     - slower than striped watermans
     - Watermans are a dime a dozen
     - works on linux and plan9
+  - binSam (project nees a name):
+    - splits reads in a sam file by reference
+    - has some support for identifying refseq accession
+      numbers belonging to the same assembly
   - filtsam (freezeTB):
     - filter sam files by flag, length, median/mean
       q-scores, and coordinates
@@ -293,7 +295,9 @@ My general libraries.
 
 # Updates:
 
-- 2025-15-09:
+- 2025-11-03:
+  - add binSam to bin reads by reference in a sam file
+- 2025-10-15:
   - fixed minor bug in primFind output that did not print
     reference length for reverse paired primers
   - minor bug were ampDepth with `-p-gene-cover` would not
@@ -498,6 +502,7 @@ My general libraries.
    - genBio is behind again
    - genAln has little
    - genClust has nothing
+   - genGeneoType has nothing
    - seqById has nothing
    - k2TaxaId has nothing
 4. add SIMD support to mapRead and improve speed for
@@ -506,6 +511,7 @@ My general libraries.
 5. unGz
    - has issue printing last Illumina reads in windows
      for stdout (not sure about stdout)
+6. debug getLin and get it to a working state
    
 
 # Thanks

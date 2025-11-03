@@ -13,10 +13,10 @@ objFiles= \
    $genBio/seqST.$O \
    $genLib/charCp.$O \
    $genClust/clustST.$O \
+   $genLib/strAry.$O \
+   $genLib/ulCp.$O \
    $genBio/samEntry.$O \
    $genLib/fileFun.$O \
-   $genLib/ulCp.$O \
-   $genLib/strAry.$O \
    $genLib/numToStr.$O \
    $genLib/base10str.$O \
    $genBio/tbCon.$O \
@@ -67,16 +67,31 @@ $genClust/clustST.$O: \
 	$genBio/samEntry.$O \
 	$genBio/tbCon.$O \
 	$genBio/edDist.$O \
+	$genLib/strAry.h \
 	$genLib/genMath.h
 		$CC -o $genClust/clustST.$O \
 			$CFLAGS $coreCFLAGS \
 			$genClust/clustST.c
 
 
+$genLib/strAry.$O: \
+	$genLib/strAry.c \
+	$genLib/strAry.h \
+	$genLib/ulCp.$O
+		$CC -o $genLib/strAry.$O \
+			$CFLAGS $coreCFLAGS \
+			$genLib/strAry.c
+
+$genLib/ulCp.$O: \
+	$genLib/ulCp.c \
+	$genLib/ulCp.h
+		$CC -o $genLib/ulCp.$O \
+			$CFLAGS $coreCFLAGS \
+			$genLib/ulCp.c
+
 $genBio/samEntry.$O: \
 	$genBio/samEntry.c 	$genBio/samEntry.h \
 	$genLib/fileFun.$O \
-	$genLib/strAry.$O \
 	$genLib/base10str.$O \
 	$genLib/numToStr.$O \
 	$genBio/ntTo5Bit.h \
@@ -92,21 +107,6 @@ $genLib/fileFun.$O: \
 		$CC -o $genLib/fileFun.$O \
 			$CFLAGS $coreCFLAGS \
 			$genLib/fileFun.c
-
-$genLib/ulCp.$O: \
-	$genLib/ulCp.c \
-	$genLib/ulCp.h
-		$CC -o $genLib/ulCp.$O \
-			$CFLAGS $coreCFLAGS \
-			$genLib/ulCp.c
-
-$genLib/strAry.$O: \
-	$genLib/strAry.c \
-	$genLib/strAry.h \
-	$genLib/ulCp.$O
-		$CC -o $genLib/strAry.$O \
-			$CFLAGS $coreCFLAGS \
-			$genLib/strAry.c
 
 $genLib/numToStr.$O: \
 	$genLib/numToStr.c \

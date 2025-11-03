@@ -2368,12 +2368,12 @@ int main(
    { /*If: printing program header*/
       fprintf(
         outFILE,
-        "@PG\tID:mainFiltsam\tPN:mainFiltsam"
+        "@PG\tID:filtsam\tPN:filtsam"
       );
 
       fprintf(
         outFILE,
-        "\tVN:%i-%02i-%02i\tCL:mainFiltsam",
+        "\tVN:%i-%02i-%02i\tCL:filtsam",
         def_year_bioTools,
         def_month_bioTools,
         def_day_bioTools

@@ -115,6 +115,7 @@ $(genBio)/seqST.$O: \
 			$(genBio)/seqST.c
 
 install:
+	if [ ! -d "$(PREFIX)" ]; then mkdir -p "$(PREFIX)"; fi;
 	mv $(NAME) $(PREFIX)
 	chmod a+x $(PREFIX)\/$(NAME)
 

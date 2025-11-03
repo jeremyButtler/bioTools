@@ -7,6 +7,7 @@ all:
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C alnNeedleSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C alnWaterSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C ampDepthSrc;
+	make CFLAGS="$CFLAGS" -f mkfileplan9 -C binSamSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C cigToEqxSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C diCoordsSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C edClustSrc;
@@ -34,6 +35,7 @@ install:
 	make PREFIX="$PREFIX" -f mkfileplan9 -C alnNeedleSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C alnWaterSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C ampDepthSrc install;
+	make PREFIX="$PREFIX" -f mkfileplan9 -C binSamSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C cigToEqxSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C diCoordsSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C edClustSrc install;

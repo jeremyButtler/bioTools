@@ -17,7 +17,6 @@ objFiles= \
    $(genLib)/fileFun.$O \
    $(genLib)/ulCp.$O \
    $(genBio)/samEntry.$O \
-   $(genLib)/strAry.$O \
    $(genLib)/numToStr.$O \
    $(genBio)/seqST.$O \
    mainSamToAln.$O
@@ -88,7 +87,6 @@ $(genLib)/ulCp.$O: \
 $(genBio)/samEntry.$O: \
 	$(genBio)/samEntry.c 	$(genBio)/samEntry.h \
 	$(genLib)/fileFun.$O \
-	$(genLib)/strAry.$O \
 	$(genLib)/base10str.$O \
 	$(genLib)/numToStr.$O \
 	$(genBio)/ntTo5Bit.h \
@@ -96,14 +94,6 @@ $(genBio)/samEntry.$O: \
 		$(CC) -o $(genBio)/samEntry.$O \
 			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/samEntry.c
-
-$(genLib)/strAry.$O: \
-	$(genLib)/strAry.c \
-	$(genLib)/strAry.h \
-	$(genLib)/ulCp.$O
-		$(CC) -o $(genLib)/strAry.$O \
-			$(CFLAGS) $(coreCFLAGS) \
-			$(genLib)/strAry.c
 
 $(genLib)/numToStr.$O: \
 	$(genLib)/numToStr.c \
