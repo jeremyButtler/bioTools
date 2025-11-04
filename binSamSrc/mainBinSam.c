@@ -765,6 +765,17 @@ main(
          goto memErr_main_sec05;
       } /*If: memory error*/
 
+      else if(errSC == 64)
+      { /*Else: no references in header*/
+         fprintf(
+            stderr,
+            "no references in header of -sam %s%s",
+            samFileStr,
+            str_endLine
+         );
+         goto fileErr_main_sec05;
+      } /*Else: no references in header*/
+
       else
       { /*Else: file error*/
          fprintf(

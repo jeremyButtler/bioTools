@@ -1648,7 +1648,7 @@ main(
          goto memErr_main_sec06_sub02;
       } /*If: memory error*/
 
-      else
+      else if(errSC != 64)
       { /*Else: file error*/
          fprintf(
             stderr,
@@ -1658,8 +1658,22 @@ main(
          );
 
          goto memErr_main_sec06_sub02;
-      } /*Else: memory error*/
+      } /*Else: file error*/
 
+      else
+      { /*Else: no references in header*/
+         fprintf(
+            stderr,
+            "-sam %s has no references in header, will%s",
+            samFileStr,
+            str_endLine
+         );
+         fprintf(
+            stderr,
+            "  try to add references in on the flye%s",
+            str_endLine
+         );
+      } /*Else: no references in header*/
    } /*If: had error*/
 
    /*****************************************************\

@@ -312,6 +312,7 @@ realloc_refs_samRef(
 |     o 0 for no errors
 |     o def_memErr_samEntry for memory errors
 |     o def_fileErr_samEntry for file errors
+|     o 64 if no header reference ids in the sam file
 \-------------------------------------------------------*/
 signed char
 getRefLen_samRef(
@@ -554,6 +555,8 @@ getRefLen_samRef(
 
    if(errSC == def_memErr_samEntry)
       goto memErr_fun07_sec04;
+   else if(! refSTPtr->numRefUI)
+      goto noRef_fun07_sec04;
 
    sortSync_strAry(
       refSTPtr->idAryStr,
@@ -570,15 +573,19 @@ getRefLen_samRef(
    goto ret_fun07_sec04;
 
    memErr_fun07_sec04:;
-   errSC = def_memErr_samEntry;
-   goto ret_fun07_sec04;
+      errSC = def_memErr_samEntry;
+      goto ret_fun07_sec04;
 
    fileErr_fun07_sec04:;
-   errSC = def_fileErr_samEntry;
-   goto ret_fun07_sec04;
+      errSC = def_fileErr_samEntry;
+      goto ret_fun07_sec04;
+
+   noRef_fun07_sec04:;
+      errSC = 64;
+      goto ret_fun07_sec04;
 
    ret_fun07_sec04:;
-   return errSC;
+      return errSC;
 } /*getRefLen_samRef*/
 
 /*-------------------------------------------------------\

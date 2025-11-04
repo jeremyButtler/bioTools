@@ -295,6 +295,10 @@ My general libraries.
 
 # Updates:
 
+- 2025-11-04:
+  - fixed binSam chrash when no reference ids were not in
+    header. binSam now reports that no references were
+    present instead of crashing.
 - 2025-11-03:
   - add binSam to bin reads by reference in a sam file
 - 2025-10-15:
