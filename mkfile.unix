@@ -27,6 +27,7 @@ all:
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C rmHomoSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C samToAlnSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C seqByIdSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C seqStatsSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C tbConSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C tranSeqSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C trimSamSrc;
@@ -55,6 +56,7 @@ install:
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C rmHomoSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C samToAlnSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C seqByIdSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C seqStatsSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C tbConSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C tranSeqSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C trimSamSrc install;

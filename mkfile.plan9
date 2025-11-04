@@ -25,6 +25,7 @@ all:
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C rmHomoSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C samToAlnSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C seqByIdSrc;
+	make CFLAGS="$CFLAGS" -f mkfileplan9 -C seqStatsSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C tbConSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C tranSeqSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C trimSamSrc;
@@ -53,6 +54,7 @@ install:
 	make PREFIX="$PREFIX" -f mkfileplan9 -C rmHomoSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C samToAlnSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C seqByIdSrc install;
+	make PREFIX="$PREFIX" -f mkfileplan9 -C seqStatsSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C tbConSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C tranSeqSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C trimSamSrc install;
