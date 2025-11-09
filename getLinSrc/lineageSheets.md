@@ -204,6 +204,8 @@ The complex lineage file allows the merging off multiple
        - were lineage is based on the repeat length
      - Count lineages it is `<variant_name_(id)>:lineage`
        - were lineage is based on the number of duplicates
+     - A `!` at the start means this variant is required
+       - ex `!<variant_name_(id)>`
 
 The variant list is always at the end after the '*'
   column. This allows a flexibal system were more entries
@@ -231,6 +233,6 @@ An exmaple adding in a notes column for human use.
 ```
 id        group     gene   overwrites fudge lingeage notes         variants_start var1       var2
 B602L-UKR B602L-SNP B602L  Yes        0     UKR      gene_lineage  *              B602L-UKR1 B602L-UKR2
-K145R     group     K145R  Yes        0     3        gene_lineage  *              K145R-2    K145R-3
+K145R     group     K145R  Yes        0     3        gene_lineage  *              !K145R-2    K145R-3
 TRS_combo group     NA     No         0     mixed    final_lineage *              IGR:2      O174-TRS:3
 ```

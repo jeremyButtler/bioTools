@@ -573,6 +573,8 @@ input_mainGetLin(
    ^     - version number
    ^   o fun03 sec02 sub07:
    ^     - deal with unkown input
+   ^   o fun03 sec02 sub08:
+   ^     - move to the next argument
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
@@ -780,6 +782,13 @@ input_mainGetLin(
 
          goto err_fun03_sec03;
       } /*Else: unkown input*/
+
+      /**************************************************\
+      * Fun03 Sec02 Sub08:
+      *   - move to the next argument
+      \**************************************************/
+
+      ++siArg;
    } /*Loop: get input*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\

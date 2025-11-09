@@ -4316,13 +4316,25 @@ complexLineage_getLin(
             ); /*see if have a match*/
 
          if(indexSI < 0)
+         { /*If: lineage was not found*/
             ++missSI;
+
+            if(mLinSTPtr->linNeedAryBl[siLin])
+               missSI = mLinSTPtr->fudgeSI + 1;
+               /*this was a required lineage*/
+         } /*If: lineage was not found*/
 
          else if(
                mLinSTPtr->linTrsArySI[siLin] > -1024
             &&    mLinSTPtr->linTrsArySI[siLin]
                != trsLinArySI[indexSI]
-         ) ++missSI;
+         ){ /*Else If: the lineage was not found*/
+            ++missSI;
+
+            if(mLinSTPtr->linNeedAryBl[siLin])
+               missSI = mLinSTPtr->fudgeSI + 1;
+               /*this was a required lineage*/
+         }  /*Else If: the lineage was not found*/
 
          else
             histHeapArySI[histLenSI++] = indexSI;
@@ -4352,7 +4364,14 @@ complexLineage_getLin(
             ); /*see if have the complex lineage*/
 
          if(indexSI < 0)
+         { /*If: did not find the lineage*/
             ++missSI;
+
+            if(mLinSTPtr->mLinNeedAryBl[siLin])
+               missSI = mLinSTPtr->fudgeSI + 1;
+               /*this was a required lineage*/
+         } /*If: did not find the lineage*/
+
          else
             histHeapArySI[histLenSI++] = indexSI;
       } /*Loop: find complex lineage matches*/

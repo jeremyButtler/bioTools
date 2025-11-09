@@ -151,6 +151,10 @@ The programs are built and debugged on Linux and then
     - splits reads in a sam file by reference
     - has some support for identifying refseq accession
       numbers belonging to the same assembly
+  - demux (side program):
+    - extracts amplicons using primer sequences from
+      reads or genomes
+    - I think Artic has a pipeline to do this as well
   - filtsam (freezeTB):
     - filter sam files by flag, length, median/mean
       q-scores, and coordinates
@@ -295,6 +299,8 @@ My general libraries.
 
 # Updates:
 
+- 2025-11-09:
+  - converted demux to an amplicon extraction program
 - 2025-11-04:
   - fixed binSam chrash when no reference ids were not in
     header. binSam now reports that no references were

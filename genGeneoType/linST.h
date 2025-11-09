@@ -133,6 +133,7 @@
 #define def_defLineage_linST '='
    /*default lineage for group*/
 #define def_trsLinMark_linST ':'
+#define def_needLin_linST '!'
 
 struct refST_kmerFind;
 struct tblST_kmerFind;
@@ -270,6 +271,8 @@ typedef struct multi_linST
       /*trs lineages for each variant that makes up this
       `  complex lineages
       */
+   signed char *linNeedAryBl;
+      /*tells if lineage is needed to call (1)*/
    signed int linLenSI;
       /*number of variants to get lineage*/
    
@@ -277,6 +280,8 @@ typedef struct multi_linST
       /*array of each multi_linST index assigned to this
       `  complex lineage
       */
+   signed char *mLinNeedAryBl;
+      /*tells if lineage is needed to call (1)*/
    signed int mLinLenSI;
       /*number of multi-variants in lineage assignment*/
 

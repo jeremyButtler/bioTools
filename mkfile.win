@@ -23,6 +23,9 @@ all:
 	cd cigToEqxSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
+	cd demuxSrc
+	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
+	cd ..
 	cd diCoordsSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
@@ -105,6 +108,10 @@ install:
 	cd ..
 	cd cigToEqxSrc
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
+	cd ..
+	cd demuxSrc
+	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
+	cd ..
 	cd ..
 	cd diCoordsSrc
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  

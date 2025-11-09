@@ -11,6 +11,7 @@ all:
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C ampDepthSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C binSamSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C cigToEqxSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C demuxSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C diCoordsSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C edClustSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C edDistSrc;
@@ -40,6 +41,7 @@ install:
 	make PREFIX="$(PREFIX)" -f mkfile.static -C ampDepthSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.static -C binSamSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.static -C cigToEqxSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.static -C demuxSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.static -C diCoordsSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.static -C edClustSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.static -C edDistSrc install;

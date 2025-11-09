@@ -28,6 +28,10 @@ cd ../cigToEqxSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" cigToEqx mainCigToEqx cigToEqx seqST charCp ../bioTools.h ../genLib/endLine.h
 cd "../$retDirStr" || exit;
 
+cd ../demuxSrc || exit;
+sh "../$retDirStr/allOSMkfiles.sh" demux mainDemux demux gzSeqST ../bioTools.h
+cd "../$retDirStr" || exit;
+
 cd ../diCoordsSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" diCoords mainDICoords diCoords samEntry ../bioTools.h ../genLib/endLine.h
 cd "../$retDirStr" || exit;

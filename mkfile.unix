@@ -12,6 +12,7 @@ all:
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C binSamSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C cigToEqxSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C diCoordsSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C demuxSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C edClustSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C edDistSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C filtsamSrc;
@@ -41,6 +42,7 @@ install:
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C binSamSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C cigToEqxSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C diCoordsSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C demuxSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C edClustSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C edDistSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C filtsamSrc install;

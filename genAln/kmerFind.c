@@ -4169,7 +4169,9 @@ fxAllFindPrims_kmerFind(
 
    signed char errSC = 0; /*error messages*/
    signed int lenSI = 0;
-   signed char *swapPtr = 0;
+   signed char *swapStrPtr = 0;
+   signed short *swapSSPtr = 0;
+   signed int *swapSIPtr = 0;
 
    unsigned char matchBl = 0;
    signed char firstTimeBl = 1;
@@ -4291,74 +4293,75 @@ fxAllFindPrims_kmerFind(
          { /*If: need more memory*/
             *maxPrimSI += (*maxPrimSI << 1);
 
-            swapPtr =
+            swapStrPtr =
                realloc(
                   *dirArySCPtr,
                   (*maxPrimSI << 1) * sizeof(signed char)
                );
-            if(! *swapPtr)
+            if(! swapStrPtr)
                goto memErr_fun27_sec04;
-            *dirArySCPtr = swapPtr;
+            *dirArySCPtr = swapStrPtr;
+            swapStrPtr = 0;
 
-            swapPtr =
-               (signed char *)
+            swapSSPtr =
                realloc(
                   *primArySSPtr,
                   (*maxPrimSI << 1) * sizeof(signed short)
                );
-            if(! *swapPtr)
+            if(! swapSSPtr)
                goto memErr_fun27_sec04;
-            *primArySSPtr = (signed short *) swapPtr;
+            *primArySSPtr = swapSSPtr;
+            swapSSPtr = 0;
 
-            swapPtr =
-               (signed char *)
+            swapSIPtr =
                realloc(
                   *scoreArySIPtr,
                   (*maxPrimSI << 1) * sizeof(signed int)
                );
-            if(! *swapPtr)
+            if(! swapSIPtr)
                goto memErr_fun27_sec04;
-            *scoreArySIPtr = (signed int *) swapPtr;
+            *scoreArySIPtr = swapSIPtr;
+            swapSIPtr = 0;
 
-            swapPtr =
-               (signed char *)
+            swapSIPtr =
                realloc(
                   *seqStartArySIPtr,
                   (*maxPrimSI << 1) * sizeof(signed int)
                );
-            if(! *swapPtr)
+            if(! swapSIPtr)
                goto memErr_fun27_sec04;
-            *seqStartArySIPtr = (signed int *) swapPtr;
+            *seqStartArySIPtr = swapSIPtr;
+            swapSIPtr = 0;
 
-            swapPtr =
-               (signed char *)
+            swapSIPtr =
                realloc(
                   *seqEndArySIPtr,
                   (*maxPrimSI << 1) * sizeof(signed int)
                );
-            if(! *swapPtr)
+            if(! swapSIPtr)
                goto memErr_fun27_sec04;
-            *seqEndArySIPtr = (signed int *) swapPtr;
+            *seqEndArySIPtr = swapSIPtr;
+            swapSIPtr = 0;
 
-            swapPtr =
-               (signed char *)
+            swapSSPtr =
                realloc(
                   *primStartArySSPtr,
                   (*maxPrimSI << 1) * sizeof(signed short)
                );
-            if(! *swapPtr)
+            if(! swapSSPtr)
                goto memErr_fun27_sec04;
-            *primStartArySSPtr = (signed short *) swapPtr;
+            *primStartArySSPtr = swapSSPtr;
+            swapSSPtr = 0;
 
-            swapPtr =
-               (signed char *)
+            swapSSPtr =
                realloc(
                   *primEndArySSPtr,
                   (*maxPrimSI << 1) * sizeof(signed short)
                );
-            if(! *swapPtr)
+            if(! swapSSPtr)
                goto memErr_fun27_sec04;
-            *primEndArySSPtr = (signed short *) swapPtr;
+            *primEndArySSPtr = swapSSPtr;
+            swapSSPtr = 0;
          } /*If: need more memory*/
 
          /***********************************************\

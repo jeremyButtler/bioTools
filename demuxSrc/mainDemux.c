@@ -9,6 +9,10 @@
 '     - print help message for demux
 '   o fun03: input_mainDemux
 '     - get user input from the aguments array
+'   o main:
+'     - driver function for demux
+'   o license:
+'     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*-------------------------------------------------------\
@@ -55,10 +59,13 @@
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 #define def_minPercScore_mainDemux def_minPercScore_kmerFind
-#define def_minScore_mainDemux 111
-   /*for ONT barcodes (24bp) allows 2 snps, no gaps*/
+#define def_minScore_mainDemux 0
+   /*user should provide this since it is primer/barcode
+   `  specific
+   */
 #define def_maxSplits_mainDemux 1
 #define def_minDist_mainDemux 100
+#define def_maxDist_mainDemux 3000
 #define def_trimBarcodes_mainDemux 0
 
 /*-------------------------------------------------------\
@@ -171,10 +178,58 @@ phelp_mainDemux(
       "    o fasta file with barcode sequences%s",
       str_endLine
    );
-
    fprintf(
       (FILE *) outFILE,
       "    o headers are used for the output suffix%s",
+      str_endLine
+   );
+   fprintf(
+    (FILE *) outFILE,
+    "    o WARNING use dorado instead, do not use this%s",
+    str_endLine
+   );
+
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -prim-tsv barcodes.fasta: [Required]%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o tsv file with primer sequences to demux%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o this uses primer demux mode%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "    o format: id\tpaired\tfor_seq\trev_seq%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      * id: name of primer%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      * paired: True if both primers required%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      * for_seq: forward primer sequence%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      * rev_seq: reverse primer sequence or NA%s",
       str_endLine
    );
 
@@ -260,30 +315,54 @@ phelp_mainDemux(
    );
    fprintf(
       (FILE *) outFILE,
-      "      read before discarding%s",
+      "      read before discarding (not used for primer)%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "    o not used for primer demux%s",
       str_endLine
    );
 
    /*****************************************************\
    * Fun02 Sec02 Sub06:
-   *   - min dist
+   *   - minimum and maximu dist
    \*****************************************************/
 
    fprintf(
       (FILE *) outFILE,
-      "  -dist %i: [Optional]%s",
+      "  -min-dist %i: [Optional]%s",
       def_minDist_mainDemux,
       str_endLine
    );
 
    fprintf(
       (FILE *) outFILE,
-      "    o minimum distance between barcodes to not%s",
+      "    o minimum distance between barcodes and%s",
       str_endLine
    );
    fprintf(
       (FILE *) outFILE,
-      "      discard a read%s",
+      "      primers to not discard a read%s",
+      str_endLine
+   );
+
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -max-dist %i: [Optional]%s",
+      def_maxDist_mainDemux,
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o maximum distance between primers (not%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      barcodes) to not discard an amplicon%s",
       str_endLine
    );
 
@@ -308,6 +387,11 @@ phelp_mainDemux(
    fprintf(
       (FILE *) outFILE,
       "    o remove barcodes from the sequence%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "    o only used for barcode demux%s",
       str_endLine
    );
    fprintf(
@@ -394,13 +478,17 @@ phelp_mainDemux(
 |     o c-string array with user input
 |   - barFileStrPtr:
 |     o c-string pointer to get the barcodes fasta file
+|   - primTsvStrPtr:
+|     o c-string pointer to get the barcodes tsv file
 |   - prefixStrPtr:
 |     o c-string pointer to get the prefix for the output
 |       file
 |   - splitSIPtr:
 |     o signed int pointer to get maximum splits to do
-|   - distSIPtr:
+|   - minDistSIPtr:
 |     o signed int pointer to get minimum distance
+|   - maxDistSIPtr:
+|     o signed int pointer to get maximum distance
 |   - trimBlPtr:
 |     o signed char pointer to get if trimming
 |   - minScoreSLPtr:
@@ -420,9 +508,11 @@ input_mainDemux(
    signed int argLenSI,
    char *argAryStr[],
    signed char **barFileStrPtr, /*barcode fasta file*/
-   signed char **prefixStrPtr,   /*output file name*/
+   signed char **primTsvStrPtr,  /*tsv file with barcodes*/
+   signed char **prefixStrPtr,  /*output file name*/
    signed int *splitSIPtr,      /*max splits to do*/
-   signed int *distSIPtr,       /*minimum distance*/
+   signed int *minDistSIPtr,    /*minimum distance*/
+   signed int *maxDistSIPtr,    /*minimum distance*/
    signed char *trimBlPtr,      /*set to if trim*/
    signed long *minScoreSLPtr,  /*minimum score*/
    float *minPercScoreFPtr      /*minimum percent score*/
@@ -457,7 +547,7 @@ input_mainDemux(
    ^   o fun03 sec02 sub04:
    ^     - get maximum splits to do
    ^   o fun03 sec02 sub05:
-   ^     - get minimum distance after barcodes
+   ^     - get minimum and maximum distance for barcodes
    ^   o fun03 sec02 sub06:
    ^     - check if trimming reads
    ^   o fun03 sec02 sub07:
@@ -485,7 +575,19 @@ input_mainDemux(
       ){ /*If: barcode fasta file input*/
          ++siArg;
          *barFileStrPtr=(signed char *) argAryStr[siArg];
+         *primTsvStrPtr = 0;
       }  /*If: barcode fasta file input*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-prim-tsv",
+            (signed char *) argAryStr[siArg]
+         )
+      ){ /*Else If: barcode tsv file input*/
+         ++siArg;
+         *primTsvStrPtr=(signed char *) argAryStr[siArg];
+         *barFileStrPtr = 0;
+      }  /*If: barcode tsv file input*/
 
       else if(
          ! eqlNull_ulCp(
@@ -528,6 +630,9 @@ input_mainDemux(
                *minPercScoreFPtr > 1
             && *minPercScoreFPtr <= 100
          ) *minPercScoreFPtr /= 100;
+
+         else if( *minPercScoreFPtr < 1)
+            ;
 
          else
          { /*Else: not a percentage*/
@@ -597,7 +702,7 @@ input_mainDemux(
 
       /**************************************************\
       * Fun03 Sec02 Sub05:
-      *   - get minimum distance after barcodes
+      *   - get minimum and maximum distance for barcodes
       \**************************************************/
 
       else if(
@@ -608,19 +713,41 @@ input_mainDemux(
       ){  /*Else If: get minimum distance*/
          ++siArg;
          tmpStr = (signed char *) argAryStr[siArg];
-         tmpStr += strToSI_base10str(tmpStr, distSIPtr);
+         tmpStr += strToSI_base10str(tmpStr,minDistSIPtr);
 
          if(*tmpStr)
          { /*If; non-numeric or to large*/
             fprintf(
-               stderr,
-               "-dist %s is non-numeric or to large%s",
-               argAryStr[siArg],
-               str_endLine
+              stderr,
+              "-min-dist %s is non-numeric or to large%s",
+              argAryStr[siArg],
+              str_endLine
             );
             goto err_fun03_sec03;
          } /*If; non-numeric or to large*/
       }   /*Else If: get minimum distance*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-max-dist",
+            (signed char *) argAryStr[siArg]
+         )
+      ){  /*Else If: get maximum distance*/
+         ++siArg;
+         tmpStr = (signed char *) argAryStr[siArg];
+         tmpStr += strToSI_base10str(tmpStr,maxDistSIPtr);
+
+         if(*tmpStr)
+         { /*If; non-numeric or to large*/
+            fprintf(
+              stderr,
+              "-max-dist %s is non-numeric or to large%s",
+              argAryStr[siArg],
+              str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*If; non-numeric or to large*/
+      }   /*Else If: get maximum distance*/
 
       /**************************************************\
       * Fun03 Sec02 Sub06:
@@ -836,16 +963,18 @@ main(
    /*___________________user_input______________________*/
    signed char *prefixStr = (signed char *) "out";
    signed char *barcodesFileStr = 0;
+   signed char *primTsvStr = 0;
 
    signed int fqFileSI = 0;
    signed int splitSI = def_maxSplits_mainDemux;
-   signed int distSI = def_minDist_mainDemux;
+   signed int minDistSI = def_minDist_mainDemux;
+   signed int maxDistSI = def_maxDist_mainDemux;
    signed char trimBl = def_trimBarcodes_mainDemux;
 
    signed long minScoreSL = def_minScore_mainDemux;
    float minPercScoreF = def_minPercScore_mainDemux;
 
-   /*______________fastrq_reading_variables_____________*/
+   /*______________fastx_reading_variables______________*/
    struct file_inflate fileStackST;
    signed char fxTypeSC = 0;
    signed long seqSL = 0;
@@ -864,7 +993,7 @@ main(
    float kmerPercF = def_minKmerPerc_kmerFind;
 
    struct refST_kmerFind *barHeapAryST = 0;
-   signed int barLenSI;
+   signed int barLenSI = 0;
 
    struct tblST_kmerFind tblStackST;
    struct seqST seqStackST;
@@ -878,6 +1007,7 @@ main(
 
    signed char **outFileHeapStrAry = 0;
    FILE *logFILE = 0;
+   FILE *outFILE = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec02:
@@ -912,9 +1042,11 @@ main(
          argLenSI,
          argAryStr,
          &barcodesFileStr,
+         &primTsvStr,
          &prefixStr,
          &splitSI,
-         &distSI,
+         &minDistSI,
+         &maxDistSI,
          &trimBl,
          &minScoreSL,
          &minPercScoreF
@@ -941,113 +1073,179 @@ main(
    * Main Sec02 Sub04:
    *   - open files
    *   o main sec02 sub04 cat01:
-   *     - read in the barcodes
+   *     - read in the barcodes/primers
+   *   o main sec02 sub04 cat02:
+   *     - open the output files for barcode demux
+   *   o main sec02 sub04 cat03:
+   *     - open the log file (either mode)
    \*****************************************************/
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
    + Main Sec02 Sub04 Cat01:
-   +   - read in the barcodes
+   +   - read in the barcodes/primers
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   barHeapAryST =
-      faToAry_refST_kmerFind(
-         barcodesFileStr,
-         kmerLenUC,
-         &barLenSI,
-         kmerPercF,
-         &tblStackST,
-         extraNtF,
-         winShiftF,
-         &alnStackST,
-         &errSC
-      );
-
-   if(errSC)
-   { /*If: had an error*/
-      if(errSC == def_memErr_kmerFind)
-      { /*If: had a memory error*/
-         fprintf(
-            stderr,
-            "memory error reading in barcodes%s",
-            str_endLine
-         );
-         goto memErr_main_sec04;
-      } /*If: had a memory error*/
-
-      else
-      { /*Else: file error*/
-         fprintf(
-            stderr,
-            "file error reading -bar %s%s",
+   if(barcodesFileStr)
+   { /*If: barcode demuxing; read barcodes*/
+      barHeapAryST =
+         faToAry_refST_kmerFind(
             barcodesFileStr,
-            str_endLine
+            kmerLenUC,
+            &barLenSI,
+            kmerPercF,
+            &tblStackST,
+            extraNtF,
+            winShiftF,
+            &alnStackST,
+            &errSC
          );
-         goto fileErr_main_sec04;
-      } /*Else: file error*/
-   } /*If: had an error*/
+      if(errSC)
+      { /*If: had an error*/
+         if(errSC == def_memErr_kmerFind)
+         { /*If: had a memory error*/
+            fprintf(
+               stderr,
+               "memory error reading in barcodes%s",
+               str_endLine
+            );
+            goto memErr_main_sec04;
+         } /*If: had a memory error*/
+
+         else
+         { /*Else: file error*/
+            fprintf(
+               stderr,
+               "file error reading -bar %s%s",
+               barcodesFileStr,
+               str_endLine
+            );
+            goto fileErr_main_sec04;
+         } /*Else: file error*/
+      } /*If: had an error*/
+   } /*If: barcode demuxing; read barcodes*/
+
+   else
+   { /*Else: primer demuxing*/
+      barHeapAryST =
+         tsvToAry_refST_kmerFind(
+            primTsvStr,
+            kmerLenUC,
+            &barLenSI,
+            kmerPercF,
+            &tblStackST,
+            extraNtF,
+            winShiftF,
+            &alnStackST,
+            &errSC
+         );
+      if(errSC)
+      { /*If: had an error*/
+         if(errSC == def_memErr_kmerFind)
+         { /*If: had a memory error*/
+            fprintf(
+               stderr,
+               "memory error reading -prim-tsv %s%s",
+               primTsvStr,
+               str_endLine
+            );
+            goto memErr_main_sec04;
+         } /*If: had a memory error*/
+
+         else
+         { /*Else: file error*/
+            fprintf(
+               stderr,
+               "file error reading -prim-tsv %s%s",
+               primTsvStr,
+               str_endLine
+            );
+            goto fileErr_main_sec04;
+         } /*Else: file error*/
+      } /*If: had an error*/
+   } /*Else: primer demuxing*/
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
    + Main Sec02 Sub04 Cat02:
-   +   - open the output and log files
+   +   - open the output files for barcode demux
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   /*_________allocate_memory_and_initialize____________*/
-   outFileHeapStrAry =
-      malloc((barLenSI) * sizeof(outFileHeapStrAry));
-   if(! outFileHeapStrAry)
-   { /*If: memory error*/
-      fprintf(stderr, "ran out of memory%s", str_endLine);
-      goto memErr_main_sec04;
-   } /*If: memory error*/
-
-   for(seqSL = 0; seqSL < barLenSI; ++seqSL)
-      outFileHeapStrAry[seqSL] = 0;
-
-   /*_________open_all_the_output_files_________________*/
-   for(seqSL = 0; seqSL < barLenSI; ++seqSL)
-   { /*Loop: open output files*/
-      outFileHeapStrAry[seqSL] =
-         malloc(128 * sizeof(signed char *));
-      if(! outFileHeapStrAry[seqSL])
+   if(barcodesFileStr)
+   { /*If: using barcode mode*/
+      /*________allocate_memory_and_initialize__________*/
+      outFileHeapStrAry =
+         malloc((barLenSI) * sizeof(outFileHeapStrAry));
+      if(! outFileHeapStrAry)
       { /*If: memory error*/
          fprintf(
-             stderr,
-             "ran out of memory%s",
-             str_endLine
-          );
+            stderr,
+            "ran out of memory%s",
+            str_endLine
+         );
          goto memErr_main_sec04;
       } /*If: memory error*/
 
-      tmpStr = outFileHeapStrAry[seqSL];
-      tmpStr += cpWhite_ulCp(tmpStr, prefixStr);
-      *tmpStr++ = '-';
-      tmpStr +=
-         cpWhite_ulCp(
-            tmpStr,
-            barHeapAryST[seqSL].forSeqST->idStr
-         );
-      *tmpStr++ = '.';
-      *tmpStr++ = 'f';
-      *tmpStr++ = 'q';
-      *tmpStr = 0;
+      for(seqSL = 0; seqSL < barLenSI; ++seqSL)
+         outFileHeapStrAry[seqSL] = 0;
 
-      inFILE =
-         fopen((char *) outFileHeapStrAry[seqSL], "w");
+      /*_________open_all_the_output_files______________*/
+      for(seqSL = 0; seqSL < barLenSI; ++seqSL)
+      { /*Loop: open output files*/
+         outFileHeapStrAry[seqSL] =
+            malloc(128 * sizeof(signed char *));
+         if(! outFileHeapStrAry[seqSL])
+         { /*If: memory error*/
+            fprintf(
+                stderr,
+                "ran out of memory%s",
+                str_endLine
+             );
+            goto memErr_main_sec04;
+         } /*If: memory error*/
 
-      if(! inFILE)
-      { /*If: could not open the file*/
-         fprintf(
-            stderr,
-            "could not open %s for output%s",
-            outFileHeapStrAry[seqSL],
-            str_endLine
-         );
-         goto fileErr_main_sec04;
-      } /*If: could not open the file*/
+         tmpStr = outFileHeapStrAry[seqSL];
+         tmpStr += cpWhite_ulCp(tmpStr, prefixStr);
+         *tmpStr++ = '-';
+         tmpStr +=
+            cpWhite_ulCp(
+               tmpStr,
+               barHeapAryST[seqSL].forSeqST->idStr
+            );
+         *tmpStr++ = '.';
+         *tmpStr++ = 'f';
+         *tmpStr++ = 'q';
+         *tmpStr = 0;
 
-      fclose(inFILE);
-      inFILE = 0;
-   } /*Loop: open output files*/
+         inFILE =
+            fopen((char *) outFileHeapStrAry[seqSL], "w");
+
+         if(! inFILE)
+         { /*If: could not open the file*/
+            fprintf(
+               stderr,
+               "could not open %s for output%s",
+               outFileHeapStrAry[seqSL],
+               str_endLine
+            );
+            goto fileErr_main_sec04;
+         } /*If: could not open the file*/
+
+         fclose(inFILE);
+         inFILE = 0;
+      } /*Loop: open output files*/
+   } /*If: using barcode mode*/
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Main Sec02 Sub04 Cat02:
+   +   - open the output file for primer demux
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   else
+      outFILE = stdout; /*use stdout for primer output*/
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Main Sec02 Sub04 Cat04:
+   +   - open the log file (either mode)
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
    /*_________open_the_log_file_________________________*/
    tmpStr = tmpFileStr;
@@ -1135,6 +1333,11 @@ main(
 
       while(! errSC)
       { /*Loop: demux the sequences*/
+         tmpStr = seqStackST.idStr;
+         tmpStr += endWhite_ulCp(tmpStr);
+         *tmpStr = 0;
+         tmpStr = 0;
+
          coordHeapArySI =
             barcodeCoords_demux(
                &coordLenSI, /*gets # of mapped barcodes*/
@@ -1183,39 +1386,60 @@ main(
             goto getNextSeq_main_sec03_sub03;
          } /*If: had no coords or error*/
 
-         if(coordLenSI / 4 > splitSI)
-         { /*If: to many barcodes*/
-            fprintf(logFILE, "\tto-many-barcodes");
-            goto pcoords_main_sec03_sub03;
-         } /*If: to many barcodes*/
-
          /***********************************************\
          * Main Sec03 Sub03:
          *   - demux the read
          \***********************************************/
 
-         errSC =
-            read_demux(
-               &seqStackST,
-               splitSI,
-               distSI,
-               trimBl,
-               coordHeapArySI,
-               coordLenSI,
-               outFileHeapStrAry
-            );
+         if(barcodesFileStr)
+         { /*If: user is using barcode filtering*/
+            if(coordLenSI / 4 > splitSI)
+            { /*If: to many barcodes*/
+               fprintf(logFILE, "\tto-many-barcodes");
+               goto pcoords_main_sec03_sub03;
+            } /*If: to many barcodes*/
 
-         if(errSC == 3)
-            fprintf(logFILE, "\tbarcodes-at-both-ends");
-         else if(errSC == 4)
-            fprintf(
-               logFILE,
-                "\tbarcodes-next-to-each-other"
-            );
-         else if(errSC)
-            fprintf(logFILE, "\tdemux-error");
+            errSC =
+               read_demux(
+                  &seqStackST,
+                  splitSI,
+                  minDistSI,
+                  trimBl,
+                  coordHeapArySI,
+                  coordLenSI,
+                  outFileHeapStrAry
+               );
+            if(errSC == 3)
+               fprintf(logFILE, "\tbarcodes-at-both-ends");
+            else if(errSC == 4)
+               fprintf(
+                  logFILE,
+                   "\tbarcodes-next-to-each-other"
+               );
+            else if(errSC)
+               fprintf(logFILE, "\tdemux-error");
+            else
+               fprintf(logFILE, "\tkept");
+         } /*If: user is using barcode filtering*/
+
          else
-            fprintf(logFILE, "\tkept");
+         { /*Else: user is fitering reads*/
+            errSC =
+               primer_demux(
+                  &seqStackST,
+                  minDistSI,
+                  maxDistSI,
+                  coordHeapArySI,
+                  coordLenSI,
+                  barHeapAryST,
+                  outFILE
+               );
+
+            if(errSC <- 0)
+               fprintf(logFILE, "\tno-primers");
+            else
+               fprintf(logFILE, "\tprimers");
+         } /*Else: user is fitering reads*/
 
          pcoords_main_sec03_sub03:;
             for(siCoord=0; siCoord<coordLenSI; siCoord+=4)
@@ -1313,11 +1537,11 @@ main(
 
       if(outFileHeapStrAry)
       { /*If: have string array to free*/
-         for(distSI = 0; distSI < barLenSI; ++distSI)
+         for(siCoord = 0; siCoord < barLenSI; ++siCoord)
          { /*Loop: free strings*/
-            if(outFileHeapStrAry[distSI])
-               free(outFileHeapStrAry[distSI]);
-             outFileHeapStrAry[distSI] = 0;
+            if(outFileHeapStrAry[siCoord])
+               free(outFileHeapStrAry[siCoord]);
+             outFileHeapStrAry[siCoord] = 0;
          } /*Loop: free strings*/
 
          free(outFileHeapStrAry);
@@ -1331,6 +1555,13 @@ main(
       else fclose(inFILE);
       inFILE = 0; 
 
+      if(! outFILE) ;
+      else if(outFILE == stdin) ;
+      else if(outFILE == stdout) ;
+      else if(outFILE == stderr) ;
+      else fclose(outFILE);
+      outFILE = 0; 
+
       if(! logFILE) ;
       else if(logFILE == stdin) ;
       else if(logFILE == stdout) ;
@@ -1340,3 +1571,74 @@ main(
 
       return fqFileSI;
 } /*main*/
+
+/*=======================================================\
+: License:
+: 
+: This code is under the unlicense (public domain).
+:   However, for cases were the public domain is not
+:   suitable, such as countries that do not respect the
+:   public domain or were working with the public domain
+:   is inconveint / not possible, this code is under the
+:   MIT license
+: 
+: Public domain:
+: 
+: This is free and unencumbered software released into the
+:   public domain.
+: 
+: Anyone is free to copy, modify, publish, use, compile,
+:   sell, or distribute this software, either in source
+:   code form or as a compiled binary, for any purpose,
+:   commercial or non-commercial, and by any means.
+: 
+: In jurisdictions that recognize copyright laws, the
+:   author or authors of this software dedicate any and
+:   all copyright interest in the software to the public
+:   domain. We make this dedication for the benefit of the
+:   public at large and to the detriment of our heirs and
+:   successors. We intend this dedication to be an overt
+:   act of relinquishment in perpetuity of all present and
+:   future rights to this software under copyright law.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO
+:   EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM,
+:   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+:   CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+:   IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+:   DEALINGS IN THE SOFTWARE.
+: 
+: For more information, please refer to
+:   <https://unlicense.org>
+: 
+: MIT License:
+: 
+: Copyright (c) 2025 jeremyButtler
+: 
+: Permission is hereby granted, free of charge, to any
+:   person obtaining a copy of this software and
+:   associated documentation files (the "Software"), to
+:   deal in the Software without restriction, including
+:   without limitation the rights to use, copy, modify,
+:   merge, publish, distribute, sublicense, and/or sell
+:   copies of the Software, and to permit persons to whom
+:   the Software is furnished to do so, subject to the
+:   following conditions:
+: 
+: The above copyright notice and this permission notice
+:   shall be included in all copies or substantial
+:   portions of the Software.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+:   EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+:   FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+:   AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+:   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+:   USE OR OTHER DEALINGS IN THE SOFTWARE.
+\=======================================================*/
