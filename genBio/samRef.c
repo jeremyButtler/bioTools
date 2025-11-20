@@ -351,7 +351,14 @@ getRefLen_samRef(
    ^   - blank and get first line of sam file
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   blank_refs_samRef(refSTPtr);
+   if(! refSTPtr->idAryStr)
+   { /*If: user has not setup the strucutre*/
+      if( setup_refs_samRef(refSTPtr, 16) )
+         goto memErr_fun07_sec04;
+   } /*If: user has not setup the strucutre*/
+
+   else
+      blank_refs_samRef(refSTPtr);
 
    if(! headStrPtr) ;
       /*not saving headers*/
@@ -648,6 +655,12 @@ addRef_samRef(
    signed char *errSCPtr
 ){
    unsigned long retUL = 0;
+
+   if(! refsPtr->idAryStr)
+   { /*If: user has not setup the strucutre*/
+      if( setup_refs_samRef(refsPtr, 16) )
+         goto memErr_fun09;
+   } /*If: user has not setup the strucutre*/
 
    *errSCPtr = 0;
 

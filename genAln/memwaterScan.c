@@ -801,7 +801,9 @@ merge_aln_memwaterScan(
    ^   - allocate memory for arrays
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   if(outSTPtr->refLenSI != mergeSTPtr->refLenSI)
+   if(! outSTPtr->refLenSI)
+      outSTPtr->refLenSI = mergeSTPtr->refLenSI;
+   else if(outSTPtr->refLenSI != mergeSTPtr->refLenSI)
       goto differentRefsErr_fun09_sec0x;
 
    if(newOutLenSL >= outSTPtr->outSizeSL)
@@ -928,7 +930,7 @@ merge_aln_memwaterScan(
 |  - Modifies:
 |    o variables in alnSTPtr to have the new alignment
 |  - Returns:
-|    o score for aligment
+|    o score of the best alignment found
 |    o negative number for memory errors
 \-------------------------------------------------------*/
 signed long
@@ -976,6 +978,7 @@ memwaterScan(
    \*****************************************************/
 
    signed long scoreSL = 0;     /*score to return*/
+   signed long bestScoreSL = 0;
 
    /*Get start & end of query and reference sequences*/
    signed char *refSeqStr = 0;
@@ -1031,7 +1034,7 @@ memwaterScan(
    \****************************************************/
 
    alnSTPtr->refLenSI = refLenSL;
-   alnSTPtr->qryLenSI = refLenSL;
+   alnSTPtr->qryLenSI = qryLenSL;
    alnSTPtr->refOffsetSI = refSTPtr->offsetSL;
    alnSTPtr->qryOffsetSI = qrySTPtr->offsetSL;
 
@@ -1273,6 +1276,9 @@ memwaterScan(
                    alnSTPtr->indexRowSL[slRef];
                alnSTPtr->endArySL[slRef - 1] = indexSL;
                alnSTPtr->scoreArySL[slRef-1] = scoreSL;
+
+               if(scoreSL > bestScoreSL)
+                  bestScoreSL = scoreSL;
             } /*If: new best outerence position score*/
 
             if(
@@ -1285,6 +1291,9 @@ memwaterScan(
                   indexSL;
                alnSTPtr->scoreArySL[slQry + startSL] =
                   scoreSL;
+
+               if(scoreSL > bestScoreSL)
+                  bestScoreSL = scoreSL;
             } /*If: new best query position score*/
          } /*Else: check if have new high score*/
 
@@ -1331,11 +1340,11 @@ memwaterScan(
    goto cleanUp_fun10_sec05;
 
    memErr_fun10_sec05_sub03:;
-      scoreSL = -1;
+      bestScoreSL = -1;
       goto cleanUp_fun10_sec05;
 
    cleanUp_fun10_sec05:;
-      return scoreSL;
+      return bestScoreSL;
 } /*memwaterScan*/
 
 /*-------------------------------------------------------\
@@ -1361,7 +1370,7 @@ memwaterScan(
 |  - Modifies:
 |    o variables in alnSTPtr to have the new alignment
 |  - Returns:
-|    o score for aligment
+|    o score of the best alignment found
 |    o negative number for memory errors
 \-------------------------------------------------------*/
 signed long
@@ -1409,7 +1418,8 @@ simple_memwaterScan(
    *    starting positions
    \*****************************************************/
 
-   signed long scoreSL = 0;     /*score to return*/
+   signed long scoreSL = 0;     /*holds score*/
+   signed long bestScoreSL = 0; /*score to return*/
 
    /*Iterators for loops*/
    signed int siRef = 0;
@@ -1458,7 +1468,7 @@ simple_memwaterScan(
    \****************************************************/
 
    alnSTPtr->refLenSI = refLenSI;
-   alnSTPtr->qryLenSI = refLenSI;
+   alnSTPtr->qryLenSI = qryLenSI;
    alnSTPtr->refOffsetSI = 0;
    alnSTPtr->qryOffsetSI = 0;
 
@@ -1609,7 +1619,10 @@ simple_memwaterScan(
                (
                     def_matchScore_alnDefs
                   - def_snpScore_alnDefs
-               ) & -(qrySeqStr[siQry] == refSeqStr[siRef])
+               ) & -(
+                          (qrySeqStr[siQry] & ~32)
+                       != (refSeqStr[siRef] & ~32)
+                    )
             );
 
          snpScoreSL += nextSnpScoreSL;
@@ -1708,6 +1721,9 @@ simple_memwaterScan(
                    alnSTPtr->indexRowSL[siRef];
                alnSTPtr->endArySL[siRef - 1] = indexSL;
                alnSTPtr->scoreArySL[siRef-1] = scoreSL;
+
+               if(scoreSL > bestScoreSL)
+                  bestScoreSL = scoreSL;
             } /*If: new best outerence position score*/
 
             if(
@@ -1720,6 +1736,9 @@ simple_memwaterScan(
                   indexSL;
                alnSTPtr->scoreArySL[siQry + startSL] =
                   scoreSL;
+
+               if(scoreSL > bestScoreSL)
+                  bestScoreSL = scoreSL;
             } /*If: new best query position score*/
          } /*Else: check if have new high score*/
 
@@ -1763,11 +1782,11 @@ simple_memwaterScan(
    goto cleanUp_fun11_sec05;
 
    memErr_fun11_sec05_sub03:;
-      scoreSL = -1;
+      bestScoreSL = -1;
       goto cleanUp_fun11_sec05;
 
    cleanUp_fun11_sec05:;
-      return scoreSL;
+      return bestScoreSL;
 } /*simple_memwaterScan*/
 
 /*=======================================================\

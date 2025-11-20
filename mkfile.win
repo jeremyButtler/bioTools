@@ -38,6 +38,9 @@ all:
 	cd filtsamSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
+	cd getLinSrc
+	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
+	cd ..
 	cd illNanoSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
@@ -123,6 +126,9 @@ install:
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
 	cd filtsamSrc
+	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
+	cd ..
+	cd getLinSrc
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
 	cd illNanoSrc

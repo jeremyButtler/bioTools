@@ -62,17 +62,20 @@
 '       - compares two strings until deliminator is found
 '     o fun24: eqlNull_ulCp
 '       - compares two strings until null is found
-'     o fun25: eqlWhite_ulCp
+'     o fun25: eqlNullDelim_ulCp
+'      - compares two strings until deliminator or null is
+'        found
+'     o fun26: eqlWhite_ulCp
 '       - compares two strings until white space is found
 '   String cleanup:
-'     o fun26: rmWhite_ulCp
+'     o fun27: rmWhite_ulCp
 '       - removes white space from c-string
 '   String swap:
-'      o fun27: swapDelim_ulCp
+'      o fun28: swapDelim_ulCp
 '        - swaps two strings until deliminator is found
-'      o fun28: swapNull_ulCp
+'      o fun29: swapNull_ulCp
 '        - swaps two strings until null
-'      o fun29: shift_ulCp
+'      o fun30: shift_ulCp
 '        - shifts a substring in a string up or down
 '        - not tested, likely does not work
 '   o license:
@@ -895,7 +898,87 @@
 #endif
 
 /*-------------------------------------------------------\
-| Fun25: eqlWhite_ulCp
+| Fun25: eqlNullDelim_ulCp
+|   - compares two strings until deliminator or null is
+|     found
+| Input:
+|   - qryStr:
+|     o Pointer to query string
+|   - refStr:
+|     o Pointer to reference strin
+|   - delimUL:
+|     o delminator to end at (as long). Use makeULDelim
+|       to build this deliminator
+|     o this will give an unused variable warning on
+|       -DNOUL, but allows user to turn off ulCp
+|   - delimSC:
+|     o delminator (as char) to stop copying at
+| Output:
+|   - Returns:
+|     o 0 if strings are equal
+|     o > 0 if query > reference
+|     o < 0 if query < reference
+| Note:
+|   - this will likely not be very good at comparing
+|     short strings.
+\-------------------------------------------------------*/
+#ifdef NOUL
+   signed long
+   eqlNullDelim_ulCp(
+      signed char *qryStr,
+      signed char *refStr,
+      ulong_ulCp delimUL,
+      signed char delimSC
+   ){
+      while(*qryStr && *qryStr != delimSC)
+      { /*Loop: find difference*/
+         if(*qryStr != *refStr)
+            break;
+   
+         ++qryStr;
+         ++refStr;
+      } /*Loop: find difference*/
+   
+      return *qryStr - *refStr;
+   } /*eqlNullDelim_ulCp*/
+#else
+   signed long
+   eqlNullDelim_ulCp(
+      signed char *qryStr,
+      signed char *refStr,
+      ulong_ulCp delimUL,
+      signed char delimSC
+   ){
+      ulong_ulCp *qryUL = (ulong_ulCp *) qryStr;
+      ulong_ulCp *refUL = (ulong_ulCp *) refStr;
+   
+      while( ! ifNullDelim_ulCp(*qryUL, delimUL) )
+      { /*Loop: Copy cpStr to dupStr*/
+         if(*qryUL != *refUL)
+            break;
+   
+         ++qryUL;
+         ++refUL;
+      } /*Loop: Copy cpStr to dupStr*/
+   
+      qryStr = (signed char *) qryUL;
+      refStr = (signed char *) refUL;
+   
+      while(*qryStr && *qryStr != delimSC)
+      { /*Loop: find difference*/
+         if(*qryStr != *refStr)
+            break;
+   
+         ++qryStr;
+         ++refStr;
+      } /*Loop: find difference*/
+   
+      return *qryStr - *refStr;
+   } /*eqlNullDelim_ulCp*/
+#endif
+
+/*-------------------------------------------------------\
+| Fun26: eqlWhite_ulCp
 |   - compares two strings until white space is found
 | Input:
 |   - qryStr:
@@ -973,7 +1056,7 @@
 #endif
 
 /*-------------------------------------------------------\
-| Fun26: rmWhite_ulCp
+| Fun27: rmWhite_ulCp
 |   - removes white space from c-string
 | Input:
 |   - inStr:
@@ -1002,7 +1085,7 @@
             while(*cpStr < 33)
             { /*Loop: move past white space*/
                if(! *cpStr)
-                  goto done_fun26;
+                  goto done_fun27;
                ++cpStr;
             } /*Loop: move past white space*/
 
@@ -1010,7 +1093,7 @@
          } /*Else: remove white space*/
       } /*Loop: remove white space*/
    
-      done_fun26:;
+      done_fun27:;
          *dupStr = '\0';
          return dupStr - inStr;
    } /*rmWhite_ulCp*/
@@ -1043,7 +1126,7 @@
                ++uiChar
             ){ /*Loop: remove white space*/
                if(*cpStr == '\0')
-                  goto done_fun26;
+                  goto done_fun27;
                else if(*cpStr < 33)
                   ++cpStr;
                else
@@ -1055,14 +1138,14 @@
          } /*Else: have white space, manually copy*/
       } /*Loop: remove white space*/
    
-      done_fun26:;
+      done_fun27:;
          *dupStr = '\0';
          return dupStr - inStr;
    } /*rmWhite_ulCp*/
 #endif
 
 /*-------------------------------------------------------\
-| Fun27: swapDelim_ulCp
+| Fun28: swapDelim_ulCp
 |   - swaps two strings until deliminator is found
 | Input:
 |   - firstStr:
@@ -1135,22 +1218,22 @@
       ulong_ulCp delimUL,
       signed char delimSC
    ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-      ' Fun27: swapDelim_ulCp
+      ' Fun28: swapDelim_ulCp
       '   - swaps two strings until deliminator is found
-      '   o fun27 sec01:
+      '   o fun28 sec01:
       '     - variable declarations
-      '   o fun27 sec02:
+      '   o fun28 sec02:
       '     - swap until first deliminator
-      '   o fun27 sec03:
+      '   o fun28 sec03:
       '     - if both strings end early
-      '   o fun27 sec04:
+      '   o fun28 sec04:
       '     - if 1st string ends early, finsh swapping 2nd
-      '   o fun27 sec05:
+      '   o fun28 sec05:
       '     - 2nd string ends early, finsh swapping 1st
       \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
    
       /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-      ^ Fun27 Sec01:
+      ^ Fun28 Sec01:
       ^   - variable declarations
       \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
@@ -1158,7 +1241,7 @@
       ulong_ulCp *secUL = (ulong_ulCp *) secStr;
    
       /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-      ^ Fun27 Sec02:
+      ^ Fun28 Sec02:
       ^   - swap until first deliminator
       \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
@@ -1177,7 +1260,7 @@
       secStr = (signed char *) secUL;
    
       /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-      ^ Fun27 Sec03:
+      ^ Fun28 Sec03:
       ^   - if both strings end early
       \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
@@ -1222,7 +1305,7 @@
       }  /*If: both ended early*/
    
       /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-      ^ Fun27 Sec04:
+      ^ Fun28 Sec04:
       ^   - if first string ends early, finsh swapping 2nd
       \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
@@ -1261,7 +1344,7 @@
       } /*If: first string ended*/
    
       /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-      ^ Fun27 Sec05:
+      ^ Fun28 Sec05:
       ^   - else 2nd string ends early, finsh swapping 1st
       \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
@@ -1302,7 +1385,7 @@
 #endif
 
 /*-------------------------------------------------------\
-| Fun28: swapNull_ulCp
+| Fun29: swapNull_ulCp
 |   - swaps two strings until null
 | Input:
 |   - firstStr:
@@ -1362,22 +1445,22 @@
       signed char *firstStr,
       signed char *secStr
    ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-      ' Fun28: swapNull_ulCp
+      ' Fun29: swapNull_ulCp
       '   - swaps two strings until deliminator is found
-      '   o fun28 sec01:
+      '   o fun29 sec01:
       '     - variable declarations
-      '   o fun28 sec02:
+      '   o fun29 sec02:
       '     - swap until first deliminator
-      '   o fun28 sec03:
+      '   o fun29 sec03:
       '     - if both strings ended early
-      '   o fun28 sec04:
+      '   o fun29 sec04:
       '     - if 1st string ends early, finsh swapping 2nd
-      '   o fun28 sec05:
+      '   o fun29 sec05:
       '     - else 2nd string ends early, finsh 1st
       \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
    
       /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-      ^ Fun28 Sec01:
+      ^ Fun29 Sec01:
       ^   - variable declarations
       \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
@@ -1385,7 +1468,7 @@
       ulong_ulCp *secUL = (ulong_ulCp *) secStr;
    
       /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-      ^ Fun28 Sec02:
+      ^ Fun29 Sec02:
       ^   - swap until first deliminator
       \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
@@ -1404,7 +1487,7 @@
       secStr = (signed char *) secUL;
    
       /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-      ^ Fun28 Sec03:
+      ^ Fun29 Sec03:
       ^   - if both strings ended early
       \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
@@ -1448,7 +1531,7 @@
       }  /*If: both strings end early*/
    
       /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-      ^ Fun28 Sec04:
+      ^ Fun29 Sec04:
       ^   - if first string ends early, finsh swapping 2nd
       \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
         
@@ -1487,7 +1570,7 @@
       } /*Else If: first string ended*/
    
       /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-      ^ Fun28 Sec05:
+      ^ Fun29 Sec05:
       ^   - else 2nd string ends early, finsh swapping 1st
       \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
@@ -1528,7 +1611,7 @@
 #endif
 
 /*-------------------------------------------------------\
-| Fun29: shift_ulCp
+| Fun30: shift_ulCp
 |   - shifts a substring in a string up or down
 | Input:
 |   - inStr:

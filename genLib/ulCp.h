@@ -68,17 +68,20 @@
 '       - compares two strings until deliminator is found
 '     o fun24: eqlNull_ulCp
 '       - compares two strings until null is found
-'     o fun25: eqlWhite_ulCp
+'     o fun25: eqlNullDelim_ulCp
+'      - compares two strings until deliminator or null is
+'        found
+'     o fun26: eqlWhite_ulCp
 '       - compares two strings until white space is found
 '   String cleanup:
-'     o fun26: rmWhite_ulCp
+'     o fun27: rmWhite_ulCp
 '       - removes white space from c-string
 '   String swap:
-'      o fun27: swapDelim_ulCp
+'      o fun28: swapDelim_ulCp
 '        - swaps two strings until deliminator is found
-'      o fun28: swapNull_ulCp
+'      o fun29: swapNull_ulCp
 '        - swaps two strings until null
-'      o fun29: shift_ulCp
+'      o fun30: shift_ulCp
 '        - shifts a substring in a string up or down
 '   o license:
 '     - licensing for this code (public domain / mit)
@@ -813,7 +816,40 @@ eqlNull_ulCp(
 );
 
 /*-------------------------------------------------------\
-| Fun25: eqlWhite_ulCp
+| Fun25: eqlNullDelim_ulCp
+|   - compares two strings until deliminator or null is
+|     found
+| Input:
+|   - qryStr:
+|     o Pointer to query string
+|   - refStr:
+|     o Pointer to reference strin
+|   - delimUL:
+|     o delminator to end at (as long). Use makeULDelim
+|       to build this deliminator
+|     o this will give an unused variable warning on
+|       -DNOUL, but allows user to turn off ulCp
+|   - delimSC:
+|     o delminator (as char) to stop copying at
+| Output:
+|   - Returns:
+|     o 0 if strings are equal
+|     o > 0 if query > reference
+|     o < 0 if query < reference
+| Note:
+|   - this will likely not be very good at comparing
+|     short strings.
+\-------------------------------------------------------*/
+signed long
+eqlNullDelim_ulCp(
+   signed char *qryStr,
+   signed char *refStr,
+   ulong_ulCp delimUL,
+   signed char delimSC
+);
+
+/*-------------------------------------------------------\
+| Fun26: eqlWhite_ulCp
 |   - compares two strings until white space is found
 | Input:
 |   - qryStr:
@@ -836,7 +872,7 @@ eqlWhite_ulCp(
 );
 
 /*-------------------------------------------------------\
-| Fun26: rmWhite_ulCp
+| Fun27: rmWhite_ulCp
 |   - removes white space from c-string
 | Input:
 |   - inStr:
@@ -853,7 +889,7 @@ rmWhite_ulCp(
 );
 
 /*-------------------------------------------------------\
-| Fun27: swapDelim_ulCp
+| Fun28: swapDelim_ulCp
 |   - swaps two strings until deliminator is found
 | Input:
 |   - firstStr:
@@ -884,7 +920,7 @@ swapDelim_ulCp(
 );
 
 /*-------------------------------------------------------\
-| Fun28: swapNull_ulCp
+| Fun29: swapNull_ulCp
 |   - swaps two strings until null
 | Input:
 |   - firstStr:
@@ -906,7 +942,7 @@ swapNull_ulCp(
 );
 
 /*-------------------------------------------------------\
-| Fun29: shift_ulCp
+| Fun30: shift_ulCp
 |   - shifts a substring in a string up or down
 | Input:
 |   - inStr:

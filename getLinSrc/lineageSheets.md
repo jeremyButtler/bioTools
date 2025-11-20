@@ -70,6 +70,8 @@ The first line of lineage variants file is the header and
      - F or + is for forward
      - R or - is for reverse
   9. Is the pattern to use for the lineage
+     - This pattern should always be in the reference
+       sequences direction
      - `0` if this lineage has no pattern
        - Currently del lineages only
        - In reality getLin ignores this entry for deletion
@@ -87,6 +89,9 @@ The first line of lineage variants file is the header and
          as the defualt (it is a special assignment)
      - One or more nucleotides (A, T, G, C) to compare
        - This includes the sequence for a trs
+       - For SNP lineages, the nucleotides must always be
+         in the order on the reference sequence (do not
+         reverse complement)
      - One or more amino acids to compare
        - This includes the sequence for a trs
      - A pipe separated list when multiple combininations
@@ -194,11 +199,24 @@ The complex lineage file allows the merging off multiple
      still call the lineage (amoun to fudge by)
      - Can be 0 or `NA`
   6. Tells if overwrites the single variant lineage
-     - Yes, means all single variant lineages are ignored
+     - Yes/True, means the single variant (simple) lineages
+       used to get this lineage are overwritten (ignored)
+     - Default: means the default lineage (from simple
+       lineage sheet) is overwritten if this complex
+       lineage is found
+     - All: means both the default lineage and the simple
+       lineages used to get this complex lineage are
+       overwritten
      - No, means all single variant lineages are printed
-  7. Marks the start of the variant column, this is always
+  7. Marks if printing this lineage or not
+     - This is useful if you are using the complex lineage
+       as a part of other complex lineages, but do not
+       want it printed.
+     - True: for print
+     - False: do not print
+  8. Marks the start of the variant column, this is always
      a `*`
-  8. and onwards are the variants to assign
+  9. And onwards are the variants to assign
      - Non-TRS lineages it is `<variant_name_(id)>`
      - TRS lineages it is `<variant_name_(id)>:lineage`
        - were lineage is based on the repeat length
@@ -222,17 +240,17 @@ The bottom lineage is a TRS example which is a combined
   is no way to report these separately.
 
 ```
-id        group     gene   overwrites fudge lingeage variants_start var1       var2
-B602L-UKR B602L-SNP B602L  Yes        0     UKR      *              B602L-UKR1 B602L-UKR2
-K145R     group     K145R  Yes        0     3        *              K145R-2    K145R-3
-TRS_combo group     NA     No         0     mixed    *              IGR:2      O174-TRS:3
+id        group     gene   overwrites fudge lingeage print_lineages	variants_start var1       var2
+B602L-UKR B602L-SNP B602L  Yes        0     UKR      True	*              B602L-UKR1 B602L-UKR2
+K145R     group     K145R  Yes        0     3        True	*              K145R-2    K145R-3
+TRS_combo group     NA     No         0     mixed    True	*              IGR:2      O174-TRS:3
 ```
 
 An exmaple adding in a notes column for human use.
 
 ```
-id        group     gene   overwrites fudge lingeage notes         variants_start var1       var2
-B602L-UKR B602L-SNP B602L  Yes        0     UKR      gene_lineage  *              B602L-UKR1 B602L-UKR2
-K145R     group     K145R  Yes        0     3        gene_lineage  *              !K145R-2    K145R-3
-TRS_combo group     NA     No         0     mixed    final_lineage *              IGR:2      O174-TRS:3
+id        group     gene   overwrites fudge lingeage print_lineages	notes         variants_start var1       var2
+B602L-UKR B602L-SNP B602L  Yes        0     UKR      True	gene_lineage  *              B602L-UKR1 B602L-UKR2
+K145R     group     K145R  Yes        0     3        True	gene_lineage  *              !K145R-2    K145R-3
+TRS_combo group     NA     No         0     mixed    True	final_lineage *              IGR:2      O174-TRS:3
 ```

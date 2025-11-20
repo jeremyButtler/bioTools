@@ -36,10 +36,6 @@ cd ../diCoordsSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" diCoords mainDICoords diCoords samEntry ../bioTools.h ../genLib/endLine.h
 cd "../$retDirStr" || exit;
 
-cd ../unGzSrc || exit;
-sh "../$retDirStr/allOSMkfiles.sh" unGz unGz inflate ../bioTools.h
-cd "../$retDirStr" || exit;
-
 cd ../edClustSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" edClust mainEdClust edClust seqST charCp ../bioTools.h ../genLib/endLine.h ../genBio/tbConDefs.h
 cd "../$retDirStr" || exit;
@@ -50,6 +46,10 @@ cd "../$retDirStr" || exit;
 
 cd ../filtsamSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" filtsam mainFiltsam trimSam charCp ../bioTools.h ../genLib/endLine.h
+cd "../$retDirStr" || exit;
+
+cd ../getLinSrc || exit;
+sh "../$retDirStr/allOSMkfiles.sh" getLin mainGetLin getLin ../bioTools.h
 cd "../$retDirStr" || exit;
 
 cd ../hirschbergSrc || exit;
@@ -115,3 +115,8 @@ cd "../$retDirStr" || exit;
 cd ../trimSamSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" trimSam mainTrimSam  trimSam ../bioTools.h ../genLib/endLine.h
 cd "../$retDirStr" || exit;
+
+cd ../unGzSrc || exit;
+sh "../$retDirStr/allOSMkfiles.sh" unGz unGz inflate ../bioTools.h
+cd "../$retDirStr" || exit;
+

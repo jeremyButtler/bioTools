@@ -97,8 +97,13 @@
 '   * general functions
 '     o fun35: getSimpleLineages_linST
 '       - gets the lineages from the variants lineage file
-'     o fun36: getComplexLineages_one_linST
+'     o .c fun36: intInsert_linST
+'       - inserts an integer into an array at its sorted
+'         position (this does not insert duplicates)
+'     o fun37: getComplexLineages_linST
 '       - gets the lineages from the complex lineage file
+'   o license:
+'     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*-------------------------------------------------------\
@@ -179,7 +184,8 @@ typedef struct one_linST
    /*_________________pattern_or_sequence_______________*/
    signed char **seqAryStr; /*has sequence patterns*/
    signed int *seqLenArySI; /*sequence lengths*/
-   signed int seqSizeSI;    /*number of patterns*/
+   signed int seqSizeSI;   /*max patterns*/
+   signed int seqLenSI;    /*number of patterns*/
    signed char refMatchBl;  /*1: is the lineage of the
                             `    reference (no sequence)
                             */
@@ -234,6 +240,7 @@ typedef struct simple_linST
    signed char *foundGroupAryBl;
       /*tells if found a non-default group lineage, this
       `  will be shorter then groupArySI and linAryST
+      `  do -1 if the default group was not found
       */
    signed int *defGroupArySI;
       /*has the index's for the default lineage for each
@@ -260,7 +267,21 @@ typedef struct multi_linST
    signed char *geneStr;/*gene assigned to multi lineage*/
    signed char *lineageStr; /*lineage to assign*/
    signed int fudgeSI; /*how many lineages can be off*/
-   signed char overwriteBl; /*1: overwrite lineage*/
+   signed char overwriteBl;
+      /* Values:
+      `    - 1: overwrite simple lineages in the complex
+      `         lineage
+      `    - 2: overriwte default lineage
+      `    - 3: overriwte simple lilneages and the default
+      `         lineage
+      */
+   signed char printLinBl;   /*1: this linage can be
+                             `  printed as a result
+                             ` 0: lineage can not be
+                             `    printed by its self, ex
+                             `    if is part of a complex
+                             `    lineage
+                             */
 
    /*these are for figuring out what lineages are needed
    `  to get a complex lineage
@@ -275,6 +296,11 @@ typedef struct multi_linST
       /*tells if lineage is needed to call (1)*/
    signed int linLenSI;
       /*number of variants to get lineage*/
+   signed int *defGroupArySI;
+      /*default groups to remove when I am removing
+      `   default lineages
+      */
+   signed int defGroupLenSI; /*number default lineages*/
    
    signed int *mLinIndexArySI;
       /*array of each multi_linST index assigned to this
@@ -753,7 +779,7 @@ getSimpleLineages_linST(
 );
 
 /*-------------------------------------------------------\
-| Fun36: getComplexLineages_one_linST
+| Fun37: getComplexLineages_linST
 |   - gets the lineages from the complex lineage file
 | Input:
 |   - simpleSTPtr:
@@ -781,3 +807,74 @@ getComplexLineages_linST(
 );
 
 #endif
+
+/*=======================================================\
+: License:
+: 
+: This code is under the unlicense (public domain).
+:   However, for cases were the public domain is not
+:   suitable, such as countries that do not respect the
+:   public domain or were working with the public domain
+:   is inconvient / not possible, this code is under the
+:   MIT license.
+: 
+: Public domain:
+: 
+: This is free and unencumbered software released into the
+:   public domain.
+: 
+: Anyone is free to copy, modify, publish, use, compile,
+:   sell, or distribute this software, either in source
+:   code form or as a compiled binary, for any purpose,
+:   commercial or non-commercial, and by any means.
+: 
+: In jurisdictions that recognize copyright laws, the
+:   author or authors of this software dedicate any and
+:   all copyright interest in the software to the public
+:   domain. We make this dedication for the benefit of the
+:   public at large and to the detriment of our heirs and
+:   successors. We intend this dedication to be an overt
+:   act of relinquishment in perpetuity of all present and
+:   future rights to this software under copyright law.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO
+:   EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM,
+:   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+:   CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+:   IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+:   DEALINGS IN THE SOFTWARE.
+: 
+: For more information, please refer to
+:   <https://unlicense.org>
+: 
+: MIT License:
+: 
+: Copyright (c) 2025 jeremyButtler
+: 
+: Permission is hereby granted, free of charge, to any
+:   person obtaining a copy of this software and
+:   associated documentation files (the "Software"), to
+:   deal in the Software without restriction, including
+:   without limitation the rights to use, copy, modify,
+:   merge, publish, distribute, sublicense, and/or sell
+:   copies of the Software, and to permit persons to whom
+:   the Software is furnished to do so, subject to the
+:   following conditions:
+: 
+: The above copyright notice and this permission notice
+:   shall be included in all copies or substantial
+:   portions of the Software.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+:   EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+:   FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+:   AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+:   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+:   USE OR OTHER DEALINGS IN THE SOFTWARE.
+\=======================================================*/

@@ -60,7 +60,7 @@
 '         the detected complex lineages
 '       - mLinAryST (multi_linST array) must not be sorted
 '         or changed from getComplexLineages_multi_linST
-'   * cnt_getLin structu functions
+'   * cnt_getLin structure functions
 '     o fun21: blank_cnt_getLin
 '       - blanks values in a cnt_getLin struct
 '     o fun22: init_cnt_getLin
@@ -88,6 +88,8 @@
 '       !!! warning, this does not have a conistent header
 '           system, because the TRS lineages are variable.
 '           expect different headers for different input
+'   o license:
+'     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*-------------------------------------------------------\
@@ -128,7 +130,6 @@
 !   - .c  #include "../genLib/base10str.h"
 !   - .c  #include "../genLib/fileFun.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
-!   - .h  #include "../genBio/codonTbl.h"
 !   - .h  #include "../genBio/ntTo2Bit.h"
 !   - .h  #include "../genBio/revNtTo2Bit.h"
 !   - .h  #include "../genBio/kmerBit.h"
@@ -189,12 +190,12 @@ snpNtLineage_getLin(
 
    signed char baseSC = 0;
    signed char refMatchBl = 0; /*goes to 1 if have ref*/
+   signed int seqPosSI = 0;
 
    signed int retSI = 0;
    signed char breakBl = 0;
 
    signed int refPosSI = 0;
-   signed int seqPosSI = 0;
    signed int siCig = 0;
    signed int ntLeftSI = 0;
 
@@ -213,7 +214,7 @@ snpNtLineage_getLin(
    ) goto noMatch_fun01_sec05; /*is before read*/
 
    else if(
-      linSTPtr->endSI < (signed int) samSTPtr->refEndUI
+      linSTPtr->endSI > (signed int) samSTPtr->refEndUI
    ) goto noMatch_fun01_sec05; /*is before read*/
 
    else if(linSTPtr->moleculeTypeSC != def_ntSeq_linST)
@@ -228,43 +229,31 @@ snpNtLineage_getLin(
       goto noMatch_fun01_sec05;
    } /*If: default group, can not check lineage*/
 
-   if(linSTPtr->revDirBl)
-      findRefPos_samEntry(
-         samSTPtr,
-         &posArySI[2],    /*cigar position*/
-         &posArySI[3],   /*bases left at cigar position*/
-         linSTPtr->endSI, /*were to end at*/
-         &posArySI[0],    /*reference position*/
-         &posArySI[1]     /*sequence position*/
-      ); /*move to last base in lineage*/
-   else
-      findRefPos_samEntry(
-         samSTPtr,
-         &posArySI[2],     /*cigar position*/
-         &posArySI[3],   /*bases left at cigar position*/
-         linSTPtr->startSI,/*were to end at*/
-         &posArySI[0],     /*reference position*/
-         &posArySI[1]      /*sequence position*/
-      ); /*move to first base in lineage*/
-
-   seqPosSI = posArySI[1];
+   findRefPos_samEntry(
+      samSTPtr,
+      &posArySI[2],     /*cigar position*/
+      &posArySI[3],     /*bases left at cigar position*/
+      linSTPtr->startSI,/*were to end at*/
+      &posArySI[0],     /*reference position*/
+      &posArySI[1]      /*sequence position*/
+   ); /*move to first base in lineage*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun01 Sec03:
    ^   - allocate memory for the lineage check
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   if(linSTPtr->seqSizeSI > 0)
+   if(linSTPtr->seqLenSI > 0)
       diffCntArySI =
-         calloc(linSTPtr->seqSizeSI, sizeof(signed int));
+         calloc(linSTPtr->seqLenSI, sizeof(signed int));
    else
       diffCntArySI = calloc(1, sizeof(signed int));
    if(! diffCntArySI)
       goto memErr_fun01_sec05;
 
-   if(linSTPtr->seqSizeSI > 0)
+   if(linSTPtr->seqLenSI > 0)
       patternArySI =
-         calloc(linSTPtr->seqSizeSI, sizeof(signed int));
+         calloc(linSTPtr->seqLenSI, sizeof(signed int));
    else
       patternArySI = calloc(1, sizeof(signed int));
    if(! patternArySI)
@@ -310,11 +299,11 @@ snpNtLineage_getLin(
          retSI = 0;
          breakBl = 1;
 
-         for(retSI=0; retSI < linSTPtr->seqSizeSI;++retSI)
+         for(retSI=0; retSI < linSTPtr->seqLenSI;++retSI)
          { /*Loop: add difference in*/
             diffCntArySI[retSI] += ntLeftSI;
 
-            if(diffCntArySI[retSI] < linSTPtr->fudgeSI)
+            if(diffCntArySI[retSI] <= linSTPtr->fudgeSI)
                breakBl = 0;
 
             if(samSTPtr->cigTypeStr[siCig] == 'D')
@@ -326,18 +315,8 @@ snpNtLineage_getLin(
          else
             seqPosSI -= ntLeftSI;
 
-         if(linSTPtr->revDirBl)
-         { /*If: moving backwards*/
-           --siCig;
-           ntLeftSI = 0;
-         } /*If: moving backwards*/
-
-         else
-         { /*Else: moving fowards*/
-           ++siCig;
-           ntLeftSI = samSTPtr->cigArySI[siCig];
-         } /*Else: moving fowards*/
-
+         ++siCig;
+         ntLeftSI = samSTPtr->cigArySI[siCig];
          continue;
       } /*Else: have a indel/masking differnce*/
 
@@ -359,7 +338,7 @@ snpNtLineage_getLin(
       breakBl = 1;
       baseSC = samSTPtr->seqStr[seqPosSI];
 
-      for(retSI = 0; retSI < linSTPtr->seqSizeSI; ++retSI)
+      for(retSI = 0; retSI < linSTPtr->seqLenSI; ++retSI)
       { /*Loop: find difference*/
          if(! linSTPtr->seqAryStr[patternArySI[retSI]])
          { /*If: finished with this pattern*/
@@ -376,8 +355,21 @@ snpNtLineage_getLin(
                ]
          ) ++diffCntArySI[retSI];
 
-         if(diffCntArySI[retSI] < linSTPtr->fudgeSI)
+         ++patternArySI[retSI];
+         if(
+            ! linSTPtr->seqAryStr[retSI][
+              patternArySI[retSI]
+            ]
+         ){ /*If: finished with this pattern*/
+            if(diffCntArySI[retSI] <= linSTPtr->fudgeSI)
+               goto match_fun01_sec05;
+            else
+               continue;
+         } /*If: finished with this pattern*/
+
+         else if(diffCntArySI[retSI] <= linSTPtr->fudgeSI)
             breakBl = 0;
+            /*still have one pattern that works*/
       } /*Loop: find difference*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
@@ -385,55 +377,33 @@ snpNtLineage_getLin(
       +   - move to next base and check if finished
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-      if(linSTPtr->revDirBl)
-      { /*If: going backwards*/
-         --refPosSI;
-         --seqPosSI;
+      ++refPosSI;
+      ++seqPosSI;
 
-         if(refPosSI < linSTPtr->startSI)
-         { /*If: end of lineage region*/
-            if(! breakBl)
-               goto match_fun01_sec05;
-            else
-               goto noMatch_fun01_sec05;
-         } /*If: end of lineage region*/
+      if(refPosSI > linSTPtr->endSI)
+      { /*If: end of lineage region*/
+         if(! breakBl)
+            goto match_fun01_sec05;
+         else
+            goto noMatch_fun01_sec05;
+      } /*If: end of lineage region*/
 
-         ++ntLeftSI;
+      --ntLeftSI;
 
-         if(ntLeftSI >= samSTPtr->cigArySI[siCig])
-         { /*If: need to move back an entry*/
-            ntLeftSI = 0;
-            --siCig;
-         } /*If: need to move back an entry*/
-      } /*If: going backwards*/
-
-      else
-      { /*Else: going forwards*/
-         ++refPosSI;
-         ++seqPosSI;
-
-         if(refPosSI > linSTPtr->endSI)
-         { /*If: end of lineage region*/
-            if(! breakBl)
-               goto match_fun01_sec05;
-            else
-               goto noMatch_fun01_sec05;
-         } /*If: end of lineage region*/
-
-         --ntLeftSI;
-
-         if(ntLeftSI <= 0)
-         { /*If: need to move back an entry*/
-            ++siCig;
-            ntLeftSI = samSTPtr->cigArySI[siCig];
-         } /*If: need to move back an entry*/
-      } /*Else: going forwards*/
+      if(ntLeftSI <= 0)
+      { /*If: need to move back an entry*/
+         ++siCig;
+         ntLeftSI = samSTPtr->cigArySI[siCig];
+      } /*If: need to move back an entry*/
    } /*Loop: get differences for each lineage*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun01 Sec05:
    ^   - clean up and return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(breakBl)
+      goto noMatch_fun01_sec05;
 
    match_fun01_sec05:;
       retSI = 1;
@@ -545,7 +515,7 @@ snpAALineage_getLin(
    ) goto noMatch_fun02_sec05; /*is before read*/
 
    else if(
-      linSTPtr->endSI < (signed int) samSTPtr->refEndUI
+      linSTPtr->endSI > (signed int) samSTPtr->refEndUI
    ) goto noMatch_fun02_sec05; /*is before read*/
 
    else if(linSTPtr->moleculeTypeSC != def_aaSeq_linST)
@@ -586,17 +556,17 @@ snpAALineage_getLin(
    ^   - allocate memory for the lineage check
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   if(linSTPtr->seqSizeSI > 0)
+   if(linSTPtr->seqLenSI > 0)
       diffCntArySI =
-         calloc(linSTPtr->seqSizeSI, sizeof(signed int));
+         calloc(linSTPtr->seqLenSI, sizeof(signed int));
    else
       diffCntArySI = calloc(1, sizeof(signed int));
    if(! diffCntArySI)
       goto memErr_fun02_sec05;
 
-   if(linSTPtr->seqSizeSI > 0)
+   if(linSTPtr->seqLenSI > 0)
       patternArySI =
-         calloc(linSTPtr->seqSizeSI, sizeof(signed int));
+         calloc(linSTPtr->seqLenSI, sizeof(signed int));
    else
       patternArySI = calloc(1, sizeof(signed int));
    if(! patternArySI)
@@ -639,7 +609,7 @@ snpAALineage_getLin(
 
       retSI = 0;
 
-      while(retSI < 3)
+      while(retSI < 2)
       { /*Loop: get cigar type for the next three bases*/
          aaSC = samSTPtr->cigTypeStr[siCig];
 
@@ -664,6 +634,8 @@ snpAALineage_getLin(
             else
             { /*Else: snp or match*/
                ++retSI;
+               --refPosSI;
+               --seqPosSI;
 
                nextRevNt_fun02_sec04_sub02:;
                  ++ntLeftSI;
@@ -698,6 +670,8 @@ snpAALineage_getLin(
             else
             { /*Else: snp or match*/
                ++retSI;
+               ++refPosSI;
+               ++seqPosSI;
 
                nextNt_fun02_sec04_sub02:;
                   --ntLeftSI;
@@ -709,7 +683,6 @@ snpAALineage_getLin(
                   } /*If: need to move to next entry*/
             } /*Else: snp or match*/
          } /*Else: going forwards*/
-
       } /*Loop: get cigar type for the next three bases*/
 
       /**************************************************\
@@ -727,17 +700,23 @@ snpAALineage_getLin(
          retSI = 0;
          breakBl = 1;
 
-         for(retSI=0; retSI < linSTPtr->seqSizeSI;++retSI)
+         for(retSI=0; retSI < linSTPtr->seqLenSI;++retSI)
          { /*Loop: add difference in*/
             diffCntArySI[retSI] += diffSI;
 
-            if(diffCntArySI[retSI] < linSTPtr->fudgeSI)
+            if(diffCntArySI[retSI] <= linSTPtr->fudgeSI)
                breakBl = 0;
 
             if(linSTPtr->seqAryStr[patternArySI[retSI]])
                ++patternArySI[retSI];
                /*move to next item in pattern*/
          } /*Loop: add difference in*/
+
+         /*move to first base in next codon*/
+         if(linSTPtr->revDirBl)
+            --seqPosSI;
+         else
+            ++seqPosSI;
 
          continue;
       } /*If: had a differnce*/
@@ -755,6 +734,7 @@ snpAALineage_getLin(
                samSTPtr->seqStr[seqPosSI + 1],
                samSTPtr->seqStr[seqPosSI + 2]
             );
+         --seqPosSI; /*move to first base in next codon*/
       } /*If: going backwards*/
 
       else
@@ -765,13 +745,13 @@ snpAALineage_getLin(
                 samSTPtr->seqStr[seqPosSI - 1],
                 samSTPtr->seqStr[seqPosSI]
              );
+         ++seqPosSI; /*move to first base in next codon*/
       } /*Else: going forwards*/
-
 
       retSI = 0;
       breakBl = 1;
 
-      for(retSI = 0; retSI < linSTPtr->seqSizeSI; ++retSI)
+      for(retSI = 0; retSI < linSTPtr->seqLenSI; ++retSI)
       { /*Loop: find difference*/
          if(
             ! linSTPtr->seqAryStr[retSI][
@@ -785,14 +765,27 @@ snpAALineage_getLin(
          } /*If: finished with this pattern*/
 
          if(
-               aaSC
-            != linSTPtr->seqAryStr[retSI][
+               (aaSC & ~32)
+            != (linSTPtr->seqAryStr[retSI][
                   patternArySI[retSI]
-               ]
+               ] & ~32)
          ) ++diffCntArySI[retSI];
 
-         if(diffCntArySI[retSI] < linSTPtr->fudgeSI)
+         ++patternArySI[retSI];
+         if(
+            ! linSTPtr->seqAryStr[retSI][
+              patternArySI[retSI]
+            ]
+         ){ /*If: finished with this pattern*/
+            if(diffCntArySI[retSI] <= linSTPtr->fudgeSI)
+               goto match_fun02_sec05;
+            else
+               continue;
+         } /*If: finished with this pattern*/
+
+         else if(diffCntArySI[retSI] <= linSTPtr->fudgeSI)
             breakBl = 0;
+            /*still have one pattern that works*/
       } /*Loop: find difference*/
    } /*Loop: get differences for each lineage*/
 
@@ -800,6 +793,9 @@ snpAALineage_getLin(
    ^ Fun02 Sec05:
    ^   - clean up and return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(breakBl)
+      goto noMatch_fun02_sec05;
 
    match_fun02_sec05:;
       retSI = 1;
@@ -883,7 +879,7 @@ delLineage_getLin(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    signed int lenDelSI =
-      linSTPtr->endSI - linSTPtr->startSI;
+      linSTPtr->endSI - linSTPtr->startSI + 1;
    signed int delCntSI = 0;
    signed int diffSI = 0;
 
@@ -904,7 +900,7 @@ delLineage_getLin(
    ) goto noMatch_fun03_sec04; /*is before read*/
 
    else if(
-      linSTPtr->endSI < (signed int) samSTPtr->refEndUI
+      linSTPtr->endSI > (signed int) samSTPtr->refEndUI
    ) goto noMatch_fun03_sec04; /*is before read*/
 
    else if(linSTPtr->checkTypeSC != def_delType_linST)
@@ -966,6 +962,8 @@ delLineage_getLin(
          seqPosSI += ntLeftSI;
       } /*Else: snp or match*/
 
+      if(diffSI > linSTPtr->fudgeSI)
+         break;
       ++siCig;
       ntLeftSI += samSTPtr->cigArySI[siCig];
    } /*Loop: get differences for each lineage*/
@@ -1062,7 +1060,7 @@ lengthLineage_getLin(
    ) goto noMatch_fun04_sec04; /*is before read*/
 
    else if(
-      linSTPtr->endSI < (signed int) samSTPtr->refEndUI
+      linSTPtr->endSI > (signed int) samSTPtr->refEndUI
    ) goto noMatch_fun04_sec04; /*is before read*/
 
    else if(linSTPtr->checkTypeSC != def_lenType_linST)
@@ -1105,7 +1103,7 @@ lengthLineage_getLin(
    seqPosSI -= posArySI[1];
    ++seqPosSI; /*convert index 0 to index 1*/
 
-   for(siCig = 0; siCig < linSTPtr->seqSizeSI; ++siCig)
+   for(siCig = 0; siCig < linSTPtr->seqLenSI; ++siCig)
    { /*Loop: find matching lineage*/
       refPosSI =
          linSTPtr->seqLenArySI[siCig] + linSTPtr->fudgeSI;
@@ -1234,7 +1232,7 @@ fastFindPatterns_getLin(
 
    if(! *scoreArySLPtr)
    { /*If: need memory*/
-      lenSI = linSTPtr->seqSizeSI << 1;
+      lenSI = linSTPtr->seqLenSI << 1;
 
       if(*startArySLPtr)
          free(*startArySLPtr);
@@ -1250,8 +1248,6 @@ fastFindPatterns_getLin(
       if(! *endArySLPtr)
          goto memErr_fun05_sec04;
 
-      if(! *scoreArySLPtr)
-         goto memErr_fun05_sec04;
       if(*scoreArySLPtr)
          free(*scoreArySLPtr);
       *scoreArySLPtr = 0;
@@ -1277,7 +1273,7 @@ fastFindPatterns_getLin(
 
       for(
          uiPrim = 0;
-         uiPrim < (unsigned int) linSTPtr->seqSizeSI;
+         uiPrim < (unsigned int) linSTPtr->seqLenSI;
          ++uiPrim
       ){ /*Loop: detect primers in each chunk*/
 
@@ -1295,7 +1291,7 @@ fastFindPatterns_getLin(
                   *startArySLPtr,
                   (*arySizeSIPtr<<1) * sizeof(signed long)
                );
-            if(! *swapSLPtr)
+            if(! swapSLPtr)
                goto memErr_fun05_sec04;
             *startArySLPtr = swapSLPtr;
 
@@ -1304,7 +1300,7 @@ fastFindPatterns_getLin(
                   *endArySLPtr,
                   (*arySizeSIPtr<<1) * sizeof(signed long)
                );
-            if(! *swapSLPtr)
+            if(! swapSLPtr)
                goto memErr_fun05_sec04;
             *endArySLPtr = swapSLPtr;
 
@@ -1313,7 +1309,7 @@ fastFindPatterns_getLin(
                   *scoreArySLPtr,
                   (*arySizeSIPtr<<1) * sizeof(signed long)
                );
-            if(! *swapSLPtr)
+            if(! swapSLPtr)
                goto memErr_fun05_sec04;
             *scoreArySLPtr = swapSLPtr;
          } /*If: need more memory*/
@@ -1337,6 +1333,7 @@ fastFindPatterns_getLin(
              (*startArySLPtr)[lenSI] = coordArySI[0];
              (*endArySLPtr)[lenSI] = coordArySI[1];
              (*scoreArySLPtr)[lenSI] = scoreSL;
+             ++lenSI; 
          } /*If: found a hit*/
       } /*Loop: detect primers in each chunk*/
    } while(! errSC);
@@ -1526,7 +1523,6 @@ filterCoords_getLin(
    signed long *scoreArySL, /*alignment scores*/
    signed int lenSI
 ){
-
    signed int siAln = 0;
    signed int endSI = 0;
    signed int cmpSI = 0;
@@ -1552,6 +1548,11 @@ filterCoords_getLin(
    lenSI = endSI;
    endSI = 0;
    cmpSI = 0;
+
+   if(startArySL[0] != def_maxSL_fun07_getLin)
+      endSI = 1;
+   else
+      endSI = 0;
 
    for(siAln = 1; siAln < lenSI; ++siAln)
    { /*Loop: mark alns*/
@@ -1713,9 +1714,10 @@ insNtLineage_getLin(
    ^   - check if have match and return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   seqLenSI -= seqPosSI;
+   seqLenSI -= posArySI[1];
+   ++seqLenSI;
 
-   for(siCig = 0; siCig < linSTPtr->seqSizeSI; ++siCig)
+   for(siCig = 0; siCig < linSTPtr->seqLenSI; ++siCig)
    { /*Loop: find matching patterns*/
       scoreSL =
          simple_memwater(
@@ -1806,7 +1808,6 @@ insNtFastLineage_getLin(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   signed int seqPosSI = 0;
    signed int seqLenSI = 0;
    signed int refEndSI = 0;
    signed int endSI = 0; /*target end position*/
@@ -1851,8 +1852,6 @@ insNtFastLineage_getLin(
       &posArySI[1]      /*sequence position*/
    ); /*move to first base in lineage*/
 
-   seqPosSI = posArySI[1];
-
    if(linSTPtr->startSI + 1 <= linSTPtr->endSI)
    { /*If: user is targeting a region*/
       if(samSTPtr->cigTypeStr[posArySI[2]] == 'I')
@@ -1884,13 +1883,13 @@ insNtFastLineage_getLin(
    ^   - check if have match and return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   seqLenSI -= seqPosSI;
+   seqLenSI -= posArySI[1];
 
    scoreSL =
       fastFindPatterns_getLin(
          tblSTPtr,
          linSTPtr,
-         &samSTPtr->seqStr[seqPosSI],
+         &samSTPtr->seqStr[posArySI[1]],
          seqLenSI,
          &startHeapArySL,
          &endHeapArySL,
@@ -2011,7 +2010,6 @@ insAALineage_getLin(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    signed char *aaSeqHeapStr = 0;
-   signed int seqPosSI = 0;
    signed int seqLenSI = 0;
    signed int refEndSI = 0;
    signed int endSI = 0;
@@ -2054,8 +2052,6 @@ insAALineage_getLin(
       &posArySI[1]      /*sequence position*/
    ); /*move to first base in lineage*/
 
-   seqPosSI = posArySI[1];
-
    if(linSTPtr->startSI + 1 <= linSTPtr->endSI)
    { /*If: user is targeting a region*/
       if(samSTPtr->cigTypeStr[posArySI[2]] == 'I')
@@ -2091,15 +2087,25 @@ insAALineage_getLin(
        malloc(((seqLenSI / 3) +8)  * sizeof(signed char));
    if(! aaSeqHeapStr)
       goto memErr_fun11_sec04;
-   seqLenSI =
-      seqToAA_codonFun(
-         samSTPtr->seqStr,
-         aaSeqHeapStr,
-         seqPosSI,
-         seqLenSI
-      );
 
-   for(siCig = 0; siCig < linSTPtr->seqSizeSI; ++siCig)
+   if(linSTPtr->revDirBl)
+      seqLenSI =
+         revSeqToAA_codonFun(
+            samSTPtr->seqStr,
+            aaSeqHeapStr,
+            posArySI[1],
+            seqLenSI
+         );
+   else
+      seqLenSI =
+         seqToAA_codonFun(
+            samSTPtr->seqStr,
+            aaSeqHeapStr,
+            posArySI[1],
+            seqLenSI
+         );
+
+   for(siCig = 0; siCig < linSTPtr->seqLenSI; ++siCig)
    { /*Loop: find matching patterns*/
       scoreSL =
          simple_memwater(
@@ -2203,13 +2209,13 @@ coordsToTrsLin_getLin(
       { /*Loop: find longest length for siStart*/
          gapSI = startArySL[siEnd] - endArySL[siStart];
 
-         if(gapSI > linSTPtr->trsGapSI)
+         if(gapSI - 1 > linSTPtr->trsGapSI)
             break; /*overshot limit*/
 
          else if(gapSI < 0)
             continue;
 
-         else if(cntArySL[siEnd] >= cntArySL[siStart])
+         else if(cntArySL[siEnd] > cntArySL[siStart])
             continue;
             /*previous repeat set as higher score, I need
             `  this check to avoid overlapping TRS's
@@ -2230,8 +2236,10 @@ coordsToTrsLin_getLin(
       } /*Loop: find longest length for siStart*/
    } /*Loop: find longest alignment for any repeat*/
 
-   return trsLineageSI - linSTPtr->trsLineageSI;
-      /*account for frist lineage sometimes being > 0*/
+   return trsLineageSI - linSTPtr->trsLineageSI + 1;
+      /*account for frist lineage sometimes being > 0;
+      `  + 1 is to account for lineage being index 0
+      */
 
    noCoords_fun12:;
       return -1024;
@@ -2359,14 +2367,14 @@ trsNtLineage_getLin(
    seqLenSI -= posArySI[1];
    ++seqLenSI; /*convert to index 1*/
 
-   for(siCig = 0; siCig < linSTPtr->seqSizeSI; ++siCig)
+   for(siCig = 0; siCig < linSTPtr->seqLenSI; ++siCig)
    { /*Loop: find all tandum repeat alignments*/
       scoreSL =
          simple_memwaterScan(
-            &samSTPtr->seqStr[posArySI[1]],
-            seqLenSI,
             linSTPtr->seqAryStr[siCig],
             linSTPtr->seqLenArySI[siCig],
+            &samSTPtr->seqStr[posArySI[1]],
+            seqLenSI,
             &tmpAlnStackST
          );
 
@@ -2374,7 +2382,7 @@ trsNtLineage_getLin(
          goto memErr_fun13_sec05;
 
       filter_memwaterScan(
-         &mergeAlnStackST,
+         &tmpAlnStackST,
          linSTPtr->minScoreSI,
          0
       ); /*remove nested alignments, doing here and after
@@ -2452,7 +2460,6 @@ trsNtLineage_getLin(
    *   - find the longest lineage in the list
    \*****************************************************/
 
-
    trsLenSI =
       coordsToTrsLin_getLin(
          mergeAlnStackST.startArySL,
@@ -2471,11 +2478,6 @@ trsNtLineage_getLin(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    done_fun13_sec05:;
-      trsLenSI -= linSTPtr->trsLineageSI;
-         /*not all TRS lineages start at 0 (user errors)
-         `  so I need to adjust the TRS count to the first
-         `  lineage
-         */
       goto ret_fun13_sec05;
 
    incompleteRange_fun13_sec05:;
@@ -2612,14 +2614,14 @@ trsNtFastLineage_getLin(
    ^   - get the alignments
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   seqLenSI -= seqLenSI;
+   seqLenSI -= posArySI[1];
    ++seqLenSI; /*convert to index 1*/
 
    seqLenSI =
       fastFindPatterns_getLin(
          tblSTPtr,
          linSTPtr,
-         &samSTPtr->seqStr[seqLenSI],
+         &samSTPtr->seqStr[posArySI[1]],
          seqLenSI,
          &startHeapArySL,
          &endHeapArySL,
@@ -2663,11 +2665,6 @@ trsNtFastLineage_getLin(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    done_fun14_sec04:;
-      trsLenSI -= linSTPtr->trsLineageSI;
-         /*not all TRS lineages start at 0 (user errors)
-         `  so I need to adjust the TRS count to the first
-         `  lineage
-         */
       goto ret_fun14_sec04;
 
    incompleteRange_fun14_sec04:;
@@ -2825,27 +2822,33 @@ trsAALineage_getLin(
        malloc(((seqLenSI / 3) +8)  * sizeof(signed char));
    if(! aaSeqHeapStr)
       goto memErr_fun15_sec05;
-   seqLenSI =
-      seqToAA_codonFun(
-         samSTPtr->seqStr,
-         aaSeqHeapStr,
-         posArySI[1],
-         seqLenSI
-      );
 
+   if(linSTPtr->revDirBl)
+      seqLenSI =
+         revSeqToAA_codonFun(
+            samSTPtr->seqStr,
+            aaSeqHeapStr,
+            posArySI[1],
+            seqLenSI
+         );
+   else
+      seqLenSI =
+         seqToAA_codonFun(
+            samSTPtr->seqStr,
+            aaSeqHeapStr,
+            posArySI[1],
+            seqLenSI
+         );
 
    /*get the aligments*/
-   seqLenSI -= posArySI[1];
-   ++seqLenSI; /*convert to index 1*/
-
-   for(siCig = 0; siCig < linSTPtr->seqSizeSI; ++siCig)
+   for(siCig = 0; siCig < linSTPtr->seqLenSI; ++siCig)
    { /*Loop: find all tandum repeat alignments*/
       scoreSL =
          simple_memwaterScan(
-            aaSeqHeapStr,
-            seqLenSI,
             linSTPtr->seqAryStr[siCig],
             linSTPtr->seqLenArySI[siCig],
+            aaSeqHeapStr,
+            seqLenSI,
             &tmpAlnStackST
          );
 
@@ -2853,7 +2856,7 @@ trsAALineage_getLin(
          goto memErr_fun15_sec05;
 
       filter_memwaterScan(
-         &mergeAlnStackST,
+         &tmpAlnStackST,
          linSTPtr->minScoreSI,
          0
       ); /*remove nested alignments, doing here and after
@@ -2952,11 +2955,6 @@ trsAALineage_getLin(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    done_fun15_sec05:;
-      trsLenSI -= linSTPtr->trsLineageSI;
-         /*not all TRS lineages start at 0 (user errors)
-         `  so I need to adjust the TRS count to the first
-         `  lineage
-         */
       goto ret_fun15_sec05;
 
    incompleteRange_fun15_sec05:;
@@ -3101,14 +3099,14 @@ countNtLineage_getLin(
    seqLenSI -= posArySI[1];
    ++seqLenSI; /*convert to index 1*/
 
-   for(siCig = 0; siCig < linSTPtr->seqSizeSI; ++siCig)
+   for(siCig = 0; siCig < linSTPtr->seqLenSI; ++siCig)
    { /*Loop: find all tandum repeat alignments*/
       scoreSL =
          simple_memwaterScan(
-            &samSTPtr->seqStr[posArySI[1]],
-            seqLenSI,
             linSTPtr->seqAryStr[siCig],
             linSTPtr->seqLenArySI[siCig],
+            &samSTPtr->seqStr[posArySI[1]],
+            seqLenSI,
             &tmpAlnStackST
          );
 
@@ -3117,7 +3115,7 @@ countNtLineage_getLin(
 
       trsLenSI =
          filter_memwaterScan(
-            &mergeAlnStackST,
+            &tmpAlnStackST,
             linSTPtr->minScoreSI,
             0
          ); /*remove nested alignments, doing here and
@@ -3290,14 +3288,14 @@ countNtFastLineage_getLin(
    ^   - get the alignments
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   seqLenSI -= seqLenSI;
+   seqLenSI -= posArySI[1];
    ++seqLenSI; /*convert to index 1*/
 
    seqLenSI =
       fastFindPatterns_getLin(
          tblSTPtr,
          linSTPtr,
-         &samSTPtr->seqStr[seqLenSI],
+         &samSTPtr->seqStr[posArySI[1]],
          seqLenSI,
          &startHeapArySL,
          &endHeapArySL,
@@ -3488,27 +3486,36 @@ countAALineage_getLin(
        malloc(((seqLenSI / 3) +8)  * sizeof(signed char));
    if(! aaSeqHeapStr)
       goto memErr_fun18_sec04;
-   seqLenSI =
-      seqToAA_codonFun(
-         samSTPtr->seqStr,
-         aaSeqHeapStr,
-         posArySI[1],
-         seqLenSI
-      );
 
+   if(linSTPtr->revDirBl)
+      seqLenSI =
+         revSeqToAA_codonFun(
+            samSTPtr->seqStr,
+            aaSeqHeapStr,
+            posArySI[1],
+            seqLenSI
+         );
+   else
+      seqLenSI =
+         seqToAA_codonFun(
+            samSTPtr->seqStr,
+            aaSeqHeapStr,
+            posArySI[1],
+            seqLenSI
+         );
 
    /*get the aligments*/
    seqLenSI -= posArySI[1];
    ++seqLenSI; /*convert to index 1*/
 
-   for(siCig = 0; siCig < linSTPtr->seqSizeSI; ++siCig)
+   for(siCig = 0; siCig < linSTPtr->seqLenSI; ++siCig)
    { /*Loop: find all tandum repeat alignments*/
       scoreSL =
          simple_memwaterScan(
-            aaSeqHeapStr,
-            seqLenSI,
             linSTPtr->seqAryStr[siCig],
             linSTPtr->seqLenArySI[siCig],
+            aaSeqHeapStr,
+            seqLenSI,
             &tmpAlnStackST
          );
 
@@ -3517,7 +3524,7 @@ countAALineage_getLin(
 
       trsLenSI =
          filter_memwaterScan(
-            &mergeAlnStackST,
+            &tmpAlnStackST,
             linSTPtr->minScoreSI,
             0
          ); /*remove nested alignments, doing here and
@@ -3654,6 +3661,7 @@ simpleLineage_getLin(
    /*make sure all group found lineages flags are set to
    `  -1's (allows default lineage assignment)
    */
+   coordArySI[3] = samSTPtr->cigArySI[0];
    clearGroup_simple_linST(simpleSTPtr);
 
    if(*trsLinArySIPtr)
@@ -3779,11 +3787,14 @@ simpleLineage_getLin(
                (*trsLinArySIPtr)[*outLenSIPtr] = -1024;
                (*outLenSIPtr)++;
 
-               simpleSTPtr->foundGroupAryBl[groupSI] = 1;
+               if(linSTPtr->printLinBl)
+                  simpleSTPtr->foundGroupAryBl[groupSI]=1;
             } /*Else If: found the lineage*/
 
-            else if(simpleSTPtr->foundGroupAryBl[groupSI]>=0)
-               ; /*already marked group as in read*/
+            else if(
+               simpleSTPtr->foundGroupAryBl[groupSI] >= 0
+            ) ; /*already marked group as in read*/
+
             else if(errSI == -1)
                simpleSTPtr->foundGroupAryBl[groupSI] = 0;
                /*mark group; in read, but no assignment*/
@@ -3799,7 +3810,7 @@ simpleLineage_getLin(
          case def_delType_linST:
          /*Case: deletion lineage*/
             errSI =
-               snpNtLineage_getLin(
+               delLineage_getLin(
                   linSTPtr,
                   samSTPtr,
                   coordArySI
@@ -3814,11 +3825,13 @@ simpleLineage_getLin(
                (*trsLinArySIPtr)[*outLenSIPtr] = -1024;
                (*outLenSIPtr)++;
 
-               simpleSTPtr->foundGroupAryBl[groupSI] = 1;
+               if(linSTPtr->printLinBl)
+                  simpleSTPtr->foundGroupAryBl[groupSI]=1;
             } /*Else If: found the lineage*/
 
-            else if(simpleSTPtr->foundGroupAryBl[groupSI]>=0)
-               ; /*already marked group as in read*/
+            else if(
+               simpleSTPtr->foundGroupAryBl[groupSI] >=0
+            ) ; /*already marked group as in read*/
             else if(errSI == -1)
                simpleSTPtr->foundGroupAryBl[groupSI] = 0;
                /*mark group; in read, but no assignment*/
@@ -3867,11 +3880,13 @@ simpleLineage_getLin(
                (*trsLinArySIPtr)[*outLenSIPtr] = -1024;
                (*outLenSIPtr)++;
 
-               simpleSTPtr->foundGroupAryBl[groupSI] = 1;
+               if(linSTPtr->printLinBl)
+                  simpleSTPtr->foundGroupAryBl[groupSI]=1;
             } /*Else If: found the lineage*/
 
-            else if(simpleSTPtr->foundGroupAryBl[groupSI]>=0)
-               ; /*already marked group as in read*/
+            else if(
+               simpleSTPtr->foundGroupAryBl[groupSI] >=0
+            ) ; /*already marked group as in read*/
             else if(errSI == -1)
                simpleSTPtr->foundGroupAryBl[groupSI] = 0;
                /*mark group; in read, but no assignment*/
@@ -3906,8 +3921,10 @@ simpleLineage_getLin(
                simpleSTPtr->foundGroupAryBl[groupSI] = 1;
             } /*Else If: found the lineage*/
 
-            else if(simpleSTPtr->foundGroupAryBl[groupSI]>=0)
-               ; /*already marked group as in read*/
+            else if(
+               simpleSTPtr->foundGroupAryBl[groupSI] >=0
+            ) ; /*already marked group as in read*/
+
             else if(errSI == -1)
                simpleSTPtr->foundGroupAryBl[groupSI] = 0;
                /*mark group; in read, but no assignment*/
@@ -3956,10 +3973,11 @@ simpleLineage_getLin(
                (*trsLinArySIPtr)[*outLenSIPtr] = errSI;
                (*outLenSIPtr)++;
 
-               simpleSTPtr->foundGroupAryBl[groupSI] = 1;
-               /*this system always returns a lineage
-               `   or the regions is incomplete
-               */
+               if(linSTPtr->printLinBl)
+                  simpleSTPtr->foundGroupAryBl[groupSI]=1;
+                  /*this system always returns a lineage
+                  `   or the regions is incomplete
+                  */
             } /*Else If: found the lineage*/
 
             break;
@@ -3989,10 +4007,11 @@ simpleLineage_getLin(
                (*trsLinArySIPtr)[*outLenSIPtr] = errSI;
                (*outLenSIPtr)++;
 
-               simpleSTPtr->foundGroupAryBl[groupSI] = 1;
-               /*this system always returns a lineage
-               `   or the regions is incomplete
-               */
+               if(linSTPtr->printLinBl)
+                  simpleSTPtr->foundGroupAryBl[groupSI]=1;
+                  /*this system always returns a lineage
+                  `   or the regions is incomplete
+                  */
             } /*Else If: found the lineage*/
 
             break;
@@ -4039,10 +4058,11 @@ simpleLineage_getLin(
                (*trsLinArySIPtr)[*outLenSIPtr] = errSI;
                (*outLenSIPtr)++;
 
-               simpleSTPtr->foundGroupAryBl[groupSI] = 1;
-               /*this system always returns a lineage
-               `   or the regions is incomplete
-               */
+               if(linSTPtr->printLinBl)
+                  simpleSTPtr->foundGroupAryBl[groupSI]=1;
+                  /*this system always returns a lineage
+                  `   or the regions is incomplete
+                  */
             } /*Else If: found the lineage*/
 
             break;
@@ -4072,10 +4092,11 @@ simpleLineage_getLin(
                (*trsLinArySIPtr)[*outLenSIPtr] = errSI;
                (*outLenSIPtr)++;
 
-               simpleSTPtr->foundGroupAryBl[groupSI] = 1;
-               /*this system always returns a lineage
-               `   or the regions is incomplete
-               */
+               if(linSTPtr->printLinBl)
+                  simpleSTPtr->foundGroupAryBl[groupSI]=1;
+                  /*this system always returns a lineage
+                  `   or the regions is incomplete
+                  */
             } /*Else If: found the lineage*/
 
             break;
@@ -4089,7 +4110,7 @@ simpleLineage_getLin(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    for(siLin=0; siLin < simpleSTPtr->groupLenSI; ++siLin)
-   { /*Loop: check for groupsa I can assign as default*/
+   { /*Loop: check for groups I can assign as default*/
       if(*outLenSIPtr >= retSizeSI)
       { /*If: need more memory*/
          retSizeSI += (retSizeSI >> 1);
@@ -4120,8 +4141,9 @@ simpleLineage_getLin(
          retLinArySI[*outLenSIPtr] =
             simpleSTPtr->defGroupArySI[siLin];
          (*trsLinArySIPtr)[*outLenSIPtr] = -1024;
+         (*outLenSIPtr)++;
       } /*Else: no other linage was found; do default*/
-   } /*Loop: check for groupsa I can assign as default*/
+   } /*Loop: check for groups I can assign as default*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun19 Sec05:
@@ -4244,7 +4266,7 @@ complexLineage_getLin(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    if(! *simpleLenSIPtr)
-      goto noLinErr_fun20_sec04;
+      goto noSimpleLinErr_fun20_sec04;
 
    *outLenSIPtr = 0;
 
@@ -4256,6 +4278,8 @@ complexLineage_getLin(
       malloc(*simpleLenSIPtr * sizeof(signed int));
    if(! histHeapArySI)
       goto memErr_fun20_sec04;
+
+   histSizeSI = 16;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun20 Sec03:
@@ -4283,7 +4307,10 @@ complexLineage_getLin(
          /*for sanity*/
 
       histLenSI =
-         mLinSTPtr->linLenSI + mLinSTPtr->mLinLenSI;
+           mLinSTPtr->linLenSI
+         + mLinSTPtr->mLinLenSI
+         + mLinSTPtr->defGroupLenSI;
+
       if(histLenSI >= histSizeSI)
       { /*If: need more room*/
          free(histHeapArySI);
@@ -4295,6 +4322,27 @@ complexLineage_getLin(
       } /*If: need more room*/
 
       histLenSI = 0;
+
+      if(mLinSTPtr->overwriteBl & 2)
+      { /*If: overwriting the default groups*/
+         for(
+            missSI = 0;
+            missSI < mLinSTPtr->defGroupLenSI;
+            ++missSI
+         ){ /*Loop: add the default groups to history*/
+            indexSI =
+               siSearch_shellSort(
+                  simpleLinArySI,
+                  mLinSTPtr->defGroupArySI[histLenSI],
+                  *simpleLenSIPtr
+               ); /*see if have a match*/
+
+            if(indexSI >= 0)
+               histHeapArySI[histLenSI++] = indexSI;
+         }  /*Loop: add the default groups to history*/
+
+         missSI = 0;
+      } /*If: overwriting the default groups*/
 
       /**************************************************\
       * Fun20 Sec03 Sub02:
@@ -4336,7 +4384,7 @@ complexLineage_getLin(
                /*this was a required lineage*/
          }  /*Else If: the lineage was not found*/
 
-         else
+         else if(mLinSTPtr->overwriteBl & 1)
             histHeapArySI[histLenSI++] = indexSI;
       } /*Loop: find simple lineage matches*/
 
@@ -4372,14 +4420,12 @@ complexLineage_getLin(
                /*this was a required lineage*/
          } /*If: did not find the lineage*/
 
-         else
+         else if(mLinSTPtr->overwriteBl & 1)
             histHeapArySI[histLenSI++] = indexSI;
       } /*Loop: find complex lineage matches*/
 
       if(missSI > mLinSTPtr->fudgeSI)
          continue;
-
-      retMLinArySI[*outLenSIPtr] = siMLin;
 
       /**************************************************\
       * Fun20 Sec03 Sub04:
@@ -4389,23 +4435,27 @@ complexLineage_getLin(
 
       if(mLinSTPtr->overwriteBl)
       { /*If: this lineage overwrites other lineages*/
+         si_shellSort(histHeapArySI, 0, histMLinSI - 1);
+         si_shellSort(histHeapArySI,histMLinSI,histLenSI);
+
          indexSI = 0;/*using as copy from position*/
          siLin = 0;  /*using as copy to position*/
          missSI = 0; /*reusing as index's to remove*/
 
          while(indexSI < *simpleLenSIPtr)
          { /*Loop: remove simple lineages in lineage*/
-            if(
-                  missSI < histMLinSI
-               &&    simpleLinArySI[indexSI]
-                  != histHeapArySI[missSI]
-            ) simpleLinArySI[siLin++] =
-                 simpleLinArySI[indexSI++];
-            else
+            if(missSI >= histMLinSI)
+               ;
+            else if(indexSI == histHeapArySI[missSI])
             { /*Else: at lineage to overwrite (remove)*/
                ++indexSI;
                ++missSI;
+               continue;
             } /*Else: at lineage to overwrite (remove)*/
+
+            /*keeping lineage*/
+            simpleLinArySI[siLin]=simpleLinArySI[indexSI];
+            trsLinArySI[siLin++] = trsLinArySI[indexSI++];
          }  /*Loop: remove simple lineages in lineage*/
 
          *simpleLenSIPtr = siLin; /*new length*/
@@ -4415,21 +4465,28 @@ complexLineage_getLin(
 
          while(indexSI < *outLenSIPtr)
          { /*Loop: remove complex lineages in lineage*/
-            if(
-                  missSI >= histMLinSI
-               &&   retMLinArySI[indexSI]
-                 != histHeapArySI[missSI]
-            ) retMLinArySI[siLin++] =
-                 retMLinArySI[indexSI++];
-            else
-            { /*Else: at lineage to overwrite (remove)*/
+            if(missSI >= histLenSI)
+               ;
+            else if(indexSI == retMLinArySI[indexSI])
+            { /*Else If: lineage to overwrite (remove)*/
                ++indexSI;
                ++missSI;
-            } /*Else: at lineage to overwrite (remove)*/
+               continue;
+            } /*Else If: lineage to overwrite (remove)*/
+
+            retMLinArySI[siLin++]=retMLinArySI[indexSI++];
          }  /*Loop: remove complex lineages in lineage*/
 
          *outLenSIPtr = siLin; /*new length*/
       } /*If: this lineage overwrites other lineages*/
+
+      /**************************************************\
+      * Fun20 Sec03 Sub05:
+      *   - add found complex lineage to the hits
+      \**************************************************/
+
+      retMLinArySI[*outLenSIPtr] = siMLin;
+      ++(*outLenSIPtr);
    } /*Loop: find complex lineages*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -4437,7 +4494,9 @@ complexLineage_getLin(
    ^   - clean up and return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   noLinErr_fun20_sec04:;
+   goto ret_fun20_sec04;
+
+   noSimpleLinErr_fun20_sec04:;
       *outLenSIPtr = -1;
       goto errClean_fun20_sec04;
 
@@ -4607,12 +4666,12 @@ addMem_cnt_getLin(
          goto err_fun25;
 
       cntSTPtr->idSizeArySI =
-         malloc(lenSI * sizeof(signed int));
+         calloc(lenSI, sizeof(signed int));
       if(! cntSTPtr->idSizeArySI)
          goto err_fun25;
 
       cntSTPtr->linCntArySI =
-         malloc(lenSI * sizeof(signed int));
+         calloc(lenSI, sizeof(signed int));
       if(! cntSTPtr->linCntArySI)
          goto err_fun25;
    } /*If: first allcation*/
@@ -4647,7 +4706,11 @@ addMem_cnt_getLin(
       cntSTPtr->linCntArySI = swapSI;
 
       for(siPos = cntSTPtr->lenSI; siPos < lenSI; ++siPos)
+      { /*Loop: initialize memory*/
          cntSTPtr->linStrAry[siPos] = 0;
+         cntSTPtr->idSizeArySI[siPos] = 0;
+         cntSTPtr->linCntArySI[siPos] = 0;
+      } /*Loop: initialize memory*/
    } /*Else: expanding memory*/
 
    cntSTPtr->sizeSI = lenSI;
@@ -4728,12 +4791,15 @@ addLineage_cnt_getLin(
          goto memErr_fun26_sec05;
    } /*If: need more memory*/
 
+   if(cntSTPtr->lenSI <= 0)
+      goto addLineage_fun26_sec04; /*first lineage*/
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun26 Sec03:
    ^   - find lineage or insert position
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   rightSI = cntSTPtr->lenSI;
+   rightSI = cntSTPtr->lenSI - 1;
 
    while(leftSI <= rightSI)
    { /*Loop: find lineage or insert position*/
@@ -4750,7 +4816,7 @@ addLineage_cnt_getLin(
          break; /*found the insert position*/
    } /*Loop: find lineage or insert position*/
 
-   if(tmpSI > 0 && midSI < cntSTPtr->lenSI)
+   if(midSI < cntSTPtr->lenSI && tmpSI > 0)
       ++midSI; /*lineage is after the insert position*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -4758,53 +4824,62 @@ addLineage_cnt_getLin(
    ^   - increase lineage count or if new add lineage
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   if(! tmpSI)
-      ++cntSTPtr->linCntArySI[tmpSI];
-   else
-   { /*Else: is a new lineage*/
+   if(tmpSI)
+   { /*If: is a new lineage*/
       /*not the best method, but allows for ordered array
       `  on the flye
       */
-      for(tmpSI=cntSTPtr->lenSI; tmpSI >= midSI; --tmpSI)
-      { /*Loop: shift lineages to make room*/
-         swapStr = cntSTPtr->linStrAry[tmpSI];
-         cntSTPtr->linStrAry[tmpSI] =
-            cntSTPtr->linStrAry[tmpSI - 1];
-         cntSTPtr->linStrAry[tmpSI - 1] = swapStr;
+      for(
+         tmpSI = cntSTPtr->lenSI - 1;
+         tmpSI >= midSI;
+         --tmpSI
+      ){ /*Loop: shift lineages to make room*/
+         swapStr = cntSTPtr->linStrAry[tmpSI + 1];
+         cntSTPtr->linStrAry[tmpSI + 1] =
+            cntSTPtr->linStrAry[tmpSI];
+         cntSTPtr->linStrAry[tmpSI] = swapStr;
 
-         cntSTPtr->idSizeArySI[tmpSI] ^=
-            cntSTPtr->idSizeArySI[tmpSI - 1];
-         cntSTPtr->idSizeArySI[tmpSI - 1] ^=
+         cntSTPtr->idSizeArySI[tmpSI + 1] ^=
             cntSTPtr->idSizeArySI[tmpSI];
          cntSTPtr->idSizeArySI[tmpSI] ^=
-            cntSTPtr->idSizeArySI[tmpSI - 1];
+            cntSTPtr->idSizeArySI[tmpSI + 1];
+         cntSTPtr->idSizeArySI[tmpSI + 1] ^=
+            cntSTPtr->idSizeArySI[tmpSI];
 
 
-         cntSTPtr->linCntArySI[tmpSI] ^=
-            cntSTPtr->linCntArySI[tmpSI - 1];
-         cntSTPtr->linCntArySI[tmpSI - 1] ^=
+         cntSTPtr->linCntArySI[tmpSI + 1] ^=
             cntSTPtr->linCntArySI[tmpSI];
          cntSTPtr->linCntArySI[tmpSI] ^=
-            cntSTPtr->linCntArySI[tmpSI - 1];
+            cntSTPtr->linCntArySI[tmpSI + 1];
+         cntSTPtr->linCntArySI[tmpSI + 1] ^=
+            cntSTPtr->linCntArySI[tmpSI];
       } /*Loop: shift lineages to make room*/
 
-      cntSTPtr->linCntArySI[midSI] = 1;
-      tmpSI = endStr_ulCp(linStr);
+      addLineage_fun26_sec04:;
+         cntSTPtr->linCntArySI[midSI] = 1;
+         tmpSI = endStr_ulCp(linStr);
 
-      if(tmpSI >= cntSTPtr->idSizeArySI[midSI])
-      { /*If: need more memory*/
-         if(cntSTPtr->linStrAry[midSI])
-            free(cntSTPtr->linStrAry[midSI]);
-         cntSTPtr->linStrAry[midSI] =
-            malloc((tmpSI + 8) * sizeof(signed char));
-         if(! cntSTPtr->linStrAry[midSI])
-             goto memErr_fun26_sec05;
-         cntSTPtr->idSizeArySI[midSI] = tmpSI;
-      } /*If: need more memory*/
+         if(tmpSI >= cntSTPtr->idSizeArySI[midSI])
+         { /*If: need more memory*/
+            if(cntSTPtr->linStrAry[midSI])
+               free(cntSTPtr->linStrAry[midSI]);
+            cntSTPtr->linStrAry[midSI] =
+               malloc((tmpSI + 8) * sizeof(signed char));
+            if(! cntSTPtr->linStrAry[midSI])
+                goto memErr_fun26_sec05;
+            cntSTPtr->idSizeArySI[midSI] = tmpSI;
+         } /*If: need more memory*/
 
-      cpLen_ulCp(cntSTPtr->linStrAry[midSI],linStr,tmpSI);
-      ++cntSTPtr->lenSI;
-   } /*Else: is a new lineage*/
+         cpLen_ulCp(
+            cntSTPtr->linStrAry[midSI],
+            linStr,
+            tmpSI
+         );
+         ++cntSTPtr->lenSI;
+   } /*If: is a new lineage*/
+
+   else
+      ++cntSTPtr->linCntArySI[midSI];
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun26 Sec05:
@@ -4880,6 +4955,8 @@ addReadLineages_cnt_getLin(
    { /*Loop: add simple lineages to the count*/
       linSTPtr =
          &simpleSTPtr->linAryST[simpLinArySI[siLin]];
+      if(! linSTPtr->printLinBl)
+         continue; /*this lineage is not printed*/
 
       idLenSI =
          cpStr_ulCp(
@@ -4919,6 +4996,9 @@ addReadLineages_cnt_getLin(
    { /*Loop: add complex lineages to the count*/
       mLinSTPtr =
          &complexSTPtr->linAryST[complexLinArySI[siLin]];
+      if(! mLinSTPtr->printLinBl)
+         continue; /*this lineage is not printed*/
+
       idLenSI = cpStr_ulCp(idStr, mLinSTPtr->groupIdStr);
       idStr[idLenSI++] = def_trsLinMark_linST;
       idLenSI +=
@@ -5002,6 +5082,7 @@ pReadLineages_getLin(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
+   signed char useIdStr[64];
    signed int siPos = 0;
    signed int siCon = 0;
    float tmpF = 0;
@@ -5009,9 +5090,6 @@ pReadLineages_getLin(
    signed int *conHeapArySI = 0;
    signed char *mixedHeapArySC = 0;
    signed int conLenSI = 0;
-
-   signed char swapSC = 0;
-   signed char *firstBlankStr = 0;
 
    ulong_ulCp ulDelim = mkDelim_ulCp(def_trsType_linST);
 
@@ -5022,7 +5100,15 @@ pReadLineages_getLin(
 
    fprintf((FILE *) outFILE, "id\ttype");
 
-   for(siPos = 0; siPos < cntSTPtr->lenSI; ++siPos)
+   if(cntSTPtr->lenSI)
+      fprintf(
+         (FILE *) outFILE,
+         "\t%s",
+         cntSTPtr->linStrAry[0]
+      );
+   conLenSI = 1;
+
+   for(siPos = 1; siPos < cntSTPtr->lenSI; ++siPos)
    { /*Loop: print the header*/
       fprintf(
          (FILE *) outFILE,
@@ -5030,17 +5116,14 @@ pReadLineages_getLin(
          cntSTPtr->linStrAry[siPos]
       );
 
-      if(! siPos)
-         ++conLenSI;
-      else if(
-         eql_ulCp(
+      if(
+         eqlNullDelim_ulCp(
             cntSTPtr->linStrAry[siPos],
             cntSTPtr->linStrAry[siPos - 1],
             ulDelim,
             def_trsLinMark_linST
          )
       ) ++conLenSI; /*count number of groups*/
-   
    } /*Loop: print the header*/
 
    fprintf((FILE *) outFILE, "\tend%s", str_endLine);
@@ -5063,11 +5146,9 @@ pReadLineages_getLin(
    ^   - number reads per lineage row + find consensus
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   firstBlankStr = idStr;
-   firstBlankStr += endWhite_ulCp(idStr);
-   swapSC = *firstBlankStr;
+   cpWhite_ulCp(useIdStr, idStr);
 
-   fprintf((FILE *) outFILE, "%s\tcount", idStr);
+   fprintf((FILE *) outFILE, "%s\tcount", useIdStr);
 
    for(siPos = 0; siPos < cntSTPtr->lenSI; ++siPos)
    { /*Loop: print the count line and find consensus*/
@@ -5140,7 +5221,7 @@ pReadLineages_getLin(
    ^   - print consensus row
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
-   fprintf((FILE *) outFILE, "%s\tconsensus", idStr);
+   fprintf((FILE *) outFILE, "%s\tconsensus", useIdStr);
 
    siCon = 0;
    for(siPos = 0; siPos < cntSTPtr->lenSI; ++siPos)
@@ -5185,9 +5266,6 @@ pReadLineages_getLin(
          free(mixedHeapArySC);
       mixedHeapArySC = 0;
 
-      if(firstBlankStr)
-         *firstBlankStr = swapSC;
-
       return (signed char) siPos;
 } /*pReadLineages_getLin*/
 
@@ -5221,12 +5299,18 @@ pReadLineages_getLin(
 |   - complexSTPtr:
 |     o complex_linST struct array with the complex
 |       lineage names
+|   - pHeadBlPtr:
+|     o signed char pointer telling if to print the header
+|       * 1: print header and set bool to 0
+|       * 0: do not print the header
 |   - outFILE:
 |     o FILE pointer to print lineages to
 | Output:
+|   - Modifies:
+|     o pHeadBlPtr to be 0 if it is set to 1
 |   - Prints:
-|     o header to outFILE (output file)
-|       * format:  "id\ttype\tgenome\tlineage_1\t..."
+|     o header to outFILE (output file) if pHeadBlPtr is 1
+|       * format:  "id\ttype\tgenome\tlineage..."
 |     o lineage row to outFILE
 |   - Returns:
 |     o 0 for no errors
@@ -5242,6 +5326,7 @@ plineages_getLin(
    signed int complexLenSI,    /*number complex lineages*/
    struct simple_linST *simpleSTPtr, /*simple lineages*/
    struct complex_linST *complexSTPtr, /*complexLineages*/
+   signed char *pHeadBlPtr,    /*1: print header*/
    void *outFILE               /*file to print to*/
 ){
    struct cnt_getLin linStackST;
@@ -5262,13 +5347,12 @@ plineages_getLin(
    ) goto memErr_fun29;
 
    /*___________________PRINT_HEADER____________________*/
-   fprintf((FILE *) outFILE, "id\ttype");
-   for(
-      simpleLenSI = 0;
-      simpleLenSI < linStackST.lenSI;
-      ++simpleLenSI
-   ) fprintf((FILE *) outFILE,"\tLineage_%i",simpleLenSI);
-   fprintf((FILE *) outFILE, "\tend%s", str_endLine);
+   if(*pHeadBlPtr)
+   { /*If: printing the header*/
+      fprintf((FILE *) outFILE, "id\ttype\tlineages...");
+      fprintf((FILE *) outFILE, "%s", str_endLine);
+      *pHeadBlPtr = 0;
+   } /*If: printing the header*/
 
    /*___________________PRINT_LINEAGES__________________*/
    fprintf((FILE *) outFILE, "%s\tgenome", idStr);
@@ -5294,3 +5378,74 @@ plineages_getLin(
       freeStack_cnt_getLin(&linStackST);
       return (signed char) complexLenSI;
 } /*pGenomeLineage_getLin*/
+
+/*=======================================================\
+: License:
+: 
+: This code is under the unlicense (public domain).
+:   However, for cases were the public domain is not
+:   suitable, such as countries that do not respect the
+:   public domain or were working with the public domain
+:   is inconvient / not possible, this code is under the
+:   MIT license.
+: 
+: Public domain:
+: 
+: This is free and unencumbered software released into the
+:   public domain.
+: 
+: Anyone is free to copy, modify, publish, use, compile,
+:   sell, or distribute this software, either in source
+:   code form or as a compiled binary, for any purpose,
+:   commercial or non-commercial, and by any means.
+: 
+: In jurisdictions that recognize copyright laws, the
+:   author or authors of this software dedicate any and
+:   all copyright interest in the software to the public
+:   domain. We make this dedication for the benefit of the
+:   public at large and to the detriment of our heirs and
+:   successors. We intend this dedication to be an overt
+:   act of relinquishment in perpetuity of all present and
+:   future rights to this software under copyright law.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO
+:   EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM,
+:   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+:   CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+:   IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+:   DEALINGS IN THE SOFTWARE.
+: 
+: For more information, please refer to
+:   <https://unlicense.org>
+: 
+: MIT License:
+: 
+: Copyright (c) 2025 jeremyButtler
+: 
+: Permission is hereby granted, free of charge, to any
+:   person obtaining a copy of this software and
+:   associated documentation files (the "Software"), to
+:   deal in the Software without restriction, including
+:   without limitation the rights to use, copy, modify,
+:   merge, publish, distribute, sublicense, and/or sell
+:   copies of the Software, and to permit persons to whom
+:   the Software is furnished to do so, subject to the
+:   following conditions:
+: 
+: The above copyright notice and this permission notice
+:   shall be included in all copies or substantial
+:   portions of the Software.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+:   EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+:   FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+:   AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+:   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+:   USE OR OTHER DEALINGS IN THE SOFTWARE.
+\=======================================================*/

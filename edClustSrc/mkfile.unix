@@ -70,7 +70,7 @@ $(genClust)/clustST.$O: \
 	$(genBio)/samEntry.$O \
 	$(genBio)/tbCon.$O \
 	$(genBio)/edDist.$O \
-	$(genLib)/strAry.h \
+	$(genLib)/strAry.$O \
 	$(genLib)/genMath.h
 		$(CC) -o $(genClust)/clustST.$O \
 			$(CFLAGS) $(coreCFLAGS) \

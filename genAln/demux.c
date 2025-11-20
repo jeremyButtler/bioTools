@@ -12,6 +12,8 @@
 '     - demux a read
 '   o fun04: read_demux
 '     - convert barcode coordinates to demuxed reads
+'   o fun05: primer_demux
+'     - get primer target regins from the input sequence
 '   o license:
 '     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -535,6 +537,8 @@ barcodeCoords_demux(
    \*****************************************************/
 
    endSI = 0;
+   lastScoreSI = 0;
+   scoreSI = 0;
    for(siMap = 1; siMap < lenSI; ++siMap)
    { /*Loop: remove duplicate mappings*/
       if(seqStartArySI[siMap] < seqEndArySI[siMap-1])
@@ -559,14 +563,16 @@ barcodeCoords_demux(
             primArySS[siMap] = -1;
 
          if(siMap < 2)
-            ++lenSI; /*first comparison*/
+            ++endSI; /*first comparision*/
       } /*If: barcode overlap or double map*/
 
       else
          ++endSI; /*make sure have at least one hit*/
    } /*Loop: remove duplicate mappings*/
 
-   if(endSI <= 0)
+   if(lenSI == 1)
+      endSI = 1; /*no duplicate mappings*/
+   else if(endSI <= 0)
       goto noPrim_fun03_sec05;
 
    /*****************************************************\
@@ -827,8 +833,8 @@ read_demux(
          "@%s\tscore=%i\tstart=%i\tend=%i%s%s%s+%s%s%s",
          seqSTPtr->idStr,
          scoreSI,
-         coordArySI[1],
-         coordArySI[2],
+         coordArySI[1] + 1,
+         coordArySI[2] + 1,
          str_endLine,
          &seqSTPtr->seqStr[posSI],
          str_endLine,
@@ -960,8 +966,8 @@ read_demux(
             "%s\tscore=%i\tstart=%i\tend=%i\t%s%s%s",
             &seqSTPtr->idStr[headSI],
             coordArySI[maxSplitSI],
-            coordArySI[maxSplitSI - 2],
-            coordArySI[maxSplitSI - 3],
+            coordArySI[maxSplitSI - 2] + 1,
+            coordArySI[maxSplitSI - 3] + 1,
             str_endLine,
             &seqSTPtr->seqStr[posSI],
             str_endLine
@@ -1050,8 +1056,8 @@ read_demux(
             "%s\tscore=%i\tstart=%i\tend=%i%s%s%s",
             &seqSTPtr->idStr[headSI],
             coordArySI[maxSplitSI + 3],
-            coordArySI[maxSplitSI + 1],
-            coordArySI[maxSplitSI + 2],
+            coordArySI[maxSplitSI + 1] + 1,
+            coordArySI[maxSplitSI + 2] + 1,
             str_endLine,
             &seqSTPtr->seqStr[posSI],
             str_endLine
@@ -1301,8 +1307,8 @@ primer_demux(
                   (FILE *) outFILE,
                   "\tdir=rev\tlen=%i\tstart=%i\tend=%i",
                   lenSI,
-                  startSI,
-                  endSI
+                  startSI + 1,
+                  endSI + 1
                );
                fprintf(
                   (FILE *) outFILE,
@@ -1332,8 +1338,8 @@ primer_demux(
                   (FILE *) outFILE,
                   "\tdir=for\tlen=%i\tstart=%i\tend=%i",
                   lenSI,
-                  startSI,
-                  endSI
+                  startSI + 1,
+                  endSI + 1
                );
                fprintf(
                   (FILE *) outFILE,
@@ -1460,8 +1466,8 @@ primer_demux(
             fprintf(
                (FILE *) outFILE,
                "start=%i\tend=%i\tforPrim=NA\trevPrim=%s",
-               startSI,
-               endSI,
+               startSI + 1,
+               endSI + 1,
                barSTPtr[barSI].forSeqST->idStr
             );
             fprintf(
@@ -1573,8 +1579,8 @@ primer_demux(
             fprintf(
                (FILE *) outFILE,
                "start=%i\tend=%i\tforPrim=%s\trevPrim=NA",
-               startSI,
-               endSI,
+               startSI + 1,
+               endSI + 1,
                barSTPtr[siNext].forSeqST->idStr
             );
             fprintf(
@@ -1633,6 +1639,158 @@ primer_demux(
    ret_fun05_sec05:;
       return cntSI;
 } /*primer_demux*/
+
+/*-------------------------------------------------------\
+| Fun06: pGeneCoord_demux
+|   - get coordinates of all genes found in target
+| Input:
+|   - seqSTPtr:
+|     o seqSTPtr struct pointer with read to find genes
+|       in
+|   - coordsArySI:
+|     o signed int array retured from barcodeCoords_demux
+|       * index (n % 4 = 0) is barcode index
+|       * index (n % 4 = 1) is the barcode start
+|       * index (n % 4 = 2) is the barcode end
+|       * index (n % 4 = 3) is the score
+|         + a negative score means a reverse mapping
+|   - coordLenSI:
+|     o length of coordsArySI (number barcodes << 2)
+|   - geneSTPtr:
+|     o refST_kmerFind struct pionter with the genes
+|   - headBlPtr:
+|     o 1: print header and then set to 0
+|     o 0: do not print the header
+|   - geneSTPtr
+|     o refST_kmerFind struct pionter with the genes
+|       to find
+|   - outFILE:
+|     o FILE pionter to print gene coordinates
+| Output:
+|   - Prints:
+|     o gene coordinates to outFILE
+|   - Returns:
+|     o number of amplicons found
+|     o 0 if no genes
+\-------------------------------------------------------*/
+signed int
+pGeneCoord_demux(
+   struct seqST *seqSTPtr,/*read to split into amplicons*/
+   signed int coordArySI[],/*has barcode mappings*/
+   signed int coordLenSI, /*length of coordLenSI*/
+   signed char *headBlPtr,/*1: print header + set to 0*/
+   struct refST_kmerFind *geneSTPtr,/*genes searched*/
+   void *outFILE          /*print sequences to*/
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun06 TOC:
+   '   - get coordinates of all genes found in target
+   '   o fun06 sec01:
+   '     - variable declarations
+   '   o fun06 sec02:
+   '     - print header if needed
+   '   o fun06 sec03:
+   '     - print gene coordinates
+   '   o fun06 sec04:
+   '     - print split sequences
+   '   o fun06 sec04:
+   '     - return
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun06 Sec01:
+   ^   - variable declarations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   signed int lenSI = 0;   /*amplicon length*/
+   signed int cntSI = 0;   /*number primers found*/
+   signed int siCoord = 0; /*primer on*/
+
+   signed int geneSI = 0; /*index of gene on*/
+
+   signed int *coordHeapArySI = 0;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun06 Sec02:
+   ^   - print header if needed
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(coordLenSI < 4)
+      goto noGenes_fun06_sec04;
+
+   if(*headBlPtr)
+   { /*If: printing the header*/
+      fprintf(
+         (FILE *) outFILE,
+         "id-count\tgene\tdir\tscore\tmaxScore\tlength"
+      );
+      fprintf(
+         (FILE *) outFILE,
+         "\tmaxLength\tstart\tend%s",
+         str_endLine
+      );
+      *headBlPtr = 0;
+   } /*If: printing the header*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun06 Sec03:
+   ^   - print gene coordinates
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   for(siCoord = 0; siCoord < coordLenSI; siCoord += 4)
+   { /*Loop: print gene coordinates*/
+      geneSI = coordArySI[siCoord];
+      lenSI =
+          coordArySI[siCoord+2] - coordArySI[siCoord+1]+1;
+      if(coordArySI[siCoord + 3] < 0)
+         fprintf(
+           (FILE *) outFILE,
+           "%s-%03i\t%s\tR\t%i\t%0.2f\t%i\t%li\t%i\t%i%s",
+           seqSTPtr->idStr,
+           cntSI++,                 /*number of genes*/
+           geneSTPtr[geneSI].forSeqST->idStr,
+           coordArySI[siCoord + 3], /*score*/
+           geneSTPtr[geneSI].maxRevScoreF,
+           lenSI,
+           geneSTPtr[geneSI].forSeqST->seqLenSL,
+           coordArySI[siCoord + 1] + 1,     /*start*/
+           coordArySI[siCoord + 2] + 1,     /*end*/
+           str_endLine
+         );
+      else
+         fprintf(
+           (FILE *) outFILE,
+           "%s-%03i\t%s\tF\t%i\t%0.2f\t%i\t%li\t%i\t%i%s",
+           seqSTPtr->idStr,
+           cntSI++,                       /*number genes*/
+           geneSTPtr[geneSI].forSeqST->idStr,
+           coordArySI[siCoord + 3],   /*score*/
+           geneSTPtr[geneSI].maxForScoreF,
+           lenSI,
+           geneSTPtr[geneSI].forSeqST->seqLenSL,
+           coordArySI[siCoord +1] +1, /*start*/
+           coordArySI[siCoord +2] +1, /*end*/
+           str_endLine
+         );
+   } /*Loop: print gene coordinates*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun06 Sec04:
+   ^   - return
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   goto ret_fun06_sec04;
+
+   noGenes_fun06_sec04:;
+      cntSI = 0;
+      goto ret_fun06_sec04;
+
+   ret_fun06_sec04:;
+      if(coordHeapArySI)
+         free(coordHeapArySI);
+      coordHeapArySI = 0;
+
+      return cntSI;
+} /*pGeneCoord_demux*/
 
 /*=======================================================\
 : License:

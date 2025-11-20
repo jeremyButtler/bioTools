@@ -65,6 +65,7 @@
 !   - .c  #include "../genAln/indexToCoord.h"
 !   - .c  #include "../genAln/dirMatrix.h"
 !   - .c  #include "../genAln/needle.h"
+!   - .c  #include "../genAln/memwater.h"
 !   - .h  #include "../genBio/ntTo5Bit.h"
 !   - .h  #include "../genBio/kmerBit.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
@@ -78,7 +79,6 @@
 #define def_refOutIndex_mainMapRead 2
 
 #define def_quick_mainMapRead 1 /*1: quick method*/
-
 #define def_leftAln_mainMapRead 1
    /*do left alignments on reads*/
 
@@ -157,10 +157,12 @@ phelp_mainMapRead(
    ^   o fun02 sec02 sub03:
    ^     - reference input and output file
    ^   o fun02 sec02 sub04:
-   ^     - variable chaining variables (length,size,%)
+   ^     - read mapping mode
    ^   o fun02 sec02 sub05:
-   ^     - chaining and scoring variables
+   ^     - variable chaining variables (length,size,%)
    ^   o fun02 sec02 sub06:
+   ^     - chaining and scoring variables
+   ^   o fun02 sec02 sub07:
    ^     - help message and version number
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -313,7 +315,7 @@ phelp_mainMapRead(
    );
 
    /*****************************************************\
-   * Fun02 Sec02 Sub04:
+   * Fun02 Sec02 Sub05:
    *   - variable chaining variables (length,size,%)
    \*****************************************************/
 
@@ -407,44 +409,44 @@ phelp_mainMapRead(
    );
 
    /*****************************************************\
-   * Fun02 Sec02 Sub05:
+   * Fun02 Sec02 Sub06:
    *   - chaining and scoring variables
-   *   o fun02 sec02 sub05 cat01:
+   *   o fun02 sec02 sub06 cat01:
    *     - chain and score header
-   *   o fun02 sec02 sub05 cat02:
+   *   o fun02 sec02 sub06 cat02:
    *     - align masked ends
-   *   o fun02 sec02 sub05 cat03:
+   *   o fun02 sec02 sub06 cat03:
    *     - sub-alignment
-   *   o fun02 sec02 sub05 cat04:
+   *   o fun02 sec02 sub06 cat04:
    *     - max percent length to merge chains
-   *   o fun02 sec02 sub05 cat05:
+   *   o fun02 sec02 sub06 cat05:
    *     - match score
-   *   o fun02 sec02 sub05 cat06:
+   *   o fun02 sec02 sub06 cat06:
    *     - snp score
-   *   o fun02 sec02 sub05 cat07:
+   *   o fun02 sec02 sub06 cat07:
    *     - gap open score
-   *   o fun02 sec02 sub05 cat08:
+   *   o fun02 sec02 sub06 cat08:
    *     - gap extend score
-   *   o fun02 sec02 sub05 cat09:
+   *   o fun02 sec02 sub06 cat09:
    *     - two anonymous base score
-   *   o fun02 sec02 sub05 cat10:
+   *   o fun02 sec02 sub06 cat10:
    *     - three anonymous base score
-   *   o fun02 sec02 sub05 cat11:
+   *   o fun02 sec02 sub06 cat11:
    *     - four anonymous base score
-   *   o fun02 sec02 sub05 cat12:
+   *   o fun02 sec02 sub06 cat12:
    *     - min percent score
-   *   o fun02 sec02 sub05 cat13:
+   *   o fun02 sec02 sub06 cat13:
    *     - min percent score
-   *   o fun02 sec02 sub05 cat14:
+   *   o fun02 sec02 sub06 cat14:
    *     - min percent length
-   *   o fun02 sec02 sub05 cat15:
+   *   o fun02 sec02 sub06 cat15:
    *     - chain mininum percent query bases
-   *   o fun02 sec02 sub05 cat16:
+   *   o fun02 sec02 sub06 cat16:
    *     - left alingment for homopolymer indels
    \*****************************************************/
    
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat01:
+   + Fun02 Sec02 Sub06 Cat01:
    +   - chain and score header
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -461,7 +463,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat02:
+   + Fun02 Sec02 Sub06 Cat02:
    +   - align masked ends
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -497,7 +499,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat03:
+   + Fun02 Sec02 Sub06 Cat03:
    +   - sub-alignment
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -533,7 +535,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat04:
+   + Fun02 Sec02 Sub06 Cat04:
    +   - max percent length to merge chains
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -558,7 +560,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat05:
+   + Fun02 Sec02 Sub06 Cat05:
    +   - match score
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -581,7 +583,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat06:
+   + Fun02 Sec02 Sub06 Cat06:
    +   - snp score
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -598,7 +600,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat07:
+   + Fun02 Sec02 Sub06 Cat07:
    +   - gap open score
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -617,7 +619,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat08:
+   + Fun02 Sec02 Sub06 Cat08:
    +   - gap extension score
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -650,7 +652,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat09:
+   + Fun02 Sec02 Sub06 Cat09:
    +   - two anonymous base score
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -673,7 +675,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat10:
+   + Fun02 Sec02 Sub06 Cat10:
    +   - three anonymous base score
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -690,7 +692,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat11:
+   + Fun02 Sec02 Sub06 Cat11:
    +   - four anonymous base score
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -707,7 +709,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat13:
+   + Fun02 Sec02 Sub06 Cat13:
    +   - min percent score
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -740,7 +742,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat14:
+   + Fun02 Sec02 Sub06 Cat14:
    +   - min percent length
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -765,7 +767,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat15:
+   + Fun02 Sec02 Sub06 Cat15:
    +   - chain mininum percent query bases
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -790,7 +792,7 @@ phelp_mainMapRead(
    );
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun02 Sec02 Sub05 Cat16:
+   + Fun02 Sec02 Sub06 Cat16:
    +   - left alingment for homopolymer indels
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -820,7 +822,7 @@ phelp_mainMapRead(
    );
 
    /*****************************************************\
-   * Fun02 Sec02 Sub06:
+   * Fun02 Sec02 Sub07:
    *   - help message and version number
    \*****************************************************/
 
@@ -879,6 +881,11 @@ phelp_mainMapRead(
 |   - leftAlnBlPtr:
 |     o signed char pointer to be set to 1 if doing left
 |       homopolymer indel alignment or 0 if not
+|   - kmerScanBlPtr:
+|     o signed char pointer to be set to 1 or 0
+|       * 1: to use kmerFind scan to detect potential
+|            alignment windows
+|       * 0: do not use kmerFind scan
 |   - setSTPtr:
 |     o set_mapRead pointer with settings to modify
 | Output:
@@ -2100,10 +2107,11 @@ main(
 
    struct samEntry forSamStackST;
    struct samEntry revSamStackST;
-
    signed long forScoreSL = 0;
    signed long revScoreSL = 0;
 
+
+   /*__________for zip reading and files________________*/
    struct file_inflate inFileStackST;
    signed char fileTypeSC = 0;
    signed char stdinBl = 0;
@@ -2141,7 +2149,6 @@ main(
    init_seqST(&qryStackST);
    init_ref_mapRead(&refStackST);
    init_aln_mapRead(&alnStackST);
-
    init_file_inflate(&inFileStackST);
 
    /*this needs to be setup early to get alnSet struct*/
@@ -2255,10 +2262,12 @@ main(
    *   o main sec02 sub05 cat01:
    *     - open reference file
    *   o main sec02 sub05 cat02:
-   *     - get fasta reference sequence
+   *     - get reference for kmer scanning
    *   o main sec02 sub05 cat03:
-   *     - get index reference sequence
+   *     - get fasta reference sequence (non-kmer scan)
    *   o main sec02 sub05 cat04:
+   *     - get index reference sequence
+   *   o main sec02 sub05 cat05:
    *     - if requested print reference index
    \*****************************************************/
 
@@ -2282,12 +2291,12 @@ main(
    } /*If: could not open reference*/
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Main Sec02 Sub05 Cat02:
-   +   - get fasta reference sequence
+   + Main Sec02 Sub05 Cat03:
+   +   - get fasta reference sequence (non-kmer scan)
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
    if(refFlagSC & def_refInFa_mainMapRead)
-   { /*If: reading reference from fasta file*/
+   { /*Else If: reading reference from fasta file*/
       errSC =
          getRef_ref_mapRead(
             &refStackST,
@@ -2344,10 +2353,10 @@ main(
             goto err_main_sec05;
          } /*Else: file error*/
       } /*If: had error*/
-   } /*If: reading reference from fasta file*/
+   } /*Else If: reading reference from fasta file*/
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Main Sec02 Sub05 Cat03:
+   + Main Sec02 Sub05 Cat04:
    +   - get index reference sequence
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2384,22 +2393,23 @@ main(
       } /*If: had memory error*/
    } /*Else: getting reference from index file*/
 
-   fclose(seqFILE);
+   if(seqFILE)
+      fclose(seqFILE);
    seqFILE = 0;
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Main Sec02 Sub05 Cat04:
+   + Main Sec02 Sub05 Cat05:
    +   - if requested print reference index
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
    if(refFlagSC & def_refOutIndex_mainMapRead)
-   { /*If: printing reference index to file*/
+   { /*Else If: printing reference index to file*/
       writeRefBin_ref_mapRead(
         &refStackST,
         outFILE
       );
       goto noErr_main_sec05;
-   } /*If: printing reference index to file*/
+   } /*Else If: printing reference index to file*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec03:
@@ -2542,6 +2552,7 @@ main(
                &qryStackST,   /*has read to map*/
                &refStackST,   /*has reference sequence*/
                &chainSI,      /*index of mapped chain*/
+               0,             /*need to convert to index*/
                &forSamStackST,/*gets alignments*/
                &alnStackST,   /*buffers for alignment*/
                &setStackST,   /*has alignment settings*/
@@ -2567,6 +2578,7 @@ main(
                &qryStackST,   /*read to map*/
                &refStackST,   /*reference sequence*/
                &chainSI,      /*index of mapped chain*/
+               0,             /*need to convert to index*/
                &revSamStackST,/*gets alignments*/
                &alnStackST,   /*buffers for alignment*/
                &setStackST,   /*has alignment settings*/

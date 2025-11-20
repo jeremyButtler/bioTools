@@ -715,6 +715,7 @@ inflateDep="$inflateDep ulCp $ulCpDep";
 codonFunStr="${genBioStr}codonFun.\$O: \\
 	${genBioStr}codonFun.c \\
 	${genBioStr}codonFun.h \\
+	${genLibStr}ulCp.h \\
 	${genBioStr}codonTbl.h \\
 	${genBioStr}ntTo2Bit.h \\
 	${genBioStr}revNtTo2Bit.h
@@ -1287,7 +1288,8 @@ mapReadStr="${genAlnStr}mapRead.\$O: \\
 
 
 mapReadObj="${genAlnStr}mapRead.\$O";
-mapReadDep="needle $needleDep dirMatrix $dirMatrixDep";
+mapReadDep="needle $needleDep";
+mapReadDep="$mapReadDep dirMatrix $dirMatrixDep";
 mapReadDep="$mapReadDep water $waterDep";
 mapReadDep="$mapReadDep dirMatrix $dirMatrixDep";
 mapReadDep="$mapReadDep samEntry $samEntryDep";
@@ -1353,7 +1355,7 @@ clustSTStr="${genClustStr}clustST.\$O: \\
 	${genBioStr}samEntry.\$O \\
 	${genBioStr}tbCon.\$O \\
 	${genBioStr}edDist.\$O \\
-	${genLibStr}strAry.h \\
+	${genLibStr}strAry.\$O \\
 	${genLibStr}genMath.h
 		$ccStr ${dashOStr}${genClustStr}clustST.\$O \\
 			$cFlagsStr $coreFlagsStr \\

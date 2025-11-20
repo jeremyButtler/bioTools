@@ -14,6 +14,7 @@ all:
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C edClustSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C edDistSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C filtsamSrc;
+	make CFLAGS="$CFLAGS" -f mkfileplan9 -C getLinSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C illNanoSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C k2TaxaIdSrc;
 	make CFLAGS="$CFLAGS" -f mkfileplan9 -C leftAlnSrc;
@@ -44,6 +45,7 @@ install:
 	make PREFIX="$PREFIX" -f mkfileplan9 -C edClustSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C edDistSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C filtsamSrc install;
+	make PREFIX="$PREFIX" -f mkfileplan9 -C getLinSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C illNanoSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C k2TaxaIdSrc install;
 	make PREFIX="$PREFIX" -f mkfileplan9 -C leftAlnSrc install;

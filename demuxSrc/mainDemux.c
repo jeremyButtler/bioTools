@@ -233,6 +233,18 @@ phelp_mainDemux(
       str_endLine
    );
 
+   fprintf(
+      (FILE *) outFILE,
+      "  -gene genes.fasta: [Required]%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o fasta file with genes to find coordinates%s",
+      str_endLine
+   );
+
    /*****************************************************\
    * Fun02 Sec02 Sub02:
    *   - prefix for output
@@ -402,6 +414,80 @@ phelp_mainDemux(
 
    /*****************************************************\
    * Fun02 Sec02 Sub08:
+   *   - kmerfind variables
+   \*****************************************************/
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -kmer-len %i: [Optional; %i]%s",
+      def_lenKmer_kmerFind,
+      def_lenKmer_kmerFind,
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o kmer length in kmer scanning step (4 to 9)%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -kmer-perc %0.2f: [Optional; %0.2f]%s",
+      def_minKmerPerc_kmerFind,
+      def_minKmerPerc_kmerFind,
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o minimum percent of kmers needed to do an%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      Waterman alignment%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -extra-nt %0.2f: [Optional; %0.2f]%s",
+      def_extraNtInWin_kmerFind,
+      def_extraNtInWin_kmerFind,
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "    o percent extra nucleotides to have in a%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      window (kmer scanning)%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -shift-nt %0.2f: [Optional; %0.2f]%s",
+      def_percShift_kmerFind,
+      def_percShift_kmerFind,
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "    o percent nucleotides to remove when moving%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      to the next window (kmer scanning)%s",
+      str_endLine
+   );
+
+   /*****************************************************\
+   * Fun02 Sec02 Sub09:
    *   - fastx files at end
    \*****************************************************/
 
@@ -423,7 +509,7 @@ phelp_mainDemux(
    );
 
    /*****************************************************\
-   * Fun02 Sec02 Sub09:
+   * Fun02 Sec02 Sub10:
    *   - help and version
    \*****************************************************/
 
@@ -479,7 +565,9 @@ phelp_mainDemux(
 |   - barFileStrPtr:
 |     o c-string pointer to get the barcodes fasta file
 |   - primTsvStrPtr:
-|     o c-string pointer to get the barcodes tsv file
+|     o c-string pointer to get the primer tsv file
+|   - geneFaStrPtr:
+|     o c-string pointer to get the genes from
 |   - prefixStrPtr:
 |     o c-string pointer to get the prefix for the output
 |       file
@@ -495,6 +583,18 @@ phelp_mainDemux(
 |     o singed long pointer to get the minimum score 
 |   - minPercScoreFPtr:
 |     o float pointer to get the minimum percent score 
+|   - kmerLenUCPtr:
+|     o unsigned char pionter to get the length of a kmer
+|       to use in kmerFinds scaning step
+|   - kmerPercFPtr:
+|     o float pionter to get the minimum number of kmers
+|       kmerFind needs to do a waterman alignment
+|   - extraNtFPtr:
+|     o float pionter to get the percentage of extra
+|       nucleotides in one window
+|   - shiftNtFPtr:
+|     o float pionter to get the percentage of nucleotides
+|       to shift one window by
 | Output:
 |   - Prints:
 |     o help message to outFILE
@@ -508,14 +608,19 @@ input_mainDemux(
    signed int argLenSI,
    char *argAryStr[],
    signed char **barFileStrPtr, /*barcode fasta file*/
-   signed char **primTsvStrPtr,  /*tsv file with barcodes*/
+   signed char **primTsvStrPtr, /*tsv file with primers*/
+   signed char **geneFaStrPtr,  /*fa file with genes*/
    signed char **prefixStrPtr,  /*output file name*/
    signed int *splitSIPtr,      /*max splits to do*/
    signed int *minDistSIPtr,    /*minimum distance*/
    signed int *maxDistSIPtr,    /*minimum distance*/
    signed char *trimBlPtr,      /*set to if trim*/
    signed long *minScoreSLPtr,  /*minimum score*/
-   float *minPercScoreFPtr      /*minimum percent score*/
+   float *minPercScoreFPtr,     /*minimum percent score*/
+   unsigned char *kmerLenUCPtr, /*kmer size for kmerFind*/
+   float *kmerPercFPtr,         /*% kmers for kmerFind*/
+   float *extraNtFPtr,          /*% extra nt in window*/
+   float *shiftNtFPtr           /*% to shift window by*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
    '   - get user input from the aguments array
@@ -551,12 +656,14 @@ input_mainDemux(
    ^   o fun03 sec02 sub06:
    ^     - check if trimming reads
    ^   o fun03 sec02 sub07:
-   ^     - help message checks
+   ^     - check for kmerFind settings
    ^   o fun03 sec02 sub08:
-   ^     - verision number print checks
+   ^     - help message checks
    ^   o fun03 sec02 sub09:
-   ^     - check if on fastq files or if invalid input
+   ^     - verision number print checks
    ^   o fun03 sec02 sub10:
+   ^     - check if on fastq files or if invalid input
+   ^   o fun03 sec02 sub11:
    ^     - move to the next argument
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -576,6 +683,7 @@ input_mainDemux(
          ++siArg;
          *barFileStrPtr=(signed char *) argAryStr[siArg];
          *primTsvStrPtr = 0;
+         *geneFaStrPtr = 0;
       }  /*If: barcode fasta file input*/
 
       else if(
@@ -587,6 +695,19 @@ input_mainDemux(
          ++siArg;
          *primTsvStrPtr=(signed char *) argAryStr[siArg];
          *barFileStrPtr = 0;
+         *geneFaStrPtr = 0;
+      }  /*If: barcode tsv file input*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-gene",
+            (signed char *) argAryStr[siArg]
+         )
+      ){ /*Else If: barcode tsv file input*/
+         ++siArg;
+         *geneFaStrPtr=(signed char *) argAryStr[siArg];
+         *barFileStrPtr = 0;
+         *primTsvStrPtr= 0;
       }  /*If: barcode tsv file input*/
 
       else if(
@@ -770,6 +891,236 @@ input_mainDemux(
 
       /**************************************************\
       * Fun03 Sec02 Sub07:
+      *   - check for kmerFind settings
+      *   o fun03 sec02 sub07 cat01:
+      *     - get kmer length
+      *   o fun03 sec02 sub07 cat02:
+      *     - get percent kmers for alignment
+      *   o fun03 sec02 sub07 cat03:
+      *     - get extra percent nucleotides in window
+      *   o fun03 sec02 sub07 cat04:
+      *     - percentage of nucleotides to shift out
+      \**************************************************/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec02 Sub07 Cat01:
+      +   - get kmer length
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-kmer-len",
+            (signed char *) argAryStr[siArg]
+         )
+      ){ /*Else If: kmer length*/
+         ++siArg;
+         tmpStr = (signed char *) argAryStr[siArg];
+         tmpStr += strToUC_base10str(tmpStr,kmerLenUCPtr);
+
+         if(*tmpStr)
+         { /*If: non-numeric or to large*/
+            fprintf(
+              stderr,
+              "-kmer-len %s is to large or non-numeric%s",
+              argAryStr[siArg],
+              str_endLine
+            );
+
+            goto err_fun03_sec03;
+         } /*If: non-numeric or to large*/
+
+         else if(*kmerLenUCPtr > 9)
+         { /*Else If: to large*/
+            fprintf(
+              stderr,
+              "-kmer-len %s > 9; takes to much memory%s",
+              argAryStr[siArg],
+              str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*Else If: to large*/
+
+         else if(*kmerLenUCPtr < 4)
+         { /*Else If: to small*/
+            fprintf(
+              stderr,
+              "-kmer-len %s is < 4; this is very slow%s",
+              argAryStr[siArg],
+              str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*Else If: to small*/
+      }  /*Else If: kmer length*/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec02 Sub07 Cat02:
+      +   - get percent kmers for alignment
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-kmer-perc",
+            (signed char *) argAryStr[siArg]
+         )
+      ){  /*Else If: minimum kmer percentage*/
+         ++siArg;
+         tmpStr = (signed char *) argAryStr[siArg];
+         tmpStr += strToF_base10str(tmpStr, kmerPercFPtr);
+
+         if(*tmpStr)
+         { /*If: non-numeric or to large*/
+            fprintf(
+             stderr,
+             "-kmer-perc %s is to large or non-numeric%s",
+             argAryStr[siArg],
+             str_endLine
+            );
+
+            goto err_fun03_sec03;
+         } /*If: non-numeric or to large*/
+
+         else if(*kmerPercFPtr > 1)
+            *kmerPercFPtr /= 100;
+
+         if(*kmerPercFPtr > 1)
+         { /*If: greater then 100%*/
+            fprintf(
+              stderr,
+              "-kmer-perc %s is > 100%%%s",
+              argAryStr[siArg],
+              str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*If: greater then 100%*/
+
+         else if(*kmerPercFPtr < 0.2)
+         { /*If: greater then 100%*/
+            fprintf(
+             stderr,
+             "-kmer-perc %s is < 20%%; everything hits%s",
+             argAryStr[siArg],
+             str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*If: greater then 100%*/
+      }  /*Else If: minimum kmer percentage*/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec02 Sub07 Cat03:
+      +   - get extra percent nucleotides in window
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-extra-nt",
+            (signed char *) argAryStr[siArg]
+         )
+      ){  /*Else If: extra percent nucleotides in window*/
+         ++siArg;
+         tmpStr = (signed char *) argAryStr[siArg];
+         tmpStr += strToF_base10str(tmpStr, extraNtFPtr);
+
+         if(*tmpStr)
+         { /*If: non-numeric or to large*/
+            fprintf(
+             stderr,
+             "-extra-nt %s is to large or non-numeric%s",
+             argAryStr[siArg],
+             str_endLine
+            );
+
+            goto err_fun03_sec03;
+         } /*If: non-numeric or to large*/
+
+         else if(*extraNtFPtr > 1)
+            *extraNtFPtr /= 100;
+
+         if(*extraNtFPtr > 3)
+         { /*If: greater then 300%*/
+            fprintf(
+               stderr,
+               "-extra-nt %s is > 300%%; this is slow%s",
+               argAryStr[siArg],
+               str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*If: greater then 300%*/
+
+         else if(*extraNtFPtr < 0.5)
+         { /*If: greater then 100%*/
+            fprintf(
+             stderr,
+             "-kmer-perc %s is < 50%%; at this point you",
+             argAryStr[siArg]
+            );
+            fprintf(
+              stderr,
+              " will be very slow%s",
+              str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*If: greater then 100%*/
+      }   /*Else If: extra percent nucleotides in window*/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun03 Sec02 Sub07 Cat04:
+      +   - percentage of nucleotides to shift out
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-shift-nt",
+            (signed char *) argAryStr[siArg]
+         )
+      ){  /*Else If: extra percent nucleotides in window*/
+         ++siArg;
+         tmpStr = (signed char *) argAryStr[siArg];
+         tmpStr += strToF_base10str(tmpStr, shiftNtFPtr);
+
+         if(*tmpStr)
+         { /*If: non-numeric or to large*/
+            fprintf(
+             stderr,
+             "-shift-nt %s is to large or non-numeric%s",
+             argAryStr[siArg],
+             str_endLine
+            );
+
+            goto err_fun03_sec03;
+         } /*If: non-numeric or to large*/
+
+         else if(*extraNtFPtr > 1)
+            *extraNtFPtr /= 100;
+
+         if(*shiftNtFPtr > 3)
+         { /*If: greater then 300%*/
+            fprintf(
+               stderr,
+               "-shift-nt %s is > 300%%; this is huge%s",
+               argAryStr[siArg],
+               str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*If: greater then 300%*/
+
+         else if(*shiftNtFPtr < 0.5)
+         { /*If: greater then 100%*/
+            fprintf(
+             stderr,
+             "-kmer-perc %s is < 50%%; at this point you",
+             argAryStr[siArg]
+            );
+            fprintf(
+              stderr,
+              " will very slow%s",
+              str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*If: greater then 100%*/
+      }   /*Else If: extra percent nucleotides in window*/
+
+      /**************************************************\
+      * Fun03 Sec02 Sub08:
       *   - help message checks
       \**************************************************/
 
@@ -816,7 +1167,7 @@ input_mainDemux(
       ) goto phelp_fun03_sec03;
 
       /**************************************************\
-      * Fun03 Sec02 Sub08:
+      * Fun03 Sec02 Sub09:
       *   - version number checks
       \**************************************************/
 
@@ -856,7 +1207,7 @@ input_mainDemux(
       ) goto pversion_fun03_sec03;
 
       /**************************************************\
-      * Fun03 Sec02 Sub09:
+      * Fun03 Sec02 Sub10:
       *   - check if on fastq files or if invalid input
       \**************************************************/
 
@@ -885,7 +1236,7 @@ input_mainDemux(
       } /*Else: invalid input or fastq file*/
 
       /**************************************************\
-      * Fun03 Sec02 Sub10:
+      * Fun03 Sec02 Sub11:
       *   - move to the next argument
       \**************************************************/
 
@@ -964,6 +1315,7 @@ main(
    signed char *prefixStr = (signed char *) "out";
    signed char *barcodesFileStr = 0;
    signed char *primTsvStr = 0;
+   signed char *geneFaStr = 0;
 
    signed int fqFileSI = 0;
    signed int splitSI = def_maxSplits_mainDemux;
@@ -1005,6 +1357,9 @@ main(
    signed int coordLenSI = 0;
    signed int siCoord = 0;
 
+   signed int siGene = 0;
+   signed char headBl = 1;
+
    signed char **outFileHeapStrAry = 0;
    FILE *logFILE = 0;
    FILE *outFILE = 0;
@@ -1043,13 +1398,18 @@ main(
          argAryStr,
          &barcodesFileStr,
          &primTsvStr,
+         &geneFaStr,
          &prefixStr,
          &splitSI,
          &minDistSI,
          &maxDistSI,
          &trimBl,
          &minScoreSL,
-         &minPercScoreF
+         &minPercScoreF,
+         &kmerLenUC,
+         &kmerPercF,
+         &extraNtF,
+         &winShiftF
       );
 
    if(fqFileSI < 0)
@@ -1123,6 +1483,45 @@ main(
          } /*Else: file error*/
       } /*If: had an error*/
    } /*If: barcode demuxing; read barcodes*/
+
+   else if(geneFaStr)
+   { /*Else If: finding gene coordinates*/
+      barHeapAryST =
+         faToAry_refST_kmerFind(
+            geneFaStr,
+            kmerLenUC,
+            &barLenSI,
+            kmerPercF,
+            &tblStackST,
+            extraNtF,
+            winShiftF,
+            &alnStackST,
+            &errSC
+         );
+      if(errSC)
+      { /*If: had an error*/
+         if(errSC == def_memErr_kmerFind)
+         { /*If: had a memory error*/
+            fprintf(
+               stderr,
+               "memory error reading in genes%s",
+               str_endLine
+            );
+            goto memErr_main_sec04;
+         } /*If: had a memory error*/
+
+         else
+         { /*Else: file error*/
+            fprintf(
+               stderr,
+               "file error reading -gene %s%s",
+               geneFaStr,
+               str_endLine
+            );
+            goto fileErr_main_sec04;
+         } /*Else: file error*/
+      } /*If: had an error*/
+   } /*Else If: finding gene coordinates*/
 
    else
    { /*Else: primer demuxing*/
@@ -1247,35 +1646,41 @@ main(
    +   - open the log file (either mode)
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-   /*_________open_the_log_file_________________________*/
-   tmpStr = tmpFileStr;
-   tmpStr += cpWhite_ulCp(tmpStr, prefixStr);
-   *tmpStr++ = '-';
-   *tmpStr++ = 'l';
-   *tmpStr++ = 'o';
-   *tmpStr++ = 'g';
-   *tmpStr++ = '.';
-   *tmpStr++ = 't';
-   *tmpStr++ = 's';
-   *tmpStr++ = 'v';
-   *tmpStr = 0;
+   /*____________open_the_log_file______________________*/
+   if(! geneFaStr)
+   { /*If: using the log file (gene mode does not)*/
+      tmpStr = tmpFileStr;
+      tmpStr += cpWhite_ulCp(tmpStr, prefixStr);
+      *tmpStr++ = '-';
+      *tmpStr++ = 'l';
+      *tmpStr++ = 'o';
+      *tmpStr++ = 'g';
+      *tmpStr++ = '.';
+      *tmpStr++ = 't';
+      *tmpStr++ = 's';
+      *tmpStr++ = 'v';
+      *tmpStr = 0;
 
-   logFILE = fopen((char *) tmpFileStr, "w");
-   if(! logFILE)
-   { /*If: could not open the file*/
+      logFILE = fopen((char *) tmpFileStr, "w");
+      if(! logFILE)
+      { /*If: could not open the file*/
+         fprintf(
+            stderr,
+            "could not open log file (%s) for output%s",
+            tmpFileStr,
+            str_endLine
+         );
+
+         goto fileErr_main_sec04;
+      } /*If: could not open the file*/
+
+      fprintf(logFILE, "id\tlen\tnum_barcodes\tstatus");
       fprintf(
-         stderr,
-         "could not open log file (%s) for output%s",
-         tmpFileStr,
-         str_endLine
+         logFILE,
+           "\tid_1\tstart_1\tend_1\tscore_1\t*"
       );
-
-      goto fileErr_main_sec04;
-   } /*If: could not open the file*/
-
-   fprintf(logFILE, "id\tlen\tnum_barcodes\tstatus");
-   fprintf(logFILE, "\tid_1\tstart_1\tend_1\tscore_1\t*");
-   fprintf(logFILE, "%s", str_endLine);
+      fprintf(logFILE, "%s", str_endLine);
+   } /*If: using the log file (gene mode does not)*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec03:
@@ -1283,12 +1688,16 @@ main(
    ^   o main sec03 sub01:
    ^     - open fastq file for reading
    ^   o main sec03 sub02:
-   ^     - find barcode coordiantes for the read
+   ^     - find barcode and primer coordiantes for read
    ^   o main sec03 sub03:
-   ^     - demux the read
+   ^     - find barcodes and demux the read
    ^   o main sec03 sub04:
-   ^     - move to next read
+   ^     - find gene coordinates and print
    ^   o main sec03 sub05:
+   ^     - trim and print primer sequences
+   ^   o main sec03 sub06:
+   ^     - move to next read
+   ^   o main sec03 sub07:
    ^     - move to next fastq file
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1304,7 +1713,7 @@ main(
          && ! argAryStr[fqFileSI][1] 
       ){ /*If: stdin input*/
          if(stdoutBl)
-            goto nextFile_sec03_sub04;
+            goto nextFile_main_sec03_sub07;
          stdoutBl = 1;
          inFILE = stdin;
       }  /*If: stdin input*/
@@ -1328,7 +1737,7 @@ main(
 
       /**************************************************\
       * Main Sec03 Sub02:
-      *   - find barcode coordiantes for the read
+      *   - find barcode and primer coordiantes for read
       \**************************************************/
 
       while(! errSC)
@@ -1338,62 +1747,71 @@ main(
          *tmpStr = 0;
          tmpStr = 0;
 
-         coordHeapArySI =
-            barcodeCoords_demux(
-               &coordLenSI, /*gets # of mapped barcodes*/
-               &seqStackST, /*has read to demux*/
-               barHeapAryST,/*has barcodes*/
-               barLenSI,    /*number of barcodes*/
-               &tblStackST, /*for kmerFind*/
-               minPercScoreF,/*minimum perc score*/
-               minScoreSL,  /*minimum score to keep map*/
-               &alnStackST
+         if(! geneFaStr)
+         { /*If: not doing gene detection*/
+            coordHeapArySI =
+               barcodeCoords_demux(
+                  &coordLenSI, /*gets # of mapped barcodes*/
+                  &seqStackST, /*has read to demux*/
+                  barHeapAryST,/*has barcodes*/
+                  barLenSI,    /*number of barcodes*/
+                  &tblStackST, /*for kmerFind*/
+                  minPercScoreF,/*minimum perc score*/
+                  minScoreSL,  /*minimum score to keep map*/
+                  &alnStackST
+               );
+
+            cpWhite_ulCp(tmpFileStr, seqStackST.idStr);
+            fprintf(
+               logFILE,
+               "%s\t%li\t%i",
+               tmpFileStr,
+               seqStackST.seqLenSL,
+               coordLenSI >> 2
             );
 
-         cpWhite_ulCp(tmpFileStr, seqStackST.idStr);
-         fprintf(
-            logFILE,
-            "%s\t%li\t%i",
-            tmpFileStr,
-            seqStackST.seqLenSL,
-            coordLenSI >> 2
-         );
+            if(coordLenSI <= 0)
+            { /*If: had no coords or error*/
+               if(! coordLenSI && ! geneFaStr)
+                  fprintf(
+                     logFILE,
+                     "\tno-barcodes\tNA%s",
+                     str_endLine
+                  );
+               else if(coordLenSI > -2 && ! geneFaStr)
+                  fprintf(
+                     logFILE,
+                     "\toverlap-barcodes\tNA%s",
+                     str_endLine
+                  );
+               else
+               { /*Else: memory error*/
+                  if(! geneFaStr)
+                     fprintf(
+                        logFILE,
+                        "\tmemory-error\tNA%s",
+                        str_endLine
+                     );
+                  fprintf(
+                   stderr,
+                   "memory error when finding patterns%s",
+                   str_endLine
+                  );
+                  goto memErr_main_sec04;
+               } /*Else: memory error*/
 
-         if(coordLenSI <= 0)
-         { /*If: had no coords or error*/
-            if(! coordLenSI)
-               fprintf(
-                  logFILE,
-                  "\tno-barcodes\tNA%s",
-                  str_endLine
-               );
-            else if(coordLenSI > -2)
-               fprintf(
-                  logFILE,
-                  "\toverlap-barcodes\tNA%s",
-                  str_endLine
-               );
-            else
-            { /*Else: memory error*/
-               fprintf(
-                  logFILE,
-                  "\tmemory-error\tNA%s",
-                  str_endLine
-               );
-               goto memErr_main_sec04;
-            } /*Else: memory error*/
-
-            goto getNextSeq_main_sec03_sub03;
-         } /*If: had no coords or error*/
+               goto getNextSeq_main_sec03_sub06;
+            } /*If: had no coords or error*/
+         } /*If: not doing gene detection*/
 
          /***********************************************\
          * Main Sec03 Sub03:
-         *   - demux the read
+         *   - find barcodes and demux the read
          \***********************************************/
 
          if(barcodesFileStr)
          { /*If: user is using barcode filtering*/
-            if(coordLenSI / 4 > splitSI)
+            if(geneFaStr && coordLenSI / 4 > splitSI)
             { /*If: to many barcodes*/
                fprintf(logFILE, "\tto-many-barcodes");
                goto pcoords_main_sec03_sub03;
@@ -1409,7 +1827,9 @@ main(
                   coordLenSI,
                   outFileHeapStrAry
                );
-            if(errSC == 3)
+            if(geneFaStr)
+               ; /*gene mode does not use the log file*/
+            else if(errSC == 3)
                fprintf(logFILE, "\tbarcodes-at-both-ends");
             else if(errSC == 4)
                fprintf(
@@ -1421,6 +1841,77 @@ main(
             else
                fprintf(logFILE, "\tkept");
          } /*If: user is using barcode filtering*/
+
+         /***********************************************\
+         * Main Sec03 Sub04:
+         *   - find gene coordinates and print
+         \***********************************************/
+
+         else if(geneFaStr)
+         { /*Else If: printing gene coordinates*/
+            for(siGene = 0; siGene < barLenSI; ++siGene)
+            { /*Loop: find hits*/
+               setChange_tblST_kmerFind(
+                  &tblStackST,
+                  extraNtF,
+                  winShiftF,
+                  barHeapAryST[siGene].forSeqST->seqLenSL
+               );
+               coordHeapArySI =
+                  barcodeCoords_demux(
+                     &coordLenSI,
+                     &seqStackST,
+                     &barHeapAryST[siGene],
+                     1,           /*do 1 gene at a time*/
+                     &tblStackST,
+                     minPercScoreF,
+                     minScoreSL,
+                     &alnStackST
+                  );
+
+               if(coordLenSI <= 0)
+               { /*If: had no coords or error*/
+                  if(! coordLenSI && ! geneFaStr)
+                     continue;
+                  else if(coordLenSI > -2)
+                     continue;
+                  else
+                  { /*Else: memory error*/
+                     fprintf(
+                        stderr,
+                        "memory error%s",
+                        str_endLine
+                     );
+                     goto memErr_main_sec04;
+                  } /*Else: memory error*/
+
+                  if(coordHeapArySI)
+                     free(coordHeapArySI);
+                  coordHeapArySI = 0;
+
+                  continue;
+               } /*If: had no coords or error*/
+
+               errSC =
+                  pGeneCoord_demux(
+                     &seqStackST,
+                     coordHeapArySI,
+                     coordLenSI,
+                     &headBl,
+                     &barHeapAryST[siGene],
+                     outFILE
+                  );
+               free(coordHeapArySI);
+               coordHeapArySI = 0;
+            } /*Loop: find hits*/
+
+            goto getNextSeq_main_sec03_sub06;
+         } /*Else If: printing gene coordinates*/
+
+         /***********************************************\
+         * Main Sec03 Sub05:
+         *   - trim and print primer sequences
+         \***********************************************/
 
          else
          { /*Else: user is fitering reads*/
@@ -1463,11 +1954,11 @@ main(
             fprintf(logFILE, "\t*%s", str_endLine);
 
          /***********************************************\
-         * Main Sec03 Sub04:
+         * Main Sec03 Sub06:
          *   - move to next read
          \***********************************************/
 
-         getNextSeq_main_sec03_sub03:;
+         getNextSeq_main_sec03_sub06:;
             errSC =
                get_gzSeqST(
                   &fileStackST,
@@ -1483,14 +1974,14 @@ main(
       } /*Loop: demux the sequences*/
 
       /**************************************************\
-      * Main Sec03 Sub05:
+      * Main Sec03 Sub07:
       *   - move to next fastq file
       \**************************************************/
 
       if(errSC != def_EOF_seqST)
          goto fqFileErr_main_sec04;
 
-      nextFile_sec03_sub04:;
+      nextFile_main_sec03_sub07:;
          ++fqFileSI;
 	} /*Loop: go through all fastq files*/
 

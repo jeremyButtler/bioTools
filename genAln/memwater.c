@@ -737,7 +737,10 @@ simple_memwater(
                (
                     def_matchScore_alnDefs
                   - def_snpScore_alnDefs
-               ) & -(qrySeqStr[siQry] == refSeqStr[siRef])
+               ) & -(
+                          (qrySeqStr[siQry] & ~32)
+                       != (refSeqStr[siRef] & ~32)
+                    )
             );
 
          snpScoreSL += nextSnpScoreSL;

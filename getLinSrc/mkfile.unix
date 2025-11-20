@@ -1,9 +1,11 @@
+
+CC=cc
 LD=cc
-coreCFLAGS= -O0 -std=c89 -g -Werror -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self -c
+coreCFLAGS= -O3 -std=c89 -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self -c -c
 CFLAGS=-DNONE
 NAME=getLin
 PREFIX=/usr/local/bin
-O=o.bug
+O=o.unix
 
 genGeneoType=../genGeneoType
 genLib=../genLib
@@ -180,7 +182,10 @@ $(genBio)/codonFun.$O: \
 			$(CFLAGS) $(coreCFLAGS) \
 			$(genBio)/codonFun.c
 
-
+install:
+	if [ ! -d "$(PREFIX)" ]; then mkdir -p "$(PREFIX)"; fi;
+	mv $(NAME) $(PREFIX)
+	chmod a+x $(PREFIX)\/$(NAME)
 
 clean:
 	rm $(objFiles)

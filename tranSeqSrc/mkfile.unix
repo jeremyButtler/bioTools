@@ -42,6 +42,7 @@ $(genBio)/seqST.$O: \
 $(genBio)/codonFun.$O: \
 	$(genBio)/codonFun.c \
 	$(genBio)/codonFun.h \
+	$(genLib)/ulCp.h \
 	$(genBio)/codonTbl.h \
 	$(genBio)/ntTo2Bit.h \
 	$(genBio)/revNtTo2Bit.h

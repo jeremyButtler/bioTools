@@ -257,6 +257,11 @@ The programs are built and debugged on Linux and then
       - default is mapped reference comparision, but you
         can compare two sam entries (less accurate)
     - works on linux and plan9
+  - getLin (stopASF and freezeTB):
+    - detects SNP, TRS, deletion, and insertions lineages
+      using an input tsv spread sheet with lineages
+    - uses a secondary spread sheet to combine single
+      mutations into a multi-mutation lineage call
   - illNano (freezeTB/fluDI; dugging edClust):
     - finds Illumina variants from tbCon tsv file and then
       finds nanopore reads mapping Illumina profile
@@ -285,7 +290,9 @@ The programs are built and debugged on Linux and then
 
 # genLib and genAln
 
-My general libraries.
+My general libraries. Not very well documented and use
+  at your own risk, but if you need something from me
+  check one of these.
 
 - genLib is for general libraries that are not related to
   biology.
@@ -293,12 +300,25 @@ My general libraries.
 - genAln is for alignment tasks, such as pairwise aligners
   or primer scanning (biology)
 - genClust is for clustering our grouping tasks (biology)
-- notUsed:
-  - These are programs that should not be used. I made
-    them for a task, but that task is no longer relavent.
+- genGenoType is for genotyping (biology)
 
 # Updates:
 
+- 2025-11-20:
+  - added getLin for detecting lineages
+- 2025-11-12:
+  - added revSeqtoAA_codonFun to codon fun to allow
+    conversions of reverse complement sequences to amino
+    acid sequences
+  - for demux primer trimming; fixed sequence start and
+    end being printed out as index 0 (now is index 1)
+  - added gene coordinate detection in demux
+- 2025-11-10:
+  - added in space support for sam file reading. It can
+    now parse the sam file entries (1 (query id) to 12
+    (extra entries)) if there are spaces
+  - for the samEntry struct added an interal setup call
+    for get_samEntry and lineTo_samEntry.
 - 2025-11-09:
   - converted demux to an amplicon extraction program
 - 2025-11-04:

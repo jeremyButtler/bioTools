@@ -180,6 +180,49 @@ primer_demux(
    void *outFILE          /*print sequences to*/
 );
 
+/*-------------------------------------------------------\
+| Fun06: pGeneCoord_demux
+|   - get coordinates of all genes found in target
+| Input:
+|   - seqSTPtr:
+|     o seqSTPtr struct pointer with read to find genes
+|       in
+|   - coordsArySI:
+|     o signed int array retured from barcodeCoords_demux
+|       * index (n % 4 = 0) is barcode index
+|       * index (n % 4 = 1) is the barcode start
+|       * index (n % 4 = 2) is the barcode end
+|       * index (n % 4 = 3) is the score
+|         + a negative score means a reverse mapping
+|   - coordLenSI:
+|     o length of coordsArySI (number barcodes << 2)
+|   - geneSTPtr:
+|     o refST_kmerFind struct pionter with the genes
+|   - headBlPtr:
+|     o 1: print header and then set to 0
+|     o 0: do not print the header
+|   - geneSTPtr
+|     o refST_kmerFind struct pionter with the genes
+|       to find
+|   - outFILE:
+|     o FILE pionter to print gene coordinates
+| Output:
+|   - Prints:
+|     o gene coordinates to outFILE
+|   - Returns:
+|     o number of amplicons found
+|     o 0 if no genes
+\-------------------------------------------------------*/
+signed int
+pGeneCoord_demux(
+   struct seqST *seqSTPtr,/*read to split into amplicons*/
+   signed int coordArySI[],/*has barcode mappings*/
+   signed int coordLenSI, /*length of coordLenSI*/
+   signed char *headBlPtr,/*1: print header + set to 0*/
+   struct refST_kmerFind *geneSTPtr,/*genes searched*/
+   void *outFILE          /*print sequences to*/
+);
+
 #endif
 
 /*=======================================================\
