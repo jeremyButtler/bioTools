@@ -138,7 +138,8 @@
 #define def_defLineage_linST '='
    /*default lineage for group*/
 #define def_trsLinMark_linST ':'
-#define def_needLin_linST '!'
+#define def_needLin_linST '&'
+#define def_notLin_linST '!'
 
 struct refST_kmerFind;
 struct tblST_kmerFind;
@@ -294,6 +295,10 @@ typedef struct multi_linST
       */
    signed char *linNeedAryBl;
       /*tells if lineage is needed to call (1)*/
+   signed char *linNotAryBl;
+      /*tells if lineage needs to be missing (not
+      `  present)
+      */
    signed int linLenSI;
       /*number of variants to get lineage*/
    signed int *defGroupArySI;
@@ -308,6 +313,10 @@ typedef struct multi_linST
       */
    signed char *mLinNeedAryBl;
       /*tells if lineage is needed to call (1)*/
+   signed char *mLinNotAryBl;
+      /*tells if lineage needs to be missing (not
+      `  present)
+      */
    signed int mLinLenSI;
       /*number of multi-variants in lineage assignment*/
 

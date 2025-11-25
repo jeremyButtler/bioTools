@@ -452,6 +452,9 @@ main(
     signed char keepNoMapBl = def_keepNoMap_mainTrimSam;
     signed char errSC = 0;
 
+    signed long lineSL = 0;
+    signed long seqSL = 0;
+
     struct samEntry samStackST;
 
     FILE *samFILE = 0;
@@ -579,6 +582,7 @@ main(
     *   - get first line in sam file
     \****************************************************/
 
+    ++lineSL;
     errSC = get_samEntry(&samStackST, samFILE);
 
     if(errSC)
@@ -617,6 +621,7 @@ main(
           break;
        p_samEntry(&samStackST, 0, outFILE);
        errSC = get_samEntry(&samStackST, samFILE);
+       ++lineSL;
     } /*Loop: print headers*/
 
     /****************************************************\
@@ -689,6 +694,13 @@ main(
 
     while(! errSC)
     { /*Loop: trim reads*/
+        if(samStackST.extraStr[0] == '@')
+           ; /*comment*/
+        else if( samStackST.flagUS & (256 | 2048) )
+           ; /*supplemental or secondary alignment*/
+        else
+           ++seqSL;
+
         /*Convert & print out sam file entry*/
         errSC = seq_trimSam(&samStackST);
 
@@ -701,13 +713,16 @@ main(
            p_samEntry(&samStackST, 0, outFILE);
         
         errSC = get_samEntry(&samStackST, samFILE);
+        ++lineSL;
     } /*Loop: trim reads*/
 
     if(errSC == def_memErr_samEntry)
     { /*If: had an error*/
        fprintf(
           stderr,
-          "memory error when trimming reads%s",
+          "memory error on read %li, read %li%s",
+          lineSL,
+          seqSL,
           str_endLine
        );
 
@@ -718,7 +733,9 @@ main(
     { /*If: had an error*/
        fprintf(
           stderr,
-          "file error when trimming reads%s",
+          "file error on line %li and read %li%s",
+          lineSL,
+          seqSL,
           str_endLine
        );
 

@@ -988,7 +988,7 @@ main(
       { /*If: no simple database*/
          fprintf(
             stderr,
-            "could not open -simple%s%s",
+            "could not open -simple %s%s",
             simpleDbStr,
             str_endLine
          );

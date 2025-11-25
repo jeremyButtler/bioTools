@@ -304,6 +304,14 @@ My general libraries. Not very well documented and use
 
 # Updates:
 
+- 2025-11-25:
+  - getLin, changed complex database required lineage
+    symbol to `&`
+  - getLin, add in complex database not this lineage
+    symbol (`!`)
+- 2025-11-24:
+  - fixed minnor error casuing file error when reading
+    large unmapped reads in sam files
 - 2025-11-20:
   - added getLin for detecting lineages
 - 2025-11-12:

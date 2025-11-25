@@ -1887,10 +1887,12 @@ get_samEntry(
             endWhite_ulCp(
                &samSTPtr->seqStr[samSTPtr->readLenUI]
             );
-
          samSTPtr->readLenUI += tmpSL;
-         if(samSTPtr->seqStr[samSTPtr->readLenUI] < 33)
-            break;
+
+         if(samSTPtr->seqStr[samSTPtr->readLenUI] > 32)
+            ;
+         else if(samSTPtr->seqStr[samSTPtr->readLenUI])
+            break; /*this is white space*/
       } /*Loop: get sequence*/
 
       lenSL -= tmpSL;
@@ -1969,8 +1971,11 @@ get_samEntry(
 
    else
    { /*Else: need to get more data*/
-      lenSL -= posSI;
-      cpLen_ulCp(buffStr, &buffStr[posSI], lenSL);
+      if(posSI)
+      { /*If: need to shift data*/
+         lenSL -= posSI;
+         cpLen_ulCp(buffStr, &buffStr[posSI], lenSL);
+      } /*If: need to shift data*/
 
       lenSL +=
          getLine_fileFun(

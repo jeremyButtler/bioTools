@@ -4365,11 +4365,13 @@ complexLineage_getLin(
 
          if(indexSI < 0)
          { /*If: lineage was not found*/
-            ++missSI;
-
-            if(mLinSTPtr->linNeedAryBl[siLin])
+            if(mLinSTPtr->linNotAryBl[siLin])
+               ;
+            else if(mLinSTPtr->linNeedAryBl[siLin])
                missSI = mLinSTPtr->fudgeSI + 1;
                /*this was a required lineage*/
+            else
+               ++missSI;
          } /*If: lineage was not found*/
 
          else if(
@@ -4377,12 +4379,23 @@ complexLineage_getLin(
             &&    mLinSTPtr->linTrsArySI[siLin]
                != trsLinArySI[indexSI]
          ){ /*Else If: the lineage was not found*/
-            ++missSI;
-
-            if(mLinSTPtr->linNeedAryBl[siLin])
+            if(mLinSTPtr->linNotAryBl[siLin])
+               ;
+            else if(mLinSTPtr->linNeedAryBl[siLin])
                missSI = mLinSTPtr->fudgeSI + 1;
                /*this was a required lineage*/
+            else
+               ++missSI;
          }  /*Else If: the lineage was not found*/
+
+         else if(mLinSTPtr->linNotAryBl[siLin])
+         { /*Else If: this lineage should be ignored*/
+            if(mLinSTPtr->linNeedAryBl[siLin])
+               missSI = mLinSTPtr->fudgeSI + 1;
+               /*this lineage must not be present ever*/
+            else
+               ++missSI; /*lineage counts as one miss*/
+         } /*Else If: this lineage should be ignored*/
 
          else if(mLinSTPtr->overwriteBl & 1)
             histHeapArySI[histLenSI++] = indexSI;
@@ -4433,7 +4446,7 @@ complexLineage_getLin(
       *     lineages
       \**************************************************/
 
-      if(mLinSTPtr->overwriteBl)
+      if(mLinSTPtr->overwriteBl && histLenSI)
       { /*If: this lineage overwrites other lineages*/
          si_shellSort(histHeapArySI, 0, histMLinSI - 1);
          si_shellSort(histHeapArySI,histMLinSI,histLenSI);

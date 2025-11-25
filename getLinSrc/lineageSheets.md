@@ -222,7 +222,10 @@ The complex lineage file allows the merging off multiple
        - were lineage is based on the repeat length
      - Count lineages it is `<variant_name_(id)>:lineage`
        - were lineage is based on the number of duplicates
-     - A `!` at the start means this variant is required
+     - A `&` at the start means this variant is required
+       - ex `&<variant_name_(id)>`
+     - A `!` at the start means this variant can not be
+       present
        - ex `!<variant_name_(id)>`
 
 The variant list is always at the end after the '*'

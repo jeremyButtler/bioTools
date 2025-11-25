@@ -1431,10 +1431,12 @@ init_multi_linST(
    mLinSTPtr->linIndexArySI = 0;
    mLinSTPtr->linTrsArySI = 0;
    mLinSTPtr->linNeedAryBl = 0;
+   mLinSTPtr->linNotAryBl = 0;
    mLinSTPtr->defGroupArySI = 0;
    mLinSTPtr->linLenSI = 0;
    mLinSTPtr->mLinIndexArySI = 0;
    mLinSTPtr->mLinNeedAryBl = 0;
+   mLinSTPtr->mLinNotAryBl = 0;
    mLinSTPtr->mLinLenSI = 0;
 
    blank_multi_linST(mLinSTPtr);
@@ -1479,6 +1481,8 @@ freeStack_multi_linST(
       free(mLinSTPtr->linIndexArySI);
    if(mLinSTPtr->linNeedAryBl)
       free(mLinSTPtr->linNeedAryBl);
+   if(mLinSTPtr->linNotAryBl)
+      free(mLinSTPtr->linNotAryBl);
    if(mLinSTPtr->linTrsArySI)
       free(mLinSTPtr->linTrsArySI);
    if(mLinSTPtr->defGroupArySI)
@@ -1488,6 +1492,8 @@ freeStack_multi_linST(
       free(mLinSTPtr->mLinIndexArySI);
    if(mLinSTPtr->mLinNeedAryBl)
       free(mLinSTPtr->mLinNeedAryBl);
+   if(mLinSTPtr->mLinNotAryBl)
+      free(mLinSTPtr->mLinNotAryBl);
 
    init_multi_linST(mLinSTPtr);
 } /*freeStack_multi_linST*/
@@ -3248,6 +3254,9 @@ getComplexLineages_linST(
    signed char varStr[32];
    signed char *tmpStr = 0;
    signed char needBl = 0;/*marks in lineage is required*/
+   signed char notBl = 0; /*mark if lineage can not be
+                          `  present
+                          */
 
    struct complex_linST *complexHeapST = 0;
    struct multi_linST *mLinSTPtr = 0;
@@ -3624,7 +3633,20 @@ getComplexLineages_linST(
          posSI += cpWhite_ulCp(tmpStr, &buffStr[posSI]);
 
          if(*tmpStr == def_needLin_linST)
+         { /*If: need this lineage*/
             ++tmpStr; /*get off '!' for required lineage*/
+
+            if(*tmpStr == def_notLin_linST)
+               ++tmpStr; /*get off '&' for not lineage*/
+         } /*If: need this lineage*/
+
+         else if(*tmpStr == def_notLin_linST)
+         { /*If: not this lineage*/
+            ++tmpStr; /*get off '!' for not lineage*/
+
+            if(*tmpStr == def_needLin_linST)
+               ++tmpStr; /*get off '&' for required lin*/
+         } /*If: not this lineage*/
 
          trsStr = tmpStr;
 
@@ -3686,8 +3708,13 @@ getComplexLineages_linST(
          goto memErr_fun37_sec04;
 
       mLinSTPtr->linNeedAryBl =
-         calloc(mLinSTPtr->linLenSI, sizeof(signed int));
+         calloc(mLinSTPtr->linLenSI, sizeof(signed char));
       if(! mLinSTPtr->linNeedAryBl)
+         goto memErr_fun37_sec04;
+
+      mLinSTPtr->linNotAryBl =
+         calloc(mLinSTPtr->linLenSI, sizeof(signed char));
+      if(! mLinSTPtr->linNotAryBl)
          goto memErr_fun37_sec04;
 
 
@@ -3697,8 +3724,13 @@ getComplexLineages_linST(
          goto memErr_fun37_sec04;
 
       mLinSTPtr->mLinNeedAryBl =
-         calloc(mLinSTPtr->mLinLenSI,sizeof(signed int));
+         calloc(mLinSTPtr->mLinLenSI,sizeof(signed char));
       if(! mLinSTPtr->mLinNeedAryBl)
+         goto memErr_fun37_sec04;
+
+      mLinSTPtr->mLinNotAryBl =
+         calloc(mLinSTPtr->mLinLenSI,sizeof(signed char));
+      if(! mLinSTPtr->mLinNotAryBl)
          goto memErr_fun37_sec04;
 
       mLinSTPtr->linLenSI = 0;
@@ -3713,6 +3745,8 @@ getComplexLineages_linST(
 
       while(buffStr[posSI])
       { /*Loop: find variants*/
+         notBl = 0;
+         needBl = 0;
 
          /*___________find_if_is_trs_lineage____________*/
          tmpStr = varStr;
@@ -3722,10 +3756,28 @@ getComplexLineages_linST(
          if(*trsStr == def_needLin_linST)
          { /*If: this is a required lineage*/
             needBl = 1;
-            ++trsStr; /*get off '!'*/
-            ++tmpStr; /*get off '!'*/
+            ++trsStr; /*get off '&'*/
+
+            if(*trsStr == def_notLin_linST)
+            { /*If: also a not lineage*/
+               notBl = 1;
+               ++trsStr; /*get off '!'*/
+            } /*If: also a not lineage*/
          } /*If: this is a required lineage*/
 
+         else if(*trsStr == def_notLin_linST)
+         { /*Else If: this is a not lineage*/
+            notBl = 1;
+            ++trsStr; /*get off '!'*/
+
+            if(*trsStr == def_needLin_linST)
+            { /*If: need this lineage*/
+               needBl = 1;
+               ++trsStr; /*get off &*/
+            } /*If: need this lineage*/
+         } /*Else If: this is a not lineage*/
+
+         tmpStr = trsStr;
          trsStr +=
             lenStrNull_ulCp(
                trsStr,
@@ -3763,6 +3815,8 @@ getComplexLineages_linST(
                trsLinSI;
             mLinSTPtr->linNeedAryBl[mLinSTPtr->linLenSI] =
                needBl;
+            mLinSTPtr->linNotAryBl[mLinSTPtr->linLenSI] =
+               notBl;
             ++mLinSTPtr->linLenSI;
 
             /*to get the default group id, I first need to
@@ -3818,6 +3872,11 @@ getComplexLineages_linST(
             mLinSTPtr->mLinNeedAryBl[
                mLinSTPtr->mLinLenSI
             ] = needBl;
+
+            mLinSTPtr->mLinNotAryBl[
+               mLinSTPtr->mLinLenSI
+            ] = notBl;
+
 
             ++mLinSTPtr->mLinLenSI;
 
