@@ -304,6 +304,17 @@ My general libraries. Not very well documented and use
 
 # Updates:
 
+- 2025-12-04:
+  - added closest lineage method for the getLin complex
+    databases. This picks a complex lineage with the most
+    matching variants from a group of complex lineages.
+  - the getLin complex database format has chagned. The
+    old format still works, however, the newer version
+    will not work.
+- 2025-11-28:
+  - added the print all variants flag to getLin. This will
+    print all variants marked as do not print. Overwriting
+    will still happen for complex variants.
 - 2025-11-25:
   - getLin, changed complex database required lineage
     symbol to `&`

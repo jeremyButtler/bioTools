@@ -636,6 +636,10 @@ simpleLineage_getLin(
 |     o complex_linST struct pointer with the complex
 |       lineages to check
 |     o should be in format of user input (do not sort)
+|   - simpleSTPtr:
+|     o simple_linST struct pointer with the simple
+|       lineages (allows narrowing down of complex
+|       lineages needed to be searched)
 |   - simpleLinArySI:
 |     o signed int array that has the index of the
 |       lineages from simpleLineage_getLin; returned array
@@ -671,6 +675,7 @@ simpleLineage_getLin(
 signed int *
 complexLineage_getLin(
    struct complex_linST *complexSTPtr,/*complex lineages*/
+   struct simple_linST *simpleSTPtr,  /*simple lineages*/
    signed int *simpleLinArySI, /*found simple lineages*/
    signed int *trsLinArySI,    /*found TRS lineages*/
    signed int *simpleLenSIPtr, /*# found simple lineages*/
@@ -784,6 +789,9 @@ addMem_cnt_getLin(
 |       by complexLineage_getLin
 |   - complexLenSI:
 |     o number of complese lineages found
+|   - pAllVarsBl:
+|     o 1: print variants that are set to no print
+|     o 0: ingore variants set to no print
 |   - simpleSTPtr:
 |     o simple_linST struct pointer with the simple
 |       (one variant) lineage names
@@ -809,6 +817,7 @@ addReadLineages_cnt_getLin(
    signed int simpLenSI,       /*# found simple lineages*/
    signed int *complexLinArySI,/*complex lineages found*/
    signed int complexLenSI,   /*# found complex lineages*/
+   signed char pAllVarsBl,     /*print no-print lineages*/
    struct simple_linST *simpleSTPtr,/*1VariantLineages*/
    struct complex_linST *complexSTPtr /*complex lineages*/
 );
@@ -890,6 +899,9 @@ pReadLineages_getLin(
 |   - complexSTPtr:
 |     o complex_linST struct array with the complex
 |       lineage names
+|   - pAllVarsBl:
+|     o 1: print variants that are set to no print
+|     o 0: ingore variants set to no print
 |   - pHeadBlPtr:
 |     o signed char pointer telling if to print the header
 |       * 1: print header and set bool to 0
@@ -917,6 +929,7 @@ plineages_getLin(
    signed int complexLenSI,    /*number complex lineages*/
    struct simple_linST *simpleSTPtr, /*simple lineages*/
    struct complex_linST *complexSTPtr, /*complexLineages*/
+   signed char pAllVarsBl,     /*print no-print lineages*/
    signed char *pHeadBlPtr,    /*1: print header*/
    void *outFILE               /*file to print to*/
 );

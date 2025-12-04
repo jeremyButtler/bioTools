@@ -3708,7 +3708,17 @@ simpleLineage_getLin(
    *   - start loop and resize arrays as needed
    \*****************************************************/
 
-   for(siLin = 0; siLin < simpleSTPtr->lenSI; ++siLin)
+   siLin =
+      posFindAry_one_linST(
+         samSTPtr->refStartUI,
+         simpleSTPtr->linAryST,
+         simpleSTPtr->lenSI
+      ); /*find the first possible variant*/
+
+   if(siLin < 0)
+      goto noLineages_fun19_sec05;
+
+   for( ; siLin < simpleSTPtr->lenSI; ++siLin)
    { /*Loop: find lineages*/
       if(*outLenSIPtr >= retSizeSI)
       { /*If: need more memory*/
@@ -4151,12 +4161,16 @@ simpleLineage_getLin(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    if(! *outLenSIPtr)
-      goto errClean_fun19_sec05; /*no lineages found*/
+      goto noLineages_fun19_sec05; /*no lineages found*/
 
    goto ret_fun19_sec05;
 
    memErr_fun19_sec05:;
       *outLenSIPtr = -1;
+      goto errClean_fun19_sec05;
+
+   noLineages_fun19_sec05:;
+      *outLenSIPtr = 0;
       goto errClean_fun19_sec05;
 
    errClean_fun19_sec05:;
@@ -4185,6 +4199,10 @@ simpleLineage_getLin(
 |     o complex_linST struct pointer with the complex
 |       lineages to check
 |     o should be in format of user input (do not sort)
+|   - simpleSTPtr:
+|     o simple_linST struct pointer with the simple
+|       lineages (allows narrowing down of complex
+|       lineages needed to be searched)
 |   - simpleLinArySI:
 |     o signed int array that has the index of the
 |       lineages from simpleLinage_getLin; returned array
@@ -4220,6 +4238,7 @@ simpleLineage_getLin(
 signed int *
 complexLineage_getLin(
    struct complex_linST *complexSTPtr,/*complex lineages*/
+   struct simple_linST *simpleSTPtr,  /*simple lineages*/
    signed int *simpleLinArySI, /*found simple lineages*/
    signed int *trsLinArySI,    /*found TRS lineages*/
    signed int *simpleLenSIPtr, /*# found simple lineages*/
@@ -4246,16 +4265,13 @@ complexLineage_getLin(
    signed int *retMLinArySI = 0;
    signed int siMLin = 0;
    signed int siLin = 0;
+   signed int firstLinSI = 0;
 
    signed int indexSI = 0;
    signed int missSI = 0;
 
    signed int *histHeapArySI = 0;
       /*keeps track of lineages hit so I can clear later*/
-   signed int histSizeSI = 0;
-   signed int histLenSI = 0;
-   signed int histMLinSI = 0;
-      /*marks complex lineage start*/
 
    struct multi_linST *mLinSTPtr = 0;
       /*for my own sanity later on*/
@@ -4274,13 +4290,6 @@ complexLineage_getLin(
    if(! retMLinArySI)
       goto memErr_fun20_sec04;
 
-   histHeapArySI =
-      malloc(*simpleLenSIPtr * sizeof(signed int));
-   if(! histHeapArySI)
-      goto memErr_fun20_sec04;
-
-   histSizeSI = 16;
-
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun20 Sec03:
    ^   - find lineages
@@ -4291,8 +4300,7 @@ complexLineage_getLin(
    ^   o fun20 sec03 sub03:
    ^     - scan complex lineages for hits and misses
    ^   o fun20 sec03 sub04:
-   ^     - if complex lineage overwrites, clean out child
-   ^       lineages
+   ^     - add found complex lineage to the hits
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
@@ -4300,49 +4308,33 @@ complexLineage_getLin(
    *   - start lineage loop + initialize and resize
    \*****************************************************/
 
-   for(siMLin = 0; siMLin < complexSTPtr->lenSI; ++siMLin)
-   { /*Loop: find complex lineages*/
+   if(simpleLinArySI && *simpleLenSIPtr)
+      firstLinSI = 
+         posFind_complex_linST(
+           simpleSTPtr->linAryST[simpleLinArySI[0]].endSI,
+           complexSTPtr
+         ); /*find the first possible complex lineage
+            `  given the simple lineages. This array is
+            `  sorted by index, which in turn is sorted
+            `  by the starting position and then ending
+            `  position. The complex array is sorted by
+            `  the ending position.
+            */
+   else
+      goto noSimpleLinErr_fun20_sec04;
+
+   if(firstLinSI < 0)
+      goto noSimpleLinErr_fun20_sec04;
+
+   for(
+      siMLin = firstLinSI;
+      siMLin < complexSTPtr->lenSI;
+      ++siMLin
+   ){ /*Loop: find complex lineages*/
+      complexSTPtr->cntArySI[siMLin] = 0;
       missSI = 0;
       mLinSTPtr = &complexSTPtr->linAryST[siMLin];
          /*for sanity*/
-
-      histLenSI =
-           mLinSTPtr->linLenSI
-         + mLinSTPtr->mLinLenSI
-         + mLinSTPtr->defGroupLenSI;
-
-      if(histLenSI >= histSizeSI)
-      { /*If: need more room*/
-         free(histHeapArySI);
-         histHeapArySI =
-            malloc(histLenSI * sizeof(signed int));
-         if(! histHeapArySI)
-            goto memErr_fun20_sec04;
-         histSizeSI = histLenSI;
-      } /*If: need more room*/
-
-      histLenSI = 0;
-
-      if(mLinSTPtr->overwriteBl & 2)
-      { /*If: overwriting the default groups*/
-         for(
-            missSI = 0;
-            missSI < mLinSTPtr->defGroupLenSI;
-            ++missSI
-         ){ /*Loop: add the default groups to history*/
-            indexSI =
-               siSearch_shellSort(
-                  simpleLinArySI,
-                  mLinSTPtr->defGroupArySI[histLenSI],
-                  *simpleLenSIPtr
-               ); /*see if have a match*/
-
-            if(indexSI >= 0)
-               histHeapArySI[histLenSI++] = indexSI;
-         }  /*Loop: add the default groups to history*/
-
-         missSI = 0;
-      } /*If: overwriting the default groups*/
 
       /**************************************************\
       * Fun20 Sec03 Sub02:
@@ -4397,15 +4389,15 @@ complexLineage_getLin(
                ++missSI; /*lineage counts as one miss*/
          } /*Else If: this lineage should be ignored*/
 
-         else if(mLinSTPtr->overwriteBl & 1)
-            histHeapArySI[histLenSI++] = indexSI;
+         else
+            ++complexSTPtr->cntArySI[siMLin];
       } /*Loop: find simple lineage matches*/
 
       if(missSI > mLinSTPtr->fudgeSI)
+      { /*If: this lineage is not a valid lineage*/
+         complexSTPtr->cntArySI[siMLin] = 0;
          continue;
-
-      histMLinSI = histLenSI;
-         /*start of the complex lineages*/
+      } /*If: this lineage is not a valid lineage*/
 
       /**************************************************\
       * Fun20 Sec03 Sub03:
@@ -4433,68 +4425,18 @@ complexLineage_getLin(
                /*this was a required lineage*/
          } /*If: did not find the lineage*/
 
-         else if(mLinSTPtr->overwriteBl & 1)
-            histHeapArySI[histLenSI++] = indexSI;
+         else
+            ++complexSTPtr->cntArySI[siMLin];
       } /*Loop: find complex lineage matches*/
 
       if(missSI > mLinSTPtr->fudgeSI)
+      { /*If: this lineage is not a valid lineage*/
+         complexSTPtr->cntArySI[siMLin] = 0;
          continue;
+      } /*If: this lineage is not a valid lineage*/
 
       /**************************************************\
       * Fun20 Sec03 Sub04:
-      *   - if complex lineage overwrites, clean out child
-      *     lineages
-      \**************************************************/
-
-      if(mLinSTPtr->overwriteBl && histLenSI)
-      { /*If: this lineage overwrites other lineages*/
-         si_shellSort(histHeapArySI, 0, histMLinSI - 1);
-         si_shellSort(histHeapArySI,histMLinSI,histLenSI);
-
-         indexSI = 0;/*using as copy from position*/
-         siLin = 0;  /*using as copy to position*/
-         missSI = 0; /*reusing as index's to remove*/
-
-         while(indexSI < *simpleLenSIPtr)
-         { /*Loop: remove simple lineages in lineage*/
-            if(missSI >= histMLinSI)
-               ;
-            else if(indexSI == histHeapArySI[missSI])
-            { /*Else: at lineage to overwrite (remove)*/
-               ++indexSI;
-               ++missSI;
-               continue;
-            } /*Else: at lineage to overwrite (remove)*/
-
-            /*keeping lineage*/
-            simpleLinArySI[siLin]=simpleLinArySI[indexSI];
-            trsLinArySI[siLin++] = trsLinArySI[indexSI++];
-         }  /*Loop: remove simple lineages in lineage*/
-
-         *simpleLenSIPtr = siLin; /*new length*/
-
-         indexSI = 0;/*using as copy from position*/
-         siLin = 0;  /*using as copy to position*/
-
-         while(indexSI < *outLenSIPtr)
-         { /*Loop: remove complex lineages in lineage*/
-            if(missSI >= histLenSI)
-               ;
-            else if(indexSI == retMLinArySI[indexSI])
-            { /*Else If: lineage to overwrite (remove)*/
-               ++indexSI;
-               ++missSI;
-               continue;
-            } /*Else If: lineage to overwrite (remove)*/
-
-            retMLinArySI[siLin++]=retMLinArySI[indexSI++];
-         }  /*Loop: remove complex lineages in lineage*/
-
-         *outLenSIPtr = siLin; /*new length*/
-      } /*If: this lineage overwrites other lineages*/
-
-      /**************************************************\
-      * Fun20 Sec03 Sub05:
       *   - add found complex lineage to the hits
       \**************************************************/
 
@@ -4502,6 +4444,204 @@ complexLineage_getLin(
       ++(*outLenSIPtr);
    } /*Loop: find complex lineages*/
 
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun20 Sec04:
+   ^   - for closest lineages, find the best lineage
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   for(
+      siMLin = 0;
+      siMLin < *outLenSIPtr;
+      ++siMLin
+   ){ /*Loop: find the best complex lineages*/
+      indexSI = retMLinArySI[siMLin];
+
+      if(complexSTPtr->cntArySI[indexSI] == -2)
+         continue;/*already checked this lineage/species*/
+
+      mLinSTPtr = &complexSTPtr->linAryST[indexSI];
+         /*for sanity*/
+
+      if(mLinSTPtr->typeSC !=def_closestComplexType_linST)
+         continue; /*this is not a count lineage*/
+      else if(complexSTPtr->cntArySI[indexSI] < 0)
+         continue;
+         /*this count lineage has been eliminated*/
+
+      missSI = complexSTPtr->cntArySI[indexSI];
+      firstLinSI = indexSI;
+      siLin = complexSTPtr->groupArySI[indexSI];
+
+      while(siLin != firstLinSI)
+      { /*Loop: find the closest lineage*/
+         if(complexSTPtr->cntArySI[siLin] > missSI)
+         { /*If: found a new best lineage*/
+            complexSTPtr->cntArySI[indexSI] = -2;
+
+            missSI = complexSTPtr->cntArySI[siLin];
+            indexSI = siLin;
+         } /*If: found a new best lineage*/
+
+         else
+            complexSTPtr->cntArySI[siLin] = -2;
+            /*mark lineage for removal*/
+
+         siLin = complexSTPtr->groupArySI[siLin];
+      }  /*Loop: find the closest lineage*/
+   } /*Loop: find the best complex lineages*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun20 Sec05:
+   ^   - mark and then remove overwrite lineages
+   ^   o fun20 sec05 sub01:
+   ^     - mark lineages for removal
+   ^   o fun20 sec05 sub02:
+   ^     - remove lineages
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Fun20 Sec05 Sub01:
+   *   - mark lineages for removal
+   *   o fun20 sec05 sub01 cat01:
+   *     - setup for marking lineages
+   *   o fun20 sec05 sub01 cat02:
+   *     - start loop + check if can remove any lineages
+   *   o fun20 sec05 sub01 cat03:
+   *     - mark simple lineages to remove
+   *   o fun20 sec05 sub01 cat04:
+   *     - mark complex lineages to remove
+   \*****************************************************/
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun20 Sec05 Sub01 Cat01:
+   +   - setup for marking lineages
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   histHeapArySI =
+      calloc(*simpleLenSIPtr, sizeof(signed int));
+   if(! histHeapArySI)
+      goto memErr_fun20_sec04;
+
+   for(siLin = 0; siLin < *simpleLenSIPtr; ++siLin)
+      histHeapArySI[siLin] = 0;
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun20 Sec05 Sub01 Cat02:
+   +   - start loop + check if can remove any lineages
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   for(siMLin = 0; siMLin < *outLenSIPtr; ++siMLin)
+   { /*Loop: find the best complex lineages*/
+       mLinSTPtr = &complexSTPtr->linAryST[siMLin];
+
+       if(! mLinSTPtr->overwriteBl)
+          continue;
+       else if(complexSTPtr->cntArySI[siMLin] == -2)
+          continue;
+          /*this lineage was closest lineage that was not
+          `  used or has already been checked
+          */
+
+      if(mLinSTPtr->overwriteBl & 2)
+      { /*If: overwriting the default groups*/
+         for(
+            siLin = 0;
+            siLin < mLinSTPtr->defGroupLenSI;
+            ++siLin
+         ){ /*Loop: add the default groups to history*/
+            indexSI =
+               siSearch_shellSort(
+                  simpleLinArySI,
+                  mLinSTPtr->defGroupArySI[siLin],
+                  *simpleLenSIPtr
+               ); /*see if have a match*/
+
+            if(indexSI >= 0)
+               histHeapArySI[indexSI] = -1;
+         }  /*Loop: add the default groups to history*/
+
+         if( ! (mLinSTPtr->overwriteBl & 1) )
+            continue; /*only removing default groups*/
+      } /*If: overwriting the default groups*/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun20 Sec05 Sub01 Cat03:
+      +   - mark simple lineages to remove
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+       for(siLin=0; siLin < mLinSTPtr->linLenSI; ++siLin)
+       { /*Loop: mark simple lineages as hit*/
+          indexSI =
+             siSearch_shellSort(
+                simpleLinArySI,
+                mLinSTPtr->linIndexArySI[siLin],
+                *simpleLenSIPtr
+             ); /*see if have the simple lineage*/
+          
+          if(indexSI >= 0)
+             histHeapArySI[indexSI] = -1;
+       } /*Loop: mark simple lineages as hit*/
+
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun20 Sec05 Sub01 Cat04:
+      +   - mark complex lineages to remove
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+       for(siLin=0; siLin < mLinSTPtr->mLinLenSI; ++siLin)
+       { /*Loop: mark complex lineages as hit*/
+          complexSTPtr->cntArySI[
+             mLinSTPtr->mLinIndexArySI[siLin]
+          ] = -1;
+       } /*Loop: mark complex lineages as hit*/
+
+      if(complexSTPtr->cntArySI[siMLin] < 0)
+         complexSTPtr->cntArySI[siMLin] = -2;
+         /*aleady marked for removal. At this piont I have
+         `  marked all its invidiual lineages for removal
+         */
+   } /*Loop: find the best complex lineages*/
+
+   /*****************************************************\
+   * Fun20 Sec05 Sub02:
+   *   - remove lineages
+   \*****************************************************/
+
+   siLin = 0;
+   indexSI = 0;
+
+   while(siLin < *simpleLenSIPtr)
+   { /*Loop: remove simple lineages*/
+       if(histHeapArySI[siLin] >= 0)
+       { /*If: not removing the lineage*/
+          trsLinArySI[indexSI] = trsLinArySI[siLin];
+          simpleLinArySI[indexSI] = simpleLinArySI[siLin];
+          ++indexSI;
+       } /*If: not removing the lineage*/
+
+       ++siLin; /*move to next lineage to keep or remove*/
+   } /*Loop: remove simple lineages*/
+
+   *simpleLenSIPtr = indexSI;
+
+
+   siLin = 0;
+   indexSI = 0;
+
+   while(siLin < *outLenSIPtr)
+   { /*Loop: remove complex lineages*/
+       missSI = retMLinArySI[siLin];
+
+       if(complexSTPtr->cntArySI[missSI] >= 0)
+       { /*If: not removing the lineage*/
+          retMLinArySI[indexSI] = retMLinArySI[siLin];
+          ++indexSI;
+       } /*If: not removing the lineage*/
+
+       ++siLin; /*move to next lineage to keep or remove*/
+   } /*Loop: remove complex lineages*/
+
+   *outLenSIPtr = indexSI;
+ 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun20 Sec04:
    ^   - clean up and return
@@ -4926,6 +5066,9 @@ addLineage_cnt_getLin(
 |       by complexLineage_getLin
 |   - complexLenSI:
 |     o number of complese lineages found
+|   - pAllVarsBl:
+|     o 1: print variants that are set to no print
+|     o 0: ingore variants set to no print
 |   - simpleSTPtr:
 |     o simple_linST struct pointer with the simple
 |       (one variant) lineage names
@@ -4951,6 +5094,7 @@ addReadLineages_cnt_getLin(
    signed int simpLenSI,       /*# found simple lineages*/
    signed int *complexLinArySI,/*complex lineages found*/
    signed int complexLenSI,   /*# found complex lineages*/
+   signed char pAllVarsBl,     /*print no-print lineages*/
    struct simple_linST *simpleSTPtr,/*1VariantLineages*/
    struct complex_linST *complexSTPtr /*complex lineages*/
 ){
@@ -4968,7 +5112,7 @@ addReadLineages_cnt_getLin(
    { /*Loop: add simple lineages to the count*/
       linSTPtr =
          &simpleSTPtr->linAryST[simpLinArySI[siLin]];
-      if(! linSTPtr->printLinBl)
+      if(! pAllVarsBl && ! linSTPtr->printLinBl)
          continue; /*this lineage is not printed*/
 
       idLenSI =
@@ -5009,7 +5153,7 @@ addReadLineages_cnt_getLin(
    { /*Loop: add complex lineages to the count*/
       mLinSTPtr =
          &complexSTPtr->linAryST[complexLinArySI[siLin]];
-      if(! mLinSTPtr->printLinBl)
+      if(! pAllVarsBl && ! mLinSTPtr->printLinBl)
          continue; /*this lineage is not printed*/
 
       idLenSI = cpStr_ulCp(idStr, mLinSTPtr->groupIdStr);
@@ -5142,13 +5286,11 @@ pReadLineages_getLin(
    fprintf((FILE *) outFILE, "\tend%s", str_endLine);
 
 
-   conHeapArySI =
-     calloc(conLenSI, sizeof(signed int));
+   conHeapArySI = calloc(conLenSI, sizeof(signed int));
    if(! conHeapArySI)
       goto memErr_fun28_sec05;
 
-   mixedHeapArySC =
-     calloc(conLenSI, sizeof(signed char));
+   mixedHeapArySC = calloc(conLenSI, sizeof(signed char));
    if(! mixedHeapArySC)
       goto memErr_fun28_sec05;
 
@@ -5171,7 +5313,7 @@ pReadLineages_getLin(
          cntSTPtr->linCntArySI[siPos]
       );
 
-      if(cntSTPtr->linCntArySI[siPos] > minDepthSI)
+      if(cntSTPtr->linCntArySI[siPos] >= minDepthSI)
       { /*If: I have enough read depth*/
          if(! conLenSI)
             conHeapArySI[conLenSI++] = siPos;
@@ -5240,7 +5382,12 @@ pReadLineages_getLin(
    for(siPos = 0; siPos < cntSTPtr->lenSI; ++siPos)
    { /*Loop: print the consensus row*/
       if(siCon >= conLenSI || siPos < conHeapArySI[siCon])
-         fprintf((FILE *) outFILE, "\tLOW_DEPTH");
+      { /*If: not part of the consensus*/
+         if(cntSTPtr->linCntArySI[siPos] < minDepthSI)
+            fprintf((FILE *) outFILE, "\tLOW_DEPTH");
+         else
+            fprintf((FILE *) outFILE, "\tNOT_SELECTED");
+      } /*If: not part of the consensus*/
 
       else
       { /*Else: have consensus entry to print*/
@@ -5312,6 +5459,9 @@ pReadLineages_getLin(
 |   - complexSTPtr:
 |     o complex_linST struct array with the complex
 |       lineage names
+|   - pAllVarsBl:
+|     o 1: print variants that are set to no print
+|     o 0: ingore variants set to no print
 |   - pHeadBlPtr:
 |     o signed char pointer telling if to print the header
 |       * 1: print header and set bool to 0
@@ -5339,6 +5489,7 @@ plineages_getLin(
    signed int complexLenSI,    /*number complex lineages*/
    struct simple_linST *simpleSTPtr, /*simple lineages*/
    struct complex_linST *complexSTPtr, /*complexLineages*/
+   signed char pAllVarsBl,     /*print no-print lineages*/
    signed char *pHeadBlPtr,    /*1: print header*/
    void *outFILE               /*file to print to*/
 ){
@@ -5354,6 +5505,7 @@ plineages_getLin(
          simpleLenSI,
          complexLinArySI,
          complexLenSI,
+         pAllVarsBl,
          simpleSTPtr,
          complexSTPtr
      ) /*gets lineage output formant and sorts by group*/

@@ -46,7 +46,7 @@
 '         - unsorts a one_linST array using an array of
 '           original index's
 '     + one_linST find functions (all need a sorted array)
-'       ! fun12 and fun 12 are hidden becuase fun35
+'       ! fun12 and fun 12 are hidden becuase fun39
 '         retuns a position sorted array
 '       o fun11: posFindAry_one_linST
 '         - find the first variant that is between the
@@ -94,13 +94,44 @@
 '        - frees a complex_linST struct
 '      o fun30: addMem_complex_linST
 '        - adds memory to a complex_linST struct
+'      ! fun31 to fun36 are only used in getting complex
+'        lineages to decrease search time in reading in
+'        the database
+'      o .c fun31: swap_complex_linST
+'        - swap two index in a complex lineage array
+'      o .c fun32: addIdSort_complex_linST
+'        - add complex id to an lineage by sorting
+'      o .c fun33: idFind_complex_linST
+'        - finds an id in an id sorted complex_linST
+'        - this is only used in the reading in function
+'      o .c fun34: groupSort_complex_linST
+'        - sorts a mult_linST array in a complex_linST
+'          struct by the group id
+'      o .c fun35: positionSort_complex_linST
+'        - sorts a mult_linST array in a complex_linST
+'          struct by the position (end coordinate)
+'        - this sort also makes sure that lineages that
+'          have more variants are at the end
+'        - between end and total at ends, this ensures
+'          complex lineages that are depenent on other
+'          complex lineages end up at the end
+'      o .c fun36: unsort_complex_linST
+'        - unsort a mult_linST array in a complex_linST
+'          by the original index's
+'      o fun37: posFind_complex_linST
+'        - find the first complex variant that is between
+'          the start and end position in a complex_linST
 '   * general functions
-'     o fun35: getSimpleLineages_linST
+'      o .c fun38: flipIndexAry_complex_linST
+'        - changes the index array so that the stored
+'          index is the position and the old position is
+'          the new stored index
+'     o fun39: getSimpleLineages_linST
 '       - gets the lineages from the variants lineage file
-'     o .c fun36: intInsert_linST
+'     o .c fun40: intInsert_linST
 '       - inserts an integer into an array at its sorted
 '         position (this does not insert duplicates)
-'     o fun37: getComplexLineages_linST
+'     o fun41: getComplexLineages_linST
 '       - gets the lineages from the complex lineage file
 '   o license:
 '     - licensing for this code (public domain / mit)
@@ -261,12 +292,21 @@ typedef struct simple_linST
 | ST03: multi_linST
 |   - has data for a complex (multi-variant) lineage
 \-------------------------------------------------------*/
+#define def_matchComplexType_linST 1
+   /*find lineages that match the variant patterns*/
+#define def_closestComplexType_linST 2
+   /*find lineage by finding closet complex lineage type*/
+#define def_startVariantsComplex_linST '*'
+#define def_startIgnoreComplex_linST '#'
+   
+
 typedef struct multi_linST
 {
    signed char *idStr;  /*id of complex lineage*/
    signed char *groupIdStr;/*group complex lineage is in*/
    signed char *geneStr;/*gene assigned to multi lineage*/
    signed char *lineageStr; /*lineage to assign*/
+   signed char typeSC;  /*type of lineage looking at*/
    signed int fudgeSI; /*how many lineages can be off*/
    signed char overwriteBl;
       /* Values:
@@ -328,6 +368,10 @@ typedef struct multi_linST
                              `  no complex lineage shares
                              `  a one_linST (var) lineage
                              */
+   signed int totalLinSI;   /*total lineages that are in
+                            `  in this lineage (includes
+                            `  complex lineages)
+                            */
    /*these variables are used to figure out coordinates
    `  for positions
    */
@@ -345,6 +389,16 @@ typedef struct complex_linST
    struct multi_linST *linAryST;/*complex lineage array*/
    signed int lenSI;  /*number of complex lineages*/
    signed int sizeSI; /*maximum lineages before resize*/
+   signed int *groupArySI; /*has index of the next lineage
+                           `  that is in same group
+                           ` Each group ends with the
+                           `   first lineage index. So,
+                           `   each group has a circular
+                           `   list
+                           */
+   signed int *cntArySI; /*here to recored number hits
+                         `   I had per complex lineage
+                         */
 }complex_linST;
 
 /*-------------------------------------------------------\
@@ -436,22 +490,18 @@ freeHeapAry_one_linST(
 | Input:
 |   - startSI:
 |     o start of range to find
-|   - endSI:
-|     o end of range to find
 |   - linAryST:
 |     o one_linST struct array to find variant
 |   - lenSI:
 |     o number of variants in linAryST
 | Output:
 |   - Returns:
-|     o index of first variant in between the start and
-|       end
-|     o -1 if no variant is in the input range
+|     o index of first possible variant
+|     o -1 if no variant is after the start position
 \-------------------------------------------------------*/
 signed int
 posFindAry_one_linST(
    signed int startSI, /*first base variant can have*/
-   signed int endSI,   /*last base variant can have*/
    struct one_linST *linAryST, /*array of lineages*/
    signed int lenSI    /*number of variants in array*/
 );
@@ -755,7 +805,30 @@ addMem_complex_linST(
 );
 
 /*-------------------------------------------------------\
-| Fun35: getSimpleLineages_linST
+| Fun37: posFind_complex_linST
+|   - find the first complex variant that is between the
+|     start and end position in a complex_linST struct
+| Input:
+|   - endSI:
+|     o last base in range to find
+|     o I only look for the end because the complex
+|       lineages are sorted by end position
+|   - complexSTPtr:
+|     o complex_linST struct array to find variant index
+| Output:
+|   - Returns:
+|     o index of first variant in between the start and
+|       end
+|     o -1 if no variant is in the input range
+\-------------------------------------------------------*/
+signed int
+posFind_complex_linST(
+   signed int endSI,   /*last base variant can have*/
+   struct complex_linST *complexSTPtr /*complex lineages*/
+);
+
+/*-------------------------------------------------------\
+| Fun39: getSimpleLineages_linST
 |   - gets the lineages from the variants lineage file
 | Input:
 |   - noFastBl
@@ -788,7 +861,7 @@ getSimpleLineages_linST(
 );
 
 /*-------------------------------------------------------\
-| Fun37: getComplexLineages_linST
+| Fun41: getComplexLineages_linST
 |   - gets the lineages from the complex lineage file
 | Input:
 |   - simpleSTPtr:

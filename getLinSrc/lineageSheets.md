@@ -195,8 +195,9 @@ The complex lineage file allows the merging off multiple
      - Use NA if not relevant (not used)
      - If present, is used in the final lineage output
   4. Lineage name to use
-  5. How many single lineages (variants) can be missed and
-     still call the lineage (amoun to fudge by)
+  5. The amount of lineages I can fudge by
+     - how many lineages (complex or simple) can be missed
+       and still call or at least consider the lineage
      - Can be 0 or `NA`
   6. Tells if overwrites the single variant lineage
      - Yes/True, means the single variant (simple) lineages
@@ -214,9 +215,27 @@ The complex lineage file allows the merging off multiple
        want it printed.
      - True: for print
      - False: do not print
-  8. Marks the start of the variant column, this is always
-     a `*`
-  9. And onwards are the variants to assign
+  8. How a lineage is found
+     - `match` means the lineage is found by any match
+       - In this mode multiple lineages can exists so
+         long as they have enough detected lineages
+     - `closest` means the closet lineage in the lineage
+        group is choosen for the sequence
+       - This still requires the lineage still be within
+         the `fudge` range to even be considered
+     - `na` use the default mode (`match`)
+     - If this column is not present, then `match` is
+       assumed (the not present if for backwards
+       compatability)
+  9. Columns till a `*` column are ingored
+     - this allows future expension of the system and
+       backwards compatbility
+     - for notes, you should use a `#` symbol to tell
+       getLin that everything till the first `*` is a
+       note or should not be read
+  10. Marks the start of the variant column, this is always
+      a `*`
+  11. And onwards are the variants to assign
      - Non-TRS lineages it is `<variant_name_(id)>`
      - TRS lineages it is `<variant_name_(id)>:lineage`
        - were lineage is based on the repeat length
@@ -227,6 +246,12 @@ The complex lineage file allows the merging off multiple
      - A `!` at the start means this variant can not be
        present
        - ex `!<variant_name_(id)>`
+     - `NA` for no lineage
+       - here to allow you to fill blank cells with
+         something
+  12. Using an `#` symbol means everything else should
+      be ingored
+      - Use this to add notes at the end
 
 The variant list is always at the end after the '*'
   column. This allows a flexibal system were more entries
@@ -243,17 +268,17 @@ The bottom lineage is a TRS example which is a combined
   is no way to report these separately.
 
 ```
-id        group     gene   overwrites fudge lingeage print_lineages	variants_start var1       var2
-B602L-UKR B602L-SNP B602L  Yes        0     UKR      True	*              B602L-UKR1 B602L-UKR2
-K145R     group     K145R  Yes        0     3        True	*              K145R-2    K145R-3
-TRS_combo group     NA     No         0     mixed    True	*              IGR:2      O174-TRS:3
+id        group     gene   type	fudge lingeage overwrites print_lineages	variants_start var1       var2
+B602L-UKR B602L-SNP B602L  match	0     UKR      Yes        True	*              B602L-UKR1 B602L-UKR2
+K145R     group     K145R  match	0     3        Yes        True	*              K145R-2    K145R-3
+TRS_combo group     NA     match	0     mixed    No         True	*              IGR:2      O174-TRS:3
 ```
 
 An exmaple adding in a notes column for human use.
 
 ```
-id        group     gene   overwrites fudge lingeage print_lineages	notes         variants_start var1       var2
-B602L-UKR B602L-SNP B602L  Yes        0     UKR      True	gene_lineage  *              B602L-UKR1 B602L-UKR2
-K145R     group     K145R  Yes        0     3        True	gene_lineage  *              !K145R-2    K145R-3
-TRS_combo group     NA     No         0     mixed    True	final_lineage *              IGR:2      O174-TRS:3
+id        group     gene   fudge lingeage overwrites print_lineages type		notes         variants_start var1       var2	notes
+B602L-UKR B602L-SNP B602L  0     UKR      Yes        True	match	  #gene_lineage  *              B602L-UKR1 B602L-UKR2	# or notes can go here
+K145R     group     K145R  0     3        Yes        True	match	  #gene_lineage  *              !K145R-2    K145R-3 	# or notes can go here
+TRS_combo group     NA     0     mixed    No         True	match	  #final_lineage *              IGR:2      O174-TRS:3	# or notes can go here
 ```

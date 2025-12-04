@@ -46,7 +46,7 @@
 '         - unsorts a one_linST array using an array of
 '           original index's
 '     + one_linST find functions (all need a sorted array)
-'       ! fun12 and fun 12 are hidden becuase fun35
+'       ! fun12 and fun 12 are hidden becuase fun39
 '         retuns a position sorted array
 '       o fun11: posFindAry_one_linST
 '         - find the first variant that is between the
@@ -94,7 +94,7 @@
 '        - frees a complex_linST struct
 '      o fun30: addMem_complex_linST
 '        - adds memory to a complex_linST struct
-'      ! fun31 to fun34 are only used in getting complex
+'      ! fun31 to fun36 are only used in getting complex
 '        lineages to decrease search time in reading in
 '        the database
 '      o .c fun31: swap_complex_linST
@@ -104,16 +104,34 @@
 '      o .c fun33: idFind_complex_linST
 '        - finds an id in an id sorted complex_linST
 '        - this is only used in the reading in function
-'      o .c fun34: unsort_complex_linST
+'      o .c fun34: groupSort_complex_linST
+'        - sorts a mult_linST array in a complex_linST
+'          struct by the group id
+'      o .c fun35: positionSort_complex_linST
+'        - sorts a mult_linST array in a complex_linST
+'          struct by the position (end coordinate)
+'        - this sort also makes sure that lineages that
+'          have more variants are at the end
+'        - between end and total at ends, this ensures
+'          complex lineages that are depenent on other
+'          complex lineages end up at the end
+'      o .c fun36: unsort_complex_linST
 '        - unsort a mult_linST array in a complex_linST
 '          by the original index's
+'      o fun37: posFind_complex_linST
+'        - find the first complex variant that is between
+'          the start and end position in a complex_linST
 '   * general functions
-'     o fun35: getSimpleLineages_linST
+'      o .c fun38: flipIndexAry_complex_linST
+'        - changes the index array so that the stored
+'          index is the position and the old position is
+'          the new stored index
+'     o fun39: getSimpleLineages_linST
 '       - gets the lineages from the variants lineage file
-'     o .c fun36: intInsert_linST
+'     o .c fun40: intInsert_linST
 '       - inserts an integer into an array at its sorted
 '         position (this does not insert duplicates)
-'     o fun37: getComplexLineages_linST
+'     o fun41: getComplexLineages_linST
 '       - gets the lineages from the complex lineage file
 '   o license:
 '     - licensing for this code (public domain / mit)
@@ -928,22 +946,18 @@ unsort_one_linST(
 | Input:
 |   - startSI:
 |     o start of range to find
-|   - endSI:
-|     o end of range to find
 |   - linAryST:
 |     o one_linST struct array to find variant
 |   - lenSI:
 |     o number of variants in linAryST
 | Output:
 |   - Returns:
-|     o index of first variant in between the start and
-|       end
-|     o -1 if no variant is in the input range
+|     o index of first possible variant
+|     o -1 if no variant is after the start position
 \-------------------------------------------------------*/
 signed int
 posFindAry_one_linST(
    signed int startSI, /*first base variant can have*/
-   signed int endSI,   /*last base variant can have*/
    struct one_linST *linAryST, /*array of lineages*/
    signed int lenSI    /*number of variants in array*/
 ){
@@ -955,10 +969,10 @@ posFindAry_one_linST(
    { /*Loop: find the first variant in range*/
       midSI = (leftSI + rightSI) >> 1;
 
-     if(startSI < linAryST[midSI].startSI)
+     if(startSI > linAryST[midSI].startSI)
          leftSI = midSI + 1;
-     else if(endSI > linAryST[midSI].endSI)
-         leftSI = midSI + 1;
+     else if(startSI < linAryST[midSI].startSI)
+         rightSI = midSI - 1;
      else
      { /*Else: is in range*/
          if(! midSI)
@@ -971,10 +985,10 @@ posFindAry_one_linST(
    } /*Loop: find the first variant in range*/
 
    /*check if found range*/
-   if(startSI < linAryST[midSI].startSI)
-      return -1;
-   if(endSI > linAryST[midSI].endSI)
-      return -1;
+   if(
+         midSI == lenSI - 1
+      && startSI > linAryST[midSI].startSI
+   ) return -1;
 
    return midSI;
 } /*posFindAry_one_linST*/
@@ -1399,11 +1413,14 @@ blank_multi_linST(
    } /*If: have variants in a lineage*/
 
    mLinSTPtr->defGroupLenSI = 0;
+   mLinSTPtr->typeSC = def_matchComplexType_linST;
    mLinSTPtr->overwriteBl = 0;
    mLinSTPtr->printLinBl = 0;
    mLinSTPtr->fudgeSI = 0;
    mLinSTPtr->startSI = 0;
    mLinSTPtr->endSI = 0;
+   mLinSTPtr->totalOneLinSI = 0;
+   mLinSTPtr->totalLinSI = 0;
 } /*blank_multi_linST*/
 
 /*-------------------------------------------------------\
@@ -1584,6 +1601,8 @@ init_complex_linST(
 
    complexSTPtr->linAryST = 0;
    complexSTPtr->sizeSI = 0;
+   complexSTPtr->groupArySI = 0;
+   complexSTPtr->cntArySI = 0;
 
    blank_complex_linST(complexSTPtr);
 } /*init_complex_linST*/
@@ -1606,6 +1625,11 @@ freeStack_complex_linST(
 ){
    if(! complexSTPtr)
       return;
+
+   if(complexSTPtr->groupArySI)
+      free(complexSTPtr->groupArySI);
+   if(complexSTPtr->cntArySI)
+      free(complexSTPtr->cntArySI);
 
    if(complexSTPtr->linAryST)
       freeHeapAry_multi_linST(
@@ -1748,6 +1772,13 @@ swap_complex_linST(
       complexSTPtr->linAryST[twoSI].lineageStr;
    complexSTPtr->linAryST[twoSI].lineageStr = swapStrPtr;
 
+   complexSTPtr->linAryST[oneSI].typeSC ^=
+      complexSTPtr->linAryST[twoSI].typeSC;
+   complexSTPtr->linAryST[twoSI].typeSC ^=
+      complexSTPtr->linAryST[oneSI].typeSC;
+   complexSTPtr->linAryST[oneSI].typeSC ^=
+      complexSTPtr->linAryST[twoSI].typeSC;
+
    complexSTPtr->linAryST[oneSI].fudgeSI ^=
       complexSTPtr->linAryST[twoSI].fudgeSI;
    complexSTPtr->linAryST[twoSI].fudgeSI ^=
@@ -1779,6 +1810,16 @@ swap_complex_linST(
       complexSTPtr->linAryST[twoSI].linTrsArySI;
    complexSTPtr->linAryST[twoSI].linTrsArySI = swapSIPtr;
 
+   swapStrPtr =complexSTPtr->linAryST[oneSI].linNeedAryBl;
+   complexSTPtr->linAryST[oneSI].linNeedAryBl =
+      complexSTPtr->linAryST[twoSI].linNeedAryBl;
+   complexSTPtr->linAryST[twoSI].linNeedAryBl =swapStrPtr;
+
+   swapStrPtr = complexSTPtr->linAryST[oneSI].linNotAryBl;
+   complexSTPtr->linAryST[oneSI].linNotAryBl =
+      complexSTPtr->linAryST[twoSI].linNotAryBl;
+   complexSTPtr->linAryST[twoSI].linNotAryBl = swapStrPtr;
+
    complexSTPtr->linAryST[oneSI].linLenSI ^=
       complexSTPtr->linAryST[twoSI].linLenSI;
    complexSTPtr->linAryST[twoSI].linLenSI ^=
@@ -1786,10 +1827,36 @@ swap_complex_linST(
    complexSTPtr->linAryST[oneSI].linLenSI ^=
       complexSTPtr->linAryST[twoSI].linLenSI;
 
+   swapSIPtr=complexSTPtr->linAryST[oneSI].defGroupArySI;
+   complexSTPtr->linAryST[oneSI].defGroupArySI =
+      complexSTPtr->linAryST[twoSI].defGroupArySI;
+   complexSTPtr->linAryST[twoSI].defGroupArySI=swapSIPtr;
+
+   complexSTPtr->linAryST[oneSI].defGroupLenSI ^=
+      complexSTPtr->linAryST[twoSI].defGroupLenSI;
+   complexSTPtr->linAryST[twoSI].defGroupLenSI ^=
+      complexSTPtr->linAryST[oneSI].defGroupLenSI;
+   complexSTPtr->linAryST[oneSI].defGroupLenSI ^=
+      complexSTPtr->linAryST[twoSI].defGroupLenSI;
+
    swapSIPtr=complexSTPtr->linAryST[oneSI].mLinIndexArySI;
    complexSTPtr->linAryST[oneSI].mLinIndexArySI =
       complexSTPtr->linAryST[twoSI].mLinIndexArySI;
    complexSTPtr->linAryST[twoSI].mLinIndexArySI=swapSIPtr;
+
+   swapStrPtr =
+      complexSTPtr->linAryST[oneSI].mLinNeedAryBl;
+   complexSTPtr->linAryST[oneSI].mLinNeedAryBl =
+      complexSTPtr->linAryST[twoSI].mLinNeedAryBl;
+   complexSTPtr->linAryST[twoSI].mLinNeedAryBl =
+      swapStrPtr;
+
+   swapStrPtr =
+      complexSTPtr->linAryST[oneSI].mLinNotAryBl;
+   complexSTPtr->linAryST[oneSI].mLinNotAryBl =
+      complexSTPtr->linAryST[twoSI].mLinNotAryBl;
+   complexSTPtr->linAryST[twoSI].mLinNotAryBl =
+      swapStrPtr;
 
    complexSTPtr->linAryST[oneSI].mLinLenSI ^=
       complexSTPtr->linAryST[twoSI].mLinLenSI;
@@ -1889,8 +1956,13 @@ addIdSort_complex_linST(
    for(
       leftSI = complexSTPtr->lenSI;
       leftSI > midSI;
-      ++leftSI
-   ) swap_complex_linST(complexSTPtr, leftSI, leftSI - 1);
+      --leftSI
+   ){ /*Loop: move old values up one*/
+       swap_complex_linST(complexSTPtr, leftSI, leftSI-1);
+       indexArySI[leftSI] ^= indexArySI[leftSI - 1];
+       indexArySI[leftSI - 1] ^= indexArySI[leftSI];
+       indexArySI[leftSI] ^= indexArySI[leftSI - 1];
+   }  /*Loop: move old values up one*/
 
    addId_fun32:;
       complexSTPtr->linAryST[midSI].idStr =
@@ -1953,7 +2025,313 @@ idFind_complex_linST(
 } /*addIdSort_complex_linST*/
 
 /*-------------------------------------------------------\
-| Fun34: unsort_complex_linST
+| Fun34: groupSort_complex_linST
+|   - sorts a mult_linST array in a complex_linST struct
+|     by the group id
+| Input:
+|   - cLinSTPtr:
+|     o complex_linST struct pointer to un34rt
+|   - indexArySI:
+|     o signed int array with original index's
+|     o this is kept in sync for unsorting later
+| Output:
+|   - Modifies:
+|     o linAryST in cLinSTPtr to be sorted by group
+\-------------------------------------------------------*/
+void
+groupSort_complex_linST(
+   struct complex_linST *cLinSTPtr,
+   signed int *indexArySI /*for unsorting later*/
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun34 TOC:
+   '   - sorts a mult_linST array in a complex_linST
+   '     struct by the group id
+   '   - sorts a one_linST struct array by variant id
+   '   o fun34 sec01:
+   '     - variable declerations
+   '   o fun34 sec02:
+   '     - find the number of roun34 to sort for
+   '   o fun34 sec03:
+   '     - sort the arrays
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun34 Sec01:
+   ^   - variable declerations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*Number of sorting roun34*/
+   signed int subSI = 0;
+   signed int nextSI = 0;
+   signed int lastSI = 0;
+   signed int onSI = 0;
+   signed int lenSI = cLinSTPtr->lenSI;
+
+   /*Variables to incurment loops*/
+   signed int indexSI = 0;
+   signed int curSI = 0;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun34 Sec02:
+   ^   - find the max search value (number roun34 to sort)
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*Number of elements to sort*/
+   --lenSI;
+
+   if(! lenSI)
+      return;
+
+   /*Recursion formula: h[0] = 1, h[n] = 3 * h[n - 1] +1*/
+   subSI = 1; /*Initialzie first array*/
+
+   while(subSI < lenSI - 1)
+      subSI = (3 * subSI) + 1;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun34 Sec03:
+   ^   - sort arrays
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   while(subSI > 0)
+   { /*Loop: all roun34*/
+      for(indexSI = 0; indexSI <= subSI; ++indexSI)
+      { /*Loop: though sub array*/
+         curSI = indexSI;
+
+         for(
+            curSI = indexSI;
+            curSI + subSI <= lenSI;
+            curSI += subSI
+         ){ /*Loop: swap elements in subarray*/
+            nextSI = curSI + subSI;
+
+            if(
+               eqlNull_ulCp(
+                  cLinSTPtr->linAryST[curSI].groupIdStr,
+                  cLinSTPtr->linAryST[nextSI].groupIdStr
+               ) > 0 
+            ){ /*If: I need to swap an element*/
+               swap_complex_linST(cLinSTPtr,curSI,nextSI);
+
+               cLinSTPtr->groupArySI[curSI] ^=
+                  cLinSTPtr->groupArySI[nextSI];
+               cLinSTPtr->groupArySI[nextSI] ^=
+                  cLinSTPtr->groupArySI[curSI];
+               cLinSTPtr->groupArySI[curSI] ^=
+                  cLinSTPtr->groupArySI[nextSI];
+
+               indexArySI[curSI] ^= indexArySI[nextSI];
+               indexArySI[nextSI] ^= indexArySI[curSI];
+               indexArySI[curSI] ^= indexArySI[nextSI];
+
+               lastSI = curSI;
+               onSI = curSI;
+
+               while(lastSI >= subSI)
+               { /*loop: move swapped element back*/
+                  lastSI -= subSI;
+
+                  if(
+                   eqlNull_ulCp(
+                    cLinSTPtr->linAryST[curSI].groupIdStr,
+                    cLinSTPtr->linAryST[nextSI].groupIdStr
+                   ) > 0 
+                  ) break;
+
+                  swap_complex_linST(
+                     cLinSTPtr,
+                     lastSI,
+                     onSI
+                  );
+
+                  cLinSTPtr->groupArySI[onSI] ^=
+                     cLinSTPtr->groupArySI[lastSI];
+                  cLinSTPtr->groupArySI[lastSI] ^=
+                     cLinSTPtr->groupArySI[onSI];
+                  cLinSTPtr->groupArySI[onSI] ^=
+                     cLinSTPtr->groupArySI[lastSI];
+
+                  indexArySI[onSI] ^= indexArySI[lastSI];
+                  indexArySI[lastSI] ^= indexArySI[onSI];
+                  indexArySI[onSI] ^= indexArySI[lastSI];
+
+                  onSI = lastSI;
+               } /*Loop: move swapped element back*/
+            }  /*If: I need to swap an element*/
+         } /*Loop: swap elements in subarray*/
+      } /*Loop: though sub array*/
+
+      subSI = (subSI - 1) / 3; /*Move to next round*/
+   } /*Loop: all roun34*/
+} /*groupSort_complex_linST*/
+
+/*-------------------------------------------------------\
+| Fun35: positionSort_complex_linST
+|   - sorts a mult_linST array in a complex_linST struct
+|     by the position (end coordinate)
+|   - this sort also makes sure that lineages that have
+|     more variants are at the end
+|   - between end and total at ends, this ensures complex
+|     lineages that are depenent on other complex lineages
+|     end up at the end
+| Input:
+|   - cLinSTPtr:
+|     o complex_linST struct pointer to un35rt
+|   - indexArySI:
+|     o signed int array with original index's
+|     o this is kept in sync for unsorting later
+| Output:
+|   - Modifies:
+|     o linAryST in cLinSTPtr to be sorted by group
+\-------------------------------------------------------*/
+void
+positionSort_complex_linST(
+   struct complex_linST *cLinSTPtr,
+   signed int *indexArySI /*for unsorting later*/
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun35 TOC:
+   '   - sorts a mult_linST array in a complex_linST
+   '     struct by the position (end coordinate)
+   '   o fun35 sec01:
+   '     - variable declerations
+   '   o fun35 sec02:
+   '     - find the number of roun35 to sort for
+   '   o fun35 sec03:
+   '     - sort the arrays
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun35 Sec01:
+   ^   - variable declerations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*Number of sorting roun35*/
+   signed int subSI = 0;
+   signed int nextSI = 0;
+   signed int lastSI = 0;
+   signed int onSI = 0;
+   signed int lenSI = cLinSTPtr->lenSI;
+
+   /*Variables to incurment loops*/
+   signed int indexSI = 0;
+   signed int curSI = 0;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun35 Sec02:
+   ^   - find the max search value (number roun35 to sort)
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*Number of elements to sort*/
+   --lenSI;
+
+   if(! lenSI)
+      return;
+
+   /*Recursion formula: h[0] = 1, h[n] = 3 * h[n - 1] +1*/
+   subSI = 1; /*Initialzie first array*/
+
+   while(subSI < lenSI - 1)
+      subSI = (3 * subSI) + 1;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun35 Sec03:
+   ^   - sort arrays
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   while(subSI > 0)
+   { /*Loop: all roun35*/
+      for(indexSI = 0; indexSI <= subSI; ++indexSI)
+      { /*Loop: though sub array*/
+         curSI = indexSI;
+
+         for(
+            curSI = indexSI;
+            curSI + subSI <= lenSI;
+            curSI += subSI
+         ){ /*Loop: swap elements in subarray*/
+            nextSI = curSI + subSI;
+
+            if(
+                 cLinSTPtr->linAryST[curSI].endSI
+               > cLinSTPtr->linAryST[nextSI].endSI
+            ) goto swap_fun35_sec03;
+
+            else if(
+                 cLinSTPtr->linAryST[curSI].endSI
+               < cLinSTPtr->linAryST[nextSI].endSI
+            ) goto swap_fun35_sec03;
+
+            else if(
+                 cLinSTPtr->linAryST[curSI].totalLinSI
+               > cLinSTPtr->linAryST[nextSI].totalLinSI
+            ){ /*Else If: I need to swap an element*/
+               swap_fun35_sec03:;
+
+               swap_complex_linST(cLinSTPtr,curSI,nextSI);
+
+               cLinSTPtr->groupArySI[curSI] ^=
+                  cLinSTPtr->groupArySI[nextSI];
+               cLinSTPtr->groupArySI[nextSI] ^=
+                  cLinSTPtr->groupArySI[curSI];
+               cLinSTPtr->groupArySI[curSI] ^=
+                  cLinSTPtr->groupArySI[nextSI];
+
+               indexArySI[curSI] ^= indexArySI[nextSI];
+               indexArySI[nextSI] ^= indexArySI[curSI];
+               indexArySI[curSI] ^= indexArySI[nextSI];
+
+               lastSI = curSI;
+               onSI = curSI;
+
+               while(lastSI >= subSI)
+               { /*loop: move swapped element back*/
+                  lastSI -= subSI;
+
+                  if(
+                       cLinSTPtr->linAryST[onSI].endSI
+                     > cLinSTPtr->linAryST[lastSI].endSI
+                  ) break;
+
+                  else if(
+                       cLinSTPtr->linAryST[onSI].endSI
+                     < cLinSTPtr->linAryST[lastSI].endSI
+                  ) ;
+
+                  else if(
+                    cLinSTPtr->linAryST[onSI].totalLinSI
+                   >cLinSTPtr->linAryST[lastSI].totalLinSI
+                  ) break;
+
+                  swap_complex_linST(
+                     cLinSTPtr,
+                     lastSI,
+                     onSI
+                  );
+
+                  cLinSTPtr->groupArySI[onSI] ^=
+                     cLinSTPtr->groupArySI[lastSI];
+                  cLinSTPtr->groupArySI[lastSI] ^=
+                     cLinSTPtr->groupArySI[onSI];
+                  cLinSTPtr->groupArySI[onSI] ^=
+                     cLinSTPtr->groupArySI[lastSI];
+
+                  indexArySI[onSI] ^= indexArySI[lastSI];
+                  indexArySI[lastSI] ^= indexArySI[onSI];
+                  indexArySI[onSI] ^= indexArySI[lastSI];
+
+                  onSI = lastSI;
+               } /*Loop: move swapped element back*/
+            }  /*If: I need to swap an element*/
+         } /*Loop: swap elements in subarray*/
+      } /*Loop: though sub array*/
+
+      subSI = (subSI - 1) / 3; /*Move to next round*/
+   } /*Loop: all rounds*/
+} /*positionSort_complex_linST*/
+
+/*-------------------------------------------------------\
+| Fun36: unsort_complex_linST
 |   - unsort a mult_linST array in a complex_linST struct
 |     by the original index's
 | Input:
@@ -1996,7 +2374,109 @@ unsort_complex_linST(
 } /*unsort_complex_linST*/
 
 /*-------------------------------------------------------\
-| Fun35: getSimpleLineages_linST
+| Fun37: posFind_complex_linST
+|   - find the first complex variant that is between the
+|     start and end position in a complex_linST struct
+| Input:
+|   - endSI:
+|     o last base in range
+|   - complexSTPtr:
+|     o complex_linST struct array to find variant index
+| Output:
+|   - Returns:
+|     o index of first variant in between the start and
+|       end
+|     o -1 if no variant is in the input range
+\-------------------------------------------------------*/
+signed int
+posFind_complex_linST(
+   signed int endSI,   /*last base variant can have*/
+   struct complex_linST *complexSTPtr /*complex lineages*/
+){
+   signed int midSI = 0;
+   signed int rightSI = complexSTPtr->lenSI - 1;
+   signed int leftSI = 0;
+
+   while(leftSI <= rightSI)
+   { /*Loop: find the first variant in range*/
+      midSI = (leftSI + rightSI) >> 1;
+
+     if(endSI > complexSTPtr->linAryST[midSI].endSI)
+         leftSI = midSI + 1;
+     else if(endSI < complexSTPtr->linAryST[midSI].endSI)
+         rightSI = midSI - 1;
+     else
+     { /*Else: is in range*/
+         if(! midSI)
+            return midSI;
+
+         else if(
+            endSI > complexSTPtr->linAryST[midSI -1].endSI
+         ) return midSI; /*found end of range*/
+
+         else
+            rightSI = midSI - 1;
+     } /*Else: is in range*/
+   } /*Loop: find the first variant in range*/
+
+   /*check if found range*/
+   if(endSI > complexSTPtr->linAryST[midSI].endSI)
+      return -1;
+
+   return midSI;
+} /*posFind_complex_linST*/
+
+/*-------------------------------------------------------\
+| Fun38: flipIndexAry_complex_linST
+|   - changes the index array so that the stored index is
+|     the position and the old position is the new stored
+|     index
+| Input:
+|   - indexArySI:
+|     o signed int array with indexs to flip
+|   - lenSI:
+|     o number of index in indexArySI
+| Output:
+|   - Modifies:
+|     o indexArySI to have index's as position and old
+|       positions as index's
+|   - Returns:
+|     o 0 for no errors
+|     o 1 if have a memory error
+\-------------------------------------------------------*/
+signed char
+flipIndexAry_complex_linST(
+   signed int *indexArySI,
+   signed int lenSI
+){
+   signed int siPos = 0;
+   signed int *tmpHeapArySI =
+      calloc(lenSI, sizeof(signed int));
+
+   if(! tmpHeapArySI)
+      return 1;
+
+   /*I need to first flip and then copy to avoid cases
+   `  were an index is moved ahead and can build and
+   `  infinite loop or is processed again
+   */
+
+   /*flip the index array*/
+   for(siPos = 0; siPos < lenSI; ++siPos)
+      tmpHeapArySI[indexArySI[siPos]] = siPos;
+
+   /*copy the flipped array*/
+   for(siPos = 0; siPos < lenSI; ++siPos)
+      indexArySI[siPos] = tmpHeapArySI[siPos];
+
+   free(tmpHeapArySI);
+   tmpHeapArySI = 0;
+
+   return 0;
+} /*flipIndexAry_complex_linST*/
+
+/*-------------------------------------------------------\
+| Fun39: getSimpleLineages_linST
 |   - gets the lineages from the variants lineage file
 | Input:
 |   - noFastBl
@@ -2027,29 +2507,29 @@ getSimpleLineages_linST(
    signed long *errSL,     /*gets line error was on*/
    void *linFILE
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun35 TOC:
+   ' Fun39 TOC:
    '   - gets the lineages from the variants lineage file
-   '   o fun35 sec01:
+   '   o fun39 sec01:
    '     - variable declarations
-   '   o fun35 sec05:
+   '   o fun39 sec05:
    '     - clean up (errors only) and return
-   '   o fun35 sec02:
+   '   o fun39 sec02:
    '     - initialize and set up
-   '   o fun35 sec03:
+   '   o fun39 sec03:
    '     - read entries in the file
-   '   o fun35 sec04:
+   '   o fun39 sec04:
    '     - assign group index's to each index
-   '   o fun35 sec05:
+   '   o fun39 sec05:
    '     - clean up (errors only) and return
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun35 Sec01:
+   ^ Fun39 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   #define fun35_lenBuffer 4096
-   signed char buffStr[fun35_lenBuffer + 8];
+   #define fun39_lenBuffer 4096
+   signed char buffStr[fun39_lenBuffer + 8];
    signed int strLenSI = 0;
    signed int posSI = 0;
 
@@ -2068,16 +2548,16 @@ getSimpleLineages_linST(
    ulong_ulCp orLinUL = mkDelim_ulCp(def_orLineage_linST);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun35 Sec02:
+   ^ Fun39 Sec02:
    ^   - initialize and set up
-   ^   o fun35 sec02 sub01:
+   ^   o fun39 sec02 sub01:
    ^     - allocate initial memory and initialize array
-   ^   o fun35 sec02 sub02:
+   ^   o fun39 sec02 sub02:
    ^     - move past header to first entry in file
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun35 Sec02 Sub01:
+   * Fun39 Sec02 Sub01:
    *   - allocate initial memory and initialize array
    \*****************************************************/
 
@@ -2086,15 +2566,15 @@ getSimpleLineages_linST(
 
    lineagesHeapST = malloc(sizeof(struct simple_linST));
    if(! lineagesHeapST)
-      goto memErr_fun35_sec05;
+      goto memErr_fun39_sec05;
    init_simple_linST(lineagesHeapST);
 
    if( addMem_simple_linST(lineagesHeapST, 16) )
-      goto memErr_fun35_sec05;
+      goto memErr_fun39_sec05;
    linSTPtr = lineagesHeapST->linAryST;
 
    /*****************************************************\
-   * Fun35 Sec02 Sub02:
+   * Fun39 Sec02 Sub02:
    *   - move past header to first entry in file
    \*****************************************************/
 
@@ -2102,64 +2582,64 @@ getSimpleLineages_linST(
       getLine_fileFun(
          linFILE,
          buffStr,
-         fun35_lenBuffer,
+         fun39_lenBuffer,
          &buffLenSL /*ignoreing this*/
       );
    if(! buffLenSL)
-      goto fileErr_fun35_sec05;
+      goto fileErr_fun39_sec05;
 
    (*errSL)++;
    buffLenSL =
       getLine_fileFun(
          linFILE,
          buffStr,
-         fun35_lenBuffer,
+         fun39_lenBuffer,
          &buffLenSL /*ignoreing this*/
       );
    if(! buffLenSL)
-      goto fileErr_fun35_sec05;
+      goto fileErr_fun39_sec05;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun35 Sec03:
+   ^ Fun39 Sec03:
    ^   - read entries in the file
-   ^   o fun35 sec03 sub01:
+   ^   o fun39 sec03 sub01:
    ^     - check if need more memory + start loop
-   ^   o fun35 sec03 sub02:
+   ^   o fun39 sec03 sub02:
    ^     - get past empty space at start
-   ^   o fun35 sec03 sub03:
+   ^   o fun39 sec03 sub03:
    ^     - get gene name
-   ^   o fun35 sec03 sub04:
+   ^   o fun39 sec03 sub04:
    ^     - get group name
-   ^   o fun35 sec03 sub05:
+   ^   o fun39 sec03 sub05:
    ^     - get lineage id
-   ^   o fun35 sec03 sub06:
+   ^   o fun39 sec03 sub06:
    ^     - get start position of variant
-   ^   o fun35 sec03 sub07:
+   ^   o fun39 sec03 sub07:
    ^     - get end position of variant
-   ^   o fun35 sec03 sub08:
+   ^   o fun39 sec03 sub08:
    ^     - get molecule type
-   ^   o fun35 sec03 sub09:
+   ^   o fun39 sec03 sub09:
    ^     - get variant type
-   ^   o fun35 sec03 sub10:
+   ^   o fun39 sec03 sub10:
    ^     - get direction of the pattern
-   ^   o fun35 sec03 sub11:
+   ^   o fun39 sec03 sub11:
    ^     - get the pattern(s)
-   ^   o fun35 sec03 sub12:
+   ^   o fun39 sec03 sub12:
    ^     - get lineage to assign
-   ^   o fun35 sec03 sub13:
+   ^   o fun39 sec03 sub13:
    ^     - mark if printing the lineage
-   ^   o fun35 sec03 sub14:
+   ^   o fun39 sec03 sub14:
    ^     - get fudge amount for lineage assingnment
-   ^   o fun35 sec03 sub15:
+   ^   o fun39 sec03 sub15:
    ^     - get minimum score for trs or ins alignments
-   ^   o fun35 sec03 sub16:
+   ^   o fun39 sec03 sub16:
    ^     - get maximum gap between TRS sequences
-   ^   o fun35 sec03 sub17:
+   ^   o fun39 sec03 sub17:
    ^     - move to the next line/entry in the file
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun35 Sec03 Sub01:
+   * Fun39 Sec03 Sub01:
    *   - check if need more memory + start loop
    \*****************************************************/
 
@@ -2171,13 +2651,13 @@ getSimpleLineages_linST(
          sizeSI = lineagesHeapST->sizeSI;
          sizeSI += (sizeSI >> 1);
          if( addMem_simple_linST(lineagesHeapST, sizeSI) )
-            goto memErr_fun35_sec05;
+            goto memErr_fun39_sec05;
       } /*If: need more memory*/
 
       linSTPtr = &lineagesHeapST->linAryST[linLenSI];
 
       /**************************************************\
-      * Fun35 Sec03 Sub02:
+      * Fun39 Sec03 Sub02:
       *   - get past empty space at start
       \**************************************************/
 
@@ -2185,10 +2665,10 @@ getSimpleLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto nextLine_fun35_sec03_sub13; /*empty line*/
+         goto nextLine_fun39_sec03_sub13; /*empty line*/
 
       /**************************************************\
-      * Fun35 Sec03 Sub03:
+      * Fun39 Sec03 Sub03:
       *   - get gene name
       \**************************************************/
 
@@ -2201,7 +2681,7 @@ getSimpleLineages_linST(
       ){ /*If: no gene name*/
          linSTPtr->geneStr = malloc(sizeof(signed char));
          if(! linSTPtr->geneStr)
-            goto memErr_fun35_sec05;
+            goto memErr_fun39_sec05;
          linSTPtr->geneStr[0] = 0;
       }  /*If: no gene name*/
 
@@ -2210,7 +2690,7 @@ getSimpleLineages_linST(
          linSTPtr->geneStr =
             malloc((strLenSI + 8) * sizeof(signed char));
          if(! linSTPtr->geneStr)
-            goto memErr_fun35_sec05;
+            goto memErr_fun39_sec05;
          cpWhite_ulCp(linSTPtr->geneStr, &buffStr[posSI]);
       } /*Else: have a gene name*/
 
@@ -2220,10 +2700,10 @@ getSimpleLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /**************************************************\
-      * Fun35 Sec03 Sub04:
+      * Fun39 Sec03 Sub04:
       *   - get group name
       \**************************************************/
 
@@ -2236,7 +2716,7 @@ getSimpleLineages_linST(
       ){ /*If: no group name*/
          linSTPtr->groupStr = malloc(sizeof(signed char));
          if(! linSTPtr->groupStr)
-            goto memErr_fun35_sec05;
+            goto memErr_fun39_sec05;
          linSTPtr->groupStr[0] = 0;
       }  /*If: no group name*/
 
@@ -2245,7 +2725,7 @@ getSimpleLineages_linST(
          linSTPtr->groupStr =
             malloc((strLenSI + 8) * sizeof(signed char));
          if(! linSTPtr->groupStr)
-            goto memErr_fun35_sec05;
+            goto memErr_fun39_sec05;
          cpWhite_ulCp(linSTPtr->groupStr,&buffStr[posSI]);
       } /*Else: have a group name*/
 
@@ -2255,10 +2735,10 @@ getSimpleLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /**************************************************\
-      * Fun35 Sec03 Sub05:
+      * Fun39 Sec03 Sub05:
       *   - get lineage id
       \**************************************************/
 
@@ -2267,7 +2747,7 @@ getSimpleLineages_linST(
       linSTPtr->idStr =
          malloc((strLenSI + 8) * sizeof(signed char));
       if(! linSTPtr->idStr)
-         goto memErr_fun35_sec05;
+         goto memErr_fun39_sec05;
       cpWhite_ulCp(linSTPtr->idStr, &buffStr[posSI]);
 
       /*move to the next entery*/
@@ -2275,10 +2755,10 @@ getSimpleLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /**************************************************\
-      * Fun35 Sec03 Sub06:
+      * Fun39 Sec03 Sub06:
       *   - get start position of variant
       \**************************************************/
 
@@ -2289,7 +2769,7 @@ getSimpleLineages_linST(
       else if(buffStr[posSI] == '\t')
          ;
       else
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       linSTPtr->startSI = (signed int) tmpF - 1;
 
@@ -2297,10 +2777,10 @@ getSimpleLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /**************************************************\
-      * Fun35 Sec03 Sub07:
+      * Fun39 Sec03 Sub07:
       *   - get end position of variant
       \**************************************************/
 
@@ -2311,7 +2791,7 @@ getSimpleLineages_linST(
       else if(buffStr[posSI] == '\t')
          ;
       else
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       linSTPtr->endSI = (signed int) tmpF - 1;
 
@@ -2319,10 +2799,10 @@ getSimpleLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /**************************************************\
-      * Fun35 Sec03 Sub08:
+      * Fun39 Sec03 Sub08:
       *   - get molecule type
       \**************************************************/
 
@@ -2337,7 +2817,7 @@ getSimpleLineages_linST(
       ) linSTPtr->moleculeTypeSC = def_aaSeq_linST;
 
       else
-         goto fileErr_fun35_sec05; /*no idea on type*/
+         goto fileErr_fun39_sec05; /*no idea on type*/
 
 
       /*move to the next entery*/
@@ -2345,10 +2825,10 @@ getSimpleLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /**************************************************\
-      * Fun35 Sec03 Sub09:
+      * Fun39 Sec03 Sub09:
       *   - get variant type
       \**************************************************/
 
@@ -2366,7 +2846,7 @@ getSimpleLineages_linST(
          linSTPtr->checkTypeSC = def_delType_linST;
 
          if(linSTPtr->moleculeTypeSC != def_ntSeq_linST)
-            goto fastAAErr_fun35_sec05;
+            goto fastAAErr_fun39_sec05;
            /*deletion method is nuceotide only*/
       }  /*Else If: deletion check*/
 
@@ -2379,7 +2859,7 @@ getSimpleLineages_linST(
       ){ /*Else If: checking trs in fast mode*/
          linSTPtr->checkTypeSC = def_trsFastType_linST;
          if(linSTPtr->moleculeTypeSC != def_ntSeq_linST)
-            goto fastAAErr_fun35_sec05;
+            goto fastAAErr_fun39_sec05;
             /*fast methods are nuceotide only*/
       }  /*Else If: checking trs in fast mode*/
 
@@ -2399,7 +2879,7 @@ getSimpleLineages_linST(
          linSTPtr->checkTypeSC = def_insFastType_linST;
 
          if(linSTPtr->moleculeTypeSC != def_ntSeq_linST)
-            goto fastAAErr_fun35_sec05;
+            goto fastAAErr_fun39_sec05;
             /*fast methods are nuceotide only*/
       }  /*Else If: checking ins in fast mode*/
 
@@ -2416,7 +2896,7 @@ getSimpleLineages_linST(
       ){ /*Else If: length check*/
          linSTPtr->checkTypeSC = def_lenType_linST;
          if(linSTPtr->moleculeTypeSC != def_ntSeq_linST)
-            goto fastAAErr_fun35_sec05;
+            goto fastAAErr_fun39_sec05;
             /*length method does not convert AA, so
             `  nuceotide only
             */
@@ -2432,7 +2912,7 @@ getSimpleLineages_linST(
       ){ /*Else If: length check*/
          linSTPtr->checkTypeSC = def_countFastType_linST;
          if(linSTPtr->moleculeTypeSC != def_ntSeq_linST)
-            goto fastAAErr_fun35_sec05;
+            goto fastAAErr_fun39_sec05;
             /*length method does not convert AA, so
             `  nuceotide only
             */
@@ -2447,7 +2927,7 @@ getSimpleLineages_linST(
       ) linSTPtr->checkTypeSC = def_countType_linST;
 
       else
-         goto fileErr_fun35_sec05; /*no idea on type*/
+         goto fileErr_fun39_sec05; /*no idea on type*/
 
 
       /*move to the next entery*/
@@ -2455,10 +2935,10 @@ getSimpleLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /**************************************************\
-      * Fun35 Sec03 Sub10:
+      * Fun39 Sec03 Sub10:
       *   - get direction of the pattern
       \**************************************************/
 
@@ -2471,7 +2951,7 @@ getSimpleLineages_linST(
       else if(buffStr[posSI] == '-')
          linSTPtr->revDirBl = 1;
       else
-         goto fileErr_fun35_sec05; /*no idea on type*/
+         goto fileErr_fun39_sec05; /*no idea on type*/
 
 
       /*move to the next entery*/
@@ -2479,33 +2959,33 @@ getSimpleLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /**************************************************\
-      * Fun35 Sec03 Sub11:
+      * Fun39 Sec03 Sub11:
       *   - get the pattern(s)
-      *   o fun35 sec03 sub11 cat01:
+      *   o fun39 sec03 sub11 cat01:
       *     - find the number of patterns
-      *   o fun35 sec03 sub11 cat02:
+      *   o fun39 sec03 sub11 cat02:
       *     - allocate memory for storing patterns
-      *   o fun35 sec03 sub11 cat03:
+      *   o fun39 sec03 sub11 cat03:
       *     - add patterns to the lineage
-      *   o fun35 sec03 sub11 cat03:
+      *   o fun39 sec03 sub11 cat03:
       *     - find patterns length; loop for all patterns
-      *   o fun35 sec03 sub11 cat04:
+      *   o fun39 sec03 sub11 cat04:
       *     - add deletion/length pattern; coords only
-      *   o fun35 sec03 sub11 cat05:
+      *   o fun39 sec03 sub11 cat05:
       *     - add fast check (ins/trs) pattern
-      *   o fun35 sec03 sub11 cat06:
+      *   o fun39 sec03 sub11 cat06:
       *     - add pattern (regular) to the array
-      *   o fun35 sec03 sub11 cat07:
+      *   o fun39 sec03 sub11 cat07:
       *     - move to next pattern (or end of patterns)
-      *   o fun35 sec03 sub11 cat08:
+      *   o fun39 sec03 sub11 cat08:
       *     - move to next entry (off white space)
       \**************************************************/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun35 Sec03 Sub11 Cat01:
+      + Fun39 Sec03 Sub11 Cat01:
       +   - find the number of patterns
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2524,7 +3004,7 @@ getSimpleLineages_linST(
          if(buffStr[strLenSI] == def_orLineage_linST)
          { /*If: have multiple lineages*/
             if(defLinBl)
-               goto fileErr_fun35_sec05;
+               goto fileErr_fun39_sec05;
             ++buffLenSL;
             ++strLenSI;
          } /*If: have multiple lineages*/
@@ -2532,7 +3012,7 @@ getSimpleLineages_linST(
          if(defLinBl)
             ;
          else if(buffStr[strLenSI]==def_defLineage_linST)
-            goto fileErr_fun35_sec05;
+            goto fileErr_fun39_sec05;
             /*multi-lineage system for defualt or invalid
             `  entry
             */
@@ -2551,7 +3031,7 @@ getSimpleLineages_linST(
          linSTPtr->defGroupBl = 1;
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun35 Sec03 Sub11 Cat02:
+      + Fun39 Sec03 Sub11 Cat02:
       +   - allocate memory for storing patterns
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2565,7 +3045,7 @@ getSimpleLineages_linST(
               buffLenSL * sizeof(struct refST_kmerFind)
             );
          if(! linSTPtr->fastAryST)
-            goto memErr_fun35_sec05;
+            goto memErr_fun39_sec05;
 
          for(tmpF = 0; tmpF < buffLenSL; ++tmpF)
          { /*Loop: initialize structs*/
@@ -2581,7 +3061,7 @@ getSimpleLineages_linST(
                   &linSTPtr->fastAryST[(signed int) tmpF],
                   def_lenKmer_kmerFind
                 )
-             ) goto memErr_fun35_sec05;
+             ) goto memErr_fun39_sec05;
          } /*Loop: setup pattern structure*/
       }  /*If: doing fast checking (no sequence)*/
 
@@ -2592,7 +3072,7 @@ getSimpleLineages_linST(
          linSTPtr->seqAryStr =
             calloc(buffLenSL, sizeof(signed char *));
          if(! linSTPtr->seqAryStr)
-            goto memErr_fun35_sec05;
+            goto memErr_fun39_sec05;
       }  /*Else If: lineage method has a pattern*/
 
       if(linSTPtr->checkTypeSC != def_delType_linST)
@@ -2600,12 +3080,12 @@ getSimpleLineages_linST(
          linSTPtr->seqLenArySI =
             calloc(buffLenSL, sizeof(signed int));
          if(! linSTPtr->seqLenArySI)
-            goto memErr_fun35_sec05;
+            goto memErr_fun39_sec05;
          linSTPtr->seqSizeSI = buffLenSL;
       }  /*If: lineage used sequence length somehow*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun35 Sec03 Sub11 Cat03:
+      + Fun39 Sec03 Sub11 Cat03:
       +   - find a patterns length (loop for all patterns)
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2620,7 +3100,7 @@ getSimpleLineages_linST(
             );
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
-         + Fun35 Sec03 Sub11 Cat04:
+         + Fun39 Sec03 Sub11 Cat04:
          +   - add deletion/length pattern; coords only
          \++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2634,7 +3114,7 @@ getSimpleLineages_linST(
             if(buffStr[posSI] == def_orLineage_linST)
                ;
             else if(buffStr[posSI] > 32)
-               goto fileErr_fun35_sec05;
+               goto fileErr_fun39_sec05;
          }  /*If: lineage is length lineage (no pattern)*/
 
          else if(
@@ -2645,7 +3125,7 @@ getSimpleLineages_linST(
          }  /*Else If: deletion lineage (no pattern)*/
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
-         + Fun35 Sec03 Sub11 Cat05:
+         + Fun39 Sec03 Sub11 Cat05:
          +   - add fast check (ins/trs) pattern
          \++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2655,7 +3135,7 @@ getSimpleLineages_linST(
           || linSTPtr->checkTypeSC==def_countFastType_linST
          ){ /*Else If: fast check*/
             if(strLenSI < 12)
-               goto fastShortSeqErr_fun35_sec05;
+               goto fastShortSeqErr_fun39_sec05;
                /*sequence is to short to reliably detect*/
 
             tmpF = buffStr[posSI + strLenSI];
@@ -2671,13 +3151,13 @@ getSimpleLineages_linST(
                   longestSeqSI
                );
             if(! longestSeqSI)
-               goto memErr_fun35_sec05;
+               goto memErr_fun39_sec05;
             posSI += strLenSI;
             buffStr[posSI] = (signed char) tmpF;
          }  /*Else If: fast check*/
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
-         + Fun35 Sec03 Sub11 Cat06:
+         + Fun39 Sec03 Sub11 Cat06:
          +   - add pattern (regular) to the array
          \++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2692,7 +3172,7 @@ getSimpleLineages_linST(
                     )) * sizeof(signed char)
                );
             if(! linSTPtr->seqAryStr[buffLenSL])
-               goto memErr_fun35_sec05;
+               goto memErr_fun39_sec05;
 
             cpLen_ulCp(
               linSTPtr->seqAryStr[buffLenSL],
@@ -2705,7 +3185,7 @@ getSimpleLineages_linST(
          } /*Else: is a pattern lineage*/
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
-         + Fun35 Sec03 Sub11 Cat07:
+         + Fun39 Sec03 Sub11 Cat07:
          +   - move to next pattern (or end of patterns)
          \++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -2715,17 +3195,17 @@ getSimpleLineages_linST(
       } /*Loop: copy the patterns*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun35 Sec03 Sub11 Cat08:
+      + Fun39 Sec03 Sub11 Cat08:
       +   - move to next entry (off white space)
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /**************************************************\
-      * Fun35 Sec03 Sub12:
+      * Fun39 Sec03 Sub12:
       *   - get lineage to assign
       \**************************************************/
 
@@ -2749,7 +3229,7 @@ getSimpleLineages_linST(
             linSTPtr->lineageStr =
                malloc(sizeof(signed char));
             if(! linSTPtr->lineageStr)
-               goto memErr_fun35_sec05;
+               goto memErr_fun39_sec05;
             linSTPtr->lineageStr[0] = 0;
          } /*Else: not trs lineage (no assignment)*/
       }  /*If: no lineage to assign*/
@@ -2767,7 +3247,7 @@ getSimpleLineages_linST(
               strToF_base10str(&buffStr[posSI], &tmpF);
 
            if(buffStr[posSI + strLenSI] > 32)
-              goto fileErr_fun35_sec05;
+              goto fileErr_fun39_sec05;
            linSTPtr->trsLineageSI = tmpF - 1;
              /*needs to be index 0*/
          } /*If: trs lineage (number input)*/
@@ -2777,7 +3257,7 @@ getSimpleLineages_linST(
             linSTPtr->lineageStr =
                malloc((strLenSI+8) * sizeof(signed char));
             if(! linSTPtr->lineageStr)
-               goto memErr_fun35_sec05;
+               goto memErr_fun39_sec05;
             cpWhite_ulCp(
                linSTPtr->lineageStr,
                &buffStr[posSI]
@@ -2791,10 +3271,10 @@ getSimpleLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /**************************************************\
-      * Fun35 Sec03 Sub13:
+      * Fun39 Sec03 Sub13:
       *   - mark if printing the lineage
       \**************************************************/
 
@@ -2811,7 +3291,7 @@ getSimpleLineages_linST(
       else if(buffStr[posSI] == '0')
          linSTPtr->printLinBl = 0;
       else
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /*move to the next entery*/
       while(buffStr[posSI] > 32)
@@ -2819,10 +3299,10 @@ getSimpleLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /**************************************************\
-      * Fun35 Sec03 Sub14:
+      * Fun39 Sec03 Sub14:
       *   - get fudge amount for lineage assingnment
       \**************************************************/
 
@@ -2845,7 +3325,7 @@ getSimpleLineages_linST(
          else if(buffStr[posSI] == '\t')
             ;
          else
-            goto fileErr_fun35_sec05;
+            goto fileErr_fun39_sec05;
 
          linSTPtr->fudgeSI = tmpF;
       } /*Else: user provided a fudge number*/
@@ -2855,10 +3335,10 @@ getSimpleLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /**************************************************\
-      * Fun35 Sec03 Sub15:
+      * Fun39 Sec03 Sub15:
       *   - get minimum score for trs or ins alignments
       \**************************************************/
 
@@ -2881,7 +3361,7 @@ getSimpleLineages_linST(
          else if(buffStr[posSI] == '\t')
             ;
          else
-            goto fileErr_fun35_sec05;
+            goto fileErr_fun39_sec05;
 
          linSTPtr->minScoreSI = tmpF;
       } /*Else: user provided a min score*/
@@ -2891,10 +3371,10 @@ getSimpleLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+         goto fileErr_fun39_sec05;
 
       /**************************************************\
-      * Fun35 Sec03 Sub16:
+      * Fun39 Sec03 Sub16:
       *   - get maximum gap between TRS sequences
       \**************************************************/
 
@@ -2912,36 +3392,33 @@ getSimpleLineages_linST(
       { /*Else: user provided a trs gap size*/
          posSI += strToF_base10str(&buffStr[posSI],&tmpF);
 
-         if(buffStr[posSI] == ' ')
-            ;
-         else if(buffStr[posSI] == '\t')
-            ;
+         if(buffStr[posSI] < 33)
+            ; /*white space, ok to end*/
          else
-            goto fileErr_fun35_sec05;
+            goto fileErr_fun39_sec05;
 
          linSTPtr->trsGapSI = tmpF;
       } /*Else: user provided a trs gap size*/
 
-
-      /*move to the next entery*/
-      while(buffStr[posSI] && buffStr[posSI] < 33)
-         ++posSI;
-      if(! buffStr[posSI])
-         goto fileErr_fun35_sec05;
+      /*at end of entry, everything else is future data,
+      `  user notes, or input for another program, which
+      `  is very unlikely, since this program will likely
+      `  to nowere
+      */
 
       /**************************************************\
-      * Fun35 Sec03 Sub17:
+      * Fun39 Sec03 Sub17:
       *   - move to the next line/entry in the file
       \**************************************************/
 
       ++linLenSI;
 
-      nextLine_fun35_sec03_sub13:;
+      nextLine_fun39_sec03_sub13:;
          buffLenSL =
             getLine_fileFun(
                linFILE,
                buffStr,
-               fun35_lenBuffer,
+               fun39_lenBuffer,
                &buffLenSL /*ignoreing this*/
             );
          (*errSL)++;
@@ -2958,24 +3435,24 @@ getSimpleLineages_linST(
             def_percShift_kmerFind,
             longestSeqSI
          ) /*set up for fast trs scanning*/
-      ) goto memErr_fun35_sec05;
+      ) goto memErr_fun39_sec05;
    } /*If: user is using a fast method*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun35 Sec04:
+   ^ Fun39 Sec04:
    ^   - assign group index's to each index
-   ^   o fun35 sec04 sub01:
+   ^   o fun39 sec04 sub01:
    ^     - initialize memory and sort by group id
-   ^   o fun35 sec04 sub02:
+   ^   o fun39 sec04 sub02:
    ^     - find number of groups in the lineages
-   ^   o fun35 sec04 sub03:
+   ^   o fun39 sec04 sub03:
    ^     - setup group id index's
-   ^   o fun35 sec04 sub04:
+   ^   o fun39 sec04 sub04:
    ^     - unsort and add default group start and ends
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun35 Sec04 Sub01:
+   * Fun39 Sec04 Sub01:
    *   - initialize memory and sort by group id
    \*****************************************************/
 
@@ -2988,7 +3465,7 @@ getSimpleLineages_linST(
    indexHeapArySI =
       malloc(lineagesHeapST->lenSI * sizeof(signed int));
    if(! indexHeapArySI)
-      goto memErr_fun35_sec05;
+      goto memErr_fun39_sec05;
 
    /*____set up index's to allow easy unsorting later___*/
    for(posSI = 0; posSI < lineagesHeapST->lenSI; ++posSI)
@@ -3001,7 +3478,7 @@ getSimpleLineages_linST(
    ); /*allows easier loging of group ids*/
 
    /*****************************************************\
-   * Fun35 Sec04 Sub02:
+   * Fun39 Sec04 Sub02:
    *   - find number of groups in the lineages
    \*****************************************************/
 
@@ -3020,19 +3497,19 @@ getSimpleLineages_linST(
    lineagesHeapST->foundGroupAryBl =
       calloc(linLenSI, sizeof(signed char));
    if(! lineagesHeapST->foundGroupAryBl)
-      goto memErr_fun35_sec05;
+      goto memErr_fun39_sec05;
 
    lineagesHeapST->defGroupArySI =
       malloc(linLenSI * sizeof(signed int));
    if(! lineagesHeapST->defGroupArySI)
-      goto memErr_fun35_sec05;
+      goto memErr_fun39_sec05;
    for(posSI = 0; posSI < linLenSI; ++posSI)
       lineagesHeapST->defGroupArySI[posSI] = -1;
 
    lineagesHeapST->groupLenSI = linLenSI;
 
    /*****************************************************\
-   * Fun35 Sec04 Sub03:
+   * Fun39 Sec04 Sub03:
    *   - setup group id index's
    \*****************************************************/
 
@@ -3062,7 +3539,7 @@ getSimpleLineages_linST(
    } /*Loop: assign group ids to a group index*/
 
    /*****************************************************\
-   * Fun35 Sec04 Sub04:
+   * Fun39 Sec04 Sub04:
    *   - unsort and add default group start and ends
    \*****************************************************/
 
@@ -3095,33 +3572,33 @@ getSimpleLineages_linST(
    } /*Loop: find default group start and end*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun35 Sec05:
+   ^ Fun39 Sec05:
    ^   - clean up (errors only) and return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   goto ret_fun35_sec05;
+   goto ret_fun39_sec05;
 
-   fileErr_fun35_sec05:;
-      goto errClean_fun35_sec05;
+   fileErr_fun39_sec05:;
+      goto errClean_fun39_sec05;
 
-   fastAAErr_fun35_sec05:;
+   fastAAErr_fun39_sec05:;
       *errSL *= -1;
-      goto errClean_fun35_sec05;
+      goto errClean_fun39_sec05;
 
-   fastShortSeqErr_fun35_sec05:;
+   fastShortSeqErr_fun39_sec05:;
       *errSL *= -1;
-      goto errClean_fun35_sec05;
+      goto errClean_fun39_sec05;
 
-   memErr_fun35_sec05:;
-      goto errClean_fun35_sec05;
+   memErr_fun39_sec05:;
+      goto errClean_fun39_sec05;
 
-   errClean_fun35_sec05:;
+   errClean_fun39_sec05:;
       if(lineagesHeapST)
         freeHeap_simple_linST(lineagesHeapST);
       lineagesHeapST = 0;
-      goto ret_fun35_sec05;
+      goto ret_fun39_sec05;
       
-   ret_fun35_sec05:;
+   ret_fun39_sec05:;
       if(indexHeapArySI)
          free(indexHeapArySI);
       indexHeapArySI = 0;
@@ -3130,7 +3607,7 @@ getSimpleLineages_linST(
 } /*getSimpleLineages_linST*/
 
 /*-------------------------------------------------------\
-| Fun36: intInsert_linST
+| Fun40: intInsert_linST
 |   - inserts an integer into an array at its sorted
 |     position (this does not insert duplicates)
 | Input:
@@ -3195,7 +3672,7 @@ intInsert_linST(
 } /*intInsert_linST*/
 
 /*-------------------------------------------------------\
-| Fun37: getComplexLineages_linST
+| Fun41: getComplexLineages_linST
 |   - gets the lineages from the complex lineage file
 | Input:
 |   - simpleSTPtr:
@@ -3221,25 +3698,25 @@ getComplexLineages_linST(
    signed long *errSL,
    void *linFILE
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun37 TOC:
+   ' Fun41 TOC:
    '   - gets the lineages from the complex lineage file
-   '   o fun37 sec01:
+   '   o fun41 sec01:
    '     - variable declarations
-   '   o fun37 sec02:
+   '   o fun41 sec02:
    '     - memory allocate, initialization, & get 1st line
-   '   o fun37 sec03:
+   '   o fun41 sec03:
    '     - read in lineages in the file
-   '   o fun37 sec04:
+   '   o fun41 sec05:
    '     - clean up and return
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun37 Sec01:
+   ^ Fun41 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   #define fun37_lenBuff 4096
-   signed char buffStr[fun37_lenBuff + 8];
+   #define fun41_lenBuff 4096
+   signed char buffStr[fun41_lenBuff + 8];
    signed long buffLenSL = 0;
    signed int posSI = 0;
    signed int tmpSI = 0;
@@ -3268,17 +3745,20 @@ getComplexLineages_linST(
    ulong_ulCp trsDelimUL =
       mkDelim_ulCp(def_trsLinMark_linST);
 
+   ulong_ulCp variantDelimUL =
+      mkDelim_ulCp(def_startVariantsComplex_linST);
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun37 Sec02:
+   ^ Fun41 Sec02:
    ^   - memory allocate, initialization, & get 1st line
-   ^   o fun37 sec02 sub01:
+   ^   o fun41 sec02 sub01:
    ^     - allocate mememory and initialize
-   ^   o fun37 sec02 sub02:
+   ^   o fun41 sec02 sub02:
    ^     - get the first entry
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun37 Sec02 Sub01:
+   * Fun41 Sec02 Sub01:
    *   - allocate mememory and initialize
    \*****************************************************/
 
@@ -3287,7 +3767,7 @@ getComplexLineages_linST(
    indexHeapArySI =
       malloc(simpleSTPtr->lenSI * sizeof(signed int));
    if(! indexHeapArySI)
-      goto memErr_fun37_sec04;
+      goto memErr_fun41_sec05;
    for(posSI = 0; posSI < simpleSTPtr->lenSI; ++posSI)
       indexHeapArySI[posSI] = posSI;
    sortIdAry_one_linST(
@@ -3298,17 +3778,17 @@ getComplexLineages_linST(
 
    complexHeapST = malloc(sizeof(struct complex_linST));
    if(! complexHeapST)
-      goto memErr_fun37_sec04;
+      goto memErr_fun41_sec05;
    init_complex_linST(complexHeapST); 
 
    if( addMem_complex_linST(complexHeapST, 16) )
-      goto memErr_fun37_sec04;
+      goto memErr_fun41_sec05;
    complexIndexHeapArySI=malloc(16 * sizeof(signed int));
    if(! complexIndexHeapArySI)
-      goto memErr_fun37_sec04;
+      goto memErr_fun41_sec05;
 
    /*****************************************************\
-   * Fun37 Sec02 Sub02:
+   * Fun41 Sec02 Sub02:
    *   - get the first entry
    \*****************************************************/
 
@@ -3317,11 +3797,11 @@ getComplexLineages_linST(
       getLine_fileFun(
          linFILE,
          buffStr,
-         fun37_lenBuff,
+         fun41_lenBuff,
          &buffLenSL
       );
    if(! buffLenSL)
-      goto fileErr_fun37_sec04; /*empty file*/
+      goto fileErr_fun41_sec05; /*empty file*/
 
    /*get the first entry*/
    (*errSL)++;
@@ -3329,42 +3809,45 @@ getComplexLineages_linST(
       getLine_fileFun(
          linFILE,
          buffStr,
-         fun37_lenBuff,
+         fun41_lenBuff,
          &buffLenSL
       );
    if(! buffLenSL)
-      goto fileErr_fun37_sec04;
+      goto fileErr_fun41_sec05;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun37 Sec03:
+   ^ Fun41 Sec03:
    ^   - read in lineages in the file
-   ^   o fun37 sec03 sub01:
+   ^   o fun41 sec03 sub01:
    ^     - expand memory if needed + start loop
-   ^   o fun37 sec03 sub02:
+   ^   o fun41 sec03 sub02:
    ^     - get past white space at start
-   ^   o fun37 sec03 sub03:
+   ^   o fun41 sec03 sub03:
    ^     - get id of lineage
-   ^   o fun37 sec03 sub04:
+   ^   o fun41 sec03 sub04:
    ^     - get group id of lineage
-   ^   o fun37 sec03 sub05:
+   ^   o fun41 sec03 sub05:
    ^     - get gene of the lineage
-   ^   o fun37 sec03 sub06:
+   ^   o fun41 sec03 sub06:
    ^     - get name of lineage
-   ^   o fun37 sec03 sub07:
+   ^   o fun41 sec03 sub07:
+   ^     - fudge for number of simple lineages can miss
+   ^   o fun41 sec03 sub08:
    ^     - get if overwriting past lineage assignments
-   ^   o fun37 sec03 sub08:
-   ^     - move to variant start column
-   ^   o fun37 sec03 sub09:
+   ^   o fun41 sec03 sub09:
    ^     - get if can print this lineage
-   ^   o fun37 sec03 sub10:
+   ^   o fun41 sec03 sub10:
+   ^     - get method used to determine lineage
+   ^   o fun41 sec03 sub11:
+   ^     - move to variant start column
+   ^   o fun41 sec03 sub12:
    ^     - get variants in lineage
-   ^   o fun37 sec03 sub11:
-   ^     - get variants in lineage
+   ^   o fun41 sec03 sub13:
    ^     - get next line in file
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun37 Sec03 Sub01:
+   * Fun41 Sec03 Sub01:
    *   - expand memory if needed + start loop
    \*****************************************************/
 
@@ -3376,19 +3859,19 @@ getComplexLineages_linST(
          tmpSI += (tmpSI >> 1);
 
          if( addMem_complex_linST(complexHeapST, tmpSI) )
-            goto memErr_fun37_sec04;
+            goto memErr_fun41_sec05;
          swapSIPtr =
             realloc(
                complexIndexHeapArySI,
                tmpSI * sizeof(signed int)
             );
          if(! swapSIPtr)
-            goto memErr_fun37_sec04;
+            goto memErr_fun41_sec05;
          complexIndexHeapArySI = swapSIPtr;
       } /*If: need more memory*/
 
       /**************************************************\
-      * Fun37 Sec03 Sub02:
+      * Fun41 Sec03 Sub02:
       *   - get past white space at start
       \**************************************************/
 
@@ -3396,10 +3879,10 @@ getComplexLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto nextLine_fun37_sec03_sub11; /*empty line*/
+         goto nextLine_fun41_sec03_sub11; /*empty line*/
 
       /**************************************************\
-      * Fun37 Sec03 Sub03:
+      * Fun41 Sec03 Sub03:
       *   - get id of lineage
       \**************************************************/
 
@@ -3410,9 +3893,9 @@ getComplexLineages_linST(
             complexIndexHeapArySI
          );
       if(strLenSI == -1)
-         goto fileErr_fun37_sec04;
+         goto fileErr_fun41_sec05;
       else if(strLenSI == -2)
-         goto memErr_fun37_sec04;
+         goto memErr_fun41_sec05;
       mLinSTPtr = &complexHeapST->linAryST[strLenSI];
 
       /*move to next entry*/
@@ -3420,10 +3903,10 @@ getComplexLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun37_sec04;
+         goto fileErr_fun41_sec05;
 
       /**************************************************\
-      * Fun37 Sec03 Sub04:
+      * Fun41 Sec03 Sub04:
       *   - get group id of lineage
       \**************************************************/
 
@@ -3431,7 +3914,7 @@ getComplexLineages_linST(
       mLinSTPtr->groupIdStr =
          malloc((strLenSI + 8) * sizeof(signed char));
       if(! mLinSTPtr->groupIdStr)
-         goto memErr_fun37_sec04;
+         goto memErr_fun41_sec05;
       cpLen_ulCp(
          mLinSTPtr->groupIdStr,
          &buffStr[posSI],
@@ -3443,10 +3926,10 @@ getComplexLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun37_sec04;
+         goto fileErr_fun41_sec05;
 
       /**************************************************\
-      * Fun37 Sec03 Sub05:
+      * Fun41 Sec03 Sub05:
       *   - get gene of the lineage
       \**************************************************/
 
@@ -3460,7 +3943,7 @@ getComplexLineages_linST(
          mLinSTPtr->geneStr =
             malloc(1 * sizeof(signed char));
          if(! mLinSTPtr->geneStr)
-            goto memErr_fun37_sec04;
+            goto memErr_fun41_sec05;
          mLinSTPtr->geneStr[0] = 0;
       }  /*If: no gene assigned*/
 
@@ -3469,7 +3952,7 @@ getComplexLineages_linST(
          mLinSTPtr->geneStr =
             malloc((strLenSI + 8) * sizeof(signed char));
          if(! mLinSTPtr->geneStr)
-            goto memErr_fun37_sec04;
+            goto memErr_fun41_sec05;
          cpLen_ulCp(
             mLinSTPtr->geneStr,
             &buffStr[posSI],
@@ -3483,10 +3966,10 @@ getComplexLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun37_sec04;
+         goto fileErr_fun41_sec05;
 
       /**************************************************\
-      * Fun37 Sec03 Sub06:
+      * Fun41 Sec03 Sub06:
       *   - get name of lineage
       \**************************************************/
 
@@ -3494,7 +3977,7 @@ getComplexLineages_linST(
       mLinSTPtr->lineageStr =
          malloc((strLenSI + 8) * sizeof(signed char));
       if(! mLinSTPtr->lineageStr)
-         goto memErr_fun37_sec04;
+         goto memErr_fun41_sec05;
       cpLen_ulCp(
          mLinSTPtr->lineageStr,
          &buffStr[posSI],
@@ -3506,10 +3989,10 @@ getComplexLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun37_sec04;
+         goto fileErr_fun41_sec05;
 
       /**************************************************\
-      * Fun37 Sec03 Sub07:
+      * Fun41 Sec03 Sub07:
       *   - fudge for number of simple lineages can miss
       \**************************************************/
 
@@ -3527,17 +4010,17 @@ getComplexLineages_linST(
          posSI += strToF_base10str(&buffStr[posSI],&tmpF);
          mLinSTPtr->fudgeSI = tmpF;
          if(buffStr[posSI] > 32)
-            goto fileErr_fun37_sec04;/*non-numeric input*/
+            goto fileErr_fun41_sec05;/*non-numeric input*/
       } /*Else: have a fudge value*/
 
       /*move to next entry*/
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun37_sec04;
+         goto fileErr_fun41_sec05;
 
       /**************************************************\
-      * Fun37 Sec03 Sub08:
+      * Fun41 Sec03 Sub08:
       *   - get if overwriting past lineage assignments
       \**************************************************/
 
@@ -3562,10 +4045,10 @@ getComplexLineages_linST(
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun37_sec04;
+         goto fileErr_fun41_sec05;
 
       /**************************************************\
-      * Fun37 Sec03 Sub09:
+      * Fun41 Sec03 Sub09:
       *   - get if can print this lineage
       \**************************************************/
 
@@ -3582,46 +4065,118 @@ getComplexLineages_linST(
       else if(buffStr[posSI] == '0')
          mLinSTPtr->printLinBl = 0;
       else
-         goto fileErr_fun37_sec04;
+         goto fileErr_fun41_sec05;
 
       /*move to next entry*/
       posSI += endWhite_ulCp(&buffStr[posSI]);
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun37_sec04;
+         goto fileErr_fun41_sec05;
 
       /**************************************************\
-      * Fun37 Sec03 Sub10:
+      * Fun41 Sec03 Sub10:
+      *   - get method used to determine lineage
+      \**************************************************/
+
+      if(
+            buffStr[posSI]==def_startVariantsComplex_linST
+         && buffStr[posSI + 1] < 32
+      ){ /*If: column is not present, assume defalut*/
+         mLinSTPtr->typeSC = def_matchComplexType_linST;
+         goto variantColumn_fun41_sec03_sub11;
+      } /*If: column is not present, assume defalut*/
+
+      else if(
+            buffStr[posSI]==def_startIgnoreComplex_linST
+         && buffStr[posSI] < 32)
+      { /*Else If: user wants to ingore everything else*/
+         mLinSTPtr->typeSC = def_matchComplexType_linST;
+         goto variantColumn_fun41_sec03_sub11;
+      } /*Else If: user wants to ingore everything else*/
+
+      else if(
+            (buffStr[posSI] &~32) == 'M'
+         && (buffStr[posSI + 1] &~32) == 'A'
+         && (buffStr[posSI + 2] &~32) == 'T'
+         && (buffStr[posSI + 3] &~32) == 'C'
+         && (buffStr[posSI + 4] &~32) == 'H'
+      ) mLinSTPtr->typeSC = def_matchComplexType_linST;
+
+      else if(
+            (buffStr[posSI] &~32) == 'C'
+         && (buffStr[posSI + 1] &~32) == 'L'
+         && (buffStr[posSI + 2] &~32) == 'O'
+         && (buffStr[posSI + 3] &~32) == 'S'
+         && (buffStr[posSI + 4] &~32) == 'E'
+         && (buffStr[posSI + 5] &~32) == 'S'
+         && (buffStr[posSI + 6] &~32) == 'T'
+      ) mLinSTPtr->typeSC = def_closestComplexType_linST;
+
+      else if(
+            (buffStr[posSI] &~32) == 'N'
+         && (buffStr[posSI + 1] &~32) == 'A'
+      ) mLinSTPtr->typeSC = def_matchComplexType_linST;
+        /*user did not supply a type, so assume match*/
+
+      else
+         goto fileErr_fun41_sec05;/*unkown type*/
+
+      /*move to next entry*/
+      posSI += endWhite_ulCp(&buffStr[posSI]);
+      while(buffStr[posSI] && buffStr[posSI] < 33)
+         ++posSI;
+      if(! buffStr[posSI])
+         goto fileErr_fun41_sec05;
+
+      /**************************************************\
+      * Fun41 Sec03 Sub11:
       *   - move to variant start column
       \**************************************************/
 
-      while(
-            buffStr[posSI]
-         && buffStr[posSI] != '*'
-         && buffStr[posSI - 1] > 32
-         && buffStr[posSI + 1] > 32
-      ) posSI += endWhite_ulCp(&buffStr[posSI]);
+      variantColumn_fun41_sec03_sub11:;
+
+      posSI +=
+         lenStrNull_ulCp(
+            &buffStr[posSI],
+            variantDelimUL,
+            def_startVariantsComplex_linST
+         );
+
+      while(buffStr[posSI])
+      { /*Loop: find variant column start*/
+         if(buffStr[posSI - 1] > 32)
+            ;
+         else if(buffStr[posSI + 1] < 33)
+            break; /*found the variant column*/
+
+         posSI +=
+            lenStrNull_ulCp(
+               &buffStr[posSI],
+               variantDelimUL,
+               def_startVariantsComplex_linST
+            );
+      }  /*Loop: find variant column start*/
 
       posSI += 2; /*get off "*\t"*/
       while(buffStr[posSI] && buffStr[posSI] < 33)
          ++posSI;
       if(! buffStr[posSI])
-         goto fileErr_fun37_sec04;
+         goto fileErr_fun41_sec05;
 
       /**************************************************\
-      * Fun37 Sec03 Sub11:
+      * Fun41 Sec03 Sub12:
       *   - get variants in lineage
-      *   o fun37 sec03 sub10 cat01:
+      *   o fun41 sec03 sub12 cat01:
       *     - find the memory needed for the variants
-      *   o fun37 sec03 sub10 cat02:
+      *   o fun41 sec03 sub12 cat02:
       *     - assign memory for variant pointers
-      *   o fun37 sec03 sub10 cat03:
+      *   o fun41 sec03 sub12 cat03:
       *     - add the variants to the lineage
       \**************************************************/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun37 Sec03 Sub10 Cat01:
+      + Fun41 Sec03 Sub12 Cat01:
       +   - find the memory needed for the variants
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -3629,6 +4184,20 @@ getComplexLineages_linST(
 
       while(buffStr[posSI])
       { /*Loop: find variants*/
+         if(buffStr[posSI]==def_startIgnoreComplex_linST)
+            break; /*end of variants*/
+
+         if(
+               (buffStr[posSI] & ~32) == 'N'
+            && (buffStr[posSI + 1] & ~32) == 'A'
+            && buffStr[posSI + 2] < 33
+         ){ /*If: no lineage*/
+            posSI += 3;
+            while(buffStr[posSI] && buffStr[posSI] < 33)
+               ++posSI;
+            continue;
+         }  /*If: no lineage*/
+
          tmpStr = varStr;
          posSI += cpWhite_ulCp(tmpStr, &buffStr[posSI]);
 
@@ -3675,7 +4244,7 @@ getComplexLineages_linST(
             strLenSI =
                idFind_complex_linST(tmpStr,complexHeapST);
             if(strLenSI < 0)
-               goto noLinErr_fun37_sec04;
+               goto noLinErr_fun41_sec05;
 
             ++mLinSTPtr->mLinLenSI;
          } /*Else: is likely a complex (muti) lineage*/
@@ -3688,56 +4257,56 @@ getComplexLineages_linST(
       } /*Loop: find variants*/
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun37 Sec03 Sub10 Cat02:
+      + Fun41 Sec03 Sub12 Cat02:
       +   - assign memory for variant pointers
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
       mLinSTPtr->linIndexArySI =
          calloc(mLinSTPtr->linLenSI, sizeof(signed int));
       if(! mLinSTPtr->linIndexArySI)
-         goto memErr_fun37_sec04;
+         goto memErr_fun41_sec05;
 
       mLinSTPtr->defGroupArySI =
          calloc(mLinSTPtr->linLenSI, sizeof(signed int));
       if(! mLinSTPtr->linIndexArySI)
-         goto memErr_fun37_sec04;
+         goto memErr_fun41_sec05;
 
       mLinSTPtr->linTrsArySI =
          calloc(mLinSTPtr->linLenSI, sizeof(signed int));
       if(! mLinSTPtr->linTrsArySI)
-         goto memErr_fun37_sec04;
+         goto memErr_fun41_sec05;
 
       mLinSTPtr->linNeedAryBl =
          calloc(mLinSTPtr->linLenSI, sizeof(signed char));
       if(! mLinSTPtr->linNeedAryBl)
-         goto memErr_fun37_sec04;
+         goto memErr_fun41_sec05;
 
       mLinSTPtr->linNotAryBl =
          calloc(mLinSTPtr->linLenSI, sizeof(signed char));
       if(! mLinSTPtr->linNotAryBl)
-         goto memErr_fun37_sec04;
+         goto memErr_fun41_sec05;
 
 
       mLinSTPtr->mLinIndexArySI =
          calloc(mLinSTPtr->mLinLenSI,sizeof(signed int));
       if(! mLinSTPtr->mLinIndexArySI)
-         goto memErr_fun37_sec04;
+         goto memErr_fun41_sec05;
 
       mLinSTPtr->mLinNeedAryBl =
          calloc(mLinSTPtr->mLinLenSI,sizeof(signed char));
       if(! mLinSTPtr->mLinNeedAryBl)
-         goto memErr_fun37_sec04;
+         goto memErr_fun41_sec05;
 
       mLinSTPtr->mLinNotAryBl =
          calloc(mLinSTPtr->mLinLenSI,sizeof(signed char));
       if(! mLinSTPtr->mLinNotAryBl)
-         goto memErr_fun37_sec04;
+         goto memErr_fun41_sec05;
 
       mLinSTPtr->linLenSI = 0;
       mLinSTPtr->mLinLenSI = 0;
 
       /*+++++++++++++++++++++++++++++++++++++++++++++++++\
-      + Fun37 Sec03 Sub10 Cat03:
+      + Fun41 Sec03 Sub12 Cat03:
       +   - add the variants to the lineage
       \+++++++++++++++++++++++++++++++++++++++++++++++++*/
 
@@ -3747,6 +4316,21 @@ getComplexLineages_linST(
       { /*Loop: find variants*/
          notBl = 0;
          needBl = 0;
+
+         if(buffStr[posSI]==def_startIgnoreComplex_linST)
+            break; /*end of variants*/
+
+         /*____________check_if_have_lineage____________*/
+         if(
+               (buffStr[posSI] & ~32) == 'N'
+            && (buffStr[posSI + 1] & ~32) == 'A'
+            && buffStr[posSI + 2] < 33
+         ){ /*If: no lineage*/
+            posSI += 3;
+            while(buffStr[posSI] && buffStr[posSI] < 33)
+               ++posSI;
+            continue;
+         }  /*If: no lineage*/
 
          /*___________find_if_is_trs_lineage____________*/
          tmpStr = varStr;
@@ -3793,7 +4377,7 @@ getComplexLineages_linST(
             trsStr += strToSI_base10str(trsStr,&trsLinSI);
 
             if(*trsStr)
-               goto fileErr_fun37_sec04;
+               goto fileErr_fun41_sec05;
          } /*If: have a trs lineage*/
 
          else
@@ -3857,6 +4441,7 @@ getComplexLineages_linST(
                  simpleSTPtr->linAryST[strLenSI].endSI;
 
             ++mLinSTPtr->totalOneLinSI;
+            ++mLinSTPtr->totalLinSI;
          } /*If: is a variant lineage*/
 
          /*_____________add_complex_lineage_____________*/
@@ -3897,6 +4482,15 @@ getComplexLineages_linST(
                complexHeapST->linAryST[
                   strLenSI
                ].totalOneLinSI;
+
+            /*keep track of all lineages; inlcuding
+            `  duplicates
+            */
+            mLinSTPtr->totalLinSI +=
+               complexHeapST->linAryST[
+                  strLenSI
+               ].totalLinSI + 1;
+               /*+1 for added complex lineage*/
          } /*Else: is a complex (muti) lineage*/
 
          /*_____________move_to_next_lineage____________*/
@@ -3908,58 +4502,189 @@ getComplexLineages_linST(
       } /*Loop: find variants*/
 
       /**************************************************\
-      * Fun37 Sec03 Sub12:
+      * Fun41 Sec03 Sub13:
       *   - get next line in file
       \**************************************************/
       
       mLinSTPtr = 0; /*no longer need*/
       ++complexHeapST->lenSI;
 
-      nextLine_fun37_sec03_sub11:;
+      nextLine_fun41_sec03_sub11:;
          buffLenSL =
             getLine_fileFun(
                linFILE,
                buffStr,
-               fun37_lenBuff,
+               fun41_lenBuff,
                &buffLenSL
             );
          (*errSL)++;
    } /*Loop: read in each lineage*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun37 Sec04:
-   ^   - clean up and return
+   ^ Fun41 Sec04:
+   ^   - build group id skip list and unsort to user input
+   ^   o fun41 sec04 sub01:
+   ^     - assign the group ids
+   ^   o fun41 sec04 sub02:
+   ^     - sort by end position and ajust the child
+   ^       multi_linST indexs in each multi_linST array
+   ^   o fun41 sec04 sub03:
+   ^     - convert the group ids list into a circular skip
+   ^       list
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   /*I unsort this, because sorting will mess up future
-   `  checks since some multi-lineages can included other
-   `  multi-lineages, which complicates things. Best leave
-   `  in order so the simplest multi-lineages are first
-   */
-   unsort_complex_linST(
+   /*****************************************************\
+   * Fun41 Sec04 Sub01:
+   *   - assign the group ids
+   \*****************************************************/
+
+   complexHeapST->groupArySI =
+      malloc(complexHeapST->lenSI * sizeof(signed int));
+   if(! complexHeapST->groupArySI)
+      goto memErr_fun41_sec05;
+
+   complexHeapST->cntArySI =
+      calloc(complexHeapST->lenSI, sizeof(signed int));
+   if(! complexHeapST->groupArySI)
+      goto memErr_fun41_sec05;
+
+   groupSort_complex_linST(
       complexHeapST,
       complexIndexHeapArySI
    );
 
-   goto ret_fun37_sec04;
+   trsLinSI = 0;
+   complexHeapST->groupArySI[0] = 0;
 
-   fileErr_fun37_sec04:;
-     goto errClean_fun37_sec04;
+   for(posSI = 1; posSI < complexHeapST->lenSI; ++posSI)
+   { /*Loop: add the group index's*/
+      if(
+         eqlNull_ulCp(
+           complexHeapST->linAryST[posSI].groupIdStr,
+           complexHeapST->linAryST[posSI - 1].groupIdStr
+         )
+      ) ++trsLinSI; /*moving to the next group*/
+ 
+      complexHeapST->groupArySI[posSI] = trsLinSI;
+   } /*Loop: add the group index's*/
 
-   memErr_fun37_sec04:;
-     goto errClean_fun37_sec04;
+   /*****************************************************\
+   * Fun41 Sec04 Sub02:
+   *   - sort by end position and ajust the child
+   *     multi_linST indexs in each multi_linST array
+   \*****************************************************/
 
-   noLinErr_fun37_sec04:;
+   positionSort_complex_linST(
+      complexHeapST,
+      complexIndexHeapArySI
+   ); /*I used to unsort this, because sorting will mess
+      `  up future checks since some multi-lineages can
+      `  included other multi-lineages, which complicates
+      `  things. `  Best leave in order so the simplest
+      `  multi-lineages are first
+      `This position sort works because it sorts by the
+      `  ending coordinate (complex lineages always have
+      `  max range) and also puts the complex lineages
+      `  with the most dependencies at the end
+      */
+
+   /*this allows me to convert the multi lineage index's
+   `  into the new sorted index's
+   */
+   flipIndexAry_complex_linST(
+      complexIndexHeapArySI,
+      complexHeapST->lenSI
+   );
+
+   for(
+      trsLinSI = 1;
+      trsLinSI < complexHeapST->lenSI;
+      ++trsLinSI
+   ){ /*Loop: reset index's for the complex lineages*/
+      mLinSTPtr = &complexHeapST->linAryST[trsLinSI];
+
+      for(posSI=0; posSI < mLinSTPtr->mLinLenSI; ++posSI)
+      { /*Loop: reset index to match the positon sort*/
+         mLinSTPtr->mLinIndexArySI[posSI] =
+            complexIndexHeapArySI[
+               mLinSTPtr->mLinIndexArySI[posSI]
+            ];
+      } /*Loop: reset index to match the positon sort*/
+   }  /*Loop: reset index's for the complex lineages*/
+
+   /*****************************************************\
+   * Fun41 Sec04 Sub03:
+   *   - convert the group ids list into a circular skip
+   *     list
+   \*****************************************************/
+
+   /*at this piont I can convert the group ids into a
+   `  circular skip list
+   */
+   for(posSI = 0; posSI < trsLinSI + 1; ++posSI)
+      complexIndexHeapArySI[posSI] = -1;
+      /*initialize for making a skip list. I am not
+      `  worred about out of bounds errors because at
+      `  worst case I have one group per complex lineage
+      */
+
+   for(posSI = 0; posSI < complexHeapST->lenSI; ++posSI)
+   { /*Loop: add the group index's*/
+      trsLinSI =
+         complexIndexHeapArySI[
+            complexHeapST->groupArySI[posSI]
+         ];
+
+      if(trsLinSI >= 0)
+      { /*If: already found first index for the group*/
+         complexHeapST->groupArySI[posSI] =
+            complexHeapST->groupArySI[trsLinSI];
+            /*I need to make sure the last index always
+            `  points to the first. This makes the group
+            `  index list circular
+            */
+         complexHeapST->groupArySI[trsLinSI] = posSI;
+         /*have previous memember in group access this
+         `  position*/
+      } /*If: already found first index for the group*/
+
+      else
+         complexHeapST->groupArySI[posSI] = posSI;
+         /*first group index, set equal to its self*/
+
+      complexIndexHeapArySI[
+            complexHeapST->groupArySI[posSI]
+      ] = posSI;
+
+   } /*Loop: add the group index's*/
+
+   free(complexIndexHeapArySI);
+   complexIndexHeapArySI = 0;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun41 Sec05:
+   ^   - clean up and return
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   goto ret_fun41_sec05;
+
+   fileErr_fun41_sec05:;
+     goto errClean_fun41_sec05;
+
+   memErr_fun41_sec05:;
+     goto errClean_fun41_sec05;
+
+   noLinErr_fun41_sec05:;
      *errSL *= -1;
-     goto errClean_fun37_sec04;
+     goto errClean_fun41_sec05;
 
-   errClean_fun37_sec04:;
+   errClean_fun41_sec05:;
       if(complexHeapST)
         freeHeap_complex_linST(complexHeapST);
       complexHeapST = 0;
-      goto ret_fun37_sec04;
+      goto ret_fun41_sec05;
 
-   ret_fun37_sec04:;
+   ret_fun41_sec05:;
       if(indexHeapArySI)
       { /*If: resorted the one_linST array*/
          unsort_one_linST(

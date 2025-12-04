@@ -128,24 +128,28 @@ Mazloum A, van Schalkwyk A, Chernyshev R, Igolkin A,
 For
 
 ```
+cd ASFV;
+unzip ASFV/test.sam.zip;
+cd ..;
+
 getLin \
-    -simple simple.tsv \
-    -complex complex.tsv \
-    -sam test.sam;
+    -simple ASFV/simple.tsv \
+    -complex ASFV/complex.tsv \
+    -sam ASFV/test.sam;
 ```
 
 You output should look like:
 
-| id         | type    | lineages...   |             |            |             |            |   |
+| id         | type    | lineage 1     | lineage 2   | lineage 3  | lineage 4   | lineage 4  | Na|
 |:-----------|:--------|:--------------|:------------|:-----------|:------------|:-----------|:--|
 | MW306192.1 | genome  | 505-9R-TRS:3  | B602L-SNP:4 | I73R-IGR:2 | K145R-SNP:1 | O174-TRS:1 | * |
-| JX857524.1 | genome  | B602L-SNP:UKR | *           |            |             |            |   |
-| MT647531.1 | genome  | B602L-SNP:2   | *           |            |             |            |   |
-| MT647544.1 | genome  | B602L-SNP:3   | *           |            |             |            |   |
-| ON098025.1 | genome  | B602L-SNP:5   | *           |            |             |            |   |
-| OM986235.1 | genome  | B602L-SNP:UKR | *           |            |             |            |   |
-| OM986209.1 | genome  | B602L-SNP:UKR | *           |            |             |            |   |
-| MT951767.1 | genome  | I73R-IGR:4    | *           |            |             |            |   |
+| JX857524.1 | genome  | B602L-SNP:6   | *           | *          | *           | *          | * |
+| MT647531.1 | genome  | B602L-SNP:2   | *           | *          | *           | *          | * |
+| MT647544.1 | genome  | B602L-SNP:3   | *           | *          | *           | *          | * |
+| ON098025.1 | genome  | B602L-SNP:5   | *           | *          | *           | *          | * |
+| OM986235.1 | genome  | B602L-SNP:6   | *           | *          | *           | *          | * |
+| OM986209.1 | genome  | B602L-SNP:6   | *           | *          | *           | *          | * |
+| MT951767.1 | genome  | I73R-IGR:4    | *           | *          | *           | *          | * |
 | MG939587.1 | genome  | 505-9R-TRS:3  | B602L-SNP:1 | I73R-IGR:1 | K145R-SNP:2 | O174-TRS:2 | * |
 | MG939584.1 | genome  | 505-9R-TRS:3  | B602L-SNP:1 | I73R-IGR:1 | K145R-SNP:2 | O174-TRS:1 | * |
 | OM799941.1 | genome  | 505-9R-TRS:3  | B602L-SNP:1 | I73R-IGR:1 | K145R:3     | O174-TRS:1 | * |

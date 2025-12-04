@@ -66,6 +66,9 @@
 #define def_maxMixedInfectSup_mainGetLin 0.4f
 #define def_readOutput_mainGetLin 1
 
+#define def_printAllVars_mainGetLin 0
+   /*this is to print variants not normally printed*/
+
 signed char *glob_outIdStr = (signed char *) "out";
 
 /*-------------------------------------------------------\
@@ -315,6 +318,31 @@ phelp_mainGetLin(
       str_endLine
    );
 
+
+   if(def_printAllVars_mainGetLin)
+      fprintf(
+         (FILE *) outFILE,
+         "  -pall-vars: [Yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "  -pall-vars: [No]%s",
+         str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o print variants marked as no print in%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      the simple and complex databases%s",
+      str_endLine
+   );
+
    /*****************************************************\
    * Fun02 Sec02 Sub06:
    *   - output id for entry
@@ -511,6 +539,11 @@ phelp_mainGetLin(
 |   - maxMixedFPtr:
 |     o float ponter to get maximum mixed infection
 |       support
+|   - pNoPrintBlPtr
+|     o signed char pointer to hold if overwriting no
+|       print commands
+|     o 1: set to overwrite
+|     o 0: set to no overwrite
 | Output:
 |   - Modifies:
 |     o all input except argAryStr and argLenSI to have
@@ -531,11 +564,12 @@ input_mainGetLin(
    signed char **simpleDbStrPtr, /*simple lineages*/
    signed char **complexDbStrPtr,/*complex lineages*/
    signed char **samStrPtr,      /*sam file with reads*/
-   signed char **outFileStrPtr,      /*gets output file*/
+   signed char **outFileStrPtr,  /*gets output file*/
    signed char **idStrPtr,       /*output read mode id*/
    signed char *readModeBlPtr,   /*output mode to use*/
    signed int *minDepthSIPtr,    /*min read depth*/
-   float *maxMixedFPtr           /*max mixed support*/
+   float *maxMixedFPtr,          /*max mixed support*/
+   signed char *pNoPrintBlPtr    /*print non-print vars*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
    '   - gets input for getLin
@@ -640,6 +674,20 @@ input_mainGetLin(
            tmpStr
         )
       ) *readModeBlPtr = 0;
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-pall-vars",
+           tmpStr
+        )
+      ) *pNoPrintBlPtr = 1;
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-pvars",
+           tmpStr
+        )
+      ) *pNoPrintBlPtr = 0;
 
       /**************************************************\
       * Fun03 Sec02 Sub03:
@@ -860,6 +908,7 @@ main(
    signed char *idStr = glob_outIdStr; /*id for readmode*/
 
    signed char pReadModeBl = def_readOutput_mainGetLin;
+   signed char pAllVarsBl = def_printAllVars_mainGetLin;
    signed int minDepthSI = def_minDepth_mainGetLin;
    float mixedInfectSupF =
       def_maxMixedInfectSup_mainGetLin;
@@ -933,7 +982,8 @@ main(
          &idStr,
          &pReadModeBl,
          &minDepthSI,
-         &mixedInfectSupF
+         &mixedInfectSupF,
+         &pAllVarsBl
       );
 
    if(errSC)
@@ -1363,6 +1413,7 @@ main(
          complexLinHeapArySI =
             complexLineage_getLin(
                complexHeapST,
+               simpleHeapST,
                simpleLinHeapArySI,
                trsHeapArySI,
                &simpleLenSI,
@@ -1395,6 +1446,7 @@ main(
                simpleLenSI,
                complexLinHeapArySI,
                complexLenSI,
+               pAllVarsBl,
                simpleHeapST,
                complexHeapST
             )
@@ -1420,6 +1472,7 @@ main(
                complexLenSI,
                simpleHeapST,
                complexHeapST,
+               pAllVarsBl,
                &pHeadBl,
                outFILE
             )
