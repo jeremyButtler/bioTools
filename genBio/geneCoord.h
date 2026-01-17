@@ -16,9 +16,6 @@
 '     - Initializes a geneCoord structure
 '   o fun04: mk_geneCoord
 '     - Makes a heap allocated geneCoord structure
-'   o fun05: getPaf_geneCoord
-'     - Get the id and coordinates for a gene from a paf
-'       file
 '   o .c fun06: swap_geneCoord
 '     - Swaps two array items in a geneCoord structure
 '       around
@@ -33,10 +30,14 @@
 '   o fun10: sortName_geneCoord
 '     - Sorts the arrays in a genesCoord structure by
 '       gene name
-'   o fun11: findName_geneCoord
+'   o fun11: nameSortFloat3IndexSync_geneCoord
+'    - sorts the arrays in a genesCoord structure by
+'      gene name and keep an array of floats (index 3) in
+'      sync
+'   o fun12: findName_geneCoord
 '     - Does a binary search to find an gene name in an
 '       gene geneCoord structer (must be sorted by name)
-'   o fun12: getCoords_geneCoord
+'   o fun13: getCoords_geneCoord
 '     - Gets the gene coordinates from an gene coordinates
 '       table
 '   o license:
@@ -72,6 +73,8 @@ typedef struct geneCoord{
    unsigned int *startAryUI; /*new starting position*/
    unsigned int *endAryUI;   /*new ending position*/
    unsigned char *dirAryUC;  /*direction*/
+
+   signed int lenSI; /*number of genes in gene coord*/
 }geneCoord;
 
 /*#define getIdIndex_geneCoord(indexUI) ((indexUI) * def_lenId_geneCoord)*/
@@ -141,33 +144,6 @@ mk_geneCoord(
 );
 
 /*-------------------------------------------------------\
-| Fun05: getPaf_geneCoord
-|    - Get the id and coordinates for a gene from a paf
-|      file
-| Input:
-|   - geneCoordST:
-|     o Pointer to a geneCoordST structure to hold the
-|       new gene
-|   - posUI:
-|     o Position in the arrays in the geneCoord structure
-|       to add the new gene at
-|   - typeC:
-|     o Alignment type for the extracted gene
-|   - pafLineStr:
-|     o Line from the paf file with the gene to add
-| Output:
-|   - Modifies:
-|     o All arrays in geneCoordST to hold the new gene
-\-------------------------------------------------------*/
-void
-getPaf_geneCoord(
-   struct geneCoord *geneCoordST,
-   unsigned int posUI,
-   signed char *typeC,
-   signed char *pafLineStr
-); /*getPaf_geneCoord*/
-
-/*-------------------------------------------------------\
 | Fun07: sort_geneCoord
 |  - Sorts the arrays in a genesCoord structure by
 |    starting positiion with shell short.
@@ -175,10 +151,6 @@ getPaf_geneCoord(
 |  - geneCoordST:
 |    o Pointer to geneCoord structure with gene
 |      coordinates to sort
-|  - startUI:
-|    o First element to start sorting at
-|  - endUI:
-|    o Last element to sort
 | Output:
 |  - Modifies:
 |    o Arrays in geneCoordST to be sorted by the gene
@@ -186,9 +158,7 @@ getPaf_geneCoord(
 \-------------------------------------------------------*/
 void
 sort_geneCoord(
-   struct geneCoord *geneCoordST,
-   unsigned int startUI,
-   unsigned int endUI
+   struct geneCoord *geneCoordST
 );
 
 /*-------------------------------------------------------\
@@ -202,8 +172,9 @@ sort_geneCoord(
 |  - qryUI:
 |    o Starting coordinate (query) to search for in
 |      geneCoordST
-|  - numGenesUI:
-|    o Number of genes in geneCoordST (index 1)
+|  - refStr:
+|    o c-string with reference to find the gene for
+|    o 0/null for ignore reference
 | Output:
 |  - Returns:
 |    o The index of the starting position
@@ -213,7 +184,7 @@ signed int
 findStart_geneCoord(
    struct geneCoord *geneST,
    unsigned int qryUI,
-   signed int numGenesSI
+   signed char *refStr
 );
 
 /*-------------------------------------------------------\
@@ -227,8 +198,9 @@ findStart_geneCoord(
 |    o starting coordinate (query) to search for
 |  - endUI:
 |    o ending coordinate (query) to search for
-|  - numGenesUI:
-|    o Number of genes in geneCoordST (index 1)
+|  - refStr:
+|    o c-string with reference to find the gene for
+|    o 0/null for ignore reference
 | Output:
 |  - Returns:
 |    o index of gene that overlaps with startUI and endUI
@@ -239,13 +211,13 @@ findRange_geneCoord(
    struct geneCoord *geneST,
    unsigned int startUI,
    unsigned int endUI,
-   signed int numGenesSI
+   signed char *refStr
 );
 
 /*-------------------------------------------------------\
 | Fun10: sortName_geneCoord
-|  - Sorts the arrays in a genesCoord structure by
-|    gene name
+|  - sorts the arrays in a genesCoord structure by
+|    gene name and then reference
 | Input:
 |  - geneCoordST:
 |    o Pointer to geneCoord structure with gene
@@ -261,44 +233,68 @@ findRange_geneCoord(
 \-------------------------------------------------------*/
 void
 sortName_geneCoord(
-   struct geneCoord *geneCoordST,
-   unsigned int startUI,
-   unsigned int endUI
+   struct geneCoord *geneCoordST
 );
 
 /*-------------------------------------------------------\
-| Fun11: findName_geneCoord
+| Fun11: nameSortFloat3IndexSync_geneCoord
+|  - sorts the arrays in a genesCoord structure by
+|    gene name and keep an array of floats (index 3) in
+|    sync
+| Input:
+|  - geneCoordST:
+|    o Pointer to geneCoord structure with gene
+|      coordinates to sort
+|  - numGenesSI:
+|    o number of genes
+|  - floatAry:
+|    o float array to keep in sync
+|    o float array has 3 entries per gene, so is moved in
+|      groups of threee
+| Output:
+|  - Modifies:
+|    o arrays in geneCoordST to be sorted by the gene
+|      starting coordinate (lowest first)
+|    o floatAry to be in sync with geneCoordST
+\-------------------------------------------------------*/
+void
+nameSortFloat3IndexSync_geneCoord(
+   struct geneCoord *geneCoordST,
+   float *floatAryF
+);
+
+/*-------------------------------------------------------\
+| Fun12: findName_geneCoord
 |  - Does a binary search to find an gene name in an gene
 |    geneCoord structer (must be sorted by name)
 | Input:
 |  - geneCoordST:
-|    o Pointer to geneCoord structure with starting gene
+|    o Pointer to geneCoord structure to sort
 |      coordinates to search
 |  - nameStr:
 |    o c-string with name to search for
-|  - numGenesSI:
-|    o Number of genes in geneCoordST (index 1)
+|  - refStr:
+|    o c-string with reference sequence
+|    o use 0 for search for gene only
 | Output:
 |  - Returns:
 |    o The index of gene with the same name
 |    o -1 if there was no gene
 \-------------------------------------------------------*/
-int
+signed int
 findName_geneCoord(
    struct geneCoord *geneST,
    signed char *nameStr,
-   signed int numGenesSI
+   signed char *refStr
 );
 
 /*-------------------------------------------------------\
-| Fun12: getCoords_geneCoord
+| Fun13: getCoords_geneCoord
 |  - Gets the gene coordinates from a gene table (tsv)
 | Input:
 |  - geneTblFileStr:
 |    o C-string with name of the gene table file to
 |      extract the gene coordinates and names from
-|  - numGenesSI:
-|    o Will hold the Number of genes extracted
 |  - errULPtr:
 |    o Will hold the error return value
 | Output:
@@ -307,8 +303,6 @@ findName_geneCoord(
 |      gene coordinates
 |    o 0 for errors
 |  - Modifies:
-|    o numGenesI to have the number of genes (index 0)
-|      extracted
 |    o errULPtr to hold the error
 |      - 0 for no errors
 |      - def_fileErr_geneCoord for an file opening error
@@ -320,7 +314,6 @@ findName_geneCoord(
 struct geneCoord *
 getCoords_geneCoord(
    signed char *geneTblFileStr,
-   signed int *numGenesSI, /*Number of genes extracted*/
    unsigned long *errULPtr
 );
 

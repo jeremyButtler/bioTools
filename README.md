@@ -151,6 +151,12 @@ The programs are built and debugged on Linux and then
     - splits reads in a sam file by reference
     - has some support for identifying refseq accession
       numbers belonging to the same assembly
+  - getAmr (freezeTB):
+    - detect AMRs in mapped ONT reads or a mapped
+      consensus
+    - may support multiple references (untested)
+    - you can build a database with the included addAmr
+      program
   - demux (side program):
     - extracts amplicons using primer sequences from
       reads or genomes
@@ -301,9 +307,20 @@ My general libraries. Not very well documented and use
   or primer scanning (biology)
 - genClust is for clustering our grouping tasks (biology)
 - genGenoType is for genotyping (biology)
+- genAmr is for AMR libraries (biology)
 
 # Updates:
 
+- 2026-01-16:
+  - added getAmr and addAmr (in getAmr)
+- 2026-01-13:
+  - changed the geneCoord structure to include the number
+    of genes. This changes several functions.
+- 2025-12-19:
+  - fixed an error when reading a sam file (samEntry),
+    were a read would be counted as an error if the last
+    charater read in after the q-score entry was a tab or
+    space. This was a rare error.
 - 2025-12-04:
   - added closest lineage method for the getLin complex
     databases. This picks a complex lineage with the most

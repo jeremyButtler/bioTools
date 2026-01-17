@@ -1106,13 +1106,13 @@ chainToAln_mapRead(
 |          converted to index's
 |     o 0: this function will convert to index's and flip
 |          back
+|   - samSTPtr:
+|     o pointer to samEntry struct to hold best alignment
 |   - alnSTPtr:
 |     o aln_mapRead struct pionter with allocated memory to
 |       use/allocate/resize in mapping steps
 |   - setSTPtr:
 |     o set_mapRead structure with non-reference specific
-|   - samSTPtr:
-|     o pointer to samEntry struct to hold best alignment
 |   - errSCPtr:
 |     o signed char pointer to hold any errors
 | Output:

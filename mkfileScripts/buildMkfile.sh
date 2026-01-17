@@ -31,6 +31,7 @@ genBioStr="";
 genAlnStr="";
 genClustStr="";
 genGeneoTypeStr="";
+genAmrStr="";
 #seqByIdStr=""; add in for k2 taxa
 
 mathLibBl=0;
@@ -42,6 +43,7 @@ genBioBl=0;
 genAlnBl=0;
 genClustBl=0;
 genGeneoTypeBl=0;
+genAmrBl=0;
 
 # unique libraryes for freezeTB
 genFreezeTB="";
@@ -213,6 +215,7 @@ then # If: debugging make file
    genAlnStr="\$(genAln)/";
    genClustStr="\$(genClust)/";
    genGeneoTypeStr="\$(genGeneoType)/";
+   genAmrStr="\$(genAmr)/";
    #seqByIdStr="\$(seqByIdSrc)/"; # adad in for k2Taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
@@ -254,6 +257,7 @@ then # Else If: general unix make file
    genAlnStr="\$(genAln)/";
    genClustStr="\$(genClust)/";
    genGeneoTypeStr="\$(genGeneoType)/";
+   genAmrStr="\$(genAmr)/";
    #seqByIdStr="\$(seqByIdSrc)/"; # add in for k2Taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
@@ -300,6 +304,7 @@ then # Else If: static unix make file
    genLibStr="\$(genLib)/";
    genBioStr="\$(genBio)/";
    genAlnStr="\$(genAln)/";
+   genAmrStr="\$(genAmr)/";
    genClustStr="\$(genClust)/";
    genGeneoTypeStr="\$(genGeneoType)/";
    #seqByIdStr="\$(seqByIdSrc)/"; add in for k2 taxa
@@ -348,6 +353,7 @@ then # Else If: windows make file
    genAlnStr="\$(genAln)\\\\";
    genClustStr="\$(genClust)\\\\";
    genGeneoTypeStr="\$(genGeneoType)\\\\";
+   genAmrStr="\$(genAmr)\\\\";
    #seqByIdStr="\$(seqByIdSrc)\\\\"; # add in for k2Taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
@@ -386,6 +392,7 @@ then # Else If: plan9 make file
    genLibStr="\$genLib/";
    genBioStr="\$genBio/";
    genAlnStr="\$genAln/";
+   genAmrStr="\$(genAmr)/";
    genClustStr="\$genClust/";
    genGeneoTypeStr="\$(genGeneoType)/";
    #seqByIdStr="\$seqByIdSrc/"; # add in when in k2Taxa
@@ -431,6 +438,8 @@ fi # check makefile type
 #   o sec03 sub06:
 #     - genGeneoType libraries
 #   o sec03 sub07:
+#     - genAmr libraries
+#   o sec03 sub08:
 #     - misc code in own folders
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -806,7 +815,7 @@ geneCoordStr="${genBioStr}geneCoord.\$O: \\
 	${genBioStr}geneCoord.h \\
 	${genLibStr}fileFun.\$O \\
 	${genLibStr}base10str.\$O \\
-	${genLibStr}charCp.\$O \\
+	${genLibStr}ulCp.\$O \\
 	${genLibStr}genMath.h
 	$ccStr ${dashOStr}${genBioStr}geneCoord.\$O \\
 		$cFlagsStr $coreFlagsStr \\
@@ -814,7 +823,7 @@ geneCoordStr="${genBioStr}geneCoord.\$O: \\
 
 geneCoordObj="${genBioStr}geneCoord.\$O";
 geneCoordDep="fileFun $fileFun base10str $base10strDep";
-geneCoordDep="$geneCoordDep $ulCpDep charCp $charCpDep";
+geneCoordDep="$geneCoordDep $ulCpDep";
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub03 Cat07:
@@ -1460,13 +1469,119 @@ cgMLSTDep="edDist $edDistDep ptrAry $ptrAryDep";
 
 #*********************************************************
 # Sec03 Sub07:
-#   - misc code in own folders
+#   - genAmr libraries
 #   o sec03 sub07 cat01:
-#     - k2TaxaId
+#     - drugAry
+#   o sec03 sub07 cat02:
+#     - amrST
+#   o sec03 sub07 cat03:
+#     - checkAmr
 #*********************************************************
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub07 Cat01:
+#   - drugAry
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+drugAryStr="${genAmrStr}drugAry.\$O: \\
+	${genAmrStr}drugAry.c \\
+	${genAmrStr}drugAry.h
+		$ccStr ${dashOStr}${genAmrStr}drugAry.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genAmrStr}drugAry.c
+";
+
+drugAryObj="${genAmrStr}drugAry.\$O";
+drugAryDep="";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub07 Cat02:
+#   - amrST
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+amrSTStr="${genAmrStr}amrST.\$O: \\
+	${genAmrStr}amrST.c \\
+	${genAmrStr}amrST.h \\
+	${genAmrStr}drugAry.\$O \\
+	${genLibStr}fileFun.\$O \\
+	${genLibStr}base10str.\$O \\
+	${genLibStr}64bit.h \\
+	${genLibStr}endLine.h
+		$ccStr ${dashOStr}${genAmrStr}amrST.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genAmrStr}amrST.c
+";
+
+amrSTObj="${genAmrStr}amrST.\$O";
+amrSTDep="drugAry $drugAryDep";
+amrSTDep="$amrSTDep base10str $base10strDep";
+amrSTDep="$amrSTDep fileFun $fileFunDep";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub07 Cat03:
+#   - checkAmr
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+checkAmrStr="${genAmrStr}checkAmr.\$O: \\
+	${genAmrStr}checkAmr.c \\
+	${genAmrStr}checkAmr.h \\
+	${genAmrStr}amrST.\$O \\
+	${genLibStr}charCp.\$O \\
+	${genLibStr}genMath.\$O \\
+	${genBioStr}codonFun.\$O \\
+	${genBioStr}samEntry.\$O \\
+	${genBioStr}ntTo2Bit.h \\
+	${genBioStr}revNtTo2Bit.h \\
+	${genBioStr}codonTbl.h
+		$ccStr ${dashOStr}${genAmrStr}checkAmr.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genAmrStr}checkAmr.c
+";
+
+checkAmrObj="${genAmrStr}checkAmr.\$O";
+checkAmrDep="amrST $amrSTDep";
+checkAmrDep="$checkAmrDep samEntry $samEntryDep";
+checkAmrDep="$checkAmrDep codonFun $codonFunDep";
+checkAmrDep="$checkAmrDep genMath $genMathDep";
+checkAmrDep="$checkAmrDep charCp $charCpDep";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub07 Cat04:
+#   - addAmr
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+addAmrStr="${genAmrStr}addAmr.\$O: \\
+	${genAmrStr}addAmr.c \\
+	${genAmrStr}addAmr.h \\
+	${genAmrStr}amrST.\$O \\
+	${genBioStr}seqST.\$O \\
+	${genBioStr}geneCoord.\$O \\
+	${genBioStr}codonFun.\$O \\
+	${genLibStr}genMath.\$O \\
+	${genBioStr}ntTo2Bit.h \\
+	${genBioStr}revNtTo2Bit.h \\
+	${genBioStr}codonTbl.h
+		$ccStr ${dashOStr}${genAmrStr}addAmr.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genAmrStr}addAmr.c
+";
+
+addAmrObj="${genAmrStr}addAmr.\$O";
+addAmrDep="amrST $amrSTDep";
+addAmrDep="$addAmrDep seqST $seqSTDep";
+addAmrDep="$addAmrDep geneCoord $geneCoordDep";
+addAmrDep="$addAmrDep codonFun $codonFunDep";
+addAmrDep="$addAmrDep genMath $genMathDep";
+
+#*********************************************************
+# Sec03 Sub08:
+#   - misc code in own folders
+#   o sec03 sub08 cat01:
+#     - k2TaxaId
+#*********************************************************
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub08 Cat01:
 #   - k2TaxaId
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1508,8 +1623,10 @@ k2TaxaIdDep="$k2TaxaIdDep shellSort $shellSortDep";
 #   o sec04 sub07:
 #     - genGeneoType library files
 #   o sec04 sub08:
-#     - non-general library files
+#     - genAmr library files
 #   o sec04 sub09:
+#     - non-general library files
+#   o sec04 sub10:
 #     - move to next library or dependency
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -3010,13 +3127,134 @@ do # Loop: get dependencies
 
    #******************************************************
    # Sec04 Sub08:
+   #   - genAmr libraries
+   #   o sec04 sub08 cat01:
+   #     - drugAry
+   #   o sec04 sub08 cat03:
+   #     - checkAmr
+   #   o sec04 sub08 cat02:
+   #     - amrsT
+   #   o sec04 sub08 cat04:
+   #     - addAmr
+   #******************************************************
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub08 Cat01:
+   #   - drugAry
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "drugAry" ]; then
+   # Else If: drugAry program
+      if [ "$drugAryBl" = "" ]; then
+         cmdStr="${cmdStr}${newLineStr}${drugAryStr}";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}$drugAryObj";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$drugAryObj";
+         fi
+
+         drugAryBl=1;
+         depStr="$depStr $drugAryDep";
+
+         if [ "$genAmrBl" -lt 1 ]; then
+            genAmrBl=1;
+            libPathStr="$libPathStr\ngenAmr=..${slashSC}genAmr";
+         fi
+      fi
+   # Else If: drugAry program
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub08 Cat02:
+   #   - amrST
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "amrST" ]; then
+   # Else If: amrST program
+      if [ "$amrSTBl" = "" ]; then
+         cmdStr="${cmdStr}${newLineStr}${amrSTStr}";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}$amrSTObj";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$amrSTObj";
+         fi
+
+         amrSTBl=1;
+         depStr="$depStr $amrSTDep";
+
+         if [ "$genAmrBl" -lt 1 ]; then
+            genAmrBl=1;
+            libPathStr="$libPathStr\ngenAmr=..${slashSC}genAmr";
+         fi
+      fi
+   # Else If: amrST program
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub08 Cat03:
+   #   - checkAmr
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "checkAmr" ]; then
+   # Else If: checkAmr program
+      if [ "$checkAmrBl" = "" ]; then
+         cmdStr="${cmdStr}${newLineStr}${checkAmrStr}";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}$checkAmrObj";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$checkAmrObj";
+         fi
+
+         checkAmrBl=1;
+         depStr="$depStr $checkAmrDep";
+
+         if [ "$genAmrBl" -lt 1 ]; then
+            genAmrBl=1;
+            libPathStr="$libPathStr\ngenAmr=..${slashSC}genAmr";
+         fi
+      fi
+   # Else If: checkAmr program
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub08 Cat04:
+   #   - addAmr
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "addAmr" ]; then
+   # Else If: addAmr program
+      if [ "$addAmrBl" = "" ]; then
+         cmdStr="${cmdStr}${newLineStr}${addAmrStr}";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}$addAmrObj";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$addAmrObj";
+         fi
+
+         addAmrBl=1;
+         depStr="$depStr $addAmrDep";
+
+         if [ "$genAmrBl" -lt 1 ]; then
+            genAmrBl=1;
+            libPathStr="$libPathStr\ngenAmr=..${slashSC}genAmr";
+         fi
+      fi
+   # Else If: addAmr program
+
+   #******************************************************
+   # Sec04 Sub09:
    #   - non-general library files
    #   o sec04 sub08 cat01:
    #     - k2TaxaId
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   # Sec04 Sub08 Cat01:
+   # Sec04 Sub09 Cat01:
    #   - k2TaxaId
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -3041,7 +3279,7 @@ do # Loop: get dependencies
    fi # check librarys called
 
    #******************************************************
-   # Sec04 Sub09:
+   # Sec04 Sub10:
    #   - move to next library or dependency
    #******************************************************
 

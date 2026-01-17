@@ -48,6 +48,18 @@ cd ../filtsamSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" filtsam mainFiltsam trimSam charCp ../bioTools.h ../genLib/endLine.h
 cd "../$retDirStr" || exit;
 
+cd ../getAmrSrc || exit;
+sh "../$retDirStr/allOSMkfiles.sh" getAmr mainGetAmr checkAmr charCp ../genAmr/getAmrDefs.h ../genLib/endLine.h ../bioTools.h
+cd "../$retDirStr" || exit;
+
+cd ../getAmrSrc || exit;
+sh "../$retDirStr/buildMkfile.sh" bug addAmr mainAddAmr addAmr ../genLib/endLine.h ../bioTools.h > addAmr_mkfile.bug
+sh "../$retDirStr/buildMkfile.sh" plan9 addAmr mainAddAmr addAmr ../genLib/endLine.h ../bioTools.h > addAmr_mkfile.plan9
+sh "../$retDirStr/buildMkfile.sh" unix addAmr mainAddAmr addAmr ../genLib/endLine.h ../bioTools.h > addAmr_mkfile.unix
+sh "../$retDirStr/buildMkfile.sh" static addAmr mainAddAmr addAmr ../genLib/endLine.h ../bioTools.h > addAmr_mkfile.static
+sh "../$retDirStr/buildMkfile.sh" win addAmr mainAddAmr addAmr ../genLib/endLine.h ../bioTools.h > addAmr_mkfile.win
+cd "../$retDirStr" || exit;
+
 cd ../getLinSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" getLin mainGetLin getLin ../bioTools.h
 cd "../$retDirStr" || exit;

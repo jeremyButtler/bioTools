@@ -16,6 +16,8 @@ all:
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C edClustSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C edDistSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C filtsamSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C getAmrSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f addAmr_mkfile.static -C getAmrSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C getLinSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C illNanoSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.static -C k2TaxaIdSrc;
@@ -47,6 +49,8 @@ install:
 	make PREFIX="$(PREFIX)" -f mkfile.static -C edClustSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.static -C edDistSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.static -C filtsamSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.static -C getAmrSrc install;
+	make PREFIX="$(PREFIX)" -f addAmr_mkfile.static -C getAmrSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.static -C getLinSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.static -C illNanoSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.static -C k2TaxaIdSrc install;

@@ -70,7 +70,7 @@ $genBio/geneCoord.$O: \
 	$genBio/geneCoord.h \
 	$genLib/fileFun.$O \
 	$genLib/base10str.$O \
-	$genLib/charCp.$O \
+	$genLib/ulCp.$O \
 	$genLib/genMath.h
 	$CC -o $genBio/geneCoord.$O \
 		$CFLAGS $coreCFLAGS \

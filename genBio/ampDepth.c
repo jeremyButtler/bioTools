@@ -19,6 +19,8 @@
 '     - prints the read depth of each base
 '   o fun07: pGeneCoverage_ampDepth
 '     - prints percent gene coverage and start/mid/end
+'   o fun08: getGeneCoverage_ampDepth
+'     - puts the gene coverage and depth into an array
 '   o license:
 '     - Licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -67,8 +69,6 @@
 |     o geneCoord struct pointer with gene/target
 |       coordinates want to extract
 |     o input 0/null to not filter by genes
-|   - numGenesSI:
-|     o number of genes in coordsSTPtr (index 0)
 |   - depthArySI:
 |     o histogram (int array) to add each base to
 |   - numOffTargSI:
@@ -83,7 +83,6 @@ void
 addRead_ampDepth(
    struct samEntry *samSTPtr,
    struct geneCoord *coordsSTPtr, /*list of genes*/
-   signed int numGenesSI,   /*number genes in list*/
    signed int *depthArySI,  /*depth array to update*/
    signed int *numOffTargSI /*number reads not in list*/
 ){
@@ -98,7 +97,7 @@ addRead_ampDepth(
             coordsSTPtr,
             samSTPtr->refStartUI,
             samSTPtr->refEndUI,
-            numGenesSI + 1
+            0 /*no reference sequence*/
          );
 
       if(siIndex < 0)
@@ -126,7 +125,7 @@ addRead_ampDepth(
          /*see if read has muttiple genes*/
          ++siIndex;
 
-         if(siIndex >= numGenesSI)
+         if(siIndex > coordsSTPtr->lenSI)
             ; /*end of genes list*/
          else if(
               samSTPtr->refEndUI
@@ -188,8 +187,6 @@ phead_ampDepth(
 |   - geneCoordSTPtr:
 |     o pointer to an geneCoord structure array with the
 |       locations of each gene
-|   - numGenesSI:
-|     o integer with number of genes in geneCoordSTPtr
 |   - offTargSI:
 |     o number off of target reads to print out
 |   - noMapSI:
@@ -207,7 +204,6 @@ phist_ampDepth(
    signed int *histArySI,
    signed int minDepthSI,
    struct geneCoord *geneCoordSTPtr,
-   signed int numGenesSI,
    signed int offTargSI,
    signed int noMapSI,
    signed char *extraColStr,
@@ -274,9 +270,9 @@ phist_ampDepth(
    mapStartSI = 0;
 
    while(
-         mapStartSI
-      <= (signed int)
-         geneCoordSTPtr->endAryUI[numGenesSI] + 1
+        mapStartSI
+     <= (signed int)
+        geneCoordSTPtr->endAryUI[geneCoordSTPtr->lenSI -1]
    ){ /*Loop: Get the gene positions that mapped*/
       ++mapStartSI;
 
@@ -289,12 +285,11 @@ phist_ampDepth(
          findStart_geneCoord(
             geneCoordSTPtr,
             mapStartSI,
-            numGenesSI + 1
+            0
          ); /*Find the index of the gene at the position*/
 
       if(geneIndexSI < 0)
          continue; /*Unmapped base*/
-
       if(histArySI[mapStartSI] < minDepthSI)
          continue;
 
@@ -304,11 +299,8 @@ phist_ampDepth(
       \**************************************************/
 
       ++ampNumSI;
-
       ampGeneEndSI = geneIndexSI;
-
       ampStartSI = mapStartSI;
-
       ampGeneStartSI =
          geneCoordSTPtr->startAryUI[geneIndexSI];
 
@@ -343,7 +335,6 @@ phist_ampDepth(
       } /*Loop: Find end of region*/
 
       --ampEndSI; /*Account for overcounting*/
-
       ampGeneEndSI =
          geneCoordSTPtr->endAryUI[ampGeneEndSI];
 
@@ -450,7 +441,8 @@ phist_ampDepth(
       if(histArySI[mapStartSI] > minDepthSI)
       { /*If: I have another gene*/
          ++geneIndexSI;
-         if(geneIndexSI > numGenesSI) continue;;
+         if(geneIndexSI > geneCoordSTPtr->lenSI)
+            continue;
 
          /*Make sure I am on the next gene*/
          while(
@@ -622,8 +614,6 @@ pdepth_ampDepth(
 |     o minimum read depth to count as covered
 |   - geneCoordSTPtr:
 |     o geneCoord struct with gene coordinates to print
-|   - numGenesSI:
-|     o number of genes in geneCoordSTPtr (index 0)
 |   - outFILE:
 |     o FILE * pointer to print to
 | Output:
@@ -638,7 +628,6 @@ pGeneCoverage_ampDepth(
    signed int *depthArySI, /*histogram of read depths*/
    signed int minDepthSI,  /*min depth to print*/
    struct geneCoord *geneCoordSTPtr, /*gene coordinates*/
-   signed int numGenesSI,            /*number of genes*/
    void *outFILE           /*file to print to*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun07 TOC:
@@ -714,7 +703,7 @@ pGeneCoverage_ampDepth(
    *   - start loop for each gene and get gene coordinates
    \*****************************************************/
 
-   for(geneSI = 0; geneSI <= numGenesSI; ++geneSI)
+   for(geneSI=0; geneSI < geneCoordSTPtr->lenSI; ++geneSI)
    { /*Loop: go though all genes to print out*/
       posSI = geneCoordSTPtr->startAryUI[geneSI];
       endSI = geneCoordSTPtr->endAryUI[geneSI];
@@ -790,9 +779,10 @@ pGeneCoverage_ampDepth(
       \**************************************************/
 
       if(! lowDepthBl)
+      { /*If: had last base in gene*/
+         endHeapArySI[aryLenSI] = endSI;
          ++aryLenSI;
-      else if(lowDepthBl < 0)
-         ++aryLenSI;
+      } /*If: had last base in gene*/
 
       if(! ntSI)
          fprintf(
@@ -852,6 +842,150 @@ pGeneCoverage_ampDepth(
 
       return ntSI;
 } /*pGeneCoverage_ampDepth*/
+
+/*-------------------------------------------------------\
+| Fun08: getGeneCoverage_ampDepth
+|   - puts the gene coverage and depth into an array
+| Input
+|   - depthArySI:
+|     o signed int array with read depths
+|   - minDepthSI:
+|     o minimum read depth to count as covered
+|   - geneCoordSTPtr:
+|     o geneCoord struct with gene coordinates to print
+| Output:
+|   - Returns:
+|     o float array (size = geneCoordSTPtr->lenSI * 3)
+|       with percent coverage, coverage mean read depth,
+|       and gene mean read depth
+|       * has two items per index
+|       * index 0: gene percent coverage (as decimal)
+|       * index 1: mean read depth in covered region
+|       * index 2: gene mean read depth (as decimal)
+|       * you can get the gene index with (index / 3)
+|     o 0 if had a memory error
+\-------------------------------------------------------*/
+float *
+getGeneCoverage_ampDepth(
+   signed int *depthArySI, /*histogram of read depths*/
+   signed int minDepthSI,  /*min depth to print*/
+   struct geneCoord *geneCoordSTPtr /*gene coordinates*/
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun08 TOC:
+   '   - prints percent gene coverage and start/mid/end
+   '   o fun08 sec01:
+   '     - variable declarations
+   '   o fun08 sec02:
+   '     - memory allocation and print header
+   '   o fun08 sec03:
+   '     - find gene coverage
+   '   o fun08 sec04:
+   '     - clean up and return
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun08 Sec01:
+   ^   - variable declarations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   signed int geneSI = 0;/*gene on*/
+   signed int posSI = 0; /*current position at in genome*/
+   signed int endSI = 0; /*end coordinate of gene*/
+   signed int lenSI = 0;
+      /*holds gene length for finding mean read depth*/
+
+   signed int ntSI = 0;  /*number of bases reads covered*/
+   signed long depthSL = 0; /*for gene mean read depth*/
+   signed long coverDepthSL = 0;
+      /*for coverge mean read depth*/
+
+   float *retHeapAryF = 0;
+   signed int retPosSI = 0;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun08 Sec02:
+   ^   - memory allocation and print header
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   retHeapAryF =
+      calloc((geneCoordSTPtr->lenSI * 3), sizeof(float));
+   if(! retHeapAryF)
+      goto memErr_fun08_sec04;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun08 Sec03:
+   ^   - find gene coverage
+   ^   o fun08 sec03 sub01:
+   ^     - start loop for each gene & get gene coordinates
+   ^   o fun08 sec03 sub02:
+   ^     - find the coverage for each gene
+   ^   o fun08 sec03 sub03:
+   ^     - print out the stats
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   for(geneSI=0; geneSI < geneCoordSTPtr->lenSI; ++geneSI)
+   { /*Loop: go though all genes to print out*/
+      posSI = geneCoordSTPtr->startAryUI[geneSI];
+      endSI = geneCoordSTPtr->endAryUI[geneSI];
+      lenSI = 1 + endSI - posSI;
+
+      ntSI = 0;
+      depthSL = 0;
+      coverDepthSL = 0;
+
+
+      while(posSI <= endSI)
+      { /*Loop: get coverage and read depth*/
+         if(depthArySI[posSI] >= minDepthSI)
+         { /*If: enough read depth to mark as covered*/
+            ++ntSI;
+            coverDepthSL += depthArySI[posSI];
+         } /*If: enough read depth to mark as covered*/
+
+         depthSL += depthArySI[posSI];
+         ++posSI;
+      } /*Loop: get coverage and read depth*/
+
+
+      if(! ntSI)
+      { /*If: had no coverage*/
+         retHeapAryF[retPosSI++] = 0;
+         retHeapAryF[retPosSI++] = 0;
+      } /*If: had no coverage*/
+
+      else
+      { /*Else: had coverage*/
+         retHeapAryF[retPosSI++] =
+            (float) ntSI / (float) lenSI;
+         retHeapAryF[retPosSI++] =
+            (float) coverDepthSL / (float) ntSI;
+      } /*Else: had coverage*/
+
+      retHeapAryF[retPosSI++] =
+         (float) depthSL / (float) lenSI;
+   } /*Loop: go though all genes to print out*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun08 Sec04:
+   ^   - clean up and return
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   goto ret_fun08_sec04;
+
+   memErr_fun08_sec04:;
+      ntSI = 1;
+      goto errClean_fun08_sec04;
+
+   errClean_fun08_sec04:;
+      if(retHeapAryF)
+         free(retHeapAryF);
+      retHeapAryF = 0;
+
+      goto ret_fun08_sec04;
+
+   ret_fun08_sec04:;
+      return retHeapAryF;
+} /*getGeneCoverage_ampDepth*/
 
 /*=======================================================\
 : License:

@@ -16,6 +16,8 @@ all:
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C edClustSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C edDistSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C filtsamSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C getAmrSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f addAmr_mkfile.unix -C getAmrSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C getLinSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C illNanoSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C k2TaxaIdSrc;
@@ -47,6 +49,8 @@ install:
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C edClustSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C edDistSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C filtsamSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C getAmrSrc install;
+	make PREFIX="$(PREFIX)" -f addAmr_mkfile.unix -C getAmrSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C getLinSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C illNanoSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C k2TaxaIdSrc install;

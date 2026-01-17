@@ -945,8 +945,6 @@ main(
    unsigned long errUL = 0;
       /*For gene table reading errors*/
    
-   signed int numGenesSI = 0;
-
    signed int *readMapHeapArySI = 0;
       /*Mapped region of reads*/
    signed int *swapArySI = 0;
@@ -1079,11 +1077,8 @@ main(
    if(geneTblFileStr)
    { /*If: filtering by gene*/
       genesHeapST =
-         getCoords_geneCoord(
-            geneTblFileStr,
-            &numGenesSI,
-            &errUL
-         ); /*Get the gene coordinates from the file*/
+         getCoords_geneCoord(geneTblFileStr, &errUL);
+         /*Get the gene coordinates from the file*/
 
       if(! genesHeapST)
       { /*If: I had an error*/
@@ -1139,17 +1134,13 @@ main(
 
    if(errSC)
    { /*If: had memory error*/
-      fprintf(
-          stderr,
-          "memory error%s",
-          str_endLine
-      );
-          
+      fprintf(stderr, "memory error%s", str_endLine);
       goto err_main_sec06_sub02;
    } /*If: had memory error*/
  
    if(genesHeapST)
-      readMapSizeSI = genesHeapST->endAryUI[numGenesSI]+2;
+      readMapSizeSI =
+         genesHeapST->endAryUI[genesHeapST->lenSI - 1] +2;
      /*These are genes that did not map to the end of the
      ` gene range, but still mapped to the reference
      ` The + 2 is to account for index 1 and to ensure
@@ -1159,10 +1150,7 @@ main(
       readMapSizeSI = 4096;
 
    readMapHeapArySI =
-      calloc(
-         readMapSizeSI,
-         sizeof(unsigned int)
-      );
+      calloc(readMapSizeSI, sizeof(unsigned int));
 
    if(readMapHeapArySI == 0)
    { /*If: I had a memory error*/
@@ -1251,7 +1239,6 @@ main(
       addRead_ampDepth(
          &samStackST,
          genesHeapST,
-         numGenesSI,
          readMapHeapArySI,
          &offTargSI
       ); /*Add in the coverd bases to the histogram*/
@@ -1306,7 +1293,6 @@ main(
          (signed int *) readMapHeapArySI,
          minDepthSI,
          genesHeapST,
-         numGenesSI,
          outFILE
       );
    } /*Else If: printing gene percent coverate report*/
@@ -1319,7 +1305,6 @@ main(
          (signed int *) readMapHeapArySI,
          minDepthSI,
          genesHeapST,
-         numGenesSI,
          offTargSI,
          noMapSI,
          extraColStr,

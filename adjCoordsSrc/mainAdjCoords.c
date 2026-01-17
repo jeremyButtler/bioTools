@@ -583,7 +583,6 @@ main(
    unsigned long errUL = 0;
 
    struct geneCoord *coordsHeapST = 0;
-   signed int numGenesSI = 0;
 
    struct samEntry samStackST;
    signed char onReadsBl = 0; /*For printing the header*/
@@ -686,7 +685,7 @@ main(
    \*****************************************************/
 
    coordsHeapST =
-     getCoords_geneCoord(tblFileStr, &numGenesSI, &errUL);
+     getCoords_geneCoord(tblFileStr, &errUL);
 
    if(errUL)
    { /*If: I had an error*/
@@ -723,12 +722,12 @@ main(
       outFILE,
       "@SQ\tSN:%s\tLN:%u%s",
       refStr,
-      coordsHeapST->endAryUI[numGenesSI - 1],
+      coordsHeapST->endAryUI[coordsHeapST->lenSI - 1],
       str_endLine
     );*/ /*print out the sequence and length header*/
 
    /*sort genes by name instead of start*/
-   sortName_geneCoord(coordsHeapST, 0, numGenesSI);
+   sortName_geneCoord(coordsHeapST);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Main Sec04:
@@ -828,8 +827,7 @@ main(
         (unsigned long)
         adjCoords(
            &samStackST,  /*sam entry to adjust*/
-           coordsHeapST, /*has genes names & coordinates*/
-           numGenesSI    /*number genes in coordsHeapST*/
+           coordsHeapST  /*has genes names & coordinates*/
         ); /*ajust the coordinates to the new reference*/
 
      /*check if I had coordinates for the gene*/

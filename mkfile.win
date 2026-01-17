@@ -38,6 +38,10 @@ all:
 	cd filtsamSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
+	cd getAmrSrc
+	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
+	nmake CFLAGS="$(CFLAGS)" O=$O /F addAmr_mkfile.win  
+	cd ..
 	cd getLinSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
@@ -115,7 +119,6 @@ install:
 	cd demuxSrc
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
-	cd ..
 	cd diCoordsSrc
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
@@ -127,6 +130,10 @@ install:
 	cd ..
 	cd filtsamSrc
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
+	cd ..
+	cd getAmrSrc
+	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
+	nmake PREFIX="$(PREFIX)" /F addAmr_mkfile.win install  
 	cd ..
 	cd getLinSrc
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
