@@ -125,7 +125,7 @@ addRead_ampDepth(
          /*see if read has muttiple genes*/
          ++siIndex;
 
-         if(siIndex > coordsSTPtr->lenSI)
+         if(siIndex >= coordsSTPtr->lenSI)
             ; /*end of genes list*/
          else if(
               samSTPtr->refEndUI
@@ -661,6 +661,9 @@ pGeneCoverage_ampDepth(
    signed int lenSI = 0;
    signed long depthSL = 0;
 
+   signed int ampMaxSI = 0;
+   signed char getFragBl = 1;
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun07 Sec02:
    ^   - memory allocation and print header
@@ -676,16 +679,6 @@ pGeneCoverage_ampDepth(
 
    arySizeSI = 16;
 
-
-   fprintf(
-      (FILE *) outFILE,
-      "gene\tperc_coverage\tnumber_bases\tmean_depth"
-   );
-   fprintf(
-      (FILE *) outFILE,
-      "\tgene_length\tstart_1\tend_1\tstart_2\tend_2\t..."
-   );
-   fprintf((FILE *) outFILE, "%s", str_endLine);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun07 Sec03:
@@ -703,6 +696,34 @@ pGeneCoverage_ampDepth(
    *   - start loop for each gene and get gene coordinates
    \*****************************************************/
 
+   printTable_fun07_sec04_sub01:;
+      /*avoids writing almost the same loop twice*/
+
+   if(! getFragBl)
+   { /*If: found the maximum number of fragments*/
+      ++ampMaxSI; /*convert to index 1*/
+
+      fprintf(
+         (FILE *) outFILE,
+         "gene\tperc_coverage\tnumber_bases\tmean_depth"
+      );
+      fprintf((FILE *) outFILE, "\tgene_length");
+
+   
+      for(ntSI = 1; ntSI <= ampMaxSI; ++ntSI)
+      { /*Loop: print out the fragment header*/
+         fprintf(
+            (FILE *) outFILE,
+            "\tstart_%i\tend_%i",
+            ntSI,
+            ntSI
+         );
+      } /*Loop: print out the fragment header*/
+
+      fprintf((FILE *) outFILE, "%s", str_endLine);
+   } /*If: found the maximum number of fragments*/
+
+
    for(geneSI=0; geneSI < geneCoordSTPtr->lenSI; ++geneSI)
    { /*Loop: go though all genes to print out*/
       posSI = geneCoordSTPtr->startAryUI[geneSI];
@@ -714,6 +735,7 @@ pGeneCoverage_ampDepth(
       startHeapArySI[0] = 0;
       endHeapArySI[0] = 0;
       ntSI = 0;
+      depthSL = 0;
 
       /**************************************************\
       * Fun07 Sec03 Sub02:
@@ -778,6 +800,13 @@ pGeneCoverage_ampDepth(
       *   - print out the stats
       \**************************************************/
 
+      if(getFragBl)
+      { /*If: finding the maximum number of fragments*/
+         if(aryLenSI > ampMaxSI)
+            ampMaxSI = aryLenSI;
+         continue;
+      } /*If: finding the maximum number of fragments*/
+
       if(! lowDepthBl)
       { /*If: had last base in gene*/
          endHeapArySI[aryLenSI] = endSI;
@@ -814,6 +843,11 @@ pGeneCoverage_ampDepth(
                endHeapArySI[ntSI] + 1
             );
       } /*Loop: print out start and ends of gaps*/
+
+      for(; ntSI < ampMaxSI; ++ntSI)
+         fprintf((FILE *) outFILE, "\tNA\tNA");
+         /*mark blank cells with NA*/
+
       fprintf((FILE *) outFILE, "%s", str_endLine);
 
       aryLenSI = 0;
@@ -823,6 +857,12 @@ pGeneCoverage_ampDepth(
    ^ Fun07 Sec04:
    ^   - clean up and return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(getFragBl)
+   { /*If: need to print out the table*/
+      getFragBl = 0;
+      goto printTable_fun07_sec04_sub01;
+   } /*If: need to print out the table*/
 
    ntSI = 0;
    goto ret_fun07_sec04;
