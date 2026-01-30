@@ -311,6 +311,9 @@ My general libraries. Not very well documented and use
 
 # Updates:
 
+- 2026-01-29:
+  - fixed getAmr inifinite loop for addAmr mutation
+    types
 - 2026-01-28:
   - fixed bug in amp depth were the gene coverage file
     mean read depths were off
