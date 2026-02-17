@@ -311,6 +311,10 @@ My general libraries. Not very well documented and use
 
 # Updates:
 
+- 2026-02-17:
+  - found error in geneCoords were the inner sorting was
+    ending early. This was fixed and ampDepth should now
+    work.
 - 2026-01-29:
   - fixed getAmr inifinite loop for addAmr mutation
     types
