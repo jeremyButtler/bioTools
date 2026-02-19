@@ -1274,29 +1274,24 @@ pTaxaId_k2TaxaIds(
    signed char *taxaStr    /*string with taxa name*/
 ){
    signed char *tmpStr = buffStr;
+   signed int prefixLenSI = 0;
    FILE *outFILE = 0;
-  
-   tmpStr +=
-      cpLine_ulCp(
-         tmpStr,
-         prefixStr
-      ); /*copy file name*/
-  
+
+   /*copy file name*/
+   prefixLenSI = cpLine_ulCp(tmpStr, prefixStr);
+   tmpStr += prefixLenSI;
+      /*the user might have file paths in the prefix,
+      `  so I need to make sure it does not become an
+      `  issue in the clean up step
+      */
    *tmpStr++ = '-';
-  
-   tmpStr +=
-      numToStr(
-        tmpStr,
-        fileTaxaSL
-      ); /*copy taxa code*/
-      
+
+   /*copy taxa code*/
+   tmpStr += numToStr( tmpStr, fileTaxaSL);
    *tmpStr++ = '-';
-  
-   tmpStr +=
-      cpLine_ulCp(
-         tmpStr,
-         fileTaxaStr
-      ); /*copy taxa name*/
+
+   /*copy taxa name*/
+   tmpStr += cpLine_ulCp(tmpStr, fileTaxaStr);
   
    *tmpStr++ = '.';
    *tmpStr++ = 'i';
@@ -1304,11 +1299,29 @@ pTaxaId_k2TaxaIds(
    *tmpStr++ = 's';
    *tmpStr = '\0';
   
-   outFILE =
-      fopen(
-         (char *) buffStr,
-         "a"
-      );
+   tmpStr = buffStr + prefixLenSI;
+   while(*tmpStr)
+   { /*Loop: remove invalid characters*/
+      if(*tmpStr > 47 && *tmpStr < 58)
+         ; /*this is a number*/
+      else if(*tmpStr >= 'A' && *tmpStr <= 'Z')
+         ; /*uppercase letter*/
+      else if(*tmpStr >= 'a' && *tmpStr <= 'z')
+         ; /*lowercase letter*/
+      else if(*tmpStr == '_')
+         ; /*underscore*/
+      else if(*tmpStr == '-')
+         ; /*dash*/
+      else if(*tmpStr == '.')
+         ; /*preiod for file extensions*/
+      else
+         *tmpStr = '_'; /*invalid character of some kind,
+                        `  replace with an `_`
+                        */
+      ++tmpStr;
+   } /*Loop: remove invalid characters*/
+
+   outFILE = fopen((char *) buffStr, "a");
   
    if(! outFILE)
       return def_fileErr_k2TaxaId;
@@ -1355,9 +1368,9 @@ pTaxaId_k2TaxaIds(
 |       name for code
 |   - Returns:
 |     o 0 for no errors
-|     o def_fileErr_k2TaxaId for file errors
+|     o 1 + line on for file errors
 \-------------------------------------------------------*/
-signed char
+signed long
 pIds_k2TaxaId(
    struct taxa_k2TaxaId *taxaSTPtr,
    signed char *prefixStr,
@@ -1408,6 +1421,7 @@ pIds_k2TaxaId(
 
    FILE *unclassFILE = 0;
    signed long tmpSL = 0; /*for getLine_fileFun*/
+   signed long lineSL = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun12 Sec02:
@@ -1418,11 +1432,8 @@ pIds_k2TaxaId(
    { /*If: printing unclassified reads*/
       tmpStr = noClassStr;
 
-      tmpStr +=
-         cpLine_ulCp(
-            tmpStr,
-            prefixStr
-         ); /*set up file name*/
+      tmpStr += cpLine_ulCp(tmpStr, prefixStr);
+         /*set up file name*/
 
       *tmpStr++ = '-';
 
@@ -1432,11 +1443,7 @@ pIds_k2TaxaId(
             (signed char *) "unclassified.ids"
          ); /*set up file name*/
 
-      unclassFILE =
-         fopen(
-            (char *) noClassStr,
-            "w"
-         );
+      unclassFILE = fopen((char *) noClassStr, "w");
 
       if(! unclassFILE)
          goto fileErr_fun12_sec04;
@@ -1472,6 +1479,7 @@ pIds_k2TaxaId(
          &tmpSL
       )
    ){ /*Loop: get read ids*/
+      ++lineSL;
 
       if(buffStr[0] == 'U')
       { /*If: unclassified read*/
@@ -1485,11 +1493,8 @@ pIds_k2TaxaId(
                goto fileErr_fun12_sec04;
          } /*Loop: move to read id*/
 
-         tmpStr +=
-            cpWhite_ulCp(
-               idStr,
-               tmpStr
-            ); /*get the read id (no white space)*/
+         /*get the read id (no white space)*/
+         tmpStr += cpWhite_ulCp(idStr, tmpStr);
 
          fprintf(
             (FILE *) unclassFILE,
@@ -1518,11 +1523,8 @@ pIds_k2TaxaId(
             goto fileErr_fun12_sec04;
       } /*Loop: move to read id*/
 
-      tmpStr +=
-         cpWhite_ulCp(
-            idStr,
-            tmpStr
-         ); /*get the read id (no white space)*/
+      /*get the read id (no white space)*/
+      tmpStr += cpWhite_ulCp(idStr, tmpStr);
 
       while(*tmpStr < 33)
       { /*Loop: move to taxa id*/
@@ -1536,17 +1538,10 @@ pIds_k2TaxaId(
       *   - get taxa code and see if printing
       \**************************************************/
 
-      tmpStr +=
-         strToSL_base10str(
-            tmpStr,
-            &taxaSL
-         ); /*get taxa code*/
+      /*get taxa code*/
+      tmpStr += strToSL_base10str(tmpStr, &taxaSL);
 
-      indexSL =
-         findCode_taxa_k2TaxaId(
-            taxaSL,
-            taxaSTPtr
-         );
+      indexSL = findCode_taxa_k2TaxaId(taxaSL, taxaSTPtr);
 
       if(indexSL < 0)
          goto nextLine_fun12_sec03_sub07;
@@ -1804,11 +1799,11 @@ pIds_k2TaxaId(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    done_fun12_sec04:;
-      errSC = 0;
+      lineSL = 0;
       goto cleanUp_fun12_sec04;
 
    fileErr_fun12_sec04:;
-      errSC = def_fileErr_k2TaxaId;
+      ++lineSL;/*convert to index 1 to mark a file error*/
       goto cleanUp_fun12_sec04;
 
    cleanUp_fun12_sec04:;
@@ -1816,7 +1811,7 @@ pIds_k2TaxaId(
          fclose(unclassFILE);
       unclassFILE = 0;
 
-      return errSC;
+      return lineSL;
 } /*pIds_k2TaxaId*/
 
 /*=======================================================\

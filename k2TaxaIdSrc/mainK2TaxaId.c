@@ -982,9 +982,9 @@ main(
    '   o main sec02:
    '     - get and check input
    '   o main sec03:
-   '     - print kraken2 ids
-   '   o main sec04:
    '     - read in kraken2 report
+   '   o main sec04:
+   '     - print kraken2 ids
    '   o main sec05:
    '     - clean up and return
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1012,6 +1012,7 @@ main(
    signed char mergeTipBl = def_tip_maink2TaxaId;
 
    signed char errSC = 0; /*for function errors*/
+   signed long errSL = 0;
    struct taxa_k2TaxaId *taxaHeapST = 0;
 
    FILE *inFILE = 0;
@@ -1084,11 +1085,7 @@ main(
 
    else
    { /*Else: id file is input as file*/
-      inFILE =
-         fopen(
-            (char *) idFileStr,
-            "r"
-         );
+      inFILE = fopen((char *) idFileStr, "r");
 
       if(! inFILE)
       { /*If: could not open file*/
@@ -1136,11 +1133,7 @@ main(
 
    else
    { /*Else: report input as file*/
-      inFILE =
-         fopen(
-            (char *) reportFileStr,
-            "r"
-         );
+      inFILE = fopen((char *) reportFileStr, "r");
 
       if(! inFILE)
       { /*If: could not open file*/
@@ -1227,11 +1220,7 @@ main(
 
    else
    { /*Else: id file is input as file*/
-      inFILE =
-         fopen(
-            (char *) idFileStr,
-            "r"
-         );
+      inFILE = fopen((char *) idFileStr, "r");
 
       if(! inFILE)
       { /*If: could not open file*/
@@ -1251,7 +1240,7 @@ main(
    *   - print read ids and clean up
    \*****************************************************/
 
-   errSC =
+   errSL =
       pIds_k2TaxaId(
          taxaHeapST, /*has taxa list to print*/
          prefixStr,  /*prefix for output files*/
@@ -1271,11 +1260,20 @@ main(
    *   - check for errors
    \*****************************************************/
 
-   if(errSC)
+   if(errSL)
    { /*If: error*/
+      if(errSL == 1)
+         fprintf(
+           stderr,
+           "file error making unclassifed file; -id %s%s",
+           idFileStr,
+           str_endLine
+         );
+      else
       fprintf(
          stderr,
-         "file error printing ids from -id %s%s",
+         "file error on line %li in -id %s%s",
+         errSL - 1,
          idFileStr,
          str_endLine
       );

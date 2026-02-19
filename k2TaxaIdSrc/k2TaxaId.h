@@ -339,9 +339,9 @@ readReport_k2TaxaId(
 |       name for code
 |   - Returns:
 |     o 0 for no errors
-|     o def_fileErr_k2TaxaId for file errors
+|     o 1 + line on for file errors
 \-------------------------------------------------------*/
-signed char
+signed long
 pIds_k2TaxaId(
    struct taxa_k2TaxaId *taxaSTPtr,
    signed char *prefixStr,

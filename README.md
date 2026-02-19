@@ -311,6 +311,12 @@ My general libraries. Not very well documented and use
 
 # Updates:
 
+- 2026-02-19:
+  - fixed an error in k2TaxaId were it would not correct
+    `/`'s to a safe character. The kranken2 references
+    have all invalid file names characters replaced with
+    `_`.  Valid characters are `0-9`, `A-Z`, `a-z`, `-`,
+    and `.`
 - 2026-02-17:
   - found error in geneCoords were the inner sorting was
     ending early. This was fixed and ampDepth should now
