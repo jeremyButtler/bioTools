@@ -11,6 +11,11 @@
 '       line break issues between OS's
 '   o fun03: getFullLine_fileFun
 '     - gets a full length line from a file
+'   o fun04: lineIndex_fileFun
+'     - get the index for each line (uses fread)
+'   o fun05: getLineByIndex_fileFun
+'     - gets a line from a index array from
+'       lineIndex_fileFun (fun04)
 '   o license:
 '     - licensing for this code (public domain / mit)
 '   o options:
@@ -550,6 +555,241 @@ getFullLine_fileFun(
    ret_fun03_sec0x:;
        return retSL;
 } /*getFullLine_fileFun*/
+
+/*-------------------------------------------------------\
+| Fun04: lineIndex_fileFun
+|   - get the index for each line (uses fread)
+| Input:
+|   - inFILE:
+|     o FILE pointer to file to index
+|   - lineCntSLPtr
+|     o signed long pointer to get number entries/errors
+|   - maxLineSLPtr:
+|     o signed long pointer to get the number of bytes of
+|       the longest line
+| Output:
+|   - Modifies:
+|     o inFILE to move to end and then be set to index 0
+|     o maxLineSLPtr to have length of the longest line
+|     o lineCntSLPtr to have the number of lines or errors
+|       * > 0: number of lines in the file
+|       * 0: no lines in the file (empty)
+|       * -1: for memory error
+|   - Returns:
+|     o signed long array with index of the frist charcter
+|       on each line
+|       * array[0] = 1st byte in file
+|       * array[1] = 2nd line in file
+|       * array[2] = 3rd line in file
+|         .
+|         .
+|         .
+|       * array[*lineCntSLPtr - 1] = last line in file
+|       * array[*lineCntSLPtr] = last byte + 1 in file
+|     o 0 for an error
+\-------------------------------------------------------*/
+signed long *
+lineIndex_fileFun(
+   void *inFILE,              /*file to count lines*/
+   signed long *lineCntSLPtr, /*gets number lines*/
+   signed long *maxLineSLPtr  /*length of longest lines*/
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' fun04 TOC:
+   '   - get the index for each line (uses fread)
+   '   o fun04 sec01:
+   '     - variable declarations
+   '   o fun04 sec02:
+   '     - get number of lines, setup memory, get 1st line
+   '   o fun04 sec03:
+   '     - index each line
+   '   o Fun04 sec04:
+   '     - add the index of the last byte
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun04 Sec01:
+   ^   - variable declarations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   #define buffLen_fun04_fileFun 4096
+   signed char buffStr[buffLen_fun04_fileFun];
+   signed int posSI = 0;           /*position in buffer*/
+   signed int tmpSI = 0;
+
+   signed long byteSL = 0;         /*byte on in the file*/
+   signed long lenSL = 0;          /*length of cstring*/
+   signed long *indexHeapArySL = 0;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun04 Sec02:
+   ^   - get number of lines, setup memory, get first line
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   *lineCntSLPtr = lineCnt_fileFun(inFILE, maxLineSLPtr);
+   if(! *lineCntSLPtr)
+      goto emptyFile_fun04_sec04;
+
+   indexHeapArySL =
+      malloc((*maxLineSLPtr + 1) * sizeof(signed char));
+   if(! indexHeapArySL)
+      goto memErr_fun04_sec04;
+   indexHeapArySL[0] = 0;
+
+   lenSL =
+      fread(
+         buffStr,
+         sizeof(signed char),
+         buffLen_fun04_fileFun,
+         (FILE *) inFILE
+      );
+   buffStr[lenSL] = 0;
+   *lineCntSLPtr = 1;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun04 Sec03:
+   ^   - index each line
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   while(lenSL)
+   { /*Loop: get index's from the file*/
+      /*________________find_end_of_line________________*/
+      tmpSI = endLine_ulCp(&buffStr[posSI]);
+      byteSL += tmpSI;
+      posSI += tmpSI;
+
+      /*_____________if_need_more_bytes_________________*/
+      if(! buffStr[posSI])
+      { /*If: need to get more bytes*/
+         lenSL =
+            fread(
+               buffStr,
+               sizeof(signed char),
+               buffLen_fun04_fileFun,
+               (FILE *) inFILE
+            );
+         if(! lenSL)
+            break; /*finished*/
+         buffStr[lenSL] = 0;
+         posSI = 0;
+      } /*If: need to get more bytes*/
+
+      /*_____________if_at_end_of_line__________________*/
+      else
+      { /*Else: at end of the line*/
+         ++byteSL;
+
+         if(! buffStr[posSI + 1])
+         { /*If: need to get more bytes*/
+            endLineGetBytes_fun04_sec03:;
+               lenSL =
+                  fread(
+                     buffStr,
+                     sizeof(signed char),
+                     buffLen_fun04_fileFun,
+                     (FILE *) inFILE
+                  );
+               if(! lenSL)
+                  break; /*finished*/
+               buffStr[lenSL] = 0;
+               posSI = 0;
+         } /*If: need to get more bytes*/
+
+         /*______make_sure_at_start_of_next_entry_______*/
+         while(
+            buffStr[posSI]=='\n' || buffStr[posSI]=='\r'
+        ){ /*Loop: find end of newlines*/
+           ++byteSL;
+           ++posSI;
+
+           if(! buffStr[posSI])
+              goto endLineGetBytes_fun04_sec03;
+        }  /*Loop: find end of newlines*/
+
+        /*________get_the_index_________________________*/
+        indexHeapArySL[*lineCntSLPtr++] = byteSL;
+      }  /*Else: at end of the line*/
+   } /*Loop: get index's from the file*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun04 Sec04:
+   ^   - add the index of the last byte
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   indexHeapArySL[*lineCntSLPtr] = byteSL;
+   goto ret_fun04_sec04;
+
+   memErr_fun04_sec04:;
+      *lineCntSLPtr = -1;
+      goto errClean_fun04_sec04;
+
+   emptyFile_fun04_sec04:;
+      *lineCntSLPtr = 0;
+      goto errClean_fun04_sec04;
+
+   errClean_fun04_sec04:;
+      if(indexHeapArySL)
+         free(indexHeapArySL);
+      indexHeapArySL = 0;
+      goto ret_fun04_sec04;
+
+   ret_fun04_sec04:;
+      fseek((FILE *) inFILE, 0, SEEK_SET);
+      return indexHeapArySL;
+} /*lineIndex_fileFun*/
+
+/*-------------------------------------------------------\
+| Fun05: getLineByIndex_fileFun
+|   - gets a line from a index array from
+|     lineIndex_fileFun (fun04)
+| Input:
+|   - buffStr:
+|     o cstring buffer to hold the line (must be length
+|       of the line)
+|   - lineSL:
+|     o line number to extract (0 is first line; index 0)
+|   - indexArySL:
+|     o signed long array with the index's to use
+|   - indexLenSL:
+|     o number of index's in indexArySL (2nd input in
+|       lineIndex_fileFun [fun04])
+|   - inFILE:
+|     o FILE pointer to get line by index from
+| Output:
+|   - Modifies:
+|     o inFILE to be on the line after the target line
+|     o buffStr to have the target line
+|   - Returns:
+|     o length of line for no errors
+|     o -1 if lineSL is after end of file (>= indexLenSL)
+\-------------------------------------------------------*/
+signed long
+getLineByIndex_fileFun(
+   signed char *buffStr,    /*gets line*/
+   signed long lineSL,      /*line to extract*/
+   signed long *indexArySL, /*has index for each line*/
+   signed long indexLenSL,  /*number of index's*/
+   void *inFILE             /*file to get line from*/
+){
+   if(lineSL >= indexLenSL)
+      return -1;
+
+   /*move to the target position from the start of the
+   `  file. Should avoid errors on windows
+   */
+   fseek((FILE *) inFILE, indexArySL[lineSL], SEEK_SET);
+
+   /*get the line*/
+   lineSL =
+      fread(
+         buffStr,
+         sizeof(signed char),
+         indexArySL[lineSL + 1] - indexArySL[lineSL],
+         (FILE *) inFILE
+      );
+   buffStr[lineSL] = 0;
+
+   return lineSL;
+} /*getLineByIndex_fileFun*/
 
 /*=======================================================\
 : License:

@@ -11,6 +11,11 @@
 '       but will never have an issue with a line break
 '   o fun03: getFullLine_fileFun
 '     - gets a full length line from a file
+'   o fun04: lineIndex_fileFun
+'     - get the index for each line (uses fread)
+'   o fun05: getLineByIndex_fileFun
+'     - gets a line from a index array from
+'       lineIndex_fileFun (fun04)
 '   o license:
 '     - licensing for this code (public domain / mit)
 '   o options:
@@ -128,6 +133,79 @@ getFullLine_fileFun(
   signed long *buffSizeSLPtr, /*size of buffer*/
   signed long *lenSLPtr,      /*bytes read from file*/
   signed long offsetSL        /*offset in buffer*/
+);
+
+/*-------------------------------------------------------\
+| Fun04: lineIndex_fileFun
+|   - get the index for each line (uses fread)
+| Input:
+|   - inFILE:
+|     o FILE pointer to file to index
+|   - lineCntSLPtr
+|     o signed long pointer to get number entries/errors
+|   - maxLineSLPtr:
+|     o signed long pointer to get the number of bytes of
+|       the longest line
+| Output:
+|   - Modifies:
+|     o inFILE to move to end and then be set to index 0
+|     o maxLineSLPtr to have length of the longest line
+|     o lineCntSLPtr to have the number of lines or errors
+|       * > 0: number of lines in the file
+|       * 0: no lines in the file (empty)
+|       * -1: for memory error
+|   - Returns:
+|     o signed long array with index of the frist charcter
+|       on each line
+|       * array[0] = 1st byte in file
+|       * array[1] = 2nd line in file
+|       * array[2] = 3rd line in file
+|         .
+|         .
+|         .
+|       * array[*lineCntSLPtr - 1] = last line in file
+|       * array[*lineCntSLPtr] = last byte + 1 in file
+|     o 0 for an error
+\-------------------------------------------------------*/
+signed long *
+lineIndex_fileFun(
+   void *inFILE,              /*file to count lines*/
+   signed long *lineCntSLPtr, /*gets number lines*/
+   signed long *maxLineSLPtr  /*length of longest lines*/
+);
+
+/*-------------------------------------------------------\
+| Fun05: getLineByIndex_fileFun
+|   - gets a line from a index array from
+|     lineIndex_fileFun (fun04)
+| Input:
+|   - buffStr:
+|     o cstring buffer to hold the line (must be length
+|       of the line)
+|   - lineSL:
+|     o line number to extract (0 is first line; index 0)
+|   - indexArySL:
+|     o signed long array with the index's to use
+|   - indexLenSL:
+|     o number of index's in indexArySL (2nd input in
+|       lineIndex_fileFun [fun04])
+|   - inFILE:
+|     o FILE pointer to get line by index from
+| Output:
+|   - Modifies:
+|     o inFILE to be on the line after the target line
+|     o buffStr to have the target line
+|   - Returns:
+|     o length of line for no errors
+|     o -1 if lineSL is after end of file (>= indexLenSL)
+\-------------------------------------------------------*/
+signed long
+getLineByIndex_fileFun(
+   signed char *buffStr,    /*gets line*/
+   signed long lineSL,      /*line to extract*/
+   signed long *indexArySL, /*has index for each line*/
+   signed long indexLenSL,  /*number of index's*/
+   void *inFILE             /*file to get line from*/
 );
 
 #endif
