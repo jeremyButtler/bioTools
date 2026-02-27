@@ -46,8 +46,8 @@
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 signed char *glob_prefStr = (signed char *) "Hagrid";
-signed char *glob_startLevStr = (signed char *) "G";
-signed char *glob_endLevStr = (signed char *) "S15";
+signed char *glob_startLevStr = (signed char *) "F";
+signed char *glob_endLevStr = (signed char *) "G";
 
 #define def_minDepth_mainK2TaxaId 10 /*at least 10 reads*/
 #define def_minPercDepth_mainK2TaxaId 0.0f
