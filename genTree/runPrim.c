@@ -1,0 +1,835 @@
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+' runPrim.c SOF: Start Of File
+'   - holds the functions to run prim.c
+'   o header:
+'     - included libraries
+'   o fun01: blank_mst_runPrim
+'     - lazely blanks a mst_runPrim structure
+'   o .c fun02: init_mst_runPrim
+'     - initialize values in a mst_runPrim struct
+'   o fun03: freeStack_mst_runPrim
+'     - frees the variables in a mst_runPrim struct
+'   o fun04: freeHeap_mst_runPrim
+'     - free a mst_runPrim struct that is on the heap
+'   o .c fun05: setupMem_mst_runPrim
+'     - adds the initial memory to a runPrim structure
+'   o .c fun06: mk_mst_runPrim
+'     - make a mst_runPrim structure and allocate memory
+'   o .c fun07: addName_mst_runPrim
+'     - adds name to name array in a mst_runPrim struct
+'   o fun08: indexFeatureFile_runPrim
+'     - index a feature file for prims to get each nodes
+'       location, also get the feature names
+'   o fun09: build_mst_runPrim
+'     - run prim using a file without keeping a distance
+'       matrix (less memory, but one tree build)
+'   o fun10: mstToNewick_mst_runPrim
+'     - print the tree in a mst_runPrim struct as a newick
+'       file
+'   o license
+'     - licensing for this code (public domain / mit)
+\~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+/*-------------------------------------------------------\
+| Header:
+|   - included libraries
+\-------------------------------------------------------*/
+
+#ifdef PLAN9
+   #include <u.h>
+   #include <libc.h>
+#else
+   #include <stdlib.h>
+#endif
+
+#include <stdio.h>
+#include "../genLib/ulCp.h"
+#include "../genLib/fileFun.h"
+#include "prim.h"
+
+/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
+! Hidden Libraries
+!   - .c  #include "../genSort/siBinSearch.h"
+!   - .c  #include "../genLib/genMath.h"
+!   - .h  #include "../genLib/endLine.h"
+\%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+
+/*-------------------------------------------------------\
+| Fun01: blank_mst_runPrim
+|   - lazely blanks a mst_runPrim structure
+| Input:
+|   - mstSTPtr:
+|     o mst_runPrim struct pointer to blank
+| Output:
+|   - Modifies:
+|     o mstST in mstSTPtr to be blanked
+\-------------------------------------------------------*/
+void
+blank_mst_runPrim(
+   struct mst_runPrim *mstSTPtr
+){
+   if(! mstSTPtr)
+      return;
+   if(mstSTPtr->mstST)
+      blank_heap_prim(mstSTPtr->mstST);
+} /*blank_mst_runPrim*/
+
+/*-------------------------------------------------------\
+| Fun02: init_mst_runPrim
+|   - initialize values in a mst_runPrim struct
+| Input:
+|   - mstSTPtr:
+|     o mst_runPrim struct pionter with variables to free
+| Output:
+|   - Modifies:
+|     o all variables in mst_runPrim to be 0/null
+\-------------------------------------------------------*/
+void
+init_mst_runPrim(
+   struct mst_runPrim *mstSTPtr
+){
+   if(! mstSTPtr)
+      return;
+
+   mstSTPtr->mstST = 0;
+   mstSTPtr->nameAryStr = 0;
+   mstSTPtr->distArySI = 0;
+   mstSTPtr->nodeSizeSL = 0;
+   mstSTPtr->nodeLenSL = 0;
+
+   mstSTPtr->indexArySL = 0;
+   mstSTPtr->maxLineLenSL = 0;
+
+   blank_mst_runPrim(mstSTPtr);
+} /*init_mst_runPrim*/
+
+/*-------------------------------------------------------\
+| Fun03: freeStack_mst_runPrim
+|   - frees the variables in a mst_runPrim struct
+| Input:
+|   - mstSTPtr:
+|     o mst_runPrim struct pionter with variables to free
+| Output:
+|   - Frees:
+|     o all variables in mst_runPrim and sets to 0/null
+\-------------------------------------------------------*/
+void
+freeStack_mst_runPrim(
+   struct mst_runPrim *mstSTPtr
+){
+  signed long slPos = 0;
+
+  if(! mstSTPtr)
+     return;
+
+   if(mstSTPtr->mstST)
+      freeHeap_heap_prim(mstSTPtr->mstST);
+   if(mstSTPtr->distArySI)
+      free(mstSTPtr->distArySI);
+   if(mstSTPtr->indexArySL)
+      free(mstSTPtr->indexArySL);
+
+   for(slPos = 0; slPos <= mstSTPtr->nodeSizeSL; ++slPos)
+   { /*Loop: free all names*/
+      if(mstSTPtr->nameAryStr[slPos])
+         free(mstSTPtr->nameAryStr);
+      mstSTPtr->nameAryStr[slPos] = 0;
+   } /*Loop: free all names*/
+
+   init_mst_runPrim(mstSTPtr);
+} /*freeStack_mst_runPrim*/
+
+/*-------------------------------------------------------\
+| Fun04: freeHeap_mst_runPrim
+|   - free a mst_runPrim struct that is on the heap
+| Input:
+|   - mstSTPtr:
+|     o struct mst_runPrim pointer to free
+| Output:
+|   - Frees:
+|     o frees the mst_runPrim structure, but you must set
+|       to null
+\-------------------------------------------------------*/
+void
+freeHeap_mst_runPrim(
+   struct mst_runPrim *mstSTPtr
+){
+   if(! mstSTPtr)
+      return;
+   freeStack_mst_runPrim(mstSTPtr);
+   free(mstSTPtr);
+} /*freeHeap_mst_runPrim*/
+
+/*-------------------------------------------------------\
+| Fun05: setupMem_mst_runPrim
+|   - adds the initial memory to a runPrim structure
+| Input:
+|   - mstSTPtr:
+|     o pointer to a mst_runPrim struct to add memory to
+|   - numNodesSL:
+|     o maximum nodes in the tree
+| Output:
+|   - Modifies:
+|     o nameAryStr in mstSTPtr to have numNodesSL pointers
+|     o distArySI in mstSTPtr to have numNodesSL ints
+|     o all variables in mstST in mstSTPtr to be length
+|       of numNodesSL
+|     o nodeSizeSL in mstSTPtr to be set to numNodesSL
+|   - Return:
+|     o 0 for no errors
+|     o 1 for memory errors
+| Note:
+|   - this does not setup indexArySL because indexArySL
+|     is the file index and needs a file to set
+\-------------------------------------------------------*/
+signed char
+setupMem_mst_runPrim(
+   struct mst_runPrim *mstSTPtr,
+   signed long numNodesSL
+){
+   signed long slNode = 0;
+
+   if(! mstSTPtr)
+      return 0; /*no structure input*/
+
+   /*_____________add_memory_for_the_heap_______________*/
+   if(! mstSTPtr->mstST)
+   { /*If: need a heap_prim structure for the tree*/
+      mstSTPtr->mstST = malloc(sizeof(struct heap_prim));
+      if(! mstSTPtr->mstST)
+         goto memErr_fun05;
+      init_heap_prim(mstSTPtr->mstST);
+   } /*If: need a heap_prim structure for the tree*/
+
+   if( setupMem_heap_prim(mstSTPtr->mstST, numNodesSL) )
+      goto memErr_fun05;
+
+   /*_____________add_memory_for_the_arrays_____________*/
+   if(numNodesSL > mstSTPtr->nodeSizeSL)
+   { /*If: need more memory*/
+      /*_______________setup_the_distance_row___________*/
+      if(mstSTPtr->distArySI)
+         free(mstSTPtr->distArySI);
+      mstSTPtr->distArySI = 0;
+
+      mstSTPtr->distArySI =
+         malloc(numNodesSI * sizeof(signed int));
+      if(! mstSTPtr->distArySI)
+         goto memErr_fun05;
+
+
+      /*_______________setup_the_name_array_____________*/
+      for(
+         slNode = 0;
+         slNode < mstSTPtr->numNodesSL;
+         ++slNode
+      ){ /*Loop: free all name pointers*/
+         if(mstSTPtr->nameAryStr[slNode])
+            free(mstSTPtr->nameAryStr[slNode]);
+         mstSTPtr->nameAryStr[slNode] = 0;
+      }  /*Loop: free all name pointers*/
+
+      mstSTPtr->nameAryStr = 0;
+      mstSTPtr->nameAryStr =
+         malloc(numNodesSI * sizeof(signed char *));
+      if(! mstSTPtr->nameAryStr)
+         goto memErr_fun05;
+
+      for(siNode = 0; siNode < numNodesSL; ++siNode)
+      { /*Loop: initialize all values to 0*/
+         mstSTPtr->nameAryStr[siNode] = 0;
+         mstSTPtr->distArySI[siNode] = 0;
+      } /*Loop: initialize all values to 0*/
+
+
+      mstSTPtr->nodeSizeSL = numNodesSL;
+   } /*If: need more memory*/
+
+   /*________________retur_the_results__________________*/
+   mstSTPtr->nodeLenSL = numNodesSL;
+   return 0;
+
+   memErr_fun05:;
+      return 1;
+} /*setupMem_mst_runPrim*/
+
+/*-------------------------------------------------------\
+| Fun06: mk_mst_runPrim
+|   - make a mst_runPrim structure and allocate memory
+| Input:
+|   - numNodesSL:
+|     o number nodes in the tree
+| Output:
+|   - Returns:
+|     o pionter to a mst_runPrim structure that is
+|       initialize and has memory
+|     o 0 for memory errors
+\-------------------------------------------------------*/
+struct mst_runPrim *
+mk_mst_runPrim(
+   signed long numNodesSL
+){
+   struct mst_runPrim *mstHeapSTPtr = 0;
+
+   mstHeapSTPtr = malloc(sizeof(struct mst_runPrim));
+   if(! mstHeapSTPtr)
+      goto memErr_fun06;
+   init_mst_runPrim(mstHeapSTPtr);
+
+   if( setupMem_mst_runPrim(mstHeapSTPtr, nunNodesSL) )
+      goto memErr_fun06;
+
+   return mstHeapSTPtr;
+
+   memErr_fun06:;
+      if(mstHeapSTPtr)
+         freeHeap_mst_runPrim(mstHeapSTPtr);
+      mstHeapSTPtr = 0;
+      return 0;
+} /*mk_mst_runPrim*/
+
+/*-------------------------------------------------------\
+| Fun07: addName_mst_runPrim
+|   - adds name to the name array in a mst_runPrim struct
+| Input:
+|   - nameStr:
+|     o cstring with the name to add
+|   - indexSI:
+|     o index to add nameStr to
+|   - mstSTPtr:
+|     o mst_runPrim struct pointer to add names to
+| Output:
+|   - Modifies:
+|     o nameAryStr in mstSTPtr to have nameStr at indexSI
+|   - Returns:
+|     o 0 for no errors
+|     o 1 for memory errors
+|     o 2 for out of bounds error
+\-------------------------------------------------------*/
+signed char
+addName_mst_runPrim(
+   signed char *nameStr,
+   signed int indexSI,
+   struct mst_runPrim *mstSTPtr
+){
+   singed long lenSL = endWhite_ulCp(nameStr);
+
+   if(indexSI >= mstSTPtr->nodeLenSL)
+      return 2;
+
+   if(mstSTPtr->nameAryStr[indexSI])
+      free(mstSTPtr->nameAryStr[indexSI)
+   mstSTPtr->nameAryStr[indexSI] =
+      malloc((lenSL + 8) * sizeof(signed char));
+   if( ! mstSTPtr->nameAryStr[indexSI] )
+      return 1;
+
+   cpLen_ulCp(
+      mstSTPtr->nameAryStr[indexSI],
+      nameStr,
+      lenSL
+   );
+
+   return 0;
+} /*addName_mst_runPrim*/
+
+/*-------------------------------------------------------\
+| Fun08: indexFeatureFile_runPrim
+|   - index a feature file for prims to get each nodes
+|     location, also get the feature names
+| Input:
+|   - featureFILE:
+|     o FILE pointer to feature file to index
+|   - errSCPtr:
+|     o signed char pointer to get errors
+| Output:
+|   - Modifies:
+|     o featureFILE to move to end and then be set to
+|       index 0
+|     o errSCPtr to have the number of lines or errors
+|       * 0 no errors
+|       * -1: memory error
+|       * 1: empty file or to few features
+|   - Returns:
+|     o mst_runPrim struct pointer with file index's and
+|       the names for each entry
+|       * nameAryStr skips the header
+|       * nodeLenSL includes the header
+|     o 0 for an error
+\-------------------------------------------------------*/
+struct mst_runPrim *
+indexFeatureFile_runPrim(
+   void *featureFILE,
+   signed char *errSCPtr
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun08 TOC:
+   '   - index a feature file for prims to get each nodes
+   '     location
+   '   o fun08 sec01:
+   '     - variable declarations
+   '   o fun08 sec02:
+   '     - index the file and allocate memory
+   '   o fun08 sec03:
+   '     - add the entry names to the mst
+   '   o fun08 sec04:
+   '     - clean up and return
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun08 Sec01:
+   ^   - variable declarations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   signed char *buffHeapStr = 0;
+   signed int posSI = 0;           /*position in buffer*/
+   signed int tmpSI = 0;
+
+   signed long byteSL = 0;         /*byte on in the file*/
+   signed long lenSL = 0;          /*length of cstring*/
+
+   struct mst_runPrim *mstHeapST = 0;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun08 Sec02:
+   ^   - index the file and allocate memory
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*this method is inefficent since I have to read the
+   `  file three times. However, it is simpler
+   `   1. get number lines
+   `   2. index each line
+   `   3. add name for each entry
+   */
+   mstHeapST = malloc(sizeof(struct mst_runPrim));
+   if(! mstHeapST)
+      goto memErr_fun08_sec04;
+   init_mst_runPrim(mstHeapST);
+
+   mstHeapST->indexArySL =
+      lineIndex_fileFun(
+         featureFILE,
+         &mstHeapST->nodeLenSL,
+         &mstHeapST->maxLineLenSL
+      ); /*reads file twice; get # lines & index lines*/
+
+   if(mstSTPtr->nodeLenSL < 2 && mstSTPtr->nodeLenSL >= 0)
+      goto emptyFile_fun08_sec04;
+   else if(mstSTPtr->indexArySL)
+      ; /*no errors*/
+   else if(mstSTPtr->nodeLenSL < 0)
+      goto memErr_fun08_sec04; /*memory error*/
+
+   if(setupMem_mst_runPrim(mstSTPtr, mstSTPtr->nodeLenSL))
+      goto memErr_fun08_sec04;
+
+   buffHeapStr =
+      malloc(
+          (mstHeapST->maxLineLenSL + 8)
+        * sizeof(signed char)
+      );
+   if(! buffHeapStr)
+      goto memErr_fun08_sec04;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun08 Sec03:
+   ^   - add the entry names to the mst
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   for(lenSL = 1; lenSL < mstHeapST->nodeLenSL; ++lenSL)
+   { /*Loop: get the file names*/
+      getLineByIndex_fileFun(
+         buffHeapStr,
+         lenSL,
+         mstHeapST->indexArySL,
+         mstHeapST->nodeLenSL
+         featureFILE
+      );
+
+      /*3. add name (third file read through*/
+      if(
+         addName_mst_runPrim(
+            buffHeapStr,
+            lenSL - 1, /*-1 to skip the header*/
+            mstHeapST
+         )
+      ) goto memErr_fun08_sec04;
+   } /*Loop: get the file names*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun08 Sec04:
+   ^   - clean up and return
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   *errSCPtr = 0;
+   goto ret_fun08_sec04;
+
+   memErr_fun08_sec04:;
+      *errSCPtr = -1;
+       goto errClean_fun08_sec04;
+
+   emptyFile_fun08_sec04:;
+      *errSCPtr = 1;
+       goto errClean_fun08_sec04;
+
+   errClean_fun08_sec04:;
+      if(mstHeapST)
+         freeHeap_mst_runPrim(mstHeapST);
+      mstHeapST = 0;
+      goto ret_fun08_sec04;
+
+   ret_fun08_sec04:;
+      if(featureFILE)
+         fseek((FILE *) featureFILE, 0, SEEK_SET);
+
+      if(buffHeapStr)
+         free(buffHeapStr);
+      buffHeapStr = 0;
+
+      return mstHeapST;
+} /*indexFeatureFile_runPrim*/
+
+/*-------------------------------------------------------\
+| Fun09: build_mst_runPrim
+|   - run prim using a file without keeping a distance
+|     matrix (less memory, but one tree build)
+| Input:
+|   - featureFILE:
+|     o FILE pointer to file with features
+|   - firstNodeSI:
+|     o node number to start building the tree with
+|       * value 0 is the first node in the tree
+|       * max value is mstSTPtr->nodeLenSL - 2
+|   - mstSTPtr
+|     o mst_runPrim struct pointer with the index for
+|       the file (returned from indexFeatureFile_runPrim)
+| Output:
+|   - Modifies;
+|     o mstST in mstSTPtr to have minimum spanning tree
+|     o distArySI in mstSTPtr to have distances from the
+|       last read row
+|   - Returns:
+|     o 0 for no errors
+|     o 1 for memory errors
+|     o (1 + lineSL) * -1 for file errors
+\-------------------------------------------------------*/
+signed long
+build_mst_runPrim(
+   void *featureFILE,
+   signed int firstNodeSI,      /*entry to build tree*/
+   struct mst_runPrim *mstSTPtr
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun09 TOC:
+   '   - run prim using a file without keeping a distance
+   '     matrix (less memory, but one tree build)
+   '   o fun09 sec01:
+   '     - variable declarations
+   '   o fun09 sec02:
+   '     - allocate memory for buffers
+   '   o fun09 sec03:
+   '     - build the mst tree
+   '   o fun09 sec05:
+   '     - clean up and return
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun09 Sec01:
+   ^   - variable declarations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   signed char *qryRowHeapStr = 0; /*has query features*/
+   signed char *qryTmpStr = 0;     /*used in comparing*/
+
+   signed char *refRowHeapStr = 0; /*has ref features*/
+   signed char *refTmpStr = 0;     /*used in comparing*/
+
+   signed long slEntry = 0;     /*entry on for query*/
+   signed long linesReadSL = 0; /*number lines processed*/
+   signed long slPos = 0;       /*entry on in the file*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun09 Sec02:
+   ^   - allocate memory for buffers
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   qryRowHeapStr =
+      malloc(
+           (mstSTPtr->maxLineLenSL + 8)
+         * sizeof(signed char)
+      );
+   if(! qryRowHeapStr)
+      goto memErr_fun09_sec05;
+
+   refRowHeapStr =
+      malloc(
+           (mstSTPtr->maxLineLenSL + 8)
+         * sizeof(signed char)
+      );
+   if(! refRowHeapStr)
+      goto memErr_fun09_sec05;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun09 Sec03:
+   ^   - build the mst tree
+   ^   o fun09 sec03 sub01:
+   ^     - start loop and get edges for the new parent
+   ^   o fun09 sec03 sub02:
+   ^     - get the row for each edge from the file
+   ^   o fun09 sec03 sub03:
+   ^     - get the distance for an edge
+   ^   o fun09 sec03 sub04:
+   ^     - add new edges to the tree and get next child
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Fun09 Sec03 Sub01:
+   *   - start loop and get edges for the new parent
+   \*****************************************************/
+
+   linesReadSL = 0;
+   slEntry = firstNodeSI;
+
+   for(
+      linesReadSL = 0;
+      linesReadSL < mstSTPtr->nodeLenSL - 1;
+              /*-1 because nodeLenSL includes the header*/
+      ++linesReadSL
+   ){ /*Loop: get distance for a single row*/
+      /*mark new parenet as added*/
+      mstHeapST->distArySI[slEntry] = -1;
+
+      getLineByIndex_fileFun(
+         qryRowHeapStr,
+         slEntry + 1,   /*+1 to skip the header*/
+         mstSTPtr->indexArySL,
+         mstSTPtr->nodeLenSL,
+         featureFILE
+      );
+
+      /**************************************************\
+      * Fun09 Sec03 Sub02:
+      *   - get the row for each edge from the file
+      \**************************************************/
+
+      for(
+         slPos = 1;        /*0th node is always a parent*/
+         slPos < mstSTPtr->nodeLenSL - 1;
+              /*-1 because nodeLenSL includes the header*/
+         ++slPos
+      ){ /*Loop: get the distances for one row*/
+         if(mstHeapST->distArySI[slPos] < 0)
+             continue; /*this node is a parent*/
+         else
+            mstHeapST->distArySI[slPos] = 0;
+
+         getLineByIndex_fileFun(
+            refRowHeapStr,
+            slPos + 1,   /*+1 to skip the header*/
+            mstSTPtr->indexArySL,
+            mstSTPtr->nodeLenSL,
+            featureFILE
+         );
+
+         /***********************************************\
+         * Fun09 Sec03 Sub03:
+         *   - get the distance for an edge
+         \***********************************************/
+
+         /*________set_points_and_get_past_the_id_______*/
+         qryTmpStr = qryRowHeapStr;
+         refTmpStr = refRowHeapStr;
+
+         qryTmpStr = endWhite_ulCp(qryRowHeapStr);
+         while(*qryTmpStr && *qryTmpStr < 33)
+            ++qryTmpStr;
+
+         refTmpStr = endWhite_ulCp(refRowHeapStr);
+         while(*refTmpStr && *refTmpStr < 33)
+            ++refTmpStr;
+
+
+         while(*qryTmpStr && *refTmpStr)
+         { /*Loop: find the distance*/
+            /*____check_if_have_known_value_for_loci____*/
+            if(qryTmpStr[0] == '*')
+               ;
+            else if(refTmpStr[0] == '*')
+               ;
+            else if((
+                  (qryTmpStr[0] | 32) == 'n'
+               && (qryTmpStr[1] | 32) == 'a'
+               && qryTmpStr[2] < 33
+            ) ;
+
+            else if((
+                  (refTmpStr[0] | 32) == 'n'
+               && (refTmpStr[1] | 32) == 'a'
+               && refTmpStr[2] < 33
+            ) ;
+
+            else if( eqlWhite_ulCp(qryTmpStr, refTmpStr) )
+               ++mstHeapST->distArySI[slPos];/*different*/
+
+            /*___________find_the_next_loci_____________*/
+            qryTmpStr = endWhite_ulCp(qryRowHeapStr);
+            while(*qryTmpStr && *qryTmpStr < 33)
+               ++qryTmpStr;
+
+            refTmpStr = endWhite_ulCp(refRowHeapStr);
+            while(*refTmpStr && *refTmpStr < 33)
+               ++refTmpStr;
+         } /*Loop: find the distance*/
+
+
+         if(*qryTmpStr || *refTmpStr)
+            goto fileErr_fun09_sec05;
+            /*still have features that were not compared*/
+      } /*Loop: get the distances for one row*/
+
+      /**************************************************\
+      * Fun09 Sec03 Sub04:
+      *   - add new edges to the tree and get next child
+      \**************************************************/
+
+      /*___________add_edges_and_get_next_child_________*/
+      addEdges_heap_prim(
+         mstSTPtr->distArySI,
+         mstSTPtr->nodeLenSL - 1, /*-1 for header*/
+         slEntry,           /*parent node I am adding in*/
+         mstHeapST->mstST
+      ); /*add the new edges in*/
+
+      slEntry = extractEdge_heap_prim(mstHeapST);
+   }  /*Loop: get distance for a single row*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun09 Sec05:
+   ^   - clean up and return
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   slPos = 0;
+   goto ret_fun09_sec05;
+
+   memErr_fun09_sec05:;
+      slPos = 1;
+      goto errClean_fun09_sec05;
+
+   fileErr_fun09_sec05:;
+      slPos = (slPos + 1) * -1;
+      goto errClean_fun09_sec05;
+
+   errClean_fun09_sec05:;
+      goto ret_fun09_sec05;
+
+   ret_fun09_sec05:;
+      if(qryRowHeapStr)
+         free(qryRowHeapStr);
+      qryRowHeapStr = 0;
+
+      if(refRowHeapStr)
+         free(refRowHeapStr);
+      refRowHeapStr = 0;
+
+      return slPos;
+} /*build_mst_runPrim*/
+
+/*-------------------------------------------------------\
+| Fun10: mstToNewick_mst_runPrim
+|   - print the tree in a mst_runPrim struct as a newick
+|     file
+| Input:
+|   - mstSTPtr:
+|     o mst_runPrim struct with the tree to print
+|   - outFILE:
+|     o FILE pointer to file to print to
+| Output:
+|   - Prints:
+|     o minimum spanning tree in mstSTPtr to outFILE
+|   - Modifies:
+|     o distArySI in mstSTPtr to have values 0 to number
+|       of nodes (this array is a temporary array, so not
+|       a big change)
+\-------------------------------------------------------*/
+void
+mstToNewick_mst_runPrim(
+   struct mst_runPrim *mstSTPtr,
+   void *outFILE
+){
+   /*this is a wrapper function*/
+   mstToNewick_heap_prim(
+      mstSTPtr->mstST,
+      mstSTPtr->nameAryStr,
+      mstSTPtr->distArySI,
+      outFILE
+   );
+} /*mstToNewick_mst_runPrim*/
+
+/*=======================================================\
+: License:
+: 
+: This code is under the unlicense (public domain).
+:   However, for cases were the public domain is not
+:   suitable, such as countries that do not respect the
+:   public domain or were working with the public domain
+:   is inconveint / not possible, this code is under the
+:   MIT license
+: 
+: Public domain:
+: 
+: This is free and unencumbered software released into the
+:   public domain.
+: 
+: Anyone is free to copy, modify, publish, use, compile,
+:   sell, or distribute this software, either in source
+:   code form or as a compiled binary, for any purpose,
+:   commercial or non-commercial, and by any means.
+: 
+: In jurisdictions that recognize copyright laws, the
+:   author or authors of this software dedicate any and
+:   all copyright interest in the software to the public
+:   domain. We make this dedication for the benefit of the
+:   public at large and to the detriment of our heirs and
+:   successors. We intend this dedication to be an overt
+:   act of relinquishment in perpetuity of all present and
+:   future rights to this software under copyright law.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO
+:   EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM,
+:   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+:   CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+:   IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+:   DEALINGS IN THE SOFTWARE.
+: 
+: For more information, please refer to
+:   <https://unlicense.org>
+: 
+: MIT License:
+: 
+: Copyright (c) 2026 jeremyButtler
+: 
+: Permission is hereby granted, free of charge, to any
+:   person obtaining a copy of this software and
+:   associated documentation files (the "Software"), to
+:   deal in the Software without restriction, including
+:   without limitation the rights to use, copy, modify,
+:   merge, publish, distribute, sublicense, and/or sell
+:   copies of the Software, and to permit persons to whom
+:   the Software is furnished to do so, subject to the
+:   following conditions:
+: 
+: The above copyright notice and this permission notice
+:   shall be included in all copies or substantial
+:   portions of the Software.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+:   EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+:   FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+:   AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+:   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+:   USE OR OTHER DEALINGS IN THE SOFTWARE.
+\=======================================================*/

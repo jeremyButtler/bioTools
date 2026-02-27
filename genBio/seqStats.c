@@ -48,8 +48,6 @@
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden Libraries:
-!   - .c  #include "../genLib/ulCp.h"
-!   - .c  #include "../genLib/fileFun.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 #define def_qAdj_seqStats 33 /*convert char to q-score*/

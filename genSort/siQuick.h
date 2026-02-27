@@ -1,10 +1,69 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-' Has verision numbers for bio tools
+' siQuick SOF: Start Of File
+'   - holds quick select, quick sort, and quick heap
+'     (not in yet) algorithms for signed ints
+'   o header:
+'     - guards for people who call .h files in .h files 
+'   o fun01: select_siQuick
+'     - quick select algorithm (partially sorts)
+'   o fun02: sort_siQuick
+'     - quick sort algorithm (sorts)
+'   o license
+'     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-#define def_year_bioTools 2026
-#define def_month_bioTools 2
-#define def_day_bioTools 27
+/*-------------------------------------------------------\
+| Header:
+|   - guards for people who call .h files in .h files 
+\-------------------------------------------------------*/
+
+#ifndef SIGNED_INT_QUICK_SELECT_SORT_HEAP_H
+#define SIGNED_INT_QUICK_SELECT_SORT_HEAP_H
+
+/*-------------------------------------------------------\
+| Fun01: select_siQuick
+|   - quick select algorithm (partially sorts)
+| Input:
+|   - siAry:
+|     o signed int array to find kth value for
+|   - kthSI:
+|     o index in array to find value for
+|   - lenSI:
+|     o number of items in the array (index 1)
+| Output:
+|   - Modifies:
+|     o siAry to be partially sorted, with kthSI index to
+|       have its value in the correct position
+|   - Returns:
+|     o value of the kthSI index item, or if kthSI is
+|       longer then the length, then the closest item
+\-------------------------------------------------------*/
+signed int
+select_siQuick(
+   signed int *siAry,  /*array the get value from*/
+   signed int kthSI,   /*index of value to find*/
+   signed int lenSI    /*length of the array*/
+);
+
+/*-------------------------------------------------------\
+| Fun02: sort_siQuick
+|   - quick sort algorithm (sorts)
+| Input:
+|   - siAry:
+|     o signed int array to sort
+|   - lenSI:
+|     o number of items in the array
+| Output:
+|   - Modifies:
+|     o siAry to be sorted from least to greatest
+\-------------------------------------------------------*/
+void
+sort_siQuick(
+   signed int *siAry,  /*array the get value from*/
+   signed int lenSI    /*last item to search*/
+);
+
+#endif
 
 /*=======================================================\
 : License:
@@ -13,8 +72,8 @@
 :   However, for cases were the public domain is not
 :   suitable, such as countries that do not respect the
 :   public domain or were working with the public domain
-:   is inconvient / not possible, this code is under the
-:   MIT license.
+:   is inconveint / not possible, this code is under the
+:   MIT license
 : 
 : Public domain:
 : 
@@ -50,7 +109,7 @@
 : 
 : MIT License:
 : 
-: Copyright (c) 2024 jeremyButtler
+: Copyright (c) 2026 jeremyButtler
 : 
 : Permission is hereby granted, free of charge, to any
 :   person obtaining a copy of this software and

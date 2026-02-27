@@ -1,10 +1,69 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-' Has verision numbers for bio tools
+' siBinSearch SOF: Start Of File
+'   - binary search for singed int arrays
+'   o header:
+'     - guards for people how call .h files in .h files
+'   o fun01: get_siBinSearch
+'     - find an item in a signed int array
+'   o fun02: getStart_siBinSearch
+'     - find the first time a value appears
+'   o license
+'     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-#define def_year_bioTools 2026
-#define def_month_bioTools 2
-#define def_day_bioTools 27
+/*-------------------------------------------------------\
+| Header:
+|   - guards for people how call .h files in .h files
+\-------------------------------------------------------*/
+
+#ifndef SIGNED_INT_BINARY_SEARCH_H
+#define SIGNED_INT_BINARY_SEARCH_H
+
+/*-------------------------------------------------------\
+| Fun01: get_siBinSearch
+|   - find an item in a signed int array
+| Input:
+|   - qrySI:
+|     o value to search for (numeric)
+|   - siAry:
+|     o signed int array to search for qrySI
+|   - lenSL:
+|     o length of the signed int array
+| Output:
+|   - Returns:
+|     o index of qrySI
+|     o -1 if qrySI is not found
+\-------------------------------------------------------*/
+signed int
+get_siBinSearch(
+   signed int qrySI,
+   signed int *siAry,
+   signed long lenSL
+);
+
+/*-------------------------------------------------------\
+| Fun02: getStart_siBinSearch
+|   - find the first time a value appears
+| Input:
+|   - qrySI:
+|     o value to search for (numeric)
+|   - siAry:
+|     o signed int array to search for qrySI
+|   - lenSL:
+|     o length of the signed int array
+| Output:
+|   - Returns:
+|     o index of qrySI
+|     o -1 if qrySI is not found
+\-------------------------------------------------------*/
+signed int
+getStart_siBinSearch(
+   signed int qrySI,
+   signed int *siAry,
+   signed long lenSL
+);
+
+#endif
 
 /*=======================================================\
 : License:
@@ -13,8 +72,8 @@
 :   However, for cases were the public domain is not
 :   suitable, such as countries that do not respect the
 :   public domain or were working with the public domain
-:   is inconvient / not possible, this code is under the
-:   MIT license.
+:   is inconveint / not possible, this code is under the
+:   MIT license
 : 
 : Public domain:
 : 
@@ -50,7 +109,7 @@
 : 
 : MIT License:
 : 
-: Copyright (c) 2024 jeremyButtler
+: Copyright (c) 2026 jeremyButtler
 : 
 : Permission is hereby granted, free of charge, to any
 :   person obtaining a copy of this software and
