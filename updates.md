@@ -5,6 +5,9 @@ Has a list of updates I have tracked for bioTools
 - 2026-02-27
   - fixed bug were k2TaxaIds would not merge child taxa
     (tips) into parents (roots) [ex: species into family].
+  - changed k2TaxaId defaults to start at family and end
+    at Genus (0). For kraken2 the species level seems to
+    noisy.
   - added a bunch of code I am currently testing (genSort,
     genTree, mkMSTSrc)
 - 2026-02-19:
