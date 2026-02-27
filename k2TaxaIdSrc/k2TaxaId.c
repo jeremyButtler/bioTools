@@ -1079,6 +1079,10 @@ readReport_k2TaxaId(
                       retTaxaHeapST->numTaxaSL
                    ] |= def_mergeDownBl_k2TaxaId;
 
+                  retTaxaHeapST->backTrackArySL[
+                      retTaxaHeapST->numTaxaSL
+                  ] = retTaxaHeapST->numTaxaSL - 1;
+
                   ++retTaxaHeapST->numTaxaSL;
                   continue;
              } /*If: to near tip*/
@@ -1094,6 +1098,10 @@ readReport_k2TaxaId(
                  retTaxaHeapST->mergeAryBl[
                       retTaxaHeapST->numTaxaSL
                    ] |= def_mergeDownBl_k2TaxaId;
+
+                retTaxaHeapST->backTrackArySL[
+                   retTaxaHeapST->numTaxaSL
+                ] = retTaxaHeapST->numTaxaSL - 1;
 
                 if(! mergeRootBl)
                 { /*If: not merging towards root*/
@@ -1711,6 +1719,14 @@ pIds_k2TaxaId(
                ++indexSL; /*move up to next level*/
                continue;
             } /*If: merging this level*/
+
+            else if(
+                  taxaSTPtr->levelArySS[oldSL]
+               >= taxaSTPtr->levelArySS[indexSL]
+            ){ /*Else If: merging id into a root node*/
+               ++indexSL; /*move up to next level*/
+               continue;
+            }  /*Else If: merging id into a root node*/
 
            /*++++++++++++++++++++++++++++++++++++++++++++\
            + Fun12 Sec03 Sub05 Cat03:
