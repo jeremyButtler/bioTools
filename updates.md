@@ -2,6 +2,8 @@
 
 Has a list of updates I have tracked for bioTools
 
+- 2026-03-03
+  - added in multi file support for
 - 2026-02-27
   - fixed bug were k2TaxaIds would not merge child taxa
     (tips) into parents (roots) [ex: species into family].
