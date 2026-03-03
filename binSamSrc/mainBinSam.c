@@ -54,7 +54,8 @@
 #define def_noMap_mainBinSam 0
 #define def_secondaryAln_mainBinSam 0
 #define def_supplementalAln_mainBinSam 0
-
+#define def_outputFormat_mainBinSam 0
+   /*0 = sam file; 1 = fastq file; 2 = fasta file*/
 signed char *glob_prefixStr = (signed char *) "out";
 
 /*-------------------------------------------------------\
@@ -126,7 +127,7 @@ phelp_mainBinSam(
    ^   o fun02 sec02 sub01:
    ^     - input entry and read input
    ^   o fun02 sec02 sub02:
-   ^     - output prefix
+   ^     - output options
    ^   o fun02 sec02 sub03:
    ^     - strict mode
    ^   o fun02 sec02 sub04:
@@ -166,8 +167,21 @@ phelp_mainBinSam(
 
    /*****************************************************\
    * Fun02 Sec02 Sub02:
-   *   - output prefix
+   *   - output options
+   *   o fun02 sec03 sub02 cat01:
+   *     - prefix (output)
+   *   o fun02 sec03 sub02 cat02:
+   *     - sam file (output)
+   *   o fun02 sec03 sub02 cat03:
+   *     - fastq file (output)
+   *   o fun02 sec03 sub02 cat04:
+   *     - fasta file (output)
    \*****************************************************/
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec03 Sub02 Cat01:
+   +   - prefix (output)
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
    fprintf(
       (FILE *) outFILE,
@@ -181,6 +195,79 @@ phelp_mainBinSam(
       "    o prefix for output file names%s",
       str_endLine
    );
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec03 Sub02 Cat02:
+   +   - sam file (output)
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(def_outputFormat_mainBinSam == 0)
+      fprintf(
+         (FILE *) outFILE,
+         "  -sam-out: [Optional; yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "  -sam-out: [Optional; no]%s",
+         str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o saved binned reads in a sam file%s",
+      str_endLine
+   );
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec03 Sub02 Cat03:
+   +   - fastq file (output)
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(def_outputFormat_mainBinSam == 1)
+      fprintf(
+         (FILE *) outFILE,
+         "  -fq-out: [Optional; yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "  -fq-out: [Optional; no]%s",
+         str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o saved binned reads in a fastq file%s",
+      str_endLine
+   );
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec03 Sub02 Cat04:
+   +   - fasta file (output)
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(def_outputFormat_mainBinSam == 2)
+      fprintf(
+         (FILE *) outFILE,
+         "  -fa-out: [Optional; yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "  -fa-out: [Optional; no]%s",
+         str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o saved binned reads in a fasta file%s",
+      str_endLine
+   );
+
 
    /*****************************************************\
    * Fun02 Sec02 Sub03:
@@ -341,6 +428,11 @@ phelp_mainBinSam(
 |     o c-string pionter to be set to the input sam file
 |   - prefixStrPtr:
 |     o c-string pionter to be set to the output prefix
+|   - outTypeSCPtr:
+|     o signed char pointer to get the output file type
+|       * set to 0 for sam file
+|       * set to 1 for fastq file
+|       * set to 2 for fasta file
 |   - pStrictBlPtr:
 |     o signed char pointer to get if merging references
 |       when possible (if assembly likely has multiple
@@ -380,6 +472,7 @@ input_mainBinSam(
    char *argAryStr[],            /*user arugments*/
    signed char **samFileStrPtr,  /*input sam file*/
    signed char **prefixStrPtr,   /*prefix for file names*/
+   signed char *outTypeSCPtr,    /*output file type*/
    signed char *pSctricttBlPtr,  /*no reference merging*/
    signed char *pUnmapBlPtr,     /*print unmapped reads*/
    signed char *pSecondaryBlPtr, /*print secondary alns*/
@@ -442,6 +535,18 @@ input_mainBinSam(
          ++siArg;
          *prefixStrPtr=(signed char *) argAryStr[siArg];
       }  /*Else If: prefix for output file*/
+
+      else if(
+        ! eqlNull_ulCp((signed char *) "-sam-out", tmpStr)
+      ) *outTypeSCPtr = 0; /*outputing to a sam file*/
+
+      else if(
+        ! eqlNull_ulCp((signed char *) "-fq-out", tmpStr)
+      ) *outTypeSCPtr = 1; /*outputing to a fastq file*/
+
+      else if(
+        ! eqlNull_ulCp((signed char *) "-fa-out", tmpStr)
+      ) *outTypeSCPtr = 2; /*outputing to a fasta file*/
 
       /**************************************************\
       * Fun03 Sec02 Sub02:
@@ -628,6 +733,7 @@ main(
 
    signed char *samFileStr = 0;
    signed char *prefixStr = glob_prefixStr;
+   signed char outTypeSC = def_outputFormat_mainBinSam;
 
    /*types of entries to print out*/
    signed char pStrictBl = 0;
@@ -677,6 +783,7 @@ main(
          argAryStr,
          &samFileStr,
          &prefixStr,
+         &outTypeSC,
          &pStrictBl,
          &pUnmapBl,
          &pSecondaryBl,
@@ -952,6 +1059,7 @@ main(
             &readStackST,
             prefixStr,
             headerHeapStr,
+            outTypeSC,
             pUnmapBl,
             &refStackST,
             indexHeapArySI

@@ -31,10 +31,10 @@
 '     - add edges for a node to a heap_prim struct
 '   o fun12: extractEdge_heap_prim
 '     - extract the minimum edge from a heap_prim struct
-'   o .c fun13: 3ArySort_prim
+'   o .c fun13: threeArySort_prim
 '     - sorts a signed int array from least to greatest
 '       and keeps two other arrays in sync
-'   o .c fun14: 3AryUnsort_prim
+'   o .c fun14: threeAryUnsort_prim
 '     - unsorts three arrays using the first input array
 '   o .c fun15: mstToNewickRecusive_heap_prim
 '     - the recurisve part to save a mst as a newick file
@@ -55,7 +55,7 @@
 #define PRIMS_MINIMUM_SPANNING_TREE_H
 
 #define def_memErr_prim -1
-#define def_overlfowErr_prim -2
+#define def_overflowErr_prim -2
 
 #define def_maxSI_prim ( (signed int) (((unsigned int) -1) >> 1) )
    /*maximum value for a signed int*/
@@ -82,7 +82,7 @@ heap_prim
    signed int pivotSizeSI;   /*max pivots*/
 
    /*______________non-heap_tracking size_n_____________*/
-   signed int *indexArySI:
+   signed int *indexArySI;
       /*heas the index of each child node (not in MST) in
       `  the heap
       */
@@ -106,6 +106,7 @@ heap_prim
 |   - sets indexSI, pivotLenSI, heapLenSI, and scoreSI
 |     (lazy blank)
 \-------------------------------------------------------*/
+void
 blank_heap_prim(
    struct heap_prim *primPtr
 );
@@ -119,6 +120,7 @@ blank_heap_prim(
 | Output:
 |   - sets all pointers and values to 0
 \-------------------------------------------------------*/
+void
 init_heap_prim(
    struct heap_prim *primPtr
 );
@@ -242,7 +244,7 @@ addEdges_heap_prim(
 \-------------------------------------------------------*/
 signed int
 extractEdge_heap_prim(
-   sturct heap_prim *primSTPtr
+   struct heap_prim *primSTPtr
 );
 
 /*-------------------------------------------------------\

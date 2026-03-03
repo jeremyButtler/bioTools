@@ -9,10 +9,9 @@ Files: siQuick.c and siQuick.h
 
 - Functions:
   - `select_siQuick`: quick select (not tested)
-  - `selectSync_siQuick`: quick select while keeping
-    another signed int array in sync (not tested)
   - `sort_siQuick`: quick sort (not tested)
-  - no quick heap yet
+  - `sortWithStack_siQuick`: use `sort_siQuick` instead
+    - slower and uses stacks instead of recusrsion
 
 ## select\_siQuick
 
@@ -25,8 +24,7 @@ The `select_siQuick` function does a quick select and
   2. index of value to return back
      - set to last item (input 4) if is greater then
        start (input 3) - end (input 4)
-  3. first index (index 0) in array to select from 
-  4. last index (index 0) in array to select from 
+  3. length of the array to get an item from
 - Output:
   - returns the value at the input index (input 2)
 - Warning: this algorithm will partially sort your data
@@ -60,8 +58,7 @@ main(
       select_siQuick(
          siAry,              /*array to sort*/
          def_size_main / 2,  /*find the midpoint*/
-         0,                  /*start at index one*/
-         def_size_main - 1   /*end at last index*/
+         def_size_main       /*length of the array*/
       );
 
    printf("value at %i is %i\n", def_size_main/2, siVal);
@@ -71,11 +68,11 @@ main(
 ## sort_siQuick
 
 Sorts a signed int array using quick sort.
+  
 
 - Input:
   1. signed int array to sort
-  2. first index (index 0) to sort
-  3. last index (index 0) to sort
+  2. length of array (input 1; index 1)
 
 Untested example:
 
@@ -101,6 +98,6 @@ main(
       siAry[siVal] = rand();
 
    /*___________sort_the_array__________________________*/
-   sort_siQuick(siAry, 0, def_size_main - 1);
+   sort_siQuick(siAry, def_size_main);
 } /*main*/
 ```

@@ -1,5 +1,3 @@
 coreCFLAGS= -O0 -std=c89 -g -Werror -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
 build:
-	gcc -o selectQuickTest $(coreCFLAGS) siQuick.c z-selectQuickBug.c
-	gcc -o sortQuickTest $(coreCFLAGS) siQuick.c z-sortQuickBug.c
-
+	cc -o testPrimQckSelect $(coreCFLAGS) ../prim.c ../../genSort/siBinSearch.c ../../genLib/genMath.c testPrimQckSelect.c

@@ -337,6 +337,10 @@ pSamHeader_samRef(
 |     o c-string with prefix to print to
 |   - headStr:
 |     o c-string with header to print to the new file
+|   - fileSC:
+|     o 0 printing to a sam file
+|     o 1 printing to a fastq file (header is not used)
+|     o 2 printing to a fasta file (header is not used)
 |   - pUnmapBl:
 |     o 1: print unmapped reads
 |     o 0: do not print unmapped reads
@@ -364,6 +368,7 @@ pSamToRef_samRef(
    struct samEntry *samSTPtr,  /*read to print*/
    signed char *prefixStr,     /*file prefix to print to*/
    signed char *headStr,       /*header for new file*/
+   signed char fileSC,         /*output file format*/
    signed char pUnmapBl,       /*1: print unmapped reads*/
    struct refs_samRef *refSTPtr,/*has reference ids*/
    signed int *refIndexArySI   /*index to print read to*/

@@ -1,0 +1,4 @@
+coreCFLAGS= -O3 -static -std=c89 -Werror -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
+build:
+	gcc -o swapTimeTest $(coreCFLAGS) tmp_swapTest.c
+	gcc -o timeSortQuickTest $(coreCFLAGS) ../siQuick.c zz-timeSortsQuick.c

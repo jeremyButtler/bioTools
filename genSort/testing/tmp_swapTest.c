@@ -4,12 +4,19 @@ The goal here was to test if the branchless swapping
   input. It was faster
 */
 
+#ifdef PLAN9
+   #include <u.h>
+   #include <libc.h>
+#else
+   #include <stdlib.h>
+#endif
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <time.h>
 
 int
 main(
+   void
 ){
    #define def_size 100000
    signed int savedAry[def_size];
@@ -274,4 +281,6 @@ main(
       savedAry[0],
       savedSecAry[0]
    );
+
+   return 0;
 } /*main*/

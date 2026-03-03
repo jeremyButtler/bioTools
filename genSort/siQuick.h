@@ -8,6 +8,8 @@
 '     - quick select algorithm (partially sorts)
 '   o fun02: sort_siQuick
 '     - quick sort algorithm (sorts)
+'   o fun03: sortWithStack_siQuick
+'     - quick sort but uses a stack instead of recursion
 '   o license
 '     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -61,6 +63,36 @@ void
 sort_siQuick(
    signed int *siAry,  /*array the get value from*/
    signed int lenSI    /*last item to search*/
+);
+
+/*-------------------------------------------------------\
+| Fun03: sortWithStack_siQuick
+|   - quick sort but uses a stack instead of recursion
+| Input:
+|   - siAry:
+|     o signed int array to sort
+|   - aryLenSI:
+|     o number of items (length) in siAry (index 1)
+| Output:
+|   - Modifies:
+|     o siAry to be sorted from least to greatest
+| WARNING:
+|   - the stack size is 64, so you have a smaller sort
+|     range. For each round one pivot is added to the
+|     start of the stack and one at the end. Once a pivot
+|     has no more pivots, the pivot at the end is moved
+|     to the start. So, this should resolve the smaller
+|     pivots before moving to the larger pivots.
+|     - there is likley a way to overload this stack and
+|       segfault your program
+|   - this is slower then the recursive method, so I would
+|     not recomend it. It is here because I got something
+|     close and wanted to see if I could complete it
+\-------------------------------------------------------*/
+void
+sortWithStack_siQuick(
+   signed int *siAry,
+   signed int aryLenSI
 );
 
 #endif

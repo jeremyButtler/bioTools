@@ -8,6 +8,8 @@
 '     - quick select algorithm (partially sorts)
 '   o fun02: sort_siQuick
 '     - quick sort algorithm (sorts)
+'   o fun03: sortWithStack_siQuick
+'     - quick sort but uses a stack instead of recursion
 '   o license
 '     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -165,7 +167,7 @@ select_siQuick(
       /*_______paritally_sort_to_see_midpiont_position__*/
       while(posSI < midSI)
       { /*Loop: shift elements around*/
-         swapSI = -(siAry[endSI] < siAry[posSI]);
+         swapSI = -(siAry[endSI] <= siAry[posSI]);
          siAry[posSI] ^= (siAry[midSI] & swapSI);
          siAry[midSI] ^= (siAry[posSI] & swapSI);
          siAry[posSI] ^= (siAry[midSI] & swapSI);
@@ -256,7 +258,7 @@ sort_siQuick(
    { /*If: so few items it is easy to find the kth item*/
       ++midSI; /*convert to the length*/
 
-      if(! endSI)
+      if(endSI <= 0)
          return; /*only one item*/
 
       else
@@ -332,9 +334,9 @@ sort_siQuick(
    midSI = endSI - 1;
    posSI = startSI;
 
-   while(startSI <= midSI)
+   while(posSI < midSI)
    { /*Loop: position the pivot (midpoint)*/
-      swapSI = -(siAry[endSI] < siAry[posSI]);
+      swapSI = -(siAry[endSI] <= siAry[posSI]);
       siAry[posSI] ^= (siAry[midSI] & swapSI);
       siAry[midSI] ^= (siAry[posSI] & swapSI);
       siAry[posSI] ^= (siAry[midSI] & swapSI);
@@ -364,150 +366,239 @@ sort_siQuick(
       */
 } /*sort_siQuick*/
 
-#ifdef TEST_NON_RECUSRISVE
-/*I was setting up a pivot detection system for prim.c
-`  and ended up making a non-recursive quick sort. Just
-`  paste quick select in and do some debuggin and it
-`  should work
-*/
 /*-------------------------------------------------------\
-| Fun08: findPivots_heap_prim
-|   - find the pivots in the quick heap
+| Fun03: sortWithStack_siQuick
+|   - quick sort but uses a stack instead of recursion
 | Input:
-|   - primSTPtr:
-|     o heap_prim struct pointer to find the pivots for
+|   - siAry:
+|     o signed int array to sort
+|   - aryLenSI:
+|     o number of items (length) in siAry (index 1)
 | Output:
 |   - Modifies:
-|     o pivotArySI in primSTPtr to have at least the first
-|       pivot and if no pivots finds a new set of pivots
+|     o siAry to be sorted from least to greatest
+| WARNING:
+|   - the stack size is 64, so you have a smaller sort
+|     range. For each round one pivot is added to the
+|     start of the stack and one at the end. Once a pivot
+|     has no more pivots, the pivot at the end is moved
+|     to the start. So, this should resolve the pivots
+|     that have less items to sort before moving to the
+|     pivots with more items.
+|     - there is likley a way to overload this stack and
+|       segfault your program.
+|   - this is slower then the recursive method, so I would
+|     not recomend it. It is here because I got something
+|     close and wanted to see if I could complete it
 \-------------------------------------------------------*/
 void
-findPivots_heap_prim(
-   struct heap_prim *primSTPtr
-){
-   signed int endSI = 0;
+sortWithStack_siQuick(
+   signed int *siAry,
+   signed int aryLenSI
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun03 TOC:
+   '   - quick sort but uses a stack instead of recursion
+   '   o fun03 sec01:
+   '     - variable declarations
+   '   o fun03 sec02:
+   '     - check if need to sort
+   '   o fun03 sec03:
+   '     - sort the array
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec01:
+   ^   - variable declarations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   signed int endSI = aryLenSI - 1;
+   signed int startSI = 0;
+   signed int midSI = 0;
+   signed int swapSI = 0;
+
    signed int startArySI[64];
    signed int endArySI[64];
-   signed int pivotArySI[64];
-      /*2^64 is a long, I should never have more nodes
-      `  then a single long. The one catch is that with
-      `  quick select I can have up to n pivots, so this
-      `  system will error out on the worst case. However,
-      `  since I am only making log2(n) pivots, I should
-      `  be ok
+      /*64 may seems small, but it allows me to split
+      `  the array up 64 times. A segfault case would be
+      `  if every midpiont from the 3 medians split each
+      `  section of the array into 3 ending items and
+      `  the rest of the array. This would mean over 64
+      `  pivots in an array of 200 items.
+      `The three medians should be safe most of the time.
+      `  Using quick select would prevent this probelm,
+      `  but result in 2 * n * log2(n) time.
       */
-   signed int lenSI = 0;  /*length of my stack*/
-   signed int indexSI = 0;/*index I am at in my stack*/
+   signed int stackEndSI = 0;   /*length of my stack*/
 
-   signed int firstSI = 0;
-   signed int lastSI = 0;
-   signed int pivotSI = 0;
-   signed int posSI = 0;
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec02:
+   ^   - check if need to sort
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   if(primSTPtr->pivotLenSI > 1)
-   { /*If: only need to find the starting pivot*/
-      primSTPtr->pivotArySI[0] =
-         qckSelect_heap_prim(
-            primmSTPtr,
-            primSTPtr->indexSI,
-            primSTPtr->pivotArySI[1],
-            1 /*find the starting pivot*/
-         );
-      return; /*pivots are still left, so leave all other
-              `  pivots alone. It may be a good diea to
-              `  do a pivot grouping check to handle
-              `  worst cases
-              */
-   } /*If: only need to find the starting pivot*/
+   if(aryLenSI < 3)
+   { /*If: have two items, finish the sort*/
+      if(aryLenSI < 2)
+         return; /*empty or one item*/
+      else
+      { /*Else: two items*/
+         swapSI = -(siAry[0] > siAry[1]);
+         siAry[0] ^= (siAry[1] & swapSI);
+         siAry[1] ^= (siAry[0] & swapSI);
+         siAry[0] ^= (siAry[1] & swapSI);
+           /*brachless if > swap; see previous function
+           `  for the logic
+           */
+         return;
+      } /*Else: two items*/
+   } /*If: have two items, finish the sort*/
 
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec03:
+   ^   - sort the array
+   ^   o fun03 sec03 sub01:
+   ^     - setup stacks, start loop, & check if have
+   ^       enough items to sort
+   ^   o fun03 sec03 sub02:
+   ^     - find a midpoint of the array
+   ^   o fun03 sec03 sub03:
+   ^     - position the midpoint and sort
+   ^   o fun03 sec03 sub04:
+   ^     - add next midpionts (pivots) to the stack
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   numItemsSI =
-      primSTPtr->heapLenSI - primSTPtr->indexSI - 1;
-      /*heapLenSI is index 1, while indexSI is index 0, so
-      `  I need to -1 to covert heapLenSI to index 0
-      */
-   endSI = lenSI >> 3;
-      /*divide by 8 to have at least 8 items per pivot*/
-
-   if(endSI > primSTPtr->pivotLenSI)
-      endSI = primSTPtr->pivotLenSI;
-
-   else if(! endSI)
-   { /*If: less then eight items left*/
-      primSTPtr->pivotArySI[0] =
-         qckSelect_heap_prim(
-            primSTPtr,
-            primSTPtr->indexSI,
-            primSTPtr->pivotArySI[1],
-            1
-         );
-      primtSTPtr->pivotLenSI = 1;
-      return;
-   } /*If: less then eight items left*/
+   /*****************************************************\
+   * Fun03 Sec03 Sub01:
+   *   - setup stacks, start loop, & check if have enough
+   *     items to sort
+   \*****************************************************/
 
    /*set up my stacks*/
-   startArySI[0] = primSTPtr->indexSI;
-   endArySI[0] = primSTPtr->heapLenSI - 1;
-   pivotArySI[0] = endSI >> 1;
-   lenSI = 1;
-   indexSI = 0;
+   startArySI[0] = 0;
+   endArySI[0] = aryLenSI - 1;
+   stackEndSI = 0;
 
-   /*TODO: need to find insert position and best way
-   `  to split. This method does a quick sort split, but
-   `  I  need a way to split the array evenly or in
-   `  groups, with more groups at the end
-   */
-   while(lenSI > indexSI)
-   { /*Loop: find the middle pivots*/
-      firstSI = startArySI[indexSI];
-      lastSI = endArySI[indexSI];
-      posSI = pivotArySI[indexSI];
-      pivotSI =
-         qckSelect_heap_prim(primmSTPtr,firstSI,lastSI,0);
-      primSTPtr->pivotArySI[posSI] = pivotSI;
+   while(stackEndSI >= 0)
+   { /*Loop: sort the array*/
+      startSI = startArySI[0];
+      endSI = endArySI[0];
 
-      if(pivotSI < lastSI)
-      { /*If: have at least one item at the end*/
-         if(! indexSI)
-         { /*If: have not moved past 0 on the stack*/
-            startArySI[lenSI] = pivotSI + 1;
-            endArySI[lenSI] = lastSI;
-            pivotArySI[lenSI] = posSI + 1;
-            ++lenSI;
-         } /*If: have not moved past 0 on the stack*/
+      if(startSI >= endSI - 1)
+      { /*If: have two items*/
+         if(startSI < endSI)
+         { /*If: I only have two items*/
+            swapSI = -(siAry[startSI] > siAry[endSI]);
+            siAry[startSI] ^= (siAry[endSI] & swapSI);
+            siAry[endSI] ^= (siAry[startSI] & swapSI);
+            siAry[startSI] ^= (siAry[endSI] & swapSI);
+         } /*If: I only have two items*/
 
-         else
-         { /*Else: I have moved past 0 on the stack*/
-            startArySI[indexSI] = pivotSI + 1;
-            endArySI[indexSI] = lastSI;
-            pivotArySI[indexSI] = posSI + 1;
-            --indexSI; /*if no new starting pivot this is
-                       `  adjusted back
-                       */
-         } /*Else: I have moved past 0 on the stack*/
-      }  /*If: have at least one item at the end*/
+         startArySI[0] = startArySI[stackEndSI];
+         endArySI[0] = endArySI[stackEndSI];
+         --stackEndSI;
+         continue;
+      } /*If: have two items*/
 
-      if(firstSI < pivotSI)
-      { /*If: have at least one item at the start*/
-         startArySI[indexSI] = firstSI;
-         endArySI[indexSI] = pivotSI - 1;
-         pivotArySI[indexSI] = posSI - 1;
-      }  /*If: have at least one item at the start*/
+      /**************************************************\
+      * Fun03 Sec03 Sub02:
+      *   - find a midpoint of the array
+      \**************************************************/
 
       else
-         ++indexSI;
-   } /*Loop: find the middle pivots*/
+      { /*Else: have three or more items*/
+         midSI = (endSI + startSI) >> 1;
 
-   /*find the first pivot (value)*/
-   primSTPtr->pivotArySI[0] =
-      qckSelect_heap_prim(
-         primSTPtr,
-         primSTPtr->indexSI,
-         primSTPtr->pivotArySI[1],
-         1
-      );
-} /*findPivots_heap_prim*/
-#endif
+         swapSI = -(siAry[startSI] > siAry[endSI]);
+         siAry[startSI] ^= (siAry[endSI] & swapSI);
+         siAry[endSI] ^= (siAry[startSI] & swapSI);
+         siAry[startSI] ^= (siAry[endSI] & swapSI);
+
+         swapSI = -(siAry[startSI] > siAry[midSI]);
+         siAry[startSI] ^= (siAry[midSI] & swapSI);
+         siAry[midSI] ^= (siAry[startSI] & swapSI);
+         siAry[startSI] ^= (siAry[midSI] & swapSI);
+
+         swapSI = -(siAry[midSI] > siAry[endSI]);
+         siAry[midSI] ^= (siAry[endSI] & swapSI);
+         siAry[endSI] ^= (siAry[midSI] & swapSI);
+         siAry[midSI] ^= (siAry[endSI] & swapSI);
+         /*Logic:
+         `   - swapSI = -(siAry[x] > siAry[y])
+         `     o becomes -(1) = -1 if siAry[x] > siAry[y]
+         `       * all bits set to 1
+         `     o becomes -(0) = 0 if siAry[x] < siAry[y]
+         `       * all bits set to 0
+         `   - siAry[y or x] & swapSI:
+         `     o value is kept if swapSI = -1
+         `     o set to 0 if swapSI = 0
+         `   - the rest of the logic is a regular swap using
+         `     xors from the standford bitthacking guide
+         */
+
+         /***********************************************\
+         * Fun03 Sec03 Sub03:
+         *   - position the midpoint and sort
+         \***********************************************/
+
+         midSI = endSI - 1;
+
+         while(startSI < midSI)
+         { /*Loop: position the pivot (midpoint)*/
+            swapSI = -(siAry[endSI] <= siAry[startSI]);
+            siAry[startSI] ^= (siAry[midSI] & swapSI);
+            siAry[midSI] ^= (siAry[startSI] & swapSI);
+            siAry[startSI] ^= (siAry[midSI] & swapSI);
+
+            midSI += swapSI;
+            startSI += (! swapSI);
+         } /*Loop: position the pivot (midpoint)*/
+
+         midSI += (siAry[endSI] > siAry[midSI]);
+            /*this incurments midSI by one if the value at
+            `  midSI is one less then my midpiont.
+            */
+         swapSI = -(midSI != endSI);
+         siAry[midSI] ^= (siAry[endSI] & swapSI);
+         siAry[endSI] ^= (siAry[midSI] & swapSI);
+         siAry[midSI] ^= (siAry[endSI] & swapSI);
+
+         startSI = startArySI[0];
+
+         /***********************************************\
+         * Fun03 Sec03 Sub04:
+         *   - add next midpionts (pivots) to the stack
+         \***********************************************/
+
+         if(midSI <= startSI + 1)
+         { /*If: finished the sort for this pivot*/
+            if(midSI < endSI)
+            { /*If: have ending pivot*/
+               startArySI[0] = midSI + 1;
+               endArySI[0] = endSI;
+            } /*If: have ending pivot*/
+
+            else
+            { /*Else: can reduce the stack by one*/
+               startArySI[0] = startArySI[stackEndSI];
+               endArySI[0] = endArySI[stackEndSI];
+               --stackEndSI;
+            } /*Else: can reduce the stack by one*/
+         } /*If: finished the sort for this pivot*/
+
+         else
+         { /*Else: have at least one pivot*/
+            endArySI[0] = midSI - 1;
+
+            if(midSI < endSI - 1)
+            { /*If: have ending pivot + 2 items*/
+               ++stackEndSI;
+               startArySI[stackEndSI] = midSI + 1;
+               endArySI[stackEndSI] = endSI;
+            } /*If: have ending pivot + 2 items*/
+         } /*Else: have at least one pivot*/
+      } /*Else: have three or more items*/
+   } /*Loop: sort the array*/
+
+} /*sortWithStack_siQuick*/
 
 /*=======================================================\
 : License:

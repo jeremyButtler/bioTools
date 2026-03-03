@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "siQuick.h"
+#include "../siQuick.h"
 
 int
 main(

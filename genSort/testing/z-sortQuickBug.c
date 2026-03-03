@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "siQuick.h"
+#include "../siQuick.h"
 
 int
 main(
@@ -35,7 +35,11 @@ main(
       { /*Loop: check for errors*/
          if(siAry[siPos] > siAry[siPos + 1])
          { /*If: the array was not sorted correctly*/
-            printf("failed to sort in %i\n", siRand);
+            printf(
+               "%i failed to sort at %i\n",
+               siRand,
+               siPos
+            );
             break;
          } /*If: the array was not sorted correctly*/
       } /*Loop: check for errors*/

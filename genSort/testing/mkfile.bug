@@ -1,0 +1,6 @@
+coreCFLAGS= -O0 -std=c89 -g -Werror -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
+build:
+	cc -o selectQuickTest $(coreCFLAGS) ../siQuick.c z-selectQuickBug.c
+	cc -o sortQuickTest $(coreCFLAGS) ../siQuick.c z-sortQuickBug.c
+	cc -o stackSortQuickTest $(coreCFLAGS) ../siQuick.c z-stackSortQuickBug.c
+
