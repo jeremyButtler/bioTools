@@ -1410,7 +1410,10 @@ pIds_k2TaxaId(
 
    signed short levelSS = 0; /*level taxa is at*/
 
-   #define maxHist_fun12_k2TaxaId 32
+   #define maxHist_fun12_k2TaxaId 4096
+      /*for 32 I found cases were the history would get
+      `  overwelmed and wipe the ids
+      */
    signed int histPosSI = 0;
    signed int histIndexSI = 0;
    signed long histArySL[maxHist_fun12_k2TaxaId]; 

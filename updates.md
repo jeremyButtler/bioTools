@@ -2,6 +2,12 @@
 
 Has a list of updates I have tracked for bioTools
 
+- 2026-03-04
+  - found a bug in k2TaxaId were the history array that
+    printed out the read ids (function 12 in k2TaxaId.c)
+    would go past 32 items when to many species were
+    present. This would overwrite the id array. This has
+    been fixed.
 - 2026-03-03
   - added in multi file support for
 - 2026-02-27
