@@ -8,6 +8,9 @@ Has a list of updates I have tracked for bioTools
     would go past 32 items when to many species were
     present. This would overwrite the id array. This has
     been fixed.
+  - getLin.c had a max file name of 64 chars. In some
+    cases the file path would be longer. It know has a
+    size of 1024 bytes
 - 2026-03-03
   - added in multi file support for
 - 2026-02-27
