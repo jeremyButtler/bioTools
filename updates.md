@@ -11,6 +11,11 @@ Has a list of updates I have tracked for bioTools
   - getLin.c had a max file name of 64 chars. In some
     cases the file path would be longer. It know has a
     size of 1024 bytes
+  - using valgrind with inflate would sometimes have a
+    "using unitialized values in checks". This was do to
+    ulCp checking 8 bytes at a time and was just noise. I
+    fixed inflate.c to initialize the window array to
+    remove this noise.
 - 2026-03-03
   - added in multi file support for
 - 2026-02-27
