@@ -26,6 +26,7 @@ all:
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C maskPrimSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C memwaterSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C memwaterScanSrc;
+	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C mkMSTSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C primFindSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C revCmpSrc;
 	make CFLAGS="$(CFLAGS)" O=$O -f mkfile.unix -C rmHomoSrc;
@@ -59,6 +60,7 @@ install:
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C maskPrimSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C memwaterSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C memwaterScanSrc install;
+	make PREFIX="$(PREFIX)" -f mkfile.unix -C mkMSTSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C primFindSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C revCmpSrc install;
 	make PREFIX="$(PREFIX)" -f mkfile.unix -C rmHomoSrc install;

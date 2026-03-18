@@ -191,6 +191,12 @@ The programs are built and debugged on Linux and then
   - memwaterScan (stopASF and from alnSeq):
     - uses a waterman alignment (memwaer) to scan for
       multiple possible alignments for a query
+  - mkMST (stopASF):
+    - makes a minimum spanning tree using prim algorithm
+      (no bootstrapping or stats)
+    - grapetree does this and has some extra stuff
+    - wanted this to reduce the number of dependencies for
+      stopASF
   - primFind (fluDI/freezeTB):
     - find primers in sequence(s)
     - emboss primer finder program nock off (forgot name)

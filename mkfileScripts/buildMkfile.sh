@@ -32,6 +32,8 @@ genAlnStr="";
 genClustStr="";
 genGeneoTypeStr="";
 genAmrStr="";
+genSortStr="";
+genTreeStr="";
 #seqByIdStr=""; add in for k2 taxa
 
 mathLibBl=0;
@@ -44,6 +46,8 @@ genAlnBl=0;
 genClustBl=0;
 genGeneoTypeBl=0;
 genAmrBl=0;
+genSortBl=0;
+genTreeBl=0;
 
 # unique libraryes for freezeTB
 genFreezeTB="";
@@ -94,45 +98,55 @@ helpStr="$(basename "$0") OS program_name main_file libraries ...
        - for example; samEntry would also print entries
          for strAry, ulCp, base10str, and numToStr
      o Options:
-       - base10str (genLib)
-       - charCp (genLib)
-       - checkSum (genLib)
-       - endin (genLib)
-       - genMath (genLib)
-       - inflate (genLib)
-       - numToStr (genLib)
-       - ptrAry (genLib)
-       - shellSort (genLib)
-       - strAry (genLib)
-       - ulCp (genLib)
+       - 64bit     (genLib: functions for long casting)
+       - base10str (genLib: string to number)
+       - charCp    (genLib: copy strings with characters)
+       - checkSum  (genLib: adler32 and crc32 checksum)
+       - endin     (genLib: big/little endin conversion)
+       - genMath   (genLib: general limited math bithack)
+       - inflate   (genLib: compress gz files)
+       - numToStr  (genLib: number to string)
+       - ptrAry    (genLib: c-string array structure)
+       - shellSort (genLib: shell short for shorting)
+       - strAry    (genLib: string in a single array)
+       - ulCp      (genLib: copy strings with longs)
+       - endLine   (genLib: os based line endings)
+       - fileFun   (genLib: read lines/index files)
 
-       - adjCoords (genBio)
-       - ampDepth (genBio)
-       - cigToEqx (genBio)
-       - codoTble (genBio)
-       - edDist (genBio)
-       - geneCoord (genBio)
-       - kmerCnt (genBio)
-       - maskPrim (genBio)
-       - rmHomo (genBio)
-       - samEntry (genBio)
-       - seqST (genBio)
-       - tbCon (genBio)
-       - trimSam (genBio)
+       - adjCoords (genBio: sam gene coorinates to global)
+       - ampDepth  (genBio: read depth for amplicons)
+       - cigToEqx  (genBio: regular cigar to eqx cigar)
+       - codonTbl  (genBio: base to amino acid conversion)
+       - edDist    (genBio: edit distance of mapped read)
+       - geneCoord (genBio: struct to hold gene positions)
+       - kmerCnt   (genBio: count number kmers in read)
+       - maskPrim  (genBio: mask by primer coordinates)
+       - rmHomo    (genBio: clean indels in homopolymers)
+       - samEntry  (genBio: struct to get a sam file line)
+       - seqST     (genBio: structure to store a sequence)
+       - tbCon     (genBio: build consensus [bad for ins])
+       - trimSam   (genBio: trim softmasked bases)
 
-       - alnSet (genAln)
-       - dirMatrix (genAln)
-       - indexToCoord (genAln)
-       - kmerFind (genAln)
-       - mapRead (genAln)
-       - memwater (genAln)
-       - needle (genAln)
-       - samToAln (genAln)
-       - water (genAln)
+       - alnSet       (genAln: scoring matrix [pairwise])
+       - dirMatrix    (genAln: pairwise aligner matrix)
+       - indexToCoord (genAln: pairwise coordinate system)
+       - kmerFind     (genAln: find alignments with kmers)
+       - memwater     (genAln: waterman, better for memory)
+       - mapRead      (genAln: slow & insenistive mapper)
+       - needle       (genAln: needleman wulsch)
+       - samToAln     (genAln: sam file to alignment)
+       - water        (genAln: watermans smith)
 
-       - illNano (genClust)
-       - clustST (genClust)
-       - edClust (genClust)
+       - clustST (genClust: base functions for edClust)
+       - edClust (genClust: edit distance clustering)
+       - illNano (genClust: illumina nano variant [??])
+
+       - sibinSearch (genSort: signed int binary search)
+       - siQuick    (genSort:signed int quick sort/select)
+
+       - prim        (genTree: prims algorithm [non run])
+       - runPrim     (genTree: run prims algorithm)
+       - siBinSearch (genSort: binary sort)
 "
  
 
@@ -216,6 +230,8 @@ then # If: debugging make file
    genClustStr="\$(genClust)/";
    genGeneoTypeStr="\$(genGeneoType)/";
    genAmrStr="\$(genAmr)/";
+   genSortStr="\$(genSort)/";
+   genTreeStr="\$(genTree)/";
    #seqByIdStr="\$(seqByIdSrc)/"; # adad in for k2Taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
@@ -258,6 +274,8 @@ then # Else If: general unix make file
    genClustStr="\$(genClust)/";
    genGeneoTypeStr="\$(genGeneoType)/";
    genAmrStr="\$(genAmr)/";
+   genSortStr="\$(genSort)/";
+   genTreeStr="\$(genTree)/";
    #seqByIdStr="\$(seqByIdSrc)/"; # add in for k2Taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
@@ -307,6 +325,8 @@ then # Else If: static unix make file
    genAmrStr="\$(genAmr)/";
    genClustStr="\$(genClust)/";
    genGeneoTypeStr="\$(genGeneoType)/";
+   genSortStr="\$(genSort)/";
+   genTreeStr="\$(genTree)/";
    #seqByIdStr="\$(seqByIdSrc)/"; add in for k2 taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
@@ -354,6 +374,8 @@ then # Else If: windows make file
    genClustStr="\$(genClust)\\\\";
    genGeneoTypeStr="\$(genGeneoType)\\\\";
    genAmrStr="\$(genAmr)\\\\";
+   genSortStr="\$(genSort)\\\\";
+   genTreeStr="\$(genTree)\\\\";
    #seqByIdStr="\$(seqByIdSrc)\\\\"; # add in for k2Taxa
 
    coreFlagsStr="\$(coreCFLAGS)";
@@ -395,6 +417,8 @@ then # Else If: plan9 make file
    genAmrStr="\$(genAmr)/";
    genClustStr="\$genClust/";
    genGeneoTypeStr="\$(genGeneoType)/";
+   genSortStr="\$(genSort)/";
+   genTreeStr="\$(genTree)/";
    #seqByIdStr="\$seqByIdSrc/"; # add in when in k2Taxa
 
    coreFlagsStr="\$coreCFLAGS";
@@ -440,6 +464,10 @@ fi # check makefile type
 #   o sec03 sub07:
 #     - genAmr libraries
 #   o sec03 sub08:
+#     - genSort libraries
+#   o sec03 sub09:
+#     - genTree libraries
+#   o sec03 sub10:
 #     - misc code in own folders
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -1575,13 +1603,104 @@ addAmrDep="$addAmrDep genMath $genMathDep";
 
 #*********************************************************
 # Sec03 Sub08:
-#   - misc code in own folders
+#   - genSort libraries
 #   o sec03 sub08 cat01:
-#     - k2TaxaId
+#     - sibinSearch
+#   o sec03 sub08 cat02:
+#     - siQuick
 #*********************************************************
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Sec03 Sub08 Cat01:
+#   - siBinSearch
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+siBinSearchStr="${genSortStr}siBinSearch.\$O: \\
+	${genSortStr}siBinSearch.c \\
+	${genSortStr}siBinSearch.h
+		$ccStr ${dashOStr}${genSortStr}siBinSearch.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genSortStr}siBinSearch.c
+";
+
+siBinSearchObj="${genSortStr}siBinSearch.\$O";
+siBinSearchDep="";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub08 Cat02:
+#   - siQuick
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+siQuickStr="${genSortStr}siQuick.\$O: \\
+	${genSortStr}siQuick.c \\
+	${genSortStr}siQuick.h
+		$ccStr ${dashOStr}${genSortStr}siQuick.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genSortStr}siQuick.c
+";
+
+siQuickObj="${genSortStr}siQuick.\$O";
+siQuickDep="";
+
+#*********************************************************
+# Sec03 Sub09:
+#   - genTree libraries
+#   o sec03 sub09 cat01:
+#     - prim
+#   o sec03 sub09 cat02:
+#     - runPrim
+#*********************************************************
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub09 Cat01:
+#   - prim
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+primStr="${genTreeStr}prim.\$O: \\
+	${genTreeStr}prim.c \\
+	${genTreeStr}prim.h \\
+	${genSortStr}siBinSearch.\$O \\
+	${genLibStr}genMath.\$O \\
+	${genLibStr}endLine.h
+		$ccStr ${dashOStr}${genTreeStr}prim.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genTreeStr}prim.c
+";
+
+primObj="${genTreeStr}prim.\$O";
+primDep="siBinSearch $siBinSearchDep";
+primDep="$primDep genMath $genMathDep";
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub09 Cat02:
+#   - runPrim
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+runPrimStr="${genTreeStr}runPrim.\$O: \\
+	${genTreeStr}runPrim.c \\
+	${genTreeStr}runPrim.h \\
+	${genTreeStr}prim.\$O \\
+	${genLibStr}ulCp.\$O \\
+	${genLibStr}fileFun.\$O
+		$ccStr ${dashOStr}${genTreeStr}runPrim.\$O \\
+			$cFlagsStr $coreFlagsStr \\
+			${genTreeStr}runPrim.c
+";
+
+runPrimObj="${genTreeStr}runPrim.\$O";
+runPrimDep="prim $primDep";
+runPrimDep="$runPrimDep ulCp $ulCpDep";
+runPrimDep="$runPrimDep fileFun $fileFunDep";
+
+#*********************************************************
+# Sec03 Sub12:
+#   - misc code in own folders
+#   o sec03 sub10 cat01:
+#     - k2TaxaId
+#*********************************************************
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Sec03 Sub10 Cat01:
 #   - k2TaxaId
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1625,8 +1744,12 @@ k2TaxaIdDep="$k2TaxaIdDep shellSort $shellSortDep";
 #   o sec04 sub08:
 #     - genAmr library files
 #   o sec04 sub09:
-#     - non-general library files
+#     - genSort library files
 #   o sec04 sub10:
+#     - genTree library files
+#   o sec04 sub11:
+#     - non-general library files
+#   o sec04 sub12:
 #     - move to next library or dependency
 #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -3248,13 +3371,139 @@ do # Loop: get dependencies
 
    #******************************************************
    # Sec04 Sub09:
-   #   - non-general library files
-   #   o sec04 sub08 cat01:
-   #     - k2TaxaId
+   #   - genSort library files
+   #   o sec04 sub09 cat01:
+   #     - siBinSearch
+   #   o sec04 sub09 cat02:
+   #     - siQuick
    #******************************************************
 
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
    # Sec04 Sub09 Cat01:
+   #   - siBinSearch
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "siBinSearch" ]; then
+   # Else If: siBinSearch program
+      if [ "$siBinSearchBl" = "" ]; then
+         cmdStr="${cmdStr}${newLineStr}${siBinSearchStr}";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}$siBinSearchObj";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$siBinSearchObj";
+         fi;
+
+         siBinSearchBl=1;
+         depStr="$depStr $siBinSearchDep";
+
+         if [ "$genSortBl" -lt 1 ]; then
+            genSortBl=1;
+            libPathStr="$libPathStr\ngenSort=..${slashSC}genSort";
+         fi;
+      fi;
+   # Else If: siBinSearch program
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub09 Cat02:
+   #   - siQuick
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "siQuick" ]; then
+   # Else If: siQuick program
+      if [ "$sibinSearchBl" = "" ]; then
+         cmdStr="${cmdStr}${newLineStr}${siQuickStr}";
+         objFilesStr="$objFilesStr \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}$siQuickObj";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$siQuickObj";
+         fi;
+
+         siQuickBl=1;
+         depStr="$depStr $siQuickDep";
+
+         if [ "$genSortBl" -lt 1 ]; then
+            genSortBl=1;
+            libPathStr="$libPathStr\ngenSort=..${slashSC}genSort";
+         fi;
+      fi;
+   # Else If: siQuick program
+
+   #******************************************************
+   # Sec04 Sub10:
+   #   - genTree library files
+   #   o sec04 sub010cat01:
+   #     - prim
+   #   o sec04 sub10 cat02:
+   #     - runPrim
+   #******************************************************
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub10 Cat01:
+   #   - prim
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "prim" ]; then
+   # Else If: prim program
+      if [ "$primBl" = "" ]; then
+         cmdStr="${cmdStr}${newLineStr}${primStr}";
+         objFilesStr="${objFilesStr} \\\\\n$spaceStr";
+         objFilesStr="${objFilesStr}${primObj}";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$primObj";
+         fi;
+
+         primBl=1;
+         depStr="$depStr $primDep";
+
+         if [ "$genTreeBl" -lt 1 ]; then
+            genTreeBl=1;
+            libPathStr="$libPathStr\ngenTree=..${slashSC}genTree";
+         fi;
+      fi;
+   # Else If: prim program
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub10 Cat02:
+   #   - runPrim
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   elif [ "$libStr" = "runPrim" ]; then
+   # Else If: runPrim program
+      if [ "$runPrimBl" = "" ]; then
+         cmdStr="${cmdStr}${newLineStr}${runPrimStr}";
+         objFilesStr="${objFilesStr} \\\\\n${spaceStr}";
+         objFilesStr="${objFilesStr}${runPrimObj}";
+
+         if [ $libCntSI -lt $mainCntSI ]; then
+            mainCmdStr="$mainCmdStr \\
+	$runPrimObj";
+         fi;
+
+         runPrimBl=1;
+         depStr="$depStr $runPrimDep";
+
+         if [ "$genTreeBl" -lt 1 ]; then
+            genTreeBl=1;
+            libPathStr="$libPathStr\ngenTree=..${slashSC}genTree";
+         fi;
+      fi;
+   # Else If: runPrim program
+
+   #******************************************************
+   # Sec04 Sub11:
+   #   - non-general library files
+   #   o sec04 sub11 cat01:
+   #     - k2TaxaId
+   #******************************************************
+
+   #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # Sec04 Sub11 Cat01:
    #   - k2TaxaId
    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -3276,10 +3525,10 @@ do # Loop: get dependencies
    # Else If: k2TaxaId program
 
 
-   fi # check librarys called
+   fi; # check librarys called
 
    #******************************************************
-   # Sec04 Sub10:
+   # Sec04 Sub12:
    #   - move to next library or dependency
    #******************************************************
 

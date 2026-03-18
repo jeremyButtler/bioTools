@@ -24,6 +24,7 @@ all:
 	make CFLAGS="$CFLAGS" -f mkfile.plan9 -C maskPrimSrc;
 	make CFLAGS="$CFLAGS" -f mkfile.plan9 -C memwaterSrc;
 	make CFLAGS="$CFLAGS" -f mkfile.plan9 -C memwaterScanSrc;
+	make CFLAGS="$CFLAGS" -f mkfile.plan9 -C mkMSTSrc;
 	make CFLAGS="$CFLAGS" -f mkfile.plan9 -C primFindSrc;
 	make CFLAGS="$CFLAGS" -f mkfile.plan9 -C revCmpSrc;
 	make CFLAGS="$CFLAGS" -f mkfile.plan9 -C rmHomoSrc;
@@ -57,6 +58,7 @@ install:
 	make PREFIX="$PREFIX" -f mkfile.plan9 -C maskPrimSrc install;
 	make PREFIX="$PREFIX" -f mkfile.plan9 -C memwaterSrc install;
 	make PREFIX="$PREFIX" -f mkfile.plan9 -C memwaterScanSrc install;
+	make PREFIX="$PREFIX" -f mkfile.plan9 -C mkMSTSrc install;
 	make PREFIX="$PREFIX" -f mkfile.plan9 -C primFindSrc install;
 	make PREFIX="$PREFIX" -f mkfile.plan9 -C revCmpSrc install;
 	make PREFIX="$PREFIX" -f mkfile.plan9 -C rmHomoSrc install;

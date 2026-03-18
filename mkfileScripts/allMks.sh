@@ -95,6 +95,10 @@ cd "../$retDirStr" || exit;
 cd ../memwaterScanSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" memwaterScan mainMemwaterScan memwaterScan base10str ulCp ../bioTools.h
 cd "../$retDirStr" || exit;
+   
+cd ../mkMSTSrc || exit;
+sh "../$retDirStr/allOSMkfiles.sh" mkMST mainMkMST runPrim ulCp base10str ../genLib/endLine.h ../bioTools.h
+cd "../$retDirStr" || exit;
 
 cd ../primFindSrc || exit;
 sh "../$retDirStr/allOSMkfiles.sh" primFind mainPrimFind kmerFind kmerCnt charCp ../bioTools.h ../genLib/endLine.h ../genAln/alnDefs.h

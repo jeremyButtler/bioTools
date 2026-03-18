@@ -2,6 +2,10 @@
 
 Has a list of updates I have tracked for bioTools
 
+-2026-03-04:
+  - added or updated mkMST (make minimum spanning tree),
+    genSort (sorting libraries), and genTree (tree
+    libraries)
 - 2026-03-04
   - found a bug in k2TaxaId were the history array that
     printed out the read ids (function 12 in k2TaxaId.c)

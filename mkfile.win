@@ -66,6 +66,9 @@ all:
 	cd memwaterScanSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
+	cd mkMSTSrc
+	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
+	cd ..
 	cd primFindSrc
 	nmake CFLAGS="$(CFLAGS)" O=$O /F mkfile.win  
 	cd ..
@@ -157,6 +160,9 @@ install:
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
 	cd memwaterScanSrc
+	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
+	cd ..
+	cd mkMSTSrc
 	nmake PREFIX="$(PREFIX)" /F mkfile.win install  
 	cd ..
 	cd primFindSrc
