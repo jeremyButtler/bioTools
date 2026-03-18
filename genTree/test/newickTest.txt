@@ -1,0 +1,85 @@
+For the newick file I am using a single test case. It is
+  small, but should handel all expected cases. The main
+  problem is figuring out how to auto check each test
+  for failure.
+
+Index is edge weight in tree:
+  edges: [335, 27, 59, 67, 22, 11, 42, 58, 172, NA]
+  child: [6,    3,  5,  8,  4,  9,  1,  7, 2,   NA]
+
+Index is children:
+  index: [NA,  -7, -9, -2, -5, -3, -1, -8, -4,  -6]
+  parent:[NA,   9,  3,  6,  8,  6,  0,  8,  5,   4]
+
+  index: [NA,   6,  8,  1,  4,  2,  0,  7,  3,   5]
+
+Sorted by parent:
+  parent:[0,   3,    4,  5,  6,  6,  8,  8,  9]
+  child: [6,   2,    9,  8,  3,  5,  4,  7,  1]
+  edges: [335, 172, 11, 67, 27, 59, 22, 58, 42]
+  oldPos:[0,   8,    5,  3,  1,  2,  4,  7,  6]
+  index: [0,   8,   5,  3,  1,  2,  4,  7,  6]
+
+         27  172
+       +--->3--->2
+      /             22   11   42
+0--->6             +--->4--->9--->1
+ 335  \           / 
+       +--->5--->8
+        59   67   \
+                   +--->7
+                    58
+
+The best way to find these weights is to work my way to
+  the tips. Then, work my way back. I count the midpoint
+  distance as the distance to the internal node and use
+  the internal node in its parents minimum edge. This
+  seems to mirror the format for the newick file.
+
+The problem is I keep messing up the midpoint method. It
+  makes a nice tree, but seems to add to much complexity.
+
+    167.5
+    +--->0        158.5>>>>>> (172 - 13.5)
+    |             +--->2
+    |    13.5     |
+R---+    +--->C---+
+    |    |        |13.5
+    |    |        +--->3 (need to pass parent node / 2)
+    +--->C--->6
+     154 |13.5    +--->5
+     v   |        |
+     v   +--->C---+        +---->7
+     v   45.5     |        |
+     v            +--->C---+--->8   +--->4
+     v                     |        |
+     v                     +--->C---+        +--->9
+     v                              |        |
+     v                              +--->C---+
+     v                                       |
+     v                                       +--->1
+167.5 - 13.5 
+ 
+Setting the parent nodes distance to 0 seems to work and
+  is easy.
+
+     0    
+    +--->0         172
+    |             +--->2
+    |    27       |
+R---+    +--->C---+
+    |    |        | 0   
+    |    |        +--->3 (need to pass parent node / 2)
+    +--->C--->6
+     335 |0       +--->5
+         |        | 0
+         +--->C---+        +---->7
+         59       |        |
+                  +--->C---+--->8   +--->4
+                           |        |
+                           +--->C---+        +--->9
+                                    |        |
+                                    +--->C---+
+                                             |
+                                             +--->1
+

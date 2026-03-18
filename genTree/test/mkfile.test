@@ -1,3 +1,30 @@
 coreCFLAGS= -O0 -std=c89 -g -Werror -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
 build:
 	cc -o testPrimQckSelect $(coreCFLAGS) ../prim.c ../../genSort/siBinSearch.c ../../genLib/genMath.c testPrimQckSelect.c
+	cc -o testFindPivotPrim $(coreCFLAGS) ../prim.c ../../genSort/siBinSearch.c ../../genSort/siQuick.c ../../genLib/genMath.c testFindPivotPrim.c
+	cc -o testExtractEdgePrim $(coreCFLAGS) ../prim.c ../../genSort/siBinSearch.c ../../genSort/siQuick.c ../../genLib/genMath.c testExtractEdgePrim.c
+	cc -o testInsEdgesPrim $(coreCFLAGS) ../prim.c ../../genSort/siBinSearch.c ../../genSort/siQuick.c ../../genLib/genMath.c testInsEdgesPrim.c
+	cc -o testDelPrim $(coreCFLAGS) ../prim.c ../../genSort/siBinSearch.c ../../genSort/siQuick.c ../../genLib/genMath.c testDelPrim.c
+	cc -o testAddEdgesPrim $(coreCFLAGS) ../prim.c ../../genSort/siBinSearch.c ../../genSort/siQuick.c ../../genLib/genMath.c testAddEdgesPrim.c
+	cc -o testNewickPrim $(coreCFLAGS) ../prim.c ../../genSort/siBinSearch.c ../../genSort/siQuick.c ../../genLib/genMath.c testNewickPrim.c
+	cc -o testRunPrim $(coreCFLAGS) ../prim.c ../../genSort/siBinSearch.c ../../genSort/siQuick.c ../../genLib/genMath.c ../../genLib/fileFun.c ../../genLib/ulCp.c ../runPrim.c testRunPrim.c
+
+clean:
+	if [ -f testPrimQckSelect ]; \
+		then rm testPrimQckSelect; fi;
+	if [ -f testFindPivotPrim ]; \
+		then rm testFindPivotPrim; fi;
+	if [ -f testExtractEdgePrim ]; \
+		then rm testExtractEdgePrim; fi;
+	if [ -f testInsEdgesPrim ]; \
+		then rm testInsEdgesPrim; fi;
+	if [ -f testDelPrim ]; \
+		then rm testDelPrim; fi;
+	if [ -f testAddEdgesPrim ]; \
+		then rm testAddEdgesPrim; fi;
+	if [ -f testNewickPrim ]; \
+		then rm testNewickPrim; fi;
+	if [ -f testRunPrim ]; \
+		then rm testRunPrim; fi;
+	if [ -f delete.newick ]; \
+		then rm delete.newick; fi;

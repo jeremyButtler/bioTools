@@ -1,0 +1,100 @@
+
+CC=cl.exe
+LD=link.exe
+coreCFLAGS= /c /O2 /Ot /Za /Tc
+CFLAGS=/DNONE
+NAME=mkMST.exe
+PREFIX="%localAppData%"
+O=o.win
+
+genTree=..\genTree
+genLib=..\genLib
+genSort=..\genSort
+
+objFiles= \
+   $(genTree)\runPrim.$O \
+   $(genLib)\ulCp.$O \
+   $(genLib)\base10str.$O \
+   $(genTree)\prim.$O \
+   $(genSort)\siBinSearch.$O \
+   $(genLib)\genMath.$O \
+   $(genLib)\fileFun.$O \
+   mainMkMST.$O
+
+$(NAME): mainMkMST.$O
+	$(LD) /out:$(NAME) $(objFiles)
+
+mainMkMST.$O: \
+	mainMkMST.c \
+	$(genTree)\runPrim.$O \
+	$(genLib)\ulCp.$O \
+	$(genLib)\base10str.$O \
+	../genLib/endLine.h \
+	../bioTools.h
+		$(CC) /Fo:mainMkMST.$O \
+			$(CFLAGS) $(coreCFLAGS) mainMkMST.c
+
+$(genTree)\runPrim.$O: \
+	$(genTree)\runPrim.c \
+	$(genTree)\runPrim.h \
+	$(genTree)\prim.$O \
+	$(genLib)\ulCp.$O \
+	$(genLib)\fileFun.$O
+		$(CC) /Fo:$(genTree)\runPrim.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genTree)\runPrim.c
+
+
+$(genLib)\ulCp.$O: \
+	$(genLib)\ulCp.c \
+	$(genLib)\ulCp.h
+		$(CC) /Fo:$(genLib)\ulCp.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genLib)\ulCp.c
+
+$(genLib)\base10str.$O: \
+	$(genLib)\base10str.c \
+	$(genLib)\base10str.h
+		$(CC) /Fo:$(genLib)\base10str.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genLib)\base10str.c
+
+$(genTree)\prim.$O: \
+	$(genTree)\prim.c \
+	$(genTree)\prim.h \
+	$(genSort)\siBinSearch.$O \
+	$(genLib)\genMath.$O \
+	$(genLib)\endLine.h
+		$(CC) /Fo:$(genTree)\prim.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genTree)\prim.c
+
+
+$(genSort)\siBinSearch.$O: \
+	$(genSort)\siBinSearch.c \
+	$(genSort)\siBinSearch.h
+		$(CC) /Fo:$(genSort)\siBinSearch.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genSort)\siBinSearch.c
+
+
+$(genLib)\genMath.$O: \
+	$(genLib)\genMath.c \
+	$(genLib)\genMath.h
+		$(CC) /Fo:$(genLib)\genMath.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genLib)\genMath.c
+
+$(genLib)\fileFun.$O: \
+	$(genLib)\fileFun.c \
+	$(genLib)\fileFun.h \
+	$(genLib)\ulCp.$O
+		$(CC) /Fo:$(genLib)\fileFun.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genLib)\fileFun.c
+
+install:
+	move $(NAME) $(PREFIX)
+
+clean:
+	del $(objFiles)

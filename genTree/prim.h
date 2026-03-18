@@ -69,7 +69,7 @@ typedef struct
 heap_prim
 {
    /*_______________heap_variables_size_n______________*/
-   signed int *edgeArySI;/*has quick heap*/
+   signed int *edgeArySI;  /*has quick heap*/
    signed int *childArySI; /*child nodes for each edge*/
 
    signed int indexSI;       /*index at in quick heap*/
@@ -84,7 +84,9 @@ heap_prim
    /*______________non-heap_tracking size_n_____________*/
    signed int *indexArySI;
       /*heas the index of each child node (not in MST) in
-      `  the heap
+      `  the heap. If the edge has been assigned to its
+      `  final index the value is set to (index + 1) * -1
+      `The +1 is to convert 0 to -1
       */
   signed int *parArySI;
      /*has the parent nodes (already in MST) id for each
@@ -105,6 +107,7 @@ heap_prim
 | Output:
 |   - sets indexSI, pivotLenSI, heapLenSI, and scoreSI
 |     (lazy blank)
+|   - sets all values used in indexArySI to def_maxSI_prim
 \-------------------------------------------------------*/
 void
 blank_heap_prim(
@@ -193,6 +196,7 @@ mk_heap_prim(
    signed int numNodesSI
 );
 
+
 /*-------------------------------------------------------\
 | Fun11: addEdges_heap_prim
 |   - add edges for a node to a heap_prim struct
@@ -201,22 +205,30 @@ mk_heap_prim(
 |     o signed int array with the edge weights to add
 |     o each index is the child node the edge connects to
 |     o to skip an edge set the edges weight to -1
+|   - childArySI:
+|     o signed int array with child to assign each edge
+|       to
+|     o this array prevents a n^2 loop when the graph
+|       is not complete (everything connected). Without
+|       it I would have to have all edges input and skip
+|       all edges that are set to -1
 |   - numEdgesSI:
 |     o number of edges to add (index 1)
 |   - parNodeSI:
 |     o node that every edge connects to (new node to add)
-|   - primPtr:
+|   - primSTPtr:
 |     o heap_prim struct pointer to get the new edges
 | Output:
 |   - Modifies:
-|     o primPtr to have the new edges
+|     o primSTPtr to have the new edges
 \-------------------------------------------------------*/
 void
 addEdges_heap_prim(
-   signed int *edgeArySI, /*edges to add*/
-   signed int numEdgesSI, /*number edges to add*/
-   signed int parNodeSI,  /*node edges belong to*/
-   struct heap_prim *primPtr /*add edges to*/
+   signed int *edgeArySI,  /*edges to add*/
+   signed int *childArySI, /*child edges to add*/
+   signed int numEdgesSI,  /*number edges to add*/
+   signed int parNodeSI,   /*node edges belong to*/
+   struct heap_prim *primSTPtr /*add edges to*/
 );
 
 /*-------------------------------------------------------\
@@ -248,7 +260,7 @@ extractEdge_heap_prim(
 );
 
 /*-------------------------------------------------------\
-| Fun16: mstToNewick_heap_prim
+| Fun16: root0MstToNewick_heap_prim
 |   - saves a minimum spanning tree as a newick file
 | Input:
 |   - primSTPtr:
@@ -269,7 +281,7 @@ extractEdge_heap_prim(
 |     o siAry to have 0 to the last child node
 \-------------------------------------------------------*/
 void
-mstToNewick_heap_prim(
+root0MstToNewick_heap_prim(
    struct heap_prim *primSTPtr,
    signed char *namesAryStr[],
    signed int *siAry,

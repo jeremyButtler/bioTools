@@ -35,6 +35,10 @@ The prim version of the quick heap is designed to only
     - childArySI: signed int array with the child
       nodes that each edge connects to
     - indexSI: index at in the quick heap
+      - edges that have been added to the tree (put in
+        their final position) are set to `(index +1) * -1`
+      - nodes with no connecting edges are set to
+        def\_maxSI\_prim
     - heapLenSI: number of nodes in the heap
   - heap pivots variables:
     - pivotArySI: signed int array with the index of each
@@ -130,11 +134,18 @@ The `addEdges_heap_prim` function allows you to add edges
 
 - Input:
   1. signed int array of edges (weights) to add
-     - each index in this array represents one child node
      - a weight of -1 means do not add the edge
-  2. number of edges to add (length of input 1; index 1)
-  3. parent node of all edges
-  4. heap\_prim to add the edges to
+  2. singed int array with the child each edge is assigned
+     to
+     - a weight of -1 means do not add the edge
+     - this is here so that non-complete graphs will not
+       take O(n^^2^^) time. Without this I would have to
+       assume each index in the edge array (input 1) is
+       the id of the child. This would require me to
+       scan through the input array n times.
+  3. number of edges to add (length of input 1; index 1)
+  4. parent node of all edges
+  5. heap\_prim to add the edges to
      - edges are only added if they provide a better
        weight for their child node
 - Output:
@@ -154,19 +165,26 @@ The `addEdges_heap_prim` function allows you to add edges
 int
 main(
 ){
-   signed int zeroEdges[5] = {-1, 1, 1, 3, 2}
+   signed int zeroEdges[4] = {1, 1, 3, 2}
       /*0-1    each -, \, _, and | is weight of 1
       ` |\__3
       ` | 2
       ` 4
        */
+   signed int zeroChildren[4] = {1, 2, 3, 4}
    struct heap_prim *primHeapMST = mk_heap_prim(20);
       /*make a heap_primST structure with 20 nodes*/
 
    if(! primHeapMST)
       return 1; /*memory error*/
 
-   addEdges_heap_prim(zeroEdges, 5, 0, primheapMST);
+   addEdges_heap_prim(
+      zeroEdges,
+      zeroChildren,
+      5,
+      0,
+      primheapMSTu
+   );
       /*edges, number edges, parent, heap*/
 
    /*clean up*/
@@ -211,7 +229,8 @@ What it really does is move the heap index up one. When
 int
 main(
 ){
-   signed int edges[5][5];
+   signed int edges[5][4];
+   signed int children[5][4];
    signed int nodeSI = 5;
    signed int nodeOnSI = 0;
 
@@ -227,39 +246,62 @@ main(
 
    /*_______add_the_edges_to_the_tree___________________*/
    /*edges for the parent node (zero)*/
-   edges[0][0] = -1;   /*0-1
-   edges[0][1] = 1;    ` |\__3
-   edges[0][2] = 1;    ` | 2
-   edges[0][3] = 3;    ` 4
-   edges[0][4] = 2;     */
+                       /*0-1
+   edges[0][0] = 1;    ` |\__3
+   edges[0][1] = 1;    ` | 2
+   edges[0][2] = 3;    ` 4
+   edges[0][3] = 2;     */
+   children[0][0] = 1;
+   children[0][1] = 2;
+   children[0][2] = 3;
+   children[0][3] = 4;
 
    /*edges for the first child node (one)*/
    edges[1][0] = 1;    /*0-1\
-   edges[1][1] = -1;   `  /| 3
-   edges[1][2] = 1;    ` | 2  
-   edges[1][3] = 1;    ` 4
-   edges[1][4] = 2;    */
+                       `  /| 3
+   edges[1][1] = 1;    ` | 2  
+   edges[1][2] = 1;    ` 4
+   edges[1][3] = 2;    */
+
+   children[1][0] = 0;
+   children[1][1] = 2;
+   children[1][2] = 3;
+   children[1][3] = 4;
 
    /*edges for the second child node (two)*/
    edges[2][0] = 1;   /*0 1
    edges[2][1] = 1;   `  \| 3
-   edges[2][2] = -1   `   2/ 
-   edges[2][3] = 1;   ` 4/
-   edges[2][4] = 1;   */
+                      `   2/ 
+   edges[2][2] = 1;   ` 4/
+   edges[2][3] = 1;   */
+
+   children[2][0] = 0;
+   children[2][1] = 1;
+   children[2][2] = 3;
+   children[2][3] = 4;
 
    /*edges for the third child node (three)*/
    edges[3][0] = 3;   /*0 1\
    edges[3][1] = 1;   `  \--3
    edges[3][2] = 1;   `   2/  
-   edges[3][3] = -1;  ` 4-+ 
-   edges[3][4] = 3;   */
+                      ` 4-+ 
+   edges[3][3] = 3;   */
+
+   children[3][0] = 0;
+   children[3][1] = 1;
+   children[3][2] = 2;
+   children[3][3] = 4;
 
    /*edges for the fourth child node (four)*/
    edges[4][0] = 2;   /*0 1
    edges[4][1] = 1;   ` | +-3
    edges[4][2] = 3;   ` |/2/  
-   edges[4][3] = -1;  ` 4/-+ 
-   edges[4][4] = 4;   */
+   edges[4][3] = 3;   ` 4/-+ 
+                      */
+   children[4][0] = 0;
+   children[4][1] = 1;
+   children[4][2] = 2;
+   children[4][3] = 3;
 
    /*_______find_the_minimum_spanning_tree______________*/
    childNodeSI = 0;
@@ -267,12 +309,13 @@ main(
    { /*Loop: add all edges to the tree*/
          addEdges_heap_prim(
             edges[childNodeSI], /*edges to add in*/
-            5,          /*5 edges in this graph*/
-            0,          /*parent is the 0 node*/
+            children[childNodeSI], /*children for edges*/
+            4,                  /*4 edges in the arrays*/
+            childNodeSi,        /*new parent node*/
             primHeapMST
          );
 
-      /*____________get_the_next_node_to_add____________*/
+      /*____________get_the_next_parent_node_to_add_____*/
       childNodeSI = extractEdge_heap_prim(primHeapMST);
 
       if(childNodeSI < 0)
@@ -384,6 +427,8 @@ main(
    signed int childSI = 0;
    signed int siEdge = 0;
    signed int distanceArySI[20];
+   signed int childArySI[20];
+   signed int numEdgesSI = 0; /*number edges added*/
 
    FILE *outFILE = 0;
    struct heap_prim primStackMST;
@@ -409,21 +454,26 @@ main(
 
    for(siIndex = 0; siIndex < 20; ++siIndex)
    { /*Loop: build a random tree*/
-      for(siEdge = 0; siEdge < 20; ++siEdge)
-         distanceArySI[siEdge] = rand() % 100;
-         /*add in random weights for each edge*/
 
-      /*mark node as do not insert; the addEdge will
-      `  assume any future edge that is a parent edge
-      `  has a higher weight, so I should be ok if I
-      `  randomly assign a lower weigth to a parent node
-      */
-      distanceArySI[childSI] = -1;
+      numEdgesSI = 0;
+      for(siEdge = 0; siEdge < 20; ++siEdge)
+      { /*Loop: get new edges to add*/
+         if(primStackMST.indexArySI[siEdge] < 0)
+            continue; /*edge is in tree as a parent*/
+
+         distanceArySI[numEdgesSI] = rand() % 100;
+            /*add in random weights for each edge*/
+         childArySI[numEdgesSI] = siEdge;
+         ++numEdgesSI;
+      } /*Loop: get new edges to add*/
 
       addEdges_heap_primt(
-         distanceArySI,
-         20,      /*20 edges to add*/
-         childSI, /*parent node I am on*/
+         distanceArySI, /*distance between nodes*/
+         childArySI,    /*child node of each edge*/
+         numEdgesSI,    /*number of new edges*/
+         childSI,       /*parent node I am on; this is
+                        ` the last rounds child
+                        */
          &primStackMST
       );
 
@@ -566,6 +616,11 @@ I wanted to keep memory down to the number of nodes (n).
        is O(number edges * log2(n)), which is about cost
        of sorting
        - quick select n + n - 1 + n - 2 + ... = n^2 times
+   - pivots are inserted at equal spaced distances. I have
+     debated about increasing the distance by 2x between
+     each pivot
+     - ex: pivot:1 8 edges, pivot:2 16 edges, pivot:3 32
+           edges, ...
    - Else: only insert starting pivot O(n^2)
      - quick select n + n - 1 + n - 2 + ... = n^2 times
 3. Remove the first (minimum) pivot (edge) by incrementing
@@ -587,10 +642,14 @@ I wanted to keep memory down to the number of nodes (n).
         O(1) [two to three look ups] per edge
    b. Delete the heap edge that shares the same child node
       and insert the new weight
-      - The method is the same as insert, but instead I
-        move insert untill I get to the deleted edge
+      - Delete always assumes the new edge costs less then
+        the old edge
+      - I first find the pivot before the delete edge.
+        Then I use the insert insert method to insert the
+        new edge (using the deleted edge as the
+        replacement)
         - If delete keeps edge at or near same pivot,
-          the cost is O(1)
+          the cost is O(1) (replace old cost with new)
         - Else the cost is O(2 x log2(n))
       - If the deleted edge was a pivot
         - If first pivot, replace weight (better) and keep
@@ -652,7 +711,7 @@ I wanted to keep memory down to the number of nodes (n).
 |  |     |                no                  yes
 |  |     |                 |                   |
 |  |     |                 |             delete and insert
-|  |     |                 |                   | 3*log2[n]
+|  |     |                 |                   | 2*log2[n]
 |  |     +->child node still has edges to add<-+
 |  |            |    |
 |  +-----------yes   no
@@ -708,57 +767,56 @@ Index:         {0, 2, 1, 3, 4, 5, 6, 7, -1,  8,  9}
 
 For deletes, I always know the index of the node. I can
   find the nearest pivot using a loop to search the pivot
-  list.
-
-This example is a bit off since a delete is both a delete
-  and an insert. So, after finding the value to delete,
-  it moves to insert the new weight. The system never
-  moves towards the end.
+  list. After finding the pivot before the new edge I
+  can inser the edge. For delete I always assume thew
+  new edge is better (lower cost/smaller weight).
 
 ```
 A [number] is a pivot position
 
+Goal: Replace child 5's edge with a new that edge costs 3
+  instead of 6.
+
 Starting heap:
-Heap:          [1]-3-2-[5]-6-[7]-11-8-10
-node in index: {1, 2, 3, 4,  5, 6, 7, 8,  9, 10, 11}
-Index:         {0, 2, 1, -1, 3, 4, 5, 7, -1,  8,  6}
+Heap (weight): [1]-2-[4]-7-6-[8]-11-10
+child node:    {1, 2, 3, 4,5, 6,  7, 8,  9}
+Index:         {0, 1, 2, 3,4, 5,  6, 7, -1}
+length: 9                  ^---edge to replace
+
+Find pivot of child 4:
+Heap (weight): [1]-2-[4]-7-6-[8]-11-10
+child node:    {1, 2, 3, 4,5, 6,  7, 8,  9}
+Index:         {0, 1, 2, 3,4, 5,  6, 7, -1}
+Pivot:                ^---pivot before child 5
 length: 9
 
-Delete 3; overwrite 3 with 2
-Heap:          [1]-2-2-[5]-6-[7]-11-8-10
-node in index: {1, 2,  3,  4, 5, 6, 7, 8,  9, 10, 11}
-Index:         {0, 1, -1, -1, 3, 4, 5, 7, -1,  8,  6}
+Check if pivot is less then new edge cost:
+4 > 3; new edge costs less
+
+Replace child's 5's edge with child 4's edge (cost 7)
+Heap weight:   [1]-2-[4]-7-7-[8]-11-10
+child node:    {1, 2, 3, 4,4, 6,  7, 8,  9}
+Index:         {0, 1, 2, 3,4, 5,  6, 7, -1}
+Pivot:                ^---pivot before child 5
 length: 9
 
-overwrite old 2 with 5
-Heap:          [1]-2-[5]-5-6-[7]-11-8-10
-node in index: {1, 2,  3,  4, 5, 6, 7, 8,  9, 10, 11}
-Index:         {0, 1, -1, -1, 2, 4, 5, 7, -1,  8,  6}
+Move pivot one edge up:
+Heap (weight): [1]-2-4-[4]-7-[8]-11-10
+child node:    {1, 2,3, 3, 4, 6,  7, 8,  9}
+Index:         {0, 1,2, 3, 4, 5,  6, 7, -1}
+Pivot:                  ^---pivot before child 5
 length: 9
 
-overwrite old 5 with 6
-Heap:          [1]-2-[5]-6-6-[7]-11-8-10
-node in index: {1, 2,  3,  4, 5, 6, 7, 8,  9, 10, 11}
-Index:         {0, 1, -1, -1, 2, 3, 5, 7, -1,  8,  6}
-length: 9
+Check if next pivot is less then edge
+   1 < 3; new edge cost more then the next pivot
 
-overwrite old 6 with 7
-Heap:          [1]-2-[5]-6-[7]-7-11-8-10
-node in index: {1, 2,  3,  4, 5, 6, 7, 8,  9, 10, 11}
-Index:         {0, 1, -1, -1, 2, 3, 4, 7, -1,  8,  6}
+Overwirte the old pivot with the new edge
+Move pivot one edge up:
+Heap (weight): [1]-2-3-[4]-7-[8]-11-10
+child node:    {1, 2,5, 3, 4, 6,  7, 8,  9}
+Index:         {0, 1,2, 3, 4, 5,  6, 7, -1}
+Pivot:               ^---child insereted in new position
 length: 9
-
-overwrite old  7 with 10
-Heap:          [1]-2-[5]-6-[7]-10-11-8-10
-node in index: {1, 2,  3,  4, 5, 6, 7, 8,  9, 10, 11}
-Index:         {0, 1, -1, -1, 2, 3, 4, 7, -1,  5,  6}
-length: 9
-
-delete one off the length to delete the old 10
-Heap:          [1]-2-[5]-6-[7]-10-11-8
-node in index: {1, 2,  3,  4, 5, 6, 7, 8,  9, 10, 11}
-Index:         {0, 1, -1, -1, 2, 3, 4, 7, -1,  5,  6}
-length: 8
 ```
 
 ## Example of prims for a simple complete graph

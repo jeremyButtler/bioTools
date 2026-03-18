@@ -26,6 +26,7 @@
 #include <stdio.h>
 
 #include "../genLib/ulCp.h"
+#include "../genLib/base10str.h"
 #include "../genTree/runPrim.h"
 
 /*.h files only*/
@@ -37,6 +38,7 @@
 !   - .c  #include "../genTree/prim.h"
 !   - .c  #include "../genSort/siBinSearch.h"
 !   - .c  #include "../genLib/genMath.h"
+!   - .c  #include "../genLib/fileFun.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 /*-------------------------------------------------------\
@@ -139,7 +141,7 @@ phelp_mainMkMST(
 
    fprintf(
       (FILE *) inFILE,
-      "  -features <featurs>.tsv: [Required]%s",
+      "  -features <featurrs>.tsv: [Required]%s",
       str_endLine
    );
 
@@ -155,6 +157,41 @@ phelp_mainMkMST(
       str_endLine
    );
 
+   fprintf(
+      (FILE *) inFILE,
+      "    o format: %s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) inFILE,
+      "      - first row is the header%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) inFILE,
+      "      - 2nd row to last are the sequences%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) inFILE,
+      "      - 1st column is the sequence name%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) inFILE,
+      "      - 2nd to last columns are the lineages%s",
+      str_endLine
+   );
+
+   fprintf(
+    (FILE *) inFILE,
+    "        * mark lineage as unkown with `*` or `na`%s",
+    str_endLine
+   );
+
    /*****************************************************\
    * Fun02 Sec02 Sub02:
    *   - node to start building the tree with
@@ -168,7 +205,13 @@ phelp_mainMkMST(
 
    fprintf(
       (FILE *) inFILE,
-      "    o Entry to start building the MST with%s",
+      "    o entry to start building the MST with%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) inFILE,
+      "    o index 1 (one is first row in the file)%s",
       str_endLine
    );
 
@@ -185,13 +228,13 @@ phelp_mainMkMST(
 
    fprintf(
       (FILE *) inFILE,
-      "    o File to save the output tree to%s",
+      "    o file to save the output tree to%s",
       str_endLine
    );
 
    fprintf(
       (FILE *) inFILE,
-      "    o Use `-out -` for stdout%s",
+      "    o use `-out -` for stdout%s",
       str_endLine
    );
 
@@ -251,11 +294,11 @@ phelp_mainMkMST(
 \-------------------------------------------------------*/
 signed char
 input_mainMkMST(
-   int argLenSI,              /*number of input items*/
-   char *argAryStr[],         /*user input*/
-   signed char *inFileStrPtr, /*gets input file path*/
-   signed int *nodeSIPtr,     /*gets node to start at*/
-   signed char *outFileStrPtr /*gets output file path*/
+   int argLenSI,               /*number of input items*/
+   char *argAryStr[],          /*user input*/
+   signed char **inFileStrPtr, /*gets input file path*/
+   signed int *nodeSIPtr,      /*gets node to start at*/
+   signed char **outFileStrPtr /*gets output file path*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
    '   - get user input from the args array
@@ -307,7 +350,7 @@ input_mainMkMST(
       if(
          ! eqlNull_ulCp(
             (signed char *) "-features",
-            argAryStr[siArg]
+            (signed char *) argAryStr[siArg]
          )
       ){ /*If: input feature table*/
          ++siArg;
@@ -322,7 +365,7 @@ input_mainMkMST(
       else if(
          ! eqlNull_ulCp(
             (signed char *) "-out",
-            argAryStr[siArg]
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: output file*/
          ++siArg;
@@ -337,7 +380,7 @@ input_mainMkMST(
       else if(
          ! eqlNull_ulCp(
             (signed char *) "-node",
-            argAryStr[siArg]
+            (signed char *) argAryStr[siArg]
          )
       ){ /*Else If: node to start at*/
          ++siArg;
@@ -378,35 +421,35 @@ input_mainMkMST(
       else if(
          ! eqlNull_ulCp(
             (signed char *) "-h",
-            argAryStr[siArg]
+            (signed char *) argAryStr[siArg]
          )
       ) goto phelp_fun03_sec03;
 
       else if(
          ! eqlNull_ulCp(
             (signed char *) "--h",
-            argAryStr[siArg]
+            (signed char *) argAryStr[siArg]
          )
       ) goto phelp_fun03_sec03;
 
       else if(
          ! eqlNull_ulCp(
             (signed char *) "help",
-            argAryStr[siArg]
+            (signed char *) argAryStr[siArg]
          )
       ) goto phelp_fun03_sec03;
 
       else if(
          ! eqlNull_ulCp(
             (signed char *) "-help",
-            argAryStr[siArg]
+            (signed char *) argAryStr[siArg]
          )
       ) goto phelp_fun03_sec03;
 
       else if(
          ! eqlNull_ulCp(
             (signed char *) "--help",
-            argAryStr[siArg]
+            (signed char *) argAryStr[siArg]
          )
       ) goto phelp_fun03_sec03;
 
@@ -418,35 +461,35 @@ input_mainMkMST(
       else if(
          ! eqlNull_ulCp(
             (signed char *) "-v",
-            argAryStr[siArg]
+            (signed char *) argAryStr[siArg]
          )
       ) goto pversion_fun03_sec03;
 
       else if(
          ! eqlNull_ulCp(
             (signed char *) "--v",
-            argAryStr[siArg]
+            (signed char *) argAryStr[siArg]
          )
       ) goto pversion_fun03_sec03;
 
       else if(
          ! eqlNull_ulCp(
             (signed char *) "version",
-            argAryStr[siArg]
+            (signed char *) argAryStr[siArg]
          )
       ) goto pversion_fun03_sec03;
 
       else if(
          ! eqlNull_ulCp(
             (signed char *) "-version",
-            argAryStr[siArg]
+            (signed char *) argAryStr[siArg]
          )
       ) goto pversion_fun03_sec03;
 
       else if(
          ! eqlNull_ulCp(
             (signed char *) "-version",
-            argAryStr[siArg]
+            (signed char *) argAryStr[siArg]
          )
       ) goto pversion_fun03_sec03;
 
@@ -460,6 +503,7 @@ input_mainMkMST(
           fprintf(
              stderr,
              "%s is not recognized%s",
+             argAryStr[siArg],
              str_endLine
           );
           goto err_fun03_sec03;
@@ -478,7 +522,7 @@ input_mainMkMST(
    ^   - return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   errSC = 0;
+   siArg = 0;
    goto ret_fun03_sec03;
 
    phelp_fun03_sec03:;
@@ -532,9 +576,9 @@ main(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   signed char inFileStr[128];  /*feature table for MST*/
-   signed char outFileStr[128]; /*newick file to save to*/
-   signed char nodeSI = 0;      /*node to start on*/
+   signed char *inFileStr = 0;  /*feature table for MST*/
+   signed char *outFileStr = 0; /*newick file to save to*/
+   signed int nodeSI = 0;       /*node to start on*/
 
    signed char errSC = 0;
    signed long errSL = 0;
@@ -563,8 +607,8 @@ main(
          argLenSI,
          argAryStr,
          &inFileStr,
-         &nodSI,
-         &outFileStr,
+         &nodeSI,
+         &outFileStr
       );
 
    if(errSC)
@@ -673,7 +717,19 @@ main(
 
    if(! errSL)
       ;
-   else if(errSC > 0)
+   else if(errSL == 1)
+   { /*Else If: invalid node*/
+      fprintf(
+         stderr,
+         "tree in file %s does not have node number %i%s",
+         inFileStr,
+         nodeSI + 1,
+         str_endLine
+      );
+      goto err_main_sec0x;
+   } /*Else If: invalid node*/
+
+   else if(errSL > 1)
    { /*Else If: memory error*/
       fprintf(
          stderr,
@@ -734,7 +790,7 @@ main(
 
 
       if(mstHeapST)
-         freeHeap_mst_runPrim(mstSTPtr);
+         freeHeap_mst_runPrim(mstHeapST);
 
 
       return errSC;

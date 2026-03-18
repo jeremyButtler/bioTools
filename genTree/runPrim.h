@@ -49,11 +49,11 @@ mst_runPrim
 {
    struct heap_prim *mstST;   /*has mst tree*/
    signed char **nameAryStr;  /*node names for newick*/
-   singed int *distArySI;  /*distance row or spare array*/
+   signed int *distArySI;  /*distance row or spare array*/
    signed long *indexArySL;   /*index of all lines*/
 
-   singed long nodeLenSL;    /*number nodex in tree*/
-   singed long nodeSizeSL;   /*nodes in structure*/
+   signed long nodeLenSL;    /*number nodex in tree*/
+   signed long nodeSizeSL;   /*nodes in structure*/
    signed long maxLineLenSL; /*max line length in file*/
 }mst_runPrim;
 
@@ -154,7 +154,8 @@ indexFeatureFile_runPrim(
 |       last read row
 |   - Returns:
 |     o 0 for no errors
-|     o 1 for memory errors
+|     o 1 if firstNodeSI is not in the tree
+|     o 2 for memory errors
 |     o (1 + lineSL) * -1 for file errors
 \-------------------------------------------------------*/
 signed long

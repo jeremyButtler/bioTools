@@ -71,6 +71,31 @@
 ! Hidden libraries:
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
+/*I originally wanted a midpoint method. However, it got
+`  to complex to quickly and so I never got it working.
+`  I am leaving the code here in case I want to revive it
+*/
+#ifdef MIDPIONT_NEWICK_PRIM
+/*-------------------------------------------------------\
+| ST02: dist_prim
+|   - stores the distance to a cluster
+\-------------------------------------------------------*/
+typedef struct
+dist_prim{
+   float distF;               /*distance to child node*/
+   signed int childSI;
+      /*child node to add or -1 if is an internal node*/
+   signed int firstChildIndexSI;
+      /*index of the first child node*/
+
+   struct dist_prim *nextPtr;
+      /*idea is to keep the first struct with the lowest
+      `  value, and do not bother sorting the rest. This
+      `  allows me to find the lowest midpiont
+      */
+}dist_prim;
+#endif
+
 /*-------------------------------------------------------\
 | Fun01: blank_heap_prim
 |   - blanks a heap_prim structure to null (somewhat
@@ -81,17 +106,37 @@
 | Output:
 |   - sets indexSI, pivotLenSI, heapLenSI, and scoreSI
 |     (lazy blank)
+|   - sets all values used in indexArySI to def_maxSI_prim
 \-------------------------------------------------------*/
 void
 blank_heap_prim(
    struct heap_prim *primSTPtr
 ){
+   signed int siPos = 0;
+
    if(! primSTPtr)
       return;
-   primSTPtr->indexSI = 0; /*at first index in heap*/
    primSTPtr->pivotLenSI = 0;
    primSTPtr->heapLenSI = 0;
    primSTPtr->scoreSI = 0;
+
+   if(primSTPtr->indexArySI)
+   { /*If: I need to reset all index's to none*/
+      for(siPos = 0; siPos < primSTPtr->indexSI; ++siPos)
+      { /*Loop: initialize index and parent nodes*/
+         primSTPtr->indexArySI[siPos] = def_maxSI_prim;
+         primSTPtr->parArySI[siPos] = -1;
+      } /*Loop: initialize index and parent nodes*/
+
+      if(primSTPtr->indexSI < primSTPtr->sizeSI)
+      { /*If: need to blank the last possible value*/
+         primSTPtr->indexArySI[ primSTPtr->indexSI ] =
+            def_maxSI_prim;
+         primSTPtr->parArySI[ primSTPtr->indexSI ] = -1;
+      } /*If: need to blank the last possible value*/
+   } /*If: I need to reset all index's to none*/
+
+   primSTPtr->indexSI = 0; /*at first index in heap*/
 } /*blank_heap_prim*/
 
 /*-------------------------------------------------------\
@@ -197,6 +242,8 @@ setupMem_heap_prim(
    struct heap_prim *primSTPtr,
    signed int numNodesSI
 ){
+   signed int siPos = 0;
+
    /*___________check_if_can_add_memory_________________*/
    if(! primSTPtr)
       goto nothingToDo_fun05;
@@ -232,15 +279,21 @@ setupMem_heap_prim(
    if(! primSTPtr->pivotArySI)
       goto memErr_fun05;
 
+   primSTPtr->parArySI =
+      malloc(numNodesSI * sizeof(signed int));
+   if(! primSTPtr->parArySI)
+      goto memErr_fun05;
+
    primSTPtr->indexArySI =
       malloc(numNodesSI * sizeof(signed int));
    if(! primSTPtr->indexArySI)
       goto memErr_fun05;
 
-   primSTPtr->parArySI =
-      malloc(numNodesSI * sizeof(signed int));
-   if(! primSTPtr->parArySI)
-      goto memErr_fun05;
+   for(siPos = 0; siPos < numNodesSI; ++siPos)
+   { /*Loop: set parent and index to no node*/
+      primSTPtr->indexArySI[siPos] = def_maxSI_prim;
+      primSTPtr->parArySI[siPos] = def_maxSI_prim;
+   } /*Loop: set parent and index to no node*/
 
    /*________________return_the_result__________________*/
    return 0;
@@ -324,7 +377,7 @@ qckSelect_heap_prim(
    '   o fun07 sec01:
    '     - variable declarations
    '   o fun07 sec02:
-   '     - find the heap length and the middle of the heap
+   '     - check minimum value case and find heap midpoint
    '   o fun07 sec03:
    '     - deal with cases were there are two few elements
    '   o fun07 sec04:
@@ -348,13 +401,55 @@ qckSelect_heap_prim(
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun07 Sec02:
-   ^   - find the heap length and the middle of the heap
+   ^   - check minimum value case and find heap midpoint
+   ^   o fun07 sec02 sub01:
+   ^     - find minimum value case
+   ^   o fun07 sec02 sub02:
+   ^     - find midpiont in heap
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
+   /*****************************************************\
+   * Fun07 Sec02 Sub01:
+   *   - deal with find minimum value case
+   \*****************************************************/
+
    if(startPivotBl == 1)
-      kthSI = startSI;
+   { /*If: finding the minimum value*/
+      /*I do not have to jump around to find the first
+      `  pivot, this should be faster
+      */
+      for(midSI = startSI; midSI <= endSI; ++midSI)
+      { /*Loop: find the minimum value*/
+         /*unlike swapping, finding the minimum value
+         `  is faster branched in a random case
+         `  (see tmp_minFindTimes.c in genSort/test
+         */
+         if(edgeArySI[midSI] < edgeArySI[startSI])
+         { /*If: need to swap*/
+            indexArySI[ childArySI[startSI] ] = midSI;
+            indexArySI[ childArySI[midSI] ] = startSI;
+
+            edgeArySI[startSI] ^= edgeArySI[midSI];
+            edgeArySI[midSI] ^= edgeArySI[startSI];
+            edgeArySI[startSI] ^= edgeArySI[midSI];
+
+            childArySI[startSI] ^= childArySI[midSI];
+            childArySI[midSI] ^= childArySI[startSI];
+            childArySI[startSI] ^= childArySI[midSI];
+         } /*If: need to swap*/
+      } /*Loop: find the minimum value*/
+
+      return startSI;
+   } /*If: finding the minimum value*/
+
+   /*****************************************************\
+   * Fun07 Sec02 Sub02:
+   *   - find midpiont in heap
+   \*****************************************************/
+
    else
       kthSI = (endSI + startSI) >> 1;
+      /*else find the midpiont*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun07 Sec03:
@@ -548,8 +643,10 @@ qckSelect_heap_prim(
          */
       swapSI = -(midSI != endSI);
 
-      indexArySI[ childArySI[endSI] ] = midSI;
-      indexArySI[ childArySI[midSI] ] = endSI;
+      indexArySI[ childArySI[midSI] ] =
+         (midSI & ~swapSI) | (endSI & swapSI);
+      indexArySI[ childArySI[endSI] ] =
+         (midSI & swapSI) | (endSI & ~swapSI);
 
       edgeArySI[midSI] ^= (edgeArySI[endSI] & swapSI);
       edgeArySI[endSI] ^= (edgeArySI[midSI] & swapSI);
@@ -579,9 +676,6 @@ qckSelect_heap_prim(
          (endSI & swapSI) | (startSI & ~swapSI);
       indexArySI[ childArySI[endSI] ] =
          (endSI & ~swapSI) | (startSI & swapSI);
-
-      indexArySI[ childArySI[endSI] ] = startSI;
-      indexArySI[ childArySI[startSI] ] = endSI;
 
       edgeArySI[startSI] ^= (edgeArySI[endSI] & swapSI);
       edgeArySI[endSI] ^= (edgeArySI[startSI] & swapSI);
@@ -621,7 +715,7 @@ findPivots_heap_prim(
    '   o fun08 sec04:
    '     - find the pivots
    '   o fun08 sec05:
-   '     - make sure no blank pivots
+   '     - make sure no blank pivots and find first pivot
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -645,6 +739,7 @@ findPivots_heap_prim(
    signed int offsetSI = 0;
    signed int nextSetSI = 0;
    signed int cntSI = 0;
+   signed int lastPivotSI = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun08 Sec02:
@@ -653,15 +748,38 @@ findPivots_heap_prim(
 
    if(primSTPtr->pivotLenSI > 1)
    { /*If: only need to find the starting pivot*/
-      primSTPtr->pivotArySI[0] =
-         qckSelect_heap_prim(
-            primSTPtr,
-            primSTPtr->indexSI,
-            primSTPtr->pivotArySI[1],
-            1 /*find the starting pivot*/
-         );
+      if(primSTPtr->pivotArySI[1] - primSTPtr->indexSI >1)
+      { /*If: have to find the first pivot*/
+         primSTPtr->pivotArySI[0] =
+            qckSelect_heap_prim(
+               primSTPtr,
+               primSTPtr->indexSI,
+               primSTPtr->pivotArySI[1] - 1,
+               1 /*find the starting pivot*/
+            );
+      } /*If: have to find the first pivot*/
+
+      else if(
+         primSTPtr->pivotArySI[1] == primSTPtr->indexSI
+      ){ /*Else If: the next pivot becomes the first*/
+         for(
+            lenSI = 0;
+            lenSI < primSTPtr->pivotLenSI - 1;
+            ++lenSI
+         ){ /*Loop: remove blank pivots*/
+            primSTPtr->pivotArySI[lenSI] =
+                  primSTPtr->pivotArySI[lenSI + 1];
+         } /*Loop: remove blank pivots*/
+
+         --primSTPtr->pivotLenSI;
+      } /*Else If: the next pivot becomes the first*/
+
+      else
+         primSTPtr->pivotArySI[0] = primSTPtr->indexSI;
+         /*only one item, so can assign pivot safely*/
+
       return; /*pivots are still left, so leave all other
-              `  pivots alone. It may be a good diea to
+              `  pivots alone. It may be a good idea to
               `  do a pivot grouping check to handle
               `  worst cases
               */
@@ -672,25 +790,26 @@ findPivots_heap_prim(
    ^   - find the number of pivots to get
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
+   lenSI = primSTPtr->heapLenSI - primSTPtr->indexSI;
    endSI = lenSI >> 3;
       /*divide by 8 to have at least 8 items per pivot*/
 
-   if(endSI > primSTPtr->pivotLenSI)
-      endSI = primSTPtr->pivotLenSI - 1;
-   else if(endSI)
-      --endSI;
-   else if(! endSI)
-   { /*If: less then eight items left*/
+   if(endSI > primSTPtr->pivotSizeSI)
+      endSI = primSTPtr->pivotSizeSI - 1;
+   else if(endSI > 1)
+      --endSI; /*convert pivot length to index 0*/
+   else
+   { /*Else: less then eight items left*/
       primSTPtr->pivotArySI[0] =
          qckSelect_heap_prim(
             primSTPtr,
             primSTPtr->indexSI,
-            primSTPtr->pivotArySI[1],
+            primSTPtr->heapLenSI - 1,
             1
          );
       primSTPtr->pivotLenSI = 1;
       return;
-   } /*If: less then eight items left*/
+   } /*Else: less then eight items left*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun08 Sec04:
@@ -706,14 +825,19 @@ findPivots_heap_prim(
    *   - setup for the pivot loop (initialze)
    \*****************************************************/
 
-   for(lenSI = 0; lenSI < primSTPtr->pivotLenSI; ++lenSI)
+   for(lenSI = 0; lenSI <= endSI; ++lenSI)
       primSTPtr->pivotArySI[lenSI] = -1;
       /*make sure I can detect unset pivots*/
 
    /*______________set_up_my_stacks_____________________*/
    startArySI[0] = primSTPtr->indexSI;
    endArySI[0] = primSTPtr->heapLenSI - 1;
-   pivotArySI[0] = endSI >> 1;
+
+   if(endSI > 1)
+      pivotArySI[0] = endSI >> 1;
+   else
+      pivotArySI[0] = 1;
+
    lenSI = 1;
    indexSI = 0;
    primSTPtr->pivotLenSI = 0;
@@ -728,7 +852,7 @@ findPivots_heap_prim(
    /*This loops ensures that the non-start pivots are
    `  evenly placed throughout the heap
    */
-   while(endSI > 0)
+   while(0 == 0)
    { /*Loop: find the non-start pivots*/
       /*_____________find_the_pivot_____________________*/
       pivotSI =
@@ -739,10 +863,24 @@ findPivots_heap_prim(
             0                    /*find middle point*/
           );
       primSTPtr->pivotArySI[pivotArySI[indexSI]]=pivotSI;
-
+      lastPivotSI =
+         max_genMath(lastPivotSI, pivotArySI[indexSI]);
       --endSI;
+      ++primSTPtr->pivotLenSI;
+
       if(! endSI)
-          break; /*only start pivot has not been added*/
+         break; /*all pivots have been filled*/
+      else if(indexSI >= lenSI)
+         break; /*added all pivots*/
+      else if(! offsetSI)
+      { /*Else If: at end of pivot list*/
+         ++indexSI;
+
+         if(indexSI >= lenSI)
+            break; /*added all pivots*/
+         else
+            continue; /*no more pivots to add*/
+      } /*Else If: at end of pivot list*/
 
       /*___________add_next_pivot_ranges_to_stack_______*/
       startArySI[lenSI] = pivotSI + 1;
@@ -757,7 +895,7 @@ findPivots_heap_prim(
 
       /*___________move_to_the_next_pivot_to_find_______*/
       ++indexSI;
-      ++primSTPtr->pivotLenSI;
+      ++cntSI;
 
       if(cntSI == nextSetSI)
       { /*If: moving to next set of pivot values*/
@@ -769,32 +907,19 @@ findPivots_heap_prim(
          `   but it should get most of the pivot positions
          */
       } /*If: moving to next set of pivot values*/
-
-      else
-         ++cntSI;
    } /*Loop: find the non-start pivots*/
-
-   /*__________________find_the_first_pivot_____________*/
-   primSTPtr->pivotArySI[0] =
-      qckSelect_heap_prim(
-         primSTPtr,
-         primSTPtr->indexSI,
-         primSTPtr->pivotArySI[1],
-         1
-      );
-   ++primSTPtr->pivotLenSI;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun08 Sec05:
-   ^   - make sure no blank pivots
+   ^   - make sure no blank pivots and find first pivot
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*I need this step because there may be some cases were
    `  a pivot might be missed by my system. I want to
    `  make sure these pivots are removed
    */
-   endSI = 0;
-   for(lenSI = 0; lenSI < primSTPtr->pivotLenSI; ++lenSI)
+   endSI = 1;
+   for(lenSI = 1; lenSI <= lastPivotSI; ++lenSI)
    { /*Loop: remove blank pivots*/
       if(primSTPtr->pivotArySI[lenSI] < 0)
          ;
@@ -805,6 +930,20 @@ findPivots_heap_prim(
          ++endSI;
       } /*Else: pivot was set*/
    } /*Loop: remove blank pivots*/
+   primSTPtr->pivotLenSI = endSI;
+
+   /*__________________find_the_first_pivot_____________*/
+   if(primSTPtr->pivotArySI[0] < 0)
+      ++primSTPtr->pivotLenSI;
+      /*if not overwriting a pivot*/
+
+   primSTPtr->pivotArySI[0] =
+      qckSelect_heap_prim(
+         primSTPtr,
+         primSTPtr->indexSI,
+         primSTPtr->pivotArySI[1] - 1,
+         1
+      );
 
    primSTPtr->pivotLenSI = endSI;
 } /*findPivots_heap_prim*/
@@ -864,24 +1003,75 @@ delInsEdge_heap_prim(
    signed int pivotSI = 0;
    signed int pivotIndexSI = 0;
 
+   /*this is for pivot shifting*/
+   signed int lastPivotSI = 0;
+   signed int firstPivotSI = 0;
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun09 Sec02:
    ^   - find the pivot position of the old edge
+   ^   o fun09 sec02 sub01:
+   ^     - get ending pivot and check if have pivots to
+   ^       look through
+   ^   o fun09 sec02 sub02:
+   ^     - find the pivot to insert at
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Fun09 Sec02 Sub01:
+   *   - get ending pivot and check if have pivots to
+   *     look through
+   \*****************************************************/
 
    /*____________find_the_first_pivot___________________*/
    pivotSI = primSTPtr->pivotLenSI - 1;
-   pivotIndexSI = primSTPtr->pivotArySI[pivotSI--];
+
+   if(pivotSI <= 0)
+   { /*If: one or no pivots*/
+      firstPivotSI = primSTPtr->pivotArySI[0];
+      
+      if(pivotSI < 0)
+         ;
+      else if(edgeSI < primSTPtr->edgeArySI[firstPivotSI])
+      { /*Else If: I need to set the new pivot*/
+         moveNodeSI = primSTPtr->childArySI[firstPivotSI];
+
+         primSTPtr->edgeArySI[indexSI] =
+            primSTPtr->edgeArySI[firstPivotSI];
+         primSTPtr->childArySI[indexSI] = moveNodeSI;
+         primSTPtr->indexArySI[moveNodeSI] = indexSI;
+
+         indexSI = firstPivotSI;
+      } /*Else If: I need to set the new pivot*/
+
+      primSTPtr->edgeArySI[indexSI] = edgeSI;
+      primSTPtr->childArySI[indexSI] = nodeSI;
+      primSTPtr->indexArySI[nodeSI] = indexSI;
+      primSTPtr->parArySI[nodeSI] = parSI;
+
+      goto retNoErr_fun08_sec04;
+   } /*If: one or no pivots*/
+
+   /*****************************************************\
+   * Fun09 Sec02 Sub02:
+   *   - find the pivot to insert at
+   \*****************************************************/
+
+   pivotIndexSI = primSTPtr->pivotArySI[pivotSI];
 
    while(pivotSI > -1 && pivotIndexSI > indexSI)
-      pivotIndexSI = primSTPtr->pivotArySI[pivotSI--];
+   { /*Loop: find the pivot before the new edge*/
+      --pivotSI;
+      pivotIndexSI = primSTPtr->pivotArySI[pivotSI];
+   } /*Loop: find the pivot before the new edge*/
+
    if(pivotSI < 0)
       goto overflow_fun08_sec04;
 
    /*_____check_if_deleting_pivot_and_if_can_insert_____*/
    if(indexSI == pivotIndexSI)
    { /*If: deleting a pivot*/
-      if(! indexSI)
+      if(indexSI == primSTPtr->indexSI)
          goto insertPivot_fun08_sec04;
          /*deleting the first pivot*/
 
@@ -898,12 +1088,24 @@ delInsEdge_heap_prim(
 
       if(edgeSI >= primSTPtr->edgeArySI[pivotIndexSI] - 1)
          goto insertPivot_fun08_sec04;
-         /*can insert new edge at old pivot position*/
+         /*can insert new edge at old pivot position;
+         `  in this case I lost the pivot, but I do not
+         `  need to find the insert postion
+         */
+      else if(pivotSI)
+         --pivotSI; /*removed the old pivot*/
+      else
+      { /*Else: I am removing the first pivot*/
+         indexSI = primSTPtr->indexSI;
+         goto insertPivot_fun08_sec04;
+      } /*Else: I am removing the first pivot*/
    } /*If: deleting a pivot*/
 
    else if (edgeSI >= primSTPtr->edgeArySI[pivotIndexSI])
       goto insertPivot_fun08_sec04;
-      /*new weight goes with same pivot as old*/
+      /*new weight stays with same pivot; so no need to
+      `  change the position
+      */
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun09 Sec03:
@@ -923,37 +1125,64 @@ delInsEdge_heap_prim(
          break;
       } /*If: found the insert point*/
 
-      else if(
-            primSTPtr->pivotArySI[pivotSI] - 1
-         == primSTPtr->pivotArySI[pivotSI - 1]
-      ){ /*Else If: pivots are right next to each other*/
-         ++indexSI; /*position to move to*/
-         goto mvPivotUp_fun09_sec03;
-      }  /*Else If: pivots are right next to each other*/
-
       /*___________move_insert_item_to_the_pivot________*/
       ++indexSI; /*move to edge after the pivot*/
       moveNodeSI = primSTPtr->childArySI[indexSI];
 
       primSTPtr->edgeArySI[movePosSI] =
          primSTPtr->edgeArySI[indexSI];
-      primSTPtr->childArySI[movePosSI] =
-         primSTPtr->childArySI[indexSI];
+      primSTPtr->childArySI[movePosSI] = moveNodeSI;
       primSTPtr->indexArySI[moveNodeSI] = movePosSI;
 
       /*___________move_the_pivot_up____________________*/
-      mvPivotUp_fun09_sec03:;
-         movePosSI = indexSI;
-         --indexSI; /*move to pivot*/
-         moveNodeSI = primSTPtr->childArySI[indexSI];
+      --indexSI; /*move to pivot*/
+      movePosSI = indexSI;
+      moveNodeSI = primSTPtr->childArySI[indexSI];
 
-         primSTPtr->edgeArySI[indexSI + 1] =
-            primSTPtr->edgeArySI[indexSI];
-         primSTPtr->childArySI[indexSI + 1] =
-            primSTPtr->childArySI[indexSI];
+      primSTPtr->edgeArySI[indexSI + 1] =
+         primSTPtr->edgeArySI[indexSI];
+      primSTPtr->childArySI[indexSI + 1] = moveNodeSI;
 
-         ++primSTPtr->pivotArySI[pivotSI];
-         ++primSTPtr->indexArySI[moveNodeSI];
+      ++primSTPtr->pivotArySI[pivotSI];
+      ++primSTPtr->indexArySI[moveNodeSI];
+
+      /*______delete_neighboring_pivots_________________*/
+      if(
+         pivotSI
+         &&    primSTPtr->pivotArySI[pivotSI] - 2
+            == primSTPtr->pivotArySI[pivotSI - 1]
+      ){ /*If: two pivots are next to each other*/
+         /*the -2 in the if check is because I moved the
+         `  pivot one item up
+         */
+         if(pivotSI < primSTPtr->pivotLenSI - 1)
+            lastPivotSI = pivotSI + 1;
+         else
+            lastPivotSI = primSTPtr->pivotLenSI;
+
+         lastPivotSI = pivotSI;
+         --pivotSI;
+
+         while(
+               pivotSI > 0
+            &&    primSTPtr->pivotArySI[pivotSI] - 1
+               == primSTPtr->pivotArySI[pivotSI - 1]
+         ) --pivotSI;/*find 1st non-overlapping pivot*/
+
+         firstPivotSI = pivotSI + 1;
+         for(
+            ;
+            lastPivotSI < primSTPtr->pivotLenSI;
+            ++lastPivotSI
+         ){ /*Loop: shift pivot positions*/
+            primSTPtr->pivotArySI[firstPivotSI++] =
+               primSTPtr->pivotArySI[lastPivotSI];
+         }  /*Loop: shift pivot positions*/
+
+         primSTPtr->pivotLenSI = firstPivotSI;
+      }  /*If: two pivots are next to each other*/
+
+      else
          --pivotSI;
    } /*Loop: find the insert position*/
 
@@ -965,11 +1194,28 @@ delInsEdge_heap_prim(
    goto insertPivot_fun08_sec04;
 
    insertPivot_fun08_sec04:;
+      pivotSI = primSTPtr->indexSI;
+      if(edgeSI < primSTPtr->edgeArySI[pivotSI])
+      { /*If: replacing the first pivot*/
+         primSTPtr->edgeArySI[indexSI] =
+            primSTPtr->edgeArySI[pivotSI];
+         primSTPtr->childArySI[indexSI] =
+            primSTPtr->childArySI[pivotSI];
+
+         pivotSI = primSTPtr->childArySI[indexSI];
+         primSTPtr->indexArySI[pivotSI] = indexSI;
+         indexSI = primSTPtr->indexSI;
+      } /*If: replacing the first pivot*/
+
       primSTPtr->edgeArySI[indexSI] = edgeSI;
       primSTPtr->childArySI[indexSI] = nodeSI;
 
       primSTPtr->indexArySI[nodeSI] = indexSI;
       primSTPtr->parArySI[nodeSI] = parSI;
+
+      goto retNoErr_fun08_sec04;
+
+   retNoErr_fun08_sec04:;
       return 0;
 
    overflow_fun08_sec04:;
@@ -1100,8 +1346,8 @@ insEdge_heap_prim(
 
       /*___________move_the_pivot_up____________________*/
       mvPivotUp_fun10_sec04:;
-         movePosSI = indexSI;
          --indexSI; /*move to pivot*/
+         movePosSI = indexSI;
          moveNodeSI = primSTPtr->childArySI[indexSI];
 
          primSTPtr->edgeArySI[indexSI + 1] =
@@ -1122,12 +1368,11 @@ insEdge_heap_prim(
    if(edgeSI < primSTPtr->edgeArySI[primSTPtr->indexSI])
    { /*If: inserting at the start*/
       indexSI = primSTPtr->indexSI;
-      ++primSTPtr->heapLenSI;
       moveNodeSI = primSTPtr->childArySI[indexSI];
 
-      primSTPtr->edgeArySI[indexSI + 1] =
+      primSTPtr->edgeArySI[movePosSI] =
          primSTPtr->edgeArySI[indexSI];
-      primSTPtr->childArySI[indexSI + 1] =
+      primSTPtr->childArySI[movePosSI] =
          primSTPtr->childArySI[indexSI];
 
       ++primSTPtr->indexArySI[moveNodeSI];
@@ -1154,6 +1399,13 @@ insEdge_heap_prim(
 |     o signed int array with the edge weights to add
 |     o each index is the child node the edge connects to
 |     o to skip an edge set the edges weight to -1
+|   - childArySI:
+|     o signed int array with child to assign each edge
+|       to
+|     o this array prevents a n^2 loop when the graph
+|       is not complete (everything connected). Without
+|       it I would have to have all edges input and skip
+|       all edges that are set to -1
 |   - numEdgesSI:
 |     o number of edges to add (index 1)
 |   - parNodeSI:
@@ -1166,45 +1418,54 @@ insEdge_heap_prim(
 \-------------------------------------------------------*/
 void
 addEdges_heap_prim(
-   signed int *edgeArySI, /*edges to add*/
-   signed int numEdgesSI, /*number edges to add*/
-   signed int parNodeSI,  /*node edges belong to*/
+   signed int *edgeArySI,  /*edges to add*/
+   signed int *childArySI, /*child edges to add*/
+   signed int numEdgesSI,  /*number edges to add*/
+   signed int parNodeSI,   /*node edges belong to*/
    struct heap_prim *primSTPtr /*add edges to*/
 ){
    signed int siEdge = 0;
    signed int indexSI = 0;
+   signed int childSI = 0;
 
    for(siEdge = 0; siEdge < numEdgesSI; ++siEdge)
    { /*Loop: add all edges*/
-      if(edgeArySI[siEdge] < 0)
+      childSI = childArySI[siEdge];
+      if(edgeArySI[siEdge] < 0 || childSI < 0)
          continue; /*this edge should not be added*/
 
-      indexSI = primSTPtr->indexArySI[siEdge];
+      indexSI = primSTPtr->indexArySI[childSI];
       if(indexSI < 0)
          continue; /*the child node this edge connects to
                    `  is already in the MST
                    */
+
+      else if(indexSI == def_maxSI_prim)
+      { /*Else If: this is a new edge*/
+         insEdge_heap_prim(
+            edgeArySI[siEdge], /*edge to add (weight)*/
+            childSI,   /*child node the edge connects to*/
+            parNodeSI,/*parent node the edge connects to*/
+            primSTPtr
+         ); /*else this is a new child insert the edge*/
+      }  /*Else If: this is a new edge*/
+
       else if(
         edgeArySI[siEdge] >= primSTPtr->edgeArySI[indexSI]
       ) continue;/*better edge for this node in the heap*/
 
-      if(primSTPtr->edgeArySI[siEdge] != def_maxSI_prim)
+      else
+      { /*Else: this is a better edge*/
          delInsEdge_heap_prim(
             edgeArySI[siEdge], /*edge to add (weight)*/
-            siEdge,   /*child node the edge connects to*/
+            childSI,   /*child node the edge connects to*/
             parNodeSI,/*parent node the edge connects to*/
             primSTPtr
          ); /*if have a better edge to a child node then
             `  the child nodes edge in the quick heap,
             `  delete the old edge and insert the new edge
             */
-      else
-         insEdge_heap_prim(
-            edgeArySI[siEdge], /*edge to add (weight)*/
-            siEdge,   /*child node the edge connects to*/
-            parNodeSI,/*parent node the edge connects to*/
-            primSTPtr
-         ); /*else this is a new child insert the edge*/
+      } /*Else: this is a better edge*/
    } /*Loop: add all edges*/
 } /*addEdges_heap_prim*/
 
@@ -1237,9 +1498,27 @@ extractEdge_heap_prim(
 ){
    signed int siPos = 0;
 
+   if(! primSTPtr->indexSI)
+   { /*If: on the first child*/
+      findPivots_heap_prim(primSTPtr); /*first round*/
+      ++primSTPtr->indexSI;
+      findPivots_heap_prim(primSTPtr);
+         /*I need to refinde the first pivot*/
+      goto getNode_fun12;
+   } /*If: on the first child*/
+
    ++primSTPtr->indexSI;
 
-   if(primSTPtr->indexSI == primSTPtr->pivotArySI[1])
+   if(primSTPtr->pivotLenSI < 2)
+   { /*If: have one or fewer pivots*/
+      if(primSTPtr->indexSI > primSTPtr->heapLenSI)
+         goto emptyHeap_fun10;
+      else
+         findPivots_heap_prim(primSTPtr);
+         /*only one pivot*/
+   } /*If: have one or fewer pivots*/
+
+   else if(primSTPtr->indexSI == primSTPtr->pivotArySI[1])
    { /*If: the next item is the next pivot*/
       for(
          siPos = 0;
@@ -1259,13 +1538,21 @@ extractEdge_heap_prim(
       `  always assumes the first pivot is gone
       */
 
-   primSTPtr->scoreSI +=
-      primSTPtr->edgeArySI[primSTPtr->indexSI - 1];
-      /*add the edge weight to the MST score*/
-   primSTPtr->indexArySI[primSTPtr->indexSI - 1] = -1;
-      /*mark node as in MST*/
-   return primSTPtr->childArySI[primSTPtr->indexSI -1];
-      /*return the node added to the MST*/
+   getNode_fun12:;
+      primSTPtr->scoreSI +=
+         primSTPtr->edgeArySI[primSTPtr->indexSI - 1];
+         /*add the edge weight to the MST score*/
+
+      siPos = primSTPtr->indexSI - 1;
+      siPos = primSTPtr->childArySI[siPos];
+      primSTPtr->indexArySI[siPos] =
+         (primSTPtr->indexArySI[siPos] + 1) * -1;
+         /*mark node as in MST, but still keep track of
+         `  the index's
+         */
+
+      return siPos;
+         /*return the node added to the MST*/
 
    emptyHeap_fun10:;
       return -1;
@@ -1456,38 +1743,45 @@ threeAryUnsort_prim(
    } /*Loop: unsort the index array*/
 } /*threeAryUnsort_prim*/
 
+/*I originally wanted a midpoint method. However, it got
+`  to complex to quickly and so I never got it working.
+`  I am leaving the code here in case I want to revive it
+*/
+#ifdef MIDPIONT_NEWICK_PRIM
 /*-------------------------------------------------------\
 | Fun15: mstToNewickRecursive_heap_prim
 |   - the recurisve part to save a mst as a newick file
 |   - this function should only be called by
 |     mstToNewick_heap_prim; do not call it
 | Input:
-|   - parSI:
-|     o parent node to add to the newick file
+|   - parIndexSI:
+|     o index of the edge (parent to child) to add to the
+|       newick file
+|   - parWeightF:
+|     o weight of the parent to child edge
 |   - primSTPtr:
 |     o heap_prim struct pointer with mst tree to save
 |     o parArySI and indexArySI must be sorted by parent
 |       node
 |   - namesAryStr:
 |     o cstring array with the name for each node
-|   - childArySI:
-|     o signed in array with the child node for each index
-|       in parArySI (in primSTPtr)
 |   - outFILE:
 |     o FILE pointer to save file to
 | Output:
 |   - Modifies:
 |     o outFILE to have the mst in newick format
 |   - Returns:
-|     o weight reduced the child nodes by for the midpoint
-|     o 0 if parent had no child group
+|     o dist_prim structure pointer (on heap) with the
+|       distance to the next node
+|     o 0 if had a memory error
 \-------------------------------------------------------*/
-float
+struct dist_prim *
 mstToNewickRecusive_heap_prim(
-   signed int parSI,
-   struct heap_prim *primSTPtr,
-   signed char *namesAryStr[],
-   signed int *childArySI,
+   signed int parIndexSI,      /*index parent I am on*/
+   float parWeightF,           /*cost of the parent node*/
+   struct heap_prim *primSTPtr,/*tree to print*/
+   signed char *namesAryStr[], /*names for each node*/
+   signed char pBl,            /*1 print this group*/
    void *outFILE
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun15 TOC:
@@ -1497,10 +1791,12 @@ mstToNewickRecusive_heap_prim(
    '   o fun15 sec01:
    '     - variable declarations & logic for internal node
    '   o fun15 sec02:
-   '     - find the lowest cost edge to the parent node
+   '     - initialize and detect if we have children
    '   o fun15 sec03:
-   '     - print all child nodes
+   '     - find the lowest cost edge to the parent node
    '   o fun15 sec04:
+   '     - print all child nodes
+   '   o fun15 sec0y:
    '     - print parent node and the internal node
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -1509,168 +1805,222 @@ mstToNewickRecusive_heap_prim(
    ^   - variable declarations & logic for internal nodes
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   signed int indexSI = parSI + 1;
+   signed int parSI = 0;
+   signed int indexSI = 0;
    signed int nextChildSI = -1;
    signed int weightSI = -1;
+   signed int childSI = 0;
    float midWeightF = 0;
-   float distF = 0;
 
-   signed int tmpIndexSI = indexSI;
-
-   /*
-   ` The midpoint method was a suggestion from github
-   `   copilot. In the end I found it would be difficult
-   `   to implement. The main problem being that I needed
-   `   to adjust heights for the internal node based on
-   `   the childs ancestor node.
-   ` In a bifercating tree I have one child node per
-   `   parent. So, the distance would be the mid point.
-   `   This means parent->child becomes
-   `   internal
-   `    /    \
-   `  parent child
-   `
-   ` When added together this midpoint gives the same
-   `   distance between the parent and the child so it
-   `   works
-   `
-   ` For one parent and multiple children I need a better
-   `    midpoint. The best way may be to take the smallest
-   `    two weights and then subtract the midpiont weight
-   `    from everything else.
-   `
-   `   grand
-   `     |\
-   `     | \
-   `     | nephew
-   `     |
-   `   parent
-   `    / \
-   `   /   \
-   `  /     \
-   ` /       \
-   ` child_1  \
-   `          child_2
-   `
-   `  internal-nephew
-   `     |\
-   `     | grand         I also need to subtract the
-   `  internal---child 2   childs midpiont from the
-   `    /   \              parents distance to keep the
-   `   /     \             distances the same
-   `  parent child 1
-   `
-   ` This might not reflect the real relation in the
-   `   polytomy well, but does not need a distance
-   `   matrix to find.
-   ` The one problem is if the childs midpiont distance
-   `   is greater then the parents distance from its
-   `   grandparent. In this case the best I can do is
-   `   set the distance to 0
-   */
+   struct dist_prim *distHeapST =
+      malloc(sizeof(struct dist_prim));
+   struct dist_prim *listDistHeapST = 0;
+   struct dist_prim *nextDistSTPtr = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun15 Sec02:
-   ^   - find the lowest cost edge to the parent node
+   ^   - initialize and detect if we have children
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   if(primSTPtr->parArySI[indexSI] == parSI)
-   { /*If: more then a parent; insert an internal node*/
-      fprintf((FILE *) outFILE, "("); /*not a tip*/
+   parSI = primSTPtr->parArySI[parIndexSI];
+   indexSI = parIndexSI;
 
-      weightSI = primSTPtr->indexArySI[parSI];
-      weightSI = primSTPtr->edgeArySI[weightSI];
-      midWeightF = weightSI;
+   if(! distHeapST)
+      goto memErr_fun15_sec05;
+   distHeapST->distF = -1;
+   distHeapST->childSI = -1;
+   distHeapST->firstChildIndexSI = parIndexSI;
+   distHeapST->nextPtr = 0;
 
-      while(primSTPtr->parArySI[tmpIndexSI] == parSI)
-      { /*Loop: find my internal weight*/
-         weightSI = primSTPtr->indexArySI[tmpIndexSI];
-         weightSI = primSTPtr->edgeArySI[weightSI];
-
-         midWeightF =
-            min_genMath(weightSI,(signed int) midWeightF);
-         ++tmpIndexSI; /*keep track of children*/
-      } /*Loop: find my internal weight*/
-
-      midWeightF /= 2; /*midpiont between nodes*/
-   } /*If: more then a parent; insert an internal node*/
+   listDistHeapST = malloc(sizeof(struct dist_prim));
+   listDistHeapST->distF = parWeightF;
+   listDistHeapST->childSI = parSI;
+   listDistHeapST->firstChildIndexSI = parIndexSI;
+   listDistHeapST->nextPtr = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun15 Sec03:
-   ^   - print all child nodes
+   ^   - find the lowest cost edge to the parent node
+   ^   o fun15 sec03 sub01:
+   ^     - get all distances (including internal nodes)
+   ^   o fun15 sec03 sub02:
+   ^     - get midpiont distance
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   weightSI = 0;
+   /*****************************************************\
+   * Fun15 Sec03 Sub01:
+   *   - get all distances (including internal nodes)
+   *   o fun15 sec03 sub01 cat01:
+   *     - start loop, find if internal node, add weight
+   *   o fun15 sec03 sub01 cat02:
+   *     - add the new node/edge to the node/edge list
+   \*****************************************************/
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun15 Sec03 Sub01 Cat01:
+   +   - start loop, find if internal node, add weight
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
    while(primSTPtr->parArySI[indexSI] == parSI)
-   { /*Loop: add in the children nodes*/
+   { /*Loop: get the children distances*/
+      weightSI = primSTPtr->indexArySI[indexSI];
+      weightSI = (weightSI * -1) - 1;
+
+      childSI = primSTPtr->childArySI[weightSI];
+      weightSI = primSTPtr->edgeArySI[weightSI];
+
       nextChildSI =
          getStart_siBinSearch(
-            childArySI[indexSI],
+            childSI,
             primSTPtr->parArySI,
             primSTPtr->indexSI
          ); /*find first child with this parent node*/
 
       if(nextChildSI >= 0)
-      { /*If: need to find the next child*/
-         weightSI = primSTPtr->indexArySI[nextChildSI];
-         weightSI = primSTPtr->edgeArySI[weightSI];
-
-         distF = midWeightF;
-         distF +=           /*gets distance to subtract*/
+      { /*If: have a next child*/
+         nextDistSTPtr =
             mstToNewickRecusive_heap_prim(
                nextChildSI,
+               weightSI,
                primSTPtr,
                namesAryStr,
-               childArySI,
+               0,           /*do not print this yet*/
                outFILE
-            ); /*If I have children I need to print*/
+            ); /*setup the next internal node*/
 
-         if(distF > weightSI)
-            distF = 0; /*child is longer then node,
-                       `  my distances will be off here
-                       `  but also allows midpoint
-                       */
-          else
-             distF = weightSI - distF;
-
-         /*finish child group and add internal node*/
-         fprintf((FILE *) outFILE, "):%0.1f", distF);
-      } /*If: need to find the next child*/
+        if(! nextDistSTPtr)
+           goto memErr_fun15_sec05;
+      } /*If: have a next child*/
 
       else
-      { /*Else: no children to adjust weight of*/
+      { /*Else: have a tip*/
+         nextDistSTPtr = malloc(sizeof(struct dist_prim));
+         if(! nextDistSTPtr)
+            goto memErr_fun15_sec05;
 
-         /*add the found child node in*/
-         weightSI = primSTPtr->indexArySI[nextChildSI];
-         weightSI = primSTPtr->edgeArySI[weightSI];
-         distF = (float) weightSI - midWeightF;
+         nextDistSTPtr->distF = weightSI;
+         nextDistSTPtr->childSI = childSI;
+         nextDistSTPtr->firstChildIndexSI = -1;
+         nextDistSTPtr->nextPtr = 0;
+      } /*Else: have a tip*/
 
-         fprintf(
-            (FILE *) outFILE,
-            "%s:%0.1f",
-            namesAryStr[nextChildSI],
-            distF
-         ); /*print out the parent node*/
-      } /*Else: no children to adjust weight of*/
+      /*+++++++++++++++++++++++++++++++++++++++++++++++++\
+      + Fun15 Sec03 Sub01 Cat02:
+      +   - add the new node/edge to the node/edge list
+      \+++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+      if(! listDistHeapST)
+         listDistHeapST = nextDistSTPtr;
+
+      else if(
+         nextDistSTPtr->distF < listDistHeapST->distF
+      ){ /*Else If: new head of the list*/
+         nextDistSTPtr->nextPtr = listDistHeapST;
+         listDistHeapST = nextDistSTPtr;
+      }  /*Else If: new head of the list*/
+
+      else
+      { /*Else: no a lowest value*/
+         /*this does not need to be sorted, it only
+         `  needs to have the lowest distance first
+         */
+         nextDistSTPtr->nextPtr =
+            listDistHeapST->nextPtr;
+         listDistHeapST->nextPtr = nextDistSTPtr;
+      } /*Else: no a lowest value*/
 
       ++indexSI;
-      if(primSTPtr->parArySI[indexSI] == parSI)
-         fprintf((FILE *) outFILE, ",");
-   } /*Loop: add in the children nodes*/
+   } /*Loop: get the children distances*/
+
+   /*****************************************************\
+   * Fun15 Sec03 Sub02:
+   *   - get midpiont distance
+   \*****************************************************/
+
+   midWeightF = listDistHeapST->distF / 2;
+   distHeapST->distF = midWeightF;
+   distHeapST->childSI = -1; /*mark as an internal node*/
+
+   if(! pBl)
+      goto ret_fun15_sec05;
+      /*this was a non-print run; in this case I am trying
+      `  to find the distances to get the midpoint
+      */
+
+   fprintf((FILE *) outFILE, "(");
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun15 Sec04:
-   ^   - print parent node and the internal node
+   ^   - print child nodes
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   fprintf(
-      (FILE *) outFILE,
-      "%s:%0.1f",
-      namesAryStr[parSI],
-      (float) midWeightF
-   ); /*print out the parent node*/
+   while(listDistHeapST)
+   { /*Loop: print this node*/
+      if(listDistHeapST->childSI >= 0)
+         fprintf(
+            (FILE *) outFILE,
+            "%s:%0.2f",
+            namesAryStr[listDistHeapST->childSI],
+            listDistHeapST->distF - midWeightF
+         );
 
-   return midWeightF;
+      else
+      { /*Else: need to print an internal node*/
+         nextDistSTPtr =
+            mstToNewickRecusive_heap_prim(
+               listDistHeapST->firstChildIndexSI,
+               listDistHeapST->distF,
+               primSTPtr,
+               namesAryStr,
+               1,           /*do not print this yet*/
+               outFILE
+            ); /*setup the next internal node*/
+
+        if(! nextDistSTPtr)
+           goto memErr_fun15_sec05;
+        else
+           free(nextDistSTPtr); /*already have*/
+
+        fprintf(
+           (FILE *) outFILE,
+           ":%0.2f",
+           listDistHeapST->distF - midWeightF
+        ); /*add the weight to the internal node*/
+      } /*Else: need to print an internal node*/
+
+      nextDistSTPtr = listDistHeapST->nextPtr;
+      free(listDistHeapST);
+      listDistHeapST = nextDistSTPtr;
+
+      if(listDistHeapST)
+         fprintf((FILE *) outFILE, ",");
+   } /*Loop: print this node*/
+
+   fprintf((FILE *) outFILE, ")");
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun15 Sec05:
+   ^   - return
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   goto ret_fun15_sec05;
+
+   memErr_fun15_sec05:;
+      if(distHeapST)
+         free(distHeapST);
+      distHeapST = 0;
+
+   ret_fun15_sec05:;
+      while(listDistHeapST)
+      { /*Loop: free my distance list*/
+         nextDistSTPtr = listDistHeapST->nextPtr;
+         free(listDistHeapST);
+         listDistHeapST = nextDistSTPtr;
+      } /*Loop: free my distance list*/
+
+      listDistHeapST = 0;
+
+      return distHeapST;
 } /*mstToNewickRecusrive_heap_prim*/
 
 /*-------------------------------------------------------\
@@ -1693,16 +2043,26 @@ mstToNewickRecusive_heap_prim(
 |   - Modifies:
 |     o outFILE to have the mst in newick format
 |     o siAry to have 0 to the last child node
+|   - Returns:
+|     o 0 for no errors
+|     o 1 for memory errors
 \-------------------------------------------------------*/
-void
+signed char
 mstToNewick_heap_prim(
    struct heap_prim *primSTPtr,
    signed char *namesAryStr[],
    signed int *siAry,
    void *outFILE
 ){
+   /*________varaible declarations______________________*/
    signed int siPos = 0;
-   float rootDistF = 0;
+   signed int indexSI = primSTPtr->childArySI[0];
+   signed int weightSI = 0;
+   struct dist_prim *distHeapST = 0;
+
+   /*_________setup and sort nodes by parents___________*/
+   indexSI = primSTPtr->parArySI[indexSI];/*first parent*/
+   weightSI = primSTPtr->edgeArySI[0];
 
    /*set up for unsorting later*/
    for(siPos = 0; siPos < primSTPtr->indexSI; ++siPos)
@@ -1720,29 +2080,245 @@ mstToNewick_heap_prim(
    `   parent index.
    */
 
-   fprintf((FILE *) outFILE, "(");
+   for(siPos = 0; siPos < primSTPtr->indexSI; ++siPos)
+   { /*Loop: find the index of the first parent edge*/
+      if(indexSI == primSTPtr->parArySI[siPos])
+         break;
+   } /*Loop: find the index of the first parent edge*/
 
-   rootDistF =
+   indexSI = siPos;
+
+   /*________print the tree_____________________________*/
+   distHeapST =
       mstToNewickRecusive_heap_prim(
-         0,          /*first parent node*/
+         indexSI,    /*first parent edge in sorted array*/
+         weightSI,   /*weight of the first edge*/
          primSTPtr,  /*has mst*/
          namesAryStr,/*names for each node*/
-         siAry,      /*has child index's for each parent*/
+         1,          /*print the tree*/
          outFILE     /*file to print newick to*/
       );
 
-   /*add the root internal node*/
-   fprintf((FILE *) outFILE, "):%0.1f", rootDistF);
+   if(! distHeapST)
+      goto memErr_fun16;
+
+   /*add the root internal node (add its distance)*/
+   fprintf((FILE *) outFILE,":%0.2f",distHeapST->distF);
    fprintf((FILE *) outFILE, "%s", str_endLine);
 
-   /*unsort the sorted arrays (2n)*/
+   free(distHeapST);
+   distHeapST = 0;
+
+   /*________unsort the nodes___________________________*/
    threeAryUnsort_prim(
+      siAry,
+      primSTPtr->parArySI,
+      primSTPtr->indexArySI,
+      primSTPtr->indexSI
+   );
+
+   /*________return_____________________________________*/
+   siPos = 0;
+   goto ret_fun16;
+
+   memErr_fun16:;
+      siPos = 1;
+      goto ret_fun16;
+
+   ret_fun16:;
+      if(distHeapST)
+        free(distHeapST);
+      distHeapST = 0;
+
+      return (signed char) siPos;
+} /*mstToNewick_heap_prim*/
+#endif
+
+/*-------------------------------------------------------\
+| Fun15: root0MstToNewickRecursive_heap_prim
+|   - the recurisve part to save a mst as a newick file
+|   - this function should only be called by
+|     mstToNewick_heap_prim; do not call it
+| Input:
+|   - parIndexSI:
+|     o index of the edge (parent to child) to add to the
+|       newick file
+|   - parWeightF:
+|     o cost of traveling to the parent node
+|   - primSTPtr:
+|     o heap_prim struct pointer with mst tree to save
+|     o parArySI and indexArySI must be sorted by parent
+|       node
+|   - namesAryStr:
+|     o cstring array with the name for each node
+|   - outFILE:
+|     o FILE pointer to save file to
+| Output:
+|   - Modifies:
+|     o outFILE to have the mst in newick format
+\-------------------------------------------------------*/
+void
+root0MstToNewickRecusive_heap_prim(
+   signed int parIndexSI,      /*index parent I am on*/
+   signed int parWeightSI,     /*cost of the parent node*/
+   struct heap_prim *primSTPtr,/*tree to print*/
+   signed char *namesAryStr[], /*names for each node*/
+   void *outFILE
+){
+   signed int parSI = 0;
+   signed int indexSI = 0;
+   signed int nextChildSI = -1;
+   signed int weightSI = -1;
+   signed int childSI = 0;
+   signed char lastBl = 0;
+
+   parSI = primSTPtr->parArySI[parIndexSI];
+
+   if(parSI == def_maxSI_prim)
+      return; /*this node has no parent node*/
+
+   indexSI = parIndexSI;
+
+   fprintf(
+      (FILE *) outFILE,
+      "(%s:0",
+      namesAryStr[parSI]
+   ); /*print the parent node as the root distance*/
+   lastBl = 1;
+
+   while(primSTPtr->parArySI[indexSI] == parSI)
+   { /*Loop: get the children distances*/
+      weightSI = primSTPtr->indexArySI[indexSI];
+
+      if(weightSI >= 0)
+         goto nextChild_fun15;
+         /*this node has not been assigned yet*/
+
+      weightSI = (weightSI * -1) - 1;
+
+      childSI = primSTPtr->childArySI[weightSI];
+      weightSI = primSTPtr->edgeArySI[weightSI];
+
+      if(lastBl)
+         fprintf((FILE *) outFILE, ",");
+
+      nextChildSI =
+         getStart_siBinSearch(
+            childSI,
+            primSTPtr->parArySI,
+            primSTPtr->indexSI
+         ); /*find first child with this parent node*/
+
+      if(nextChildSI >= 0)
+         root0MstToNewickRecusive_heap_prim(
+            nextChildSI,
+            weightSI,
+            primSTPtr,
+            namesAryStr,
+            outFILE
+         ); /*setup the next internal node*/
+      else
+         fprintf(
+            (FILE *) outFILE,
+            "%s:%i",
+            namesAryStr[childSI],
+            weightSI
+         );
+
+      nextChild_fun15:;
+         lastBl = 0;
+         ++indexSI;
+
+         if(indexSI >= primSTPtr->indexSI)
+            break; /*finished*/
+         else if(primSTPtr->parArySI[indexSI] == parSI)
+            lastBl = 1;
+   } /*Loop: get the children distances*/
+
+   /*print the interal node distance as the cost of
+   `  traveling to the parent
+   */
+   fprintf((FILE *) outFILE, "):%i", parWeightSI);
+} /*root0MstToNewickRecusrive_heap_prim*/
+
+/*-------------------------------------------------------\
+| Fun16: root0MstToNewick_heap_prim
+|   - saves a minimum spanning tree as a newick file
+| Input:
+|   - primSTPtr:
+|     o heap_prim struct pointer with mst tree to save
+|   - namesAryStr:
+|     o cstring array with the name for each node
+|   - siAry:
+|     o signed in array to use in unsorting, the size
+|       should be at least the number of nodes
+|     o logic behind using this instead of memory is
+|       that as a user you will be using this anyways to
+|       build the tree
+|   - outFILE:
+|     o FILE pointer to save file to
+| Output:
+|   - Modifies:
+|     o outFILE to have the mst in newick format
+|     o siAry to have 0 to the last child node
+\-------------------------------------------------------*/
+void
+root0MstToNewick_heap_prim(
+   struct heap_prim *primSTPtr,
+   signed char *namesAryStr[],
+   signed int *siAry,
+   void *outFILE
+){
+   /*________varaible declarations______________________*/
+   signed int siPos = 0;
+   signed int indexSI = primSTPtr->childArySI[0];
+
+   /*_________setup and sort nodes by parents___________*/
+   indexSI = primSTPtr->parArySI[indexSI];/*first parent*/
+
+   /*set up for unsorting later*/
+   for(siPos = 0; siPos < primSTPtr->sizeSI; ++siPos)
+      siAry[siPos] = siPos;
+
+   /*sort the arrays by parent id (n x log2(n))*/
+   threeArySort_prim(
       primSTPtr->parArySI,
       primSTPtr->indexArySI,
       siAry,
-      primSTPtr->indexSI
+      primSTPtr->sizeSI
    );
-} /*mstToNewick_heap_prim*/
+   /*at this point siAry has all the child node index's
+   `   in parArySI, while parArySI is sorted by the
+   `   parent index.
+   */
+
+   for(siPos = 0; siPos < primSTPtr->indexSI; ++siPos)
+   { /*Loop: find the index of the first parent edge*/
+      if(indexSI == primSTPtr->parArySI[siPos])
+         break;
+   } /*Loop: find the index of the first parent edge*/
+
+   indexSI = siPos;
+
+   /*________print the tree_____________________________*/
+   root0MstToNewickRecusive_heap_prim(
+      indexSI,    /*first parent edge in sorted array*/
+      0,          /*root to first edge is 0*/
+      primSTPtr,  /*has mst*/
+      namesAryStr,/*names for each node*/
+      outFILE     /*file to print newick to*/
+   );
+
+   fprintf((FILE *) outFILE, "%s", str_endLine);
+
+   /*________unsort the nodes___________________________*/
+   threeAryUnsort_prim(
+      siAry,
+      primSTPtr->parArySI,
+      primSTPtr->indexArySI,
+      primSTPtr->sizeSI
+   );
+} /*root0MstToNewick_heap_prim*/
 
 /*=======================================================\
 : License:

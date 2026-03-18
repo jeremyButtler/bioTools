@@ -17,12 +17,13 @@ int
 main(
    void
 ){
-   #define def_size 20
+   #define def_size 100000
    struct heap_prim *primHeapST = mk_heap_prim(def_size);
    signed int binArySI[def_size];
    signed int checkArySI[def_size];
    signed int checkIndexArySI[def_size];
 
+   signed char findFirstBl = 1;
    signed int siRand = 0;
    signed int siPos = 0;
    signed int siCnt = 0;
@@ -37,7 +38,7 @@ main(
       return 1;
 
    /*srand(time(NULL));*/
-   for(siRand = 0; siRand < 1; ++siRand)
+   for(siRand = 0; siRand < 10000; ++siRand)
    { /*Loop: test my array*/
       srand(siRand);
 
@@ -82,7 +83,7 @@ main(
            primHeapST,
            0,
            primHeapST->heapLenSI - 1,
-           0
+           findFirstBl
       ); /*find the midpiont not start*/
 
       for(siPos = 0; siPos < def_size; ++siPos)
@@ -110,12 +111,19 @@ main(
       } /*Loop: check if everything still matches*/
 
       /*so I can keep the checkIndexArySI*/
-      printf("%i\n", checkIndexArySI[0]);
       foundSI = primHeapST->edgeArySI[foundSI];
-      if(midSI != foundSI)
+      if(! findFirstBl && midSI != foundSI)
          printf("%i mid: %i=%i\n",siRand,foundSI,midSI);
+      if(findFirstBl && startSI != foundSI)
+         printf(
+            "%i start: %i=%i\n",
+            siRand,
+            foundSI,
+            startSI
+         );
    } /*Loop: test my array*/
 
+   printf("%i\n", checkIndexArySI[0]);
    freeHeap_heap_prim(primHeapST);
    return 0;
 } /*main*/

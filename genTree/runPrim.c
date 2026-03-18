@@ -42,6 +42,8 @@
    #include <stdlib.h>
 #endif
 
+#include "runPrim.h"
+
 #include <stdio.h>
 #include "../genLib/ulCp.h"
 #include "../genLib/fileFun.h"
@@ -129,12 +131,17 @@ freeStack_mst_runPrim(
    if(mstSTPtr->indexArySL)
       free(mstSTPtr->indexArySL);
 
-   for(slPos = 0; slPos <= mstSTPtr->nodeSizeSL; ++slPos)
-   { /*Loop: free all names*/
-      if(mstSTPtr->nameAryStr[slPos])
-         free(mstSTPtr->nameAryStr);
-      mstSTPtr->nameAryStr[slPos] = 0;
-   } /*Loop: free all names*/
+   if(mstSTPtr->nameAryStr)
+   { /*If: need to free the stored names*/
+      for(slPos=0; slPos < mstSTPtr->nodeSizeSL; ++slPos)
+      { /*Loop: free all names*/
+         if(mstSTPtr->nameAryStr[slPos])
+            free(mstSTPtr->nameAryStr[slPos]);
+         mstSTPtr->nameAryStr[slPos] = 0;
+      } /*Loop: free all names*/
+
+      free(mstSTPtr->nameAryStr);
+   } /*If: need to free the stored names*/
 
    init_mst_runPrim(mstSTPtr);
 } /*freeStack_mst_runPrim*/
@@ -213,32 +220,36 @@ setupMem_mst_runPrim(
       mstSTPtr->distArySI = 0;
 
       mstSTPtr->distArySI =
-         malloc(numNodesSI * sizeof(signed int));
+         malloc(numNodesSL * sizeof(signed int));
       if(! mstSTPtr->distArySI)
          goto memErr_fun05;
 
 
       /*_______________setup_the_name_array_____________*/
-      for(
-         slNode = 0;
-         slNode < mstSTPtr->numNodesSL;
-         ++slNode
-      ){ /*Loop: free all name pointers*/
-         if(mstSTPtr->nameAryStr[slNode])
-            free(mstSTPtr->nameAryStr[slNode]);
-         mstSTPtr->nameAryStr[slNode] = 0;
-      }  /*Loop: free all name pointers*/
+      if(mstSTPtr->nameAryStr)
+      { /*If: have a name array I need to free*/
+         for(
+            slNode = 0;
+            slNode < mstSTPtr->nodeLenSL;
+            ++slNode
+         ){ /*Loop: free all name pointers*/
+            if(mstSTPtr->nameAryStr[slNode])
+               free(mstSTPtr->nameAryStr[slNode]);
+            mstSTPtr->nameAryStr[slNode] = 0;
+         }  /*Loop: free all name pointers*/
 
-      mstSTPtr->nameAryStr = 0;
+         mstSTPtr->nameAryStr = 0;
+      } /*If: have a name array I need to free*/
+
       mstSTPtr->nameAryStr =
-         malloc(numNodesSI * sizeof(signed char *));
+         malloc(numNodesSL * sizeof(signed char *));
       if(! mstSTPtr->nameAryStr)
          goto memErr_fun05;
 
-      for(siNode = 0; siNode < numNodesSL; ++siNode)
+      for(slNode = 0; slNode < numNodesSL; ++slNode)
       { /*Loop: initialize all values to 0*/
-         mstSTPtr->nameAryStr[siNode] = 0;
-         mstSTPtr->distArySI[siNode] = 0;
+         mstSTPtr->nameAryStr[slNode] = 0;
+         mstSTPtr->distArySI[slNode] = 0;
       } /*Loop: initialize all values to 0*/
 
 
@@ -276,7 +287,7 @@ mk_mst_runPrim(
       goto memErr_fun06;
    init_mst_runPrim(mstHeapSTPtr);
 
-   if( setupMem_mst_runPrim(mstHeapSTPtr, nunNodesSL) )
+   if( setupMem_mst_runPrim(mstHeapSTPtr, numNodesSL) )
       goto memErr_fun06;
 
    return mstHeapSTPtr;
@@ -312,13 +323,13 @@ addName_mst_runPrim(
    signed int indexSI,
    struct mst_runPrim *mstSTPtr
 ){
-   singed long lenSL = endWhite_ulCp(nameStr);
+   signed long lenSL = endWhite_ulCp(nameStr);
 
    if(indexSI >= mstSTPtr->nodeLenSL)
       return 2;
 
    if(mstSTPtr->nameAryStr[indexSI])
-      free(mstSTPtr->nameAryStr[indexSI)
+      free(mstSTPtr->nameAryStr[indexSI]);
    mstSTPtr->nameAryStr[indexSI] =
       malloc((lenSL + 8) * sizeof(signed char));
    if( ! mstSTPtr->nameAryStr[indexSI] )
@@ -381,12 +392,7 @@ indexFeatureFile_runPrim(
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    signed char *buffHeapStr = 0;
-   signed int posSI = 0;           /*position in buffer*/
-   signed int tmpSI = 0;
-
-   signed long byteSL = 0;         /*byte on in the file*/
    signed long lenSL = 0;          /*length of cstring*/
-
    struct mst_runPrim *mstHeapST = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -412,15 +418,16 @@ indexFeatureFile_runPrim(
          &mstHeapST->maxLineLenSL
       ); /*reads file twice; get # lines & index lines*/
 
-   if(mstSTPtr->nodeLenSL < 2 && mstSTPtr->nodeLenSL >= 0)
+   if(mstHeapST->nodeLenSL <2 && mstHeapST->nodeLenSL >=0)
       goto emptyFile_fun08_sec04;
-   else if(mstSTPtr->indexArySL)
+   else if(mstHeapST->indexArySL)
       ; /*no errors*/
-   else if(mstSTPtr->nodeLenSL < 0)
+   else if(mstHeapST->nodeLenSL < 0)
       goto memErr_fun08_sec04; /*memory error*/
 
-   if(setupMem_mst_runPrim(mstSTPtr, mstSTPtr->nodeLenSL))
-      goto memErr_fun08_sec04;
+   if(
+      setupMem_mst_runPrim(mstHeapST,mstHeapST->nodeLenSL)
+   ) goto memErr_fun08_sec04;
 
    buffHeapStr =
       malloc(
@@ -441,7 +448,7 @@ indexFeatureFile_runPrim(
          buffHeapStr,
          lenSL,
          mstHeapST->indexArySL,
-         mstHeapST->nodeLenSL
+         mstHeapST->nodeLenSL,
          featureFILE
       );
 
@@ -509,7 +516,8 @@ indexFeatureFile_runPrim(
 |       last read row
 |   - Returns:
 |     o 0 for no errors
-|     o 1 for memory errors
+|     o 1 if firstNodeSI is not in the tree
+|     o 2 for memory errors
 |     o (1 + lineSL) * -1 for file errors
 \-------------------------------------------------------*/
 signed long
@@ -546,10 +554,23 @@ build_mst_runPrim(
    signed long linesReadSL = 0; /*number lines processed*/
    signed long slPos = 0;       /*entry on in the file*/
 
+   signed int *childHeapArySI = 0; /*gets children nodes*/
+   signed int distLenSI = 0;
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun09 Sec02:
    ^   - allocate memory for buffers
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(firstNodeSI > mstSTPtr->nodeLenSL - 2)
+      goto invalidNode_fun09_sec05;
+   else if(firstNodeSI < 0)
+      goto invalidNode_fun09_sec05;
+
+   childHeapArySI =
+      malloc(mstSTPtr->nodeLenSL * sizeof(signed int));
+   if(! childHeapArySI)
+      goto memErr_fun09_sec05;
 
    qryRowHeapStr =
       malloc(
@@ -595,7 +616,7 @@ build_mst_runPrim(
       ++linesReadSL
    ){ /*Loop: get distance for a single row*/
       /*mark new parenet as added*/
-      mstHeapST->distArySI[slEntry] = -1;
+      mstSTPtr->distArySI[slEntry] = -1;
 
       getLineByIndex_fileFun(
          qryRowHeapStr,
@@ -610,16 +631,21 @@ build_mst_runPrim(
       *   - get the row for each edge from the file
       \**************************************************/
 
+      distLenSI = 0;
       for(
-         slPos = 1;        /*0th node is always a parent*/
+         slPos = 0;        /*0th node is always a parent*/
          slPos < mstSTPtr->nodeLenSL - 1;
               /*-1 because nodeLenSL includes the header*/
          ++slPos
       ){ /*Loop: get the distances for one row*/
-         if(mstHeapST->distArySI[slPos] < 0)
+         if(mstSTPtr->mstST->indexArySI[slPos] < 0)
              continue; /*this node is a parent*/
+         else if(slPos == firstNodeSI)
+             continue; /*original node*/
          else
-            mstHeapST->distArySI[slPos] = 0;
+            mstSTPtr->distArySI[distLenSI] = 0;
+
+         childHeapArySI[distLenSI] = slPos;
 
          getLineByIndex_fileFun(
             refRowHeapStr,
@@ -638,11 +664,11 @@ build_mst_runPrim(
          qryTmpStr = qryRowHeapStr;
          refTmpStr = refRowHeapStr;
 
-         qryTmpStr = endWhite_ulCp(qryRowHeapStr);
+         qryTmpStr += endWhite_ulCp(qryTmpStr);
          while(*qryTmpStr && *qryTmpStr < 33)
             ++qryTmpStr;
 
-         refTmpStr = endWhite_ulCp(refRowHeapStr);
+         refTmpStr += endWhite_ulCp(refTmpStr);
          while(*refTmpStr && *refTmpStr < 33)
             ++refTmpStr;
 
@@ -651,35 +677,45 @@ build_mst_runPrim(
          { /*Loop: find the distance*/
             /*____check_if_have_known_value_for_loci____*/
             if(qryTmpStr[0] == '*')
-               ;
+               goto missingEntry_fun08_sec03_sub04;
+
             else if(refTmpStr[0] == '*')
-               ;
-            else if((
+               goto missingEntry_fun08_sec03_sub04;
+
+            else if(
                   (qryTmpStr[0] | 32) == 'n'
                && (qryTmpStr[1] | 32) == 'a'
                && qryTmpStr[2] < 33
-            ) ;
+            ) goto missingEntry_fun08_sec03_sub04;
 
-            else if((
+            else if(
                   (refTmpStr[0] | 32) == 'n'
                && (refTmpStr[1] | 32) == 'a'
                && refTmpStr[2] < 33
-            ) ;
+            ){ /*Else If: unkown reference lineage*/
+               missingEntry_fun08_sec03_sub04:;
+                  while(*qryTmpStr > 32)
+                     ++qryTmpStr;
+                  while(*refTmpStr > 32)
+                     ++refTmpStr;
+            }  /*Else If: unkown reference lineage*/
 
             else if( eqlWhite_ulCp(qryTmpStr, refTmpStr) )
-               ++mstHeapST->distArySI[slPos];/*different*/
+               ++mstSTPtr->distArySI[distLenSI];
+               /*different*/
 
             /*___________find_the_next_loci_____________*/
-            qryTmpStr = endWhite_ulCp(qryRowHeapStr);
+            qryTmpStr += endWhite_ulCp(qryTmpStr);
             while(*qryTmpStr && *qryTmpStr < 33)
                ++qryTmpStr;
 
-            refTmpStr = endWhite_ulCp(refRowHeapStr);
+            refTmpStr += endWhite_ulCp(refTmpStr);
             while(*refTmpStr && *refTmpStr < 33)
                ++refTmpStr;
          } /*Loop: find the distance*/
 
 
+         ++distLenSI;
          if(*qryTmpStr || *refTmpStr)
             goto fileErr_fun09_sec05;
             /*still have features that were not compared*/
@@ -690,15 +726,18 @@ build_mst_runPrim(
       *   - add new edges to the tree and get next child
       \**************************************************/
 
-      /*___________add_edges_and_get_next_child_________*/
-      addEdges_heap_prim(
-         mstSTPtr->distArySI,
-         mstSTPtr->nodeLenSL - 1, /*-1 for header*/
-         slEntry,           /*parent node I am adding in*/
-         mstHeapST->mstST
-      ); /*add the new edges in*/
+      if(distLenSI)
+      { /*If: have edges to add*/
+         addEdges_heap_prim(
+            mstSTPtr->distArySI,
+            childHeapArySI,
+            distLenSI,
+            slEntry,           /*parent node adding in*/
+            mstSTPtr->mstST
+         ); /*add the new edges in*/
 
-      slEntry = extractEdge_heap_prim(mstHeapST);
+         slEntry = extractEdge_heap_prim(mstSTPtr->mstST);
+      } /*If: have edges to add*/
    }  /*Loop: get distance for a single row*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -709,8 +748,12 @@ build_mst_runPrim(
    slPos = 0;
    goto ret_fun09_sec05;
 
-   memErr_fun09_sec05:;
+   invalidNode_fun09_sec05:;
       slPos = 1;
+      goto errClean_fun09_sec05;
+
+   memErr_fun09_sec05:;
+      slPos = 2;
       goto errClean_fun09_sec05;
 
    fileErr_fun09_sec05:;
@@ -721,6 +764,10 @@ build_mst_runPrim(
       goto ret_fun09_sec05;
 
    ret_fun09_sec05:;
+      if(childHeapArySI)
+         free(childHeapArySI);
+      childHeapArySI = 0;
+
       if(qryRowHeapStr)
          free(qryRowHeapStr);
       qryRowHeapStr = 0;
@@ -755,7 +802,7 @@ mstToNewick_mst_runPrim(
    void *outFILE
 ){
    /*this is a wrapper function*/
-   mstToNewick_heap_prim(
+   root0MstToNewick_heap_prim(
       mstSTPtr->mstST,
       mstSTPtr->nameAryStr,
       mstSTPtr->distArySI,
