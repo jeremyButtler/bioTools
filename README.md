@@ -343,9 +343,6 @@ This is getting to long. see the updates.md file.
 5. unGz
    - has issue printing last Illumina reads in windows
      for stdout (not sure about stdout)
-6. debug getLin and get it to a working state
-7. get mkMST working
-   
 
 # Thanks
 
