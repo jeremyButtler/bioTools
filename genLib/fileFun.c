@@ -611,7 +611,7 @@ lineIndex_fileFun(
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   #define buffLen_fun04_fileFun 4096
+   #define buffLen_fun04_fileFun 512
    signed char buffStr[buffLen_fun04_fileFun];
    signed int posSI = 0;           /*position in buffer*/
    signed int tmpSI = 0;
@@ -630,7 +630,7 @@ lineIndex_fileFun(
       goto emptyFile_fun04_sec04;
 
    indexHeapArySL =
-      malloc((*maxLineSLPtr + 1) * sizeof(signed char));
+      malloc((*lineCntSLPtr + 1) * sizeof(signed long));
    if(! indexHeapArySL)
       goto memErr_fun04_sec04;
    indexHeapArySL[0] = 0;
@@ -677,8 +677,9 @@ lineIndex_fileFun(
       else
       { /*Else: at end of the line*/
          ++byteSL;
+         ++posSI;
 
-         if(! buffStr[posSI + 1])
+         if(! buffStr[posSI])
          { /*If: need to get more bytes*/
             endLineGetBytes_fun04_sec03:;
                lenSL =
@@ -706,7 +707,8 @@ lineIndex_fileFun(
         }  /*Loop: find end of newlines*/
 
         /*________get_the_index_________________________*/
-        indexHeapArySL[*lineCntSLPtr++] = byteSL;
+        indexHeapArySL[*lineCntSLPtr] = byteSL;
+        ++(*lineCntSLPtr);
       }  /*Else: at end of the line*/
    } /*Loop: get index's from the file*/
 
