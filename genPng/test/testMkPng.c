@@ -1,6 +1,14 @@
+#ifdef PLAN9
+   #include <u.h>
+   #include <libc.h>
+#else
+   #include <stdlib.h>
+#endif
+
 #include <stdio.h>
-#include "mkPng.h"
-#include "endLine.h"
+#include "../mkPng.h"
+#include "../pngDraw.h"
+#include "../../genLib/endLine.h"
 
 int
 main(
@@ -16,21 +24,21 @@ main(
    if(! outFILE)
       goto fileErr_main;
 
-   for(ySI = 0; ySI < 100; ++ySI)
+   for(ySI = 0; ySI < 30; ++ySI)
    { /*Loop: pixel by pixel add*/
-       addPixel_st_mkPng(pngSTPtr, 14, ySI, 1);
-       addPixel_st_mkPng(pngSTPtr, 15, ySI, 1);
-       addPixel_st_mkPng(pngSTPtr, 16, ySI, 1);
-       addPixel_st_mkPng(pngSTPtr, 17, ySI, 1);
-       addPixel_st_mkPng(pngSTPtr, 18, ySI, 1);
-       addPixel_st_mkPng(pngSTPtr, 19, ySI, 1);
-       addPixel_st_mkPng(pngSTPtr, 20, ySI, 1);
-       addPixel_st_mkPng(pngSTPtr, 21, ySI, 1);
-       addPixel_st_mkPng(pngSTPtr, 22, ySI, 1);
-       addPixel_st_mkPng(pngSTPtr, 23, ySI, 1);
+       addPixel_pngDraw(pngSTPtr, 14, ySI, 1);
+       addPixel_pngDraw(pngSTPtr, 15, ySI, 1);
+       addPixel_pngDraw(pngSTPtr, 16, ySI, 1);
+       addPixel_pngDraw(pngSTPtr, 17, ySI, 1);
+       addPixel_pngDraw(pngSTPtr, 18, ySI, 1);
+       addPixel_pngDraw(pngSTPtr, 19, ySI, 1);
+       addPixel_pngDraw(pngSTPtr, 20, ySI, 1);
+       addPixel_pngDraw(pngSTPtr, 21, ySI, 1);
+       addPixel_pngDraw(pngSTPtr, 22, ySI, 1);
+       addPixel_pngDraw(pngSTPtr, 23, ySI, 1);
    } /*Loop: pixel by pixel add*/
 
-   addBar_st_mkPng(pngSTPtr, 0, 0, 10, 100, 3);
+   addBar_pngDraw(pngSTPtr, 0, 0, 10, 100, 3);
 
    print_st_mkPng(pngSTPtr, outFILE);
    errSC = 0;

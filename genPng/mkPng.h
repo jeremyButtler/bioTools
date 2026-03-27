@@ -1,6 +1,7 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
 ' mkPng SOF:
-'   - make graphs for ampDepth
+'   - creates the structure to hold a png (st_mkPng) and
+'     also prints the png to a file
 '   - a good amount of this code came from misc0110's
 '     libattopng (https://github.com/misc0110/libattpng),
 '     which is under the MIT license
@@ -28,23 +29,21 @@
 '     - allocates memory for a st_mkPng struct
 '   o fun10: mk_st_mkPng
 '     - makes a st_mkPng struct on heap
-'   o fun11: addPixel_st_mkPng
-'     - adds a single pixel to a st_mkPng image
-'   o fun12: addBar_st_mkPng
-'     - adds a bar to a st_mkPng image
-'   o .c fun16: addUint_mkPng
+'   o .c fun11: addUint_mkPng
 '     - adds a uint to a png buffer
-'   o .c fun17: addIhdr_st_mkPng
+'   o .c fun12: addIhdr_st_mkPng
 '     - add the IHDR header to a st_mkPng struct
-'   o .c fun18: addPallete_st_mkPng
+'   o .c fun13: addPallete_st_mkPng
 '     - add pallete (PLTE) header to a st_mkPng struct
 '     - copied from misc0110's libattpng repository
-'   o .c fun19: addImage_st_mkPng
+'   o .c fun14: addImage_st_mkPng
 '     - add image IDAT header
-'   o .c fun20: addIend_st_mkPng
+'   o .c fun15: addIend_st_mkPng
 '     - add end header (IEND) for png 
-'   o fun21: print_st_mkPng
+'   o fun16: print_st_mkPng
 '     - prints a png to output file
+'   o license:
+'     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #ifndef MAKE_GRAPH_PNG_H
@@ -59,16 +58,37 @@
 ^   - color scheme entry
 \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
+/*default color scheme*/
+   /*white*/
+   #define def_1stColRed_mkPng 0xFF
+   #define def_1stColBlu_mkPng 0xFF
+   #define def_1stColGre_mkPng 0xFF
+   
+   /*magma yellow*/
+   #define def_2ndColRed_mkPng 0xFD
+   #define def_2ndColBlu_mkPng 0xE7
+   #define def_2ndColGre_mkPng 0x25
+   
+   /*magma pink*/
+   #define def_3rdColRed_mkPng 0xF1
+   #define def_3rdColBlu_mkPng 0x60
+   #define def_3rdColGre_mkPng 0x5D
+   
+   /*magma dark purple*/
+   #define def_4thColRed_mkPng 0x00
+   #define def_4thColBlu_mkPng 0x00
+   #define def_4thColGre_mkPng 0x04
+
+
 /*maximum colors allowed by indexing (8bit)*/
-#define def_maxCol_mkPng 256 /*one byte*/
+#define def_maxCol_mkPng 255 /*one byte*/
 
 #define def_lenZlibHeader_mkPng 6
    /*how many bytes each zlib header adds to the total
    `  png size
    */
 #define def_idatEnd_mkPng 8 /*idat ends in 8 extra bytes*/
-/*#define def_width_mkPng 960*/
-#define def_width_mkPng 20
+#define def_width_mkPng 960
 #define def_height_mkPng 720
 
 /*-------------------------------------------------------\
@@ -273,7 +293,7 @@ freeHeap_st_mkPng(
 |     o height of png in pixels
 |   - maxColUC:
 |     o maximum colors plan to be used in color pallete
-|     o use 256 to force 8bit
+|     o use 255 to force 8bit
 |     o 0 to not change
 | Output:
 |   - Modifies:
@@ -301,7 +321,7 @@ setup_st_mkPng(
 |     o heigth of graph (0 for default)
 |   - maxColUC:
 |     o maximum colors plan to be used in color pallete
-|     o use 256 to force 8bit
+|     o use 255 to force 8bit
 |     o 0 to not change
 | Output:
 |   - Returns:
@@ -316,70 +336,7 @@ mk_st_mkPng(
 );
 
 /*-------------------------------------------------------\
-| Fun11: addPixel_st_mkPng
-|   - adds a single pixel to a st_mkPng image
-| Input:
-|   - pngSTPtr:
-|     o pointer to st_mkPng struct to add bar to
-|   - xSL:
-|     o x coordinate of pixel (index 0)
-|   - ySL:
-|     o y coordiante of pixel (index 0)
-|   - colUC:
-|     o color (0-4) to assign
-| Output:
-|   - Modifies:
-|     o pixelAryUC in pngSTPtr to have pixel
-|   - Returns:
-|     o 0 if no errors
-|     o def_overflow_mkPng if coordinates are outside of
-|       grpah range
-\-------------------------------------------------------*/
-signed char
-addPixel_st_mkPng(
-   struct st_mkPng *pngSTPtr, /*add bar to png*/
-   signed long xSL,           /*x coordinate (pixels)*/
-   signed long ySL,           /*y coordiante (pixels)*/
-   signed char colUC          /*color of bar*/
-);
-
-/*-------------------------------------------------------\
-| Fun12: addBar_st_mkPng
-|   - adds a bar to a st_mkPng image
-| Input:
-|   - pngSTPtr:
-|     o pointer to st_mkPng struct to add bar to
-|   - xSL:
-|     o x coordinate of left conner; start of bar; index 0
-|   - ySL:
-|     o y coordiante of bottom of bar (index 0)
-|   - widthUI:
-|     o width in pixels of bar
-|   - heigthSL:
-|     o heigth in pixels of bar
-|   - colUC:
-|     o index of color in pallete to assign
-| Output:
-|   - Modifies:
-|     o pixelAryUC in pngSTPtr to have bar
-| Note:
-|   o the minimum width is at least one byte worth,
-|     otherwise, do single pixel modifications
-|     with addPixel_st_mkPng
-\-------------------------------------------------------*/
-signed char
-addBar_st_mkPng(
-   struct st_mkPng *pngSTPtr, /*add bar to png*/
-   signed long xSL,           /*x coordinate (pixels)*/
-   signed long ySL,           /*y coordiante (pixels)*/
-   signed long widthUI,       /*pixels wide of bar*/
-   signed long heigthSL,      /*pixels high of bar*/
-   signed char colUC          /*color of bar*/
-);
-
-
-/*-------------------------------------------------------\
-| Fun21: print_st_mkPng
+| Fun16: print_st_mkPng
 |   - prints a png to output file
 | Input:
 |   - pngSTPtr:
@@ -399,3 +356,73 @@ print_st_mkPng(
 
 #endif
 
+/*=======================================================\
+: License:
+: 
+: This code is under the unlicense (public domain).
+:   However, for cases were the public domain is not
+:   suitable, such as countries that do not respect the
+:   public domain or were working with the public domain
+:   is inconvient / not possible, this code is under the
+:   MIT license.
+: 
+: Public domain:
+: 
+: This is free and unencumbered software released into the
+:   public domain.
+: 
+: Anyone is free to copy, modify, publish, use, compile,
+:   sell, or distribute this software, either in source
+:   code form or as a compiled binary, for any purpose,
+:   commercial or non-commercial, and by any means.
+: 
+: In jurisdictions that recognize copyright laws, the
+:   author or authors of this software dedicate any and
+:   all copyright interest in the software to the public
+:   domain. We make this dedication for the benefit of the
+:   public at large and to the detriment of our heirs and
+:   successors. We intend this dedication to be an overt
+:   act of relinquishment in perpetuity of all present and
+:   future rights to this software under copyright law.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO
+:   EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM,
+:   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+:   CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+:   IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+:   DEALINGS IN THE SOFTWARE.
+: 
+: For more information, please refer to
+:   <https://unlicense.org>
+: 
+: MIT License:
+: 
+: Copyright (c) 2026 jeremyButtler
+: 
+: Permission is hereby granted, free of charge, to any
+:   person obtaining a copy of this software and
+:   associated documentation files (the "Software"), to
+:   deal in the Software without restriction, including
+:   without limitation the rights to use, copy, modify,
+:   merge, publish, distribute, sublicense, and/or sell
+:   copies of the Software, and to permit persons to whom
+:   the Software is furnished to do so, subject to the
+:   following conditions:
+: 
+: The above copyright notice and this permission notice
+:   shall be included in all copies or substantial
+:   portions of the Software.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+:   EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+:   FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+:   AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+:   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+:   USE OR OTHER DEALINGS IN THE SOFTWARE.
+\=======================================================*/

@@ -1,6 +1,7 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
 ' mkPng SOF:
-'   - make graphs for ampDepth
+'   - creates the structure to hold a png (st_mkPng) and
+'     also prints the png to a file
 '   - a good amount of this code came from misc0110's
 '     libattopng (https://github.com/misc0110/libattpng),
 '     which is under the MIT license
@@ -23,25 +24,25 @@
 '     - frees variables in a st_mkPng struct
 '   o fun08: freeHeap_st_mkPng
 '     - frees a st_mkPng struct
+'   o fun09: setup_st_mkPng
+'     - allocates memory for a st_mkPng struct
 '   o fun10: mk_st_mkPng
 '     - makes a st_mkPng struct on heap
-'   o fun11: addPixel_st_mkPng
-'     - adds a single pixel to a st_mkPng image
-'   o fun12: addBar_st_mkPng
-'     - adds a bar to a st_mkPng image
-'   o .c fun16: addUint_mkPng
+'   o .c fun11: addUint_mkPng
 '     - adds a uint to a png buffer
-'   o .c fun17: pIHDR_st_mkPng
+'   o .c fun12: pIHDR_st_mkPng
 '     - add the IHDR header to a st_mkPng struct
-'   o .c fun18: pPLTE_st_mkPng
+'   o .c fun13: pPLTE_st_mkPng
 '     - add pallete (PLTE) header to a st_mkPng struct
-'   o .c fun19: pIDAT_st_mkPng
+'   o .c fun14: pIDAT_st_mkPng
 '     - add image IDAT header
 '     - copied from misc0110's libattpng repository
-'   o .c fun20: pIEND_st_mkPng
+'   o .c fun15: pIEND_st_mkPng
 '     - add end header (IEND) for png 
-'   o fun21: print_st_mkPng
+'   o fun16: print_st_mkPng
 '     - prints a png to output file
+'   o license:
+'     - licensing for this code (public domain / mit)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #ifdef PLAN9
@@ -55,36 +56,15 @@
 
 #include <stdio.h>
 
-#include "endin.h"
-#include "checkSum.h"
+#include "../genLib/endin.h"
+#include "../genLib/checkSum.h"
 
 /*.h files only*/
-#include "64bit.h"
+#include "../genLib/64bit.h"
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden libraries:
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
-
-/*default color scheme*/
-   /*white*/
-   #define def_1stColRed_mkPng 0xFF
-   #define def_1stColBlu_mkPng 0xFF
-   #define def_1stColGre_mkPng 0xFF
-   
-   /*magma yellow*/
-   #define def_2ndColRed_mkPng 0xFD
-   #define def_2ndColBlu_mkPng 0xE7
-   #define def_2ndColGre_mkPng 0x25
-   
-   /*magma pink*/
-   #define def_3rdColRed_mkPng 0xF1
-   #define def_3rdColBlu_mkPng 0x60
-   #define def_3rdColGre_mkPng 0x5D
-   
-   /*magma dark purple*/
-   #define def_4thColRed_mkPng 0x00
-   #define def_4thColBlu_mkPng 0x00
-   #define def_4thColGre_mkPng 0x04
 
 /*-------------------------------------------------------\
 | Fun01: blank_st_mkPng
@@ -214,6 +194,8 @@ calcDepth_st_mkPng(
 |       * -1 for append to end
 |       * if > end, will append to end
 |       * if > -1 and < end will overwrite color at index
+|   - errSCPtr
+|     o signed char pointer to get errors
 | Output:
 |   - Modifies:
 |     o redAryUC, bluAryUC, and greAryUC in pngSTPtr to
@@ -544,7 +526,7 @@ freeHeap_st_mkPng(
 |     o height of png in pixels
 |   - maxColUC:
 |     o maximum colors plan to be used in color pallete
-|     o use 256 to force 8bit
+|     o use 255 to force 8bit
 |     o 0 to not change
 | Output:
 |   - Modifies:
@@ -687,7 +669,7 @@ setup_st_mkPng(
 |     o heigth of graph (0 for default)
 |   - maxColUC:
 |     o maximum colors plan to be used in color pallete
-|     o use 256 to force 8bit
+|     o use 255 to force 8bit
 |     o 0 to not change
 | Output:
 |   - Returns:
@@ -727,278 +709,7 @@ mk_st_mkPng(
 } /*mk_st_mkPng*/
 
 /*-------------------------------------------------------\
-| Fun11: addPixel_st_mkPng
-|   - adds a single pixel to a st_mkPng image
-| Input:
-|   - pngSTPtr:
-|     o pointer to st_mkPng struct to add bar to
-|   - xSL:
-|     o x coordinate of pixel (index 0)
-|   - ySL:
-|     o y coordiante of pixel (index 0)
-|   - colUC:
-|     o color (0-4) to assign
-| Output:
-|   - Modifies:
-|     o pixelAryUC in pngSTPtr to have pixel
-|   - Returns:
-|     o 0 if no errors
-|     o def_overflow_mkPng if coordinates are outside of
-|       grpah range
-\-------------------------------------------------------*/
-signed char
-addPixel_st_mkPng(
-   struct st_mkPng *pngSTPtr, /*add bar to png*/
-   signed long xSL,           /*x coordinate (pixels)*/
-   signed long ySL,           /*y coordiante (pixels)*/
-   signed char colUC          /*color of bar*/
-){
-   if(xSL > (signed long) pngSTPtr->widthUS)
-      goto overflow_fun11;
-   if(ySL > (signed long) pngSTPtr->heightUS)
-      goto overflow_fun11;
-
-   ySL *= pngSTPtr->widthUS;
-   ySL += xSL;
-   pngSTPtr->pixelAryUC[ySL] = colUC;
-
-   return 0;
-
-   overflow_fun11:;
-      return def_overflow_mkPng;
-}  /*addPixel_st_mkPng*/
-
-/*-------------------------------------------------------\
-| Fun12: addBar_st_mkPng
-|   - adds a bar to a st_mkPng image
-| Input:
-|   - pngSTPtr:
-|     o pointer to st_mkPng struct to add bar to
-|   - xSL:
-|     o x coordinate of left conner; start of bar; index 0
-|   - ySL:
-|     o y coordiante of bottom of bar (index 0)
-|   - widthUS:
-|     o width in pixels of bar
-|   - heightUS:
-|     o heigth in pixels of bar
-|   - colUC:
-|     o index of color in pallete to assign
-| Output:
-|   - Modifies:
-|     o pixelAryUC in pngSTPtr to have bar
-| Note:
-|   o the minimum width is at least one byte worth,
-|     otherwise, do single pixel modifications
-|     with addPixel_st_mkPng
-\-------------------------------------------------------*/
-signed char
-addBar_st_mkPng(
-   struct st_mkPng *pngSTPtr, /*add bar to png*/
-   signed long xSL,           /*x coordinate (pixels)*/
-   signed long ySL,           /*y coordiante (pixels)*/
-   signed long widthUS,       /*pixels wide of bar*/
-   signed long heightUS,      /*pixels high of bar*/
-   signed char colUC          /*color of bar*/
-){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun12 addBar_st_mkPng
-   '   - adds a bar to a st_mkPng image
-   '   o fun12 sec01:
-   '     - variable declarations
-   '   o fun12 sec02:
-   '     - setup + create color stamp
-   '   o fun12 sec03:
-   '     - make bar
-   '   o fun12 sec04:
-   '     - return result
-   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun12 Sec01:
-   ^   - variable declarations
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   ul_64bit maskStartUL = 0;/*mask to clear start*/
-   ul_64bit colStartUL = 0; /*color stamp for mask start*/
-
-   ul_64bit maskEndUL = 0;  /*ending mask to clear bits*/
-   ul_64bit colEndUL = 0;   /*color stamp for mask end*/
-
-   ul_64bit colByteUL = 0;  /*byte full of color*/
-   ul_64bit *pixAryUL = (ul_64bit *) pngSTPtr->pixelAryUC;
-     /*pixel array as long*/
-
-   signed long startSL = 0;    /*start of bar on row*/
-   signed long endSL = 0;      /*start of bar on row*/
-   signed long cpIndexSL = 0;  /*index copying at*/
-   signed long lenRowSL = 0;   /*length of one row*/
-
-
-   unsigned char bitUC = 0;    /*for building mask*/
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun12 Sec02:
-   ^   - setup + create color stamp
-   ^   o fun12 sec02 sub01:
-   ^     - check if have overflow and find row length
-   ^   o fun12 sec02 sub02:
-   ^     - find start, end, and setup masks
-   ^   o fun12 sec02 sub03:
-   ^     - setup color stamps
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   /*****************************************************\
-   * Fun12 Sec02 Sub01:
-   *   - check if have overflow and find row length
-   \*****************************************************/
-
-   if(widthUS + xSL >= pngSTPtr->widthUS)
-      goto overflow_fun12;
-   if(heightUS + ySL >= pngSTPtr->heightUS)
-      goto overflow_fun12;
-
-   /*this is safe because setup enforces that width must
-   `   be a multiple of bits per byte
-   */
-   lenRowSL = byteLenToULLen_64bit(pngSTPtr->widthUS) - 1;
-      /*get number of longs in a row*/
-
-   /*****************************************************\
-   * Fun12 Sec02 Sub02:
-   *   - find start, end, and setup masks
-   \*****************************************************/
-
-   startSL = xSL;
-   endSL = startSL + widthUS;
-
-   /*_________________build_start_mask__________________*/
-   maskStartUL = (xSL % def_bytesInUL_64bit);
-      /*find number of pixels not changing at start*/
-   maskStartUL = ((ul_64bit) -1) >> (maskStartUL << 3);
-   maskStartUL = ulToLittle_endin(maskStartUL);
-      /*make sure is in little endin format*/
-
-   /*_________________build_end_mask____________________*/
-   maskEndUL =
-        def_bytesInUL_64bit
-      - ((xSL + widthUS) % def_bytesInUL_64bit);
-      /*gives number of extra pixels at end*/
-   maskEndUL = ((ul_64bit) -1) >> (maskEndUL << 3);
-   maskEndUL = ulToLittle_endin(maskEndUL);
-      /*make sure is in little endin format*/
-
-   /*_________________find_positions____________________*/
-   /*convert start and end to bytes*/
-   startSL = byteLenToULLen_64bit(startSL);
-   endSL = byteLenToULLen_64bit(endSL);
-   if(endSL)
-      --endSL;
-
-   /*move to first pixel to change position*/
-   pixAryUL += ySL * lenRowSL;
-
-   /*****************************************************\
-   * Fun12 Sec02 Sub03:
-   *   - setup color stamps
-   \*****************************************************/
-
-   for(
-      bitUC = 0;
-      bitUC < def_bitsInUL_64bit;
-      bitUC += def_bitsPerChar_64bit
-   ) colByteUL |= (((ul_64bit) colUC) << bitUC);
-
-   colStartUL = colByteUL & maskStartUL;
-   colEndUL = colByteUL & maskEndUL;
-
-   maskStartUL = ~maskStartUL;
-   maskEndUL = ~maskEndUL;
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun12 Sec03:
-   ^   - make bar
-   ^   o fun12 sec03 sub01:
-   ^     - one limb coloring
-   ^   o fun12 sec03 sub02:
-   ^     - two limb coloring
-   ^   o fun12 sec03 sub03:
-   ^     - three or more limb coloring
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   /*****************************************************\
-	* Fun12 Sec03 Sub01:
-   *   - one limb coloring
-   \*****************************************************/
-
-   if(startSL == endSL)
-   { /*If: only coloring one limb*/
-
-      for(xSL = ySL; xSL < heightUS; ++xSL)
-      { /*Loop: apply color*/
-         pixAryUL[startSL] &= maskStartUL;
-         pixAryUL[startSL] |= colStartUL;
-
-         pixAryUL += lenRowSL;
-      }  /*Loop: apply color*/
-   } /*If: only coloring one limb*/
-
-   /*****************************************************\
-	* Fun12 Sec03 Sub02:
-   *   - two limb coloring
-   \*****************************************************/
-
-   else if((startSL + 1) == endSL)
-   { /*Else If: only coloring two limbs*/
-
-      for(xSL = ySL; xSL < heightUS; ++xSL)
-      { /*Loop: apply color*/
-         pixAryUL[startSL] &= maskStartUL;
-         pixAryUL[startSL] |= colStartUL;
-
-         pixAryUL[endSL] &= maskEndUL;
-         pixAryUL[endSL] |= colEndUL;
-
-         pixAryUL += lenRowSL;
-      }  /*Loop: apply color*/
-   } /*Else If: only coloring two limbs*/
-
-   /*****************************************************\
-   * Fun12 Sec03 Sub03:
-   *   - three or more limb coloring
-   \*****************************************************/
-
-   else
-   { /*Else If: coloring three or more limbs*/
-
-      for(xSL = ySL; xSL < heightUS; ++xSL)
-      { /*Loop: apply color*/
-         pixAryUL[startSL] &= maskStartUL;
-         pixAryUL[startSL] |= colStartUL;
-
-         cpIndexSL = startSL;
-         while(cpIndexSL < endSL)
-            pixAryUL[cpIndexSL++] = colByteUL;
-
-         pixAryUL[endSL] &= maskEndUL;
-         pixAryUL[endSL] |= colEndUL;
-
-         pixAryUL += lenRowSL;
-      }  /*Loop: apply color*/
-   } /*Else If: coloring three or more  limbs*/
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun12 Sec04:
-   ^   - return result
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   return 0;
-
-   overflow_fun12:;
-      return def_overflow_mkPng;
-}  /*addBar_st_mkPng*/
-
-/*-------------------------------------------------------\
-| Fun16: addUint_mkPng
+| Fun11: addUint_mkPng
 |   - adds a uint to a png buffer
 | Input:
 |   - inUI:
@@ -1027,7 +738,7 @@ addUint_mkPng(
 } /*addUint_mkPng*/
 
 /*-------------------------------------------------------\
-| Fun17: pIHDR_st_mkPng
+| Fun12: pIHDR_st_mkPng
 |   - add the IHDR header to a st_mkPng struct
 | Input:
 |   - pngSTPtr:
@@ -1043,24 +754,24 @@ pIHDR_st_mkPng(
    struct st_mkPng *pngSTPtr,  /*to add header to*/
    void *outFILE
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun17 TOC:
+   ' Fun12 TOC:
    '   - add the IHDR header to a st_mkPng struct
-   '   o fun17 sec01:
+   '   o fun12 sec01:
    '    - variable declarations
-   '   o fun17 sec02:
+   '   o fun12 sec02:
    '    - add length of IHDR chunk
-   '   o fun17 sec03:
+   '   o fun12 sec03:
    '    - add name of IHDR chunk
-   '   o fun17 sec04:
+   '   o fun12 sec04:
    '    - add image dimesions to IHDR header
-   '   o fun17 sec05:
+   '   o fun12 sec05:
    '    - add color pallete and other values (leave 0)
-   '   o fun17 sec06:
+   '   o fun12 sec06:
    '    - add crc32 to IHDR chunk
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun17 Sec01:
+   ^ Fun12 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1069,7 +780,7 @@ pIHDR_st_mkPng(
    unsigned int crc32UI = 0xffffffff;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun17 Sec02:
+   ^ Fun12 Sec02:
    ^   - add length of IHDR chunk
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1077,7 +788,7 @@ pIHDR_st_mkPng(
       /*CRC does not include chunk length section*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun17 Sec03:
+   ^ Fun12 Sec03:
    ^   - add name of IHDR chunk
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1093,7 +804,7 @@ pIHDR_st_mkPng(
    fputc('R', (FILE *) outFILE);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun17 Sec04:
+   ^ Fun12 Sec04:
    ^   - add image dimesions to IHDR header
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1127,7 +838,7 @@ pIHDR_st_mkPng(
       fputc(tmpAryUC[3], (FILE *) outFILE);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun17 Sec05:
+   ^ Fun12 Sec05:
    ^   - add color pallete and other values (leave 0)
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1153,7 +864,7 @@ pIHDR_st_mkPng(
      fputc(0, (FILE *) outFILE);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun17 Sec06:
+   ^ Fun12 Sec06:
    ^   - add crc32 to IHDR chunk
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1163,7 +874,7 @@ pIHDR_st_mkPng(
 } /*pIHDR_mkPng*/
 
 /*-------------------------------------------------------\
-| Fun18: pPLTE_st_mkPng
+| Fun13: pPLTE_st_mkPng
 |   - add the pallete (PLTE) header to a st_mkPng struct
 | Input:
 |   - pngSTPtr:
@@ -1179,22 +890,22 @@ pPLTE_st_mkPng(
    struct st_mkPng *pngSTPtr, /*to add header to*/
    void *outFILE
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun18 TOC:
+   ' Fun13 TOC:
    '   - add the pallete (PLTE) header to st_mkPng struct
-   '   o fun18 sec01:
+   '   o fun13 sec01:
    '     - variable declarations
-   '   o fun18 sec02:
+   '   o fun13 sec02:
    '     - add length for PLTE chunk
-   '   o fun18 sec03:
+   '   o fun13 sec03:
    '     - add PLTE chunk header
-   '   o fun18 sec04:
+   '   o fun13 sec04:
    '     - add color pallete for PLTE chunk
-   '   o fun18 sec05:
+   '   o fun13 sec05:
    '     - add crc32 to PLTE chunk
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun18 Sec01:
+   ^ Fun13 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1202,7 +913,7 @@ pPLTE_st_mkPng(
    unsigned int crc32UI = 0xffffffff;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun18 Sec02:
+   ^ Fun13 Sec02:
    ^   - add length for PLTE chunk
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1213,7 +924,7 @@ pPLTE_st_mkPng(
       /*CRC does not include chunk length section*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun18 Sec03:
+   ^ Fun13 Sec03:
    ^   - add PLTE chunk header
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1229,7 +940,7 @@ pPLTE_st_mkPng(
       fputc('E', (FILE *) outFILE);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun18 Sec04:
+   ^ Fun13 Sec04:
    ^   - add color pallete for PLTE chunk
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1261,7 +972,7 @@ pPLTE_st_mkPng(
    } /*Loop: add color pallete to header*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun18 Sec05:
+   ^ Fun13 Sec05:
    ^   - add crc32 to PLTE chunk
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1272,7 +983,7 @@ pPLTE_st_mkPng(
 } /*pPLTE_st_mkPng*/
 
 /*-------------------------------------------------------\
-| Fun19: pIDAT_st_mkPng
+| Fun14: pIDAT_st_mkPng
 |   - add image IDAT header
 |   - not fully sure on this one
 |   - copied from misc0110's libattpng repository
@@ -1289,20 +1000,20 @@ pIDAT_st_mkPng(
    struct st_mkPng *pngSTPtr,/*add header to + has image*/
    void *outFILE             /*file to print idat to*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun19 TOC:
+   ' Fun14 TOC:
    '   - add image IDAT header
-   '   o fun19 sec01:
+   '   o fun14 sec01:
    '     - variable declarations
-   '   o fun19 sec02:
+   '   o fun14 sec02:
    '     - write IDAT header
-   '   o fun19 sec03:
+   '   o fun14 sec03:
    '     - add image to image header
-   '   o fun19 sec04:
+   '   o fun14 sec04:
    '     - add adler and crc32 to image header
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\
-   ^ Fun19 Sec01:
+   ^ Fun14 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1313,6 +1024,7 @@ pIDAT_st_mkPng(
 
    unsigned char bitUC = 0;
    unsigned char outUC = 0;
+   unsigned char tmpUC = 0;
 
    signed int sumOneSI = 1;
    signed int sumTwoSI = 0;
@@ -1325,7 +1037,7 @@ pIDAT_st_mkPng(
    unsigned int crc32UI = 0xffffffff;
 
    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\
-   ^ Fun19 Sec02:
+   ^ Fun14 Sec02:
    ^   - write IDAT header
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1358,31 +1070,31 @@ pIDAT_st_mkPng(
    fputc(0xda, (FILE *) outFILE);
 
    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\
-   ^ Fun19 Sec03:
+   ^ Fun14 Sec03:
    ^   - add image to image header
-   ^   o fun19 sec03 sub01:
+   ^   o fun14 sec03 sub01:
    ^     - start loop & deal with end of rows
-   ^   o fun19 sec03 sub02:
+   ^   o fun14 sec03 sub02:
    ^     - add pixe to row
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
    
    /*****************************************************\
-   * Fun19 Sec03 Sub01:
+   * Fun14 Sec03 Sub01:
    *   - start loop & deal with end of rows
-   *   o fun19 sec03 sub01 cat01:
+   *   o fun14 sec03 sub01 cat01:
    *     - start loop & deal with non-last row end of row
-   *   o fun19 sec03 sub01 cat02:
+   *   o fun14 sec03 sub01 cat02:
    *     - deal with last row (end of file row)
    \*****************************************************/
 
    /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
-   + Fun19 Sec03 Sub01 Cat01:
+   + Fun14 Sec03 Sub01 Cat01:
    +   - start loop & deal with non-last row end of row
    \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
    indexUI = 0;
    pixelSL = 0;
-   goto addZlibHeader_fun19_sec03_sub01_cat01;
+   goto addZlibHeader_fun14_sec03_sub01_cat01;
 
    /*height is index 1*/
    while(rowUS < pngSTPtr->heightUS)
@@ -1392,7 +1104,7 @@ pIDAT_st_mkPng(
       { /*If: end of the row*/
          ++rowUS;
 
-         addZlibHeader_fun19_sec03_sub01_cat01:;
+         addZlibHeader_fun14_sec03_sub01_cat01:;
          if(rowUS == pngSTPtr->heightUS - 1)
          { /*If: on the last row*/
             fputc('\1', (FILE *) outFILE);
@@ -1438,7 +1150,7 @@ pIDAT_st_mkPng(
       } /*If: end of the row*/
 
       /**************************************************\
-      * Fun19 Sec03 Sub02:
+      * Fun14 Sec03 Sub02:
       *   - add pixel to row
       \**************************************************/
 
@@ -1450,13 +1162,20 @@ pIDAT_st_mkPng(
          bitUC += pngSTPtr->pixDepthUC
       ) outUC |= (pngSTPtr->pixelAryUC[pixelSL++]<<bitUC);
 
+      /*need to invert the pixels in outUC since outUC
+      `  is really an inverse
+      */
+      tmpUC = outUC >> (def_bitsPerChar_64bit >> 1);
+      outUC <<= (def_bitsPerChar_64bit >> 1);
+      outUC |= tmpUC;
+
       fputc(outUC, (FILE *) outFILE);
       crc32UI = crc32Byte_checkSum(outUC, crc32UI);
       adler32Byte_checkSum(outUC, &sumOneSI, &sumTwoSI);
    }  /*Loop: add pixels to crc32*/
 
    /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\
-   ^ Fun19 Sec04:
+   ^ Fun14 Sec04:
    ^   - add adler and crc32 to image header
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -1487,7 +1206,7 @@ pIDAT_st_mkPng(
 } /*pIDAT_st_mkPng*/
 
 /*-------------------------------------------------------\
-| Fun20: pIEND_st_mkPng
+| Fun15: pIEND_st_mkPng
 |   - add end header (IEND) for png 
 | Input:
 |   - outFILE:
@@ -1523,7 +1242,7 @@ pIEND_st_mkPng(
 } /*pIEND_st_mkPng*/
 
 /*-------------------------------------------------------\
-| Fun21: print_st_mkPng
+| Fun16: print_st_mkPng
 |   - prints a png to output file
 | Input:
 |   - pngSTPtr:
@@ -1540,7 +1259,7 @@ print_st_mkPng(
    struct st_mkPng *pngSTPtr,  /*png to print*/
    void *outFILE               /*file to print to*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun21 TOC:
+   ' Fun16 TOC:
    '   - prints a png to output file
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -1562,3 +1281,74 @@ print_st_mkPng(
 
    /*not including transparency*/
 } /*print_st_mkPng*/
+
+/*=======================================================\
+: License:
+: 
+: This code is under the unlicense (public domain).
+:   However, for cases were the public domain is not
+:   suitable, such as countries that do not respect the
+:   public domain or were working with the public domain
+:   is inconvient / not possible, this code is under the
+:   MIT license.
+: 
+: Public domain:
+: 
+: This is free and unencumbered software released into the
+:   public domain.
+: 
+: Anyone is free to copy, modify, publish, use, compile,
+:   sell, or distribute this software, either in source
+:   code form or as a compiled binary, for any purpose,
+:   commercial or non-commercial, and by any means.
+: 
+: In jurisdictions that recognize copyright laws, the
+:   author or authors of this software dedicate any and
+:   all copyright interest in the software to the public
+:   domain. We make this dedication for the benefit of the
+:   public at large and to the detriment of our heirs and
+:   successors. We intend this dedication to be an overt
+:   act of relinquishment in perpetuity of all present and
+:   future rights to this software under copyright law.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO
+:   EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM,
+:   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+:   CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+:   IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+:   DEALINGS IN THE SOFTWARE.
+: 
+: For more information, please refer to
+:   <https://unlicense.org>
+: 
+: MIT License:
+: 
+: Copyright (c) 2026 jeremyButtler
+: 
+: Permission is hereby granted, free of charge, to any
+:   person obtaining a copy of this software and
+:   associated documentation files (the "Software"), to
+:   deal in the Software without restriction, including
+:   without limitation the rights to use, copy, modify,
+:   merge, publish, distribute, sublicense, and/or sell
+:   copies of the Software, and to permit persons to whom
+:   the Software is furnished to do so, subject to the
+:   following conditions:
+: 
+: The above copyright notice and this permission notice
+:   shall be included in all copies or substantial
+:   portions of the Software.
+: 
+: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+:   EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+:   FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+:   AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+:   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+:   USE OR OTHER DEALINGS IN THE SOFTWARE.
+\=======================================================*/

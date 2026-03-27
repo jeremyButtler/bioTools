@@ -1,0 +1,32 @@
+LD=cc
+CFLAGS= -O0 -std=c89 -g -Werror -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
+NAME=testPngDraw
+O=o.test
+
+objFiles= \
+   ../genLib/endin.$O \
+   ../genLib/checkSum.$O \
+   mkPng.$O \
+   pngDraw.$O \
+   test.$O;
+
+build: test.$O
+	$(LD) -o $(NAME) $(objFiles)
+
+test.$O:	test.c pngDraw.$O ../genLib/endLine.h
+	$(CC) -c -o test.$O $(CFLAGS) test.c
+
+pngDraw.$O: pngDraw.h pngDraw.c mkPng.$O
+	$(CC) -c -o pngDraw.$O $(CFLAGS) pngDraw.c
+
+mkPng.$O: mkPng.h mkPng.c ../genLib/checkSum.$O ../genLib/64bit.h
+	$(CC) -c -o mkPng.$O $(CFLAGS) mkPng.c
+
+../genLib/checkSum.$O: ../genLib/checkSum.c ../genLib/checkSum.h ../genLib/endin.$O
+	$(CC) -c -o ../genLib/checkSum.$O $(CFLAGS) ../genLib/checkSum.c
+
+../genLib/endin.$O: ../genLib/endin.c ../genLib/endin.h
+	$(CC) -c -o ../genLib/endin.$O $(CFLAGS) ../genLib/endin.c
+
+clean:
+	rm $(objFiles)
