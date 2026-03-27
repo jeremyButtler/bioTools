@@ -1277,14 +1277,23 @@ main(
    { /*If: printing read depth report*/
       pDepthHead_ampDepth(outFILE);
 
-      pdepth_ampDepth(
-         (signed int *) readMapHeapArySI,
-         readMapSizeSI,
-         minDepthSI,
-         refStr,
-         extraColStr,
-         outFILE
-      );
+      if(! genesHeapST)
+         pdepth_ampDepth(
+            (signed int *) readMapHeapArySI,
+            readMapSizeSI,
+            minDepthSI,
+            refStr,
+            extraColStr,
+            outFILE
+         );
+      else
+         pGeneDepth_ampDepth(
+            (signed int *) readMapHeapArySI,
+            genesHeapST,
+            minDepthSI,
+            refStr,
+            outFILE
+         );
    } /*If: printing read depth report*/
 
    else if(pDepthBl == 2)
