@@ -1155,19 +1155,23 @@ pIDAT_st_mkPng(
       \**************************************************/
 
       outUC = 0;
+      tmpUC = 0;
 
       for(
          bitUC = 0;
          bitUC < def_bitsPerChar_64bit;
          bitUC += pngSTPtr->pixDepthUC
-      ) outUC |= (pngSTPtr->pixelAryUC[pixelSL++]<<bitUC);
-
-      /*need to invert the pixels in outUC since outUC
-      `  is really an inverse
-      */
-      tmpUC = outUC >> (def_bitsPerChar_64bit >> 1);
-      outUC <<= (def_bitsPerChar_64bit >> 1);
-      outUC |= tmpUC;
+      ){ /*Loop: print the pixels to the idat entry*/
+         outUC |=
+            (
+               pngSTPtr->pixelAryUC[
+                  pixelSL +
+                   pngSTPtr->pixPerByteUC - tmpUC - 1
+               ] << bitUC
+            );
+         ++tmpUC;
+      }  /*Loop: print the pixels to the idat entry*/
+      pixelSL += tmpUC;
 
       fputc(outUC, (FILE *) outFILE);
       crc32UI = crc32Byte_checkSum(outUC, crc32UI);
