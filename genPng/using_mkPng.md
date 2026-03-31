@@ -36,6 +36,8 @@ The st\_mkPng structure is what stores the png. You should
   - heightUS: height of the png (do not change)
     - this is set with the `setup_st_mkPng()` and
       `mk_st_mkPng()` function
+  - numPixelSL: number of total pixels in the png
+    - Is really `widthUS * heightUS`
 
 You can get the index of a single pixel in the png with
   `index = (widthUS * yCoordinate) +xCoordinate;`, were
