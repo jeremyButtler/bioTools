@@ -455,13 +455,6 @@ init_st_mkPng(
    errSC = 0;*/ /*DELETE*/
      
 
-   /*set number of used bytes*/
-   pngSTPtr->usedBytesSL =
-      pngSTPtr->widthUS * pngSTPtr->heightUS;
-   pngSTPtr->usedBytesSL >>= pngSTPtr->shiftUC;
-   pngSTPtr->usedBytesSL += def_idatEnd_mkPng;
-
-
    /*called in case of future additions, but not needed*/
    blank_st_mkPng(pngSTPtr);
 } /*init_st_mkPng*/
@@ -617,12 +610,6 @@ setup_st_mkPng(
    numBytesSL = pngSTPtr->numPixelSL;
    numBytesSL += def_idatEnd_mkPng;
      /*extra bytes at end of idat entry*/
-
-   /*find number used (to print) bytes*/
-   pngSTPtr->usedBytesSL =
-      pngSTPtr->widthUS * pngSTPtr->heightUS;
-   pngSTPtr->usedBytesSL >>= pngSTPtr->shiftUC;
-   pngSTPtr->usedBytesSL += def_idatEnd_mkPng;
 
    /*****************************************************\
    * Fun09 Sec03 Sub02:

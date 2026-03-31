@@ -99,7 +99,6 @@ typedef struct st_mkPng
 {
    unsigned short widthUS;   /*number pixels in a row*/
    unsigned short heightUS;  /*number pixels in a column*/
-   signed long numPixelSL;   /*number total pixels*/
    unsigned char pixDepthUC; /*bits per pixel*/
    unsigned char pixPerByteUC; /*number pixels in a byte*/
 
@@ -111,8 +110,8 @@ typedef struct st_mkPng
    unsigned char *pixelAryUC;      /*matrix of pixels*/
       /*1d array, each x elements is a row*/
       /*always make sure this is a multiple of 8*/
+   signed long numPixelSL;   /*number total pixels*/
    signed long sizePixelSL;      /*pixelAryUC array size*/
-   signed long usedBytesSL;      /*number pix bytes used*/
 
    unsigned char redAryUC[def_maxCol_mkPng];/*red value*/
    unsigned char bluAryUC[def_maxCol_mkPng];/*blue value*/
