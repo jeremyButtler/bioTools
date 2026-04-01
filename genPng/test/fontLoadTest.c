@@ -45,8 +45,8 @@ main(
    else if(errSL < 0)
    { /*Else If: duplicate character*/
       errSL *= -1;
-      errSL += 4;
-      fprintf(stderr, "error on line %li\n", errSL);
+      errSL -= 4;
+      fprintf(stderr,"duplicate char; line %li\n",errSL);
       goto err_main;
    } /*Else If: duplicate character*/
 
@@ -57,7 +57,7 @@ main(
    } /*Else: bad character on a line*/
 
    /*make sure my test does not get optimized out*/
-   printf("%i\n", fontStackST.heightSS);
+   printf("font height: %i\n", fontStackST.heightSS);
 
    errSL = 0;
    goto ret_main;

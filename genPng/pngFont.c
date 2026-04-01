@@ -363,7 +363,10 @@ getFont_font_pngFont(
         else
         { /*Else: have a character*/
            ++posSI;
-           charUC = (unsigned char) buffStr[posSI];
+           charUC =
+              (unsigned char)
+              buffStr[posSI] - def_asciiOffset_pngFont;
+              /*- 32 to convert space to 0*/
            ++posSI;
         } /*Else: have a character*/
 
@@ -406,6 +409,7 @@ getFont_font_pngFont(
          calloc(bytesSS, sizeof(unsigned char));
       if(! fontSTPtr->pixAryUC[charUC])
          goto memErr_fun05_sec04;
+      fontSTPtr->lenArySS[charUC] = bytesSS;
 
       /**************************************************\
       * Fun05 Sec03 Sub03:
@@ -443,9 +447,7 @@ getFont_font_pngFont(
             ++posSI;
             /*get past white space to check if header*/
 
-         if(! buffStr[posSI])
-            continue; /*blank line*/
-         else if(buffStr[posSI] == ':' )
+         if(buffStr[posSI] == ':' )
              goto getChar_fun05_sec03_sub01;
          else
             posSI = 0;
@@ -463,38 +465,33 @@ getFont_font_pngFont(
 
          while(buffStr[posSI] > 31)
          { /*Loop: copy the bitmap*/
-
            for(; pixSS < def_bitsPerChar_64bit; ++pixSS)
            { /*Loop: add pixels*/
               if(posSI >= fontSTPtr->widthArySS[charUC])
                  break; /*the width of the character*/
-
               else if(buffStr[posSI] < 32)
                  break;
-
               else if(buffStr[posSI] == ' ')
                  ; /*blank cell*/
-
               else if(buffStr[posSI] == '#')
                 fontSTPtr->pixAryUC[charUC][charByteSS] |=
                    (unsigned char) (1 << pixSS);
-
               else
                  goto fileErr_fun05_sec04;
 
               ++posSI;
            }  /*Loop: add pixels*/
 
-           if(posSI >= fontSTPtr->widthArySS[charUC])
-              break; /*the width of the character*/
-           else if(! buffStr[posSI])
-              break; /*end of line*/
-
            if(pixSS >= def_bitsPerChar_64bit)
            { /*If: need to move to the next byte*/
               pixSS = 0;
               ++charByteSS;
            } /*If: need to move to the next byte*/
+
+           if(posSI >= fontSTPtr->widthArySS[charUC])
+              break; /*the width of the character*/
+           else if(! buffStr[posSI])
+              break; /*end of line*/
          }  /*Loop: copy the bitmap*/
 
          /*++++++++++++++++++++++++++++++++++++++++++++++\
@@ -512,13 +509,14 @@ getFont_font_pngFont(
                ++posSI;
             } /*Loop: move past pixel*/
 
-            if(posSI >= fontSTPtr->widthArySS[charUC])
-               break; /*the width of the character*/
-            else
-            { /*Else: need to move to the next byte*/
+            if(pixSS >= def_bitsPerChar_64bit)
+            { /*If: filled the last byte*/
                pixSS = 0;
                ++charByteSS;
-            } /*Else: need to move to the next byte*/
+            } /*If: filled the last byte*/
+
+            if(posSI >= fontSTPtr->widthArySS[charUC])
+               break; /*the width of the character*/
          } /*Loop: account for jagged ends*/
 
          if(heightSS >= fontSTPtr->heightSS)
@@ -596,11 +594,11 @@ measureText_font_pngFont(
 |   - Modifies:
 |     o pngSTPtr to have the drawn text
 |   - Returns:
-|     o 0 for no errors
-|     o 1 if the coordinates were out of bounds
-|     o 2 if textStr has a non-ascii character
+|     o column (x-axis) ended on (>= 0) for no errors
+|     o -1 if the coordinates were out of bounds
+|     o -2 if textStr has a non-ascii character
 \-------------------------------------------------------*/
-signed char
+signed int
 drawHorzText_font_pngFont(
    signed char *textStr,    /*text to draw*/
    unsigned short xUS,      /*x coordinate*/
@@ -634,7 +632,7 @@ drawHorzText_font_pngFont(
    signed long byteSL = 0;     /*byte adding to*/
    signed long endRowSL = 0;   /*byte adding to*/
    signed long nextRowSL = 0;  /*start of the next row*/
-   signed long lastPixSL = 0;  /*last pixel in row*/
+   signed short rowPixSS = 0;
 
    signed short charByteSS = 0;/*has one byte of pixel*/
    signed short heightSS = 0;  /*number of rows printed*/
@@ -670,18 +668,21 @@ drawHorzText_font_pngFont(
    *   - draw each character
    \*****************************************************/
 
-   while(textStr)
+   while(*textStr)
    { /*Loop: add the text to the png*/
-      if(byteSL >= pngSTPtr->usedBytesSL)
+      if(byteSL >= pngSTPtr->numPixelSL)
          goto overflowErr_fun07_sec04; /*out of bounds*/
       else if(*textStr < 32 || *textStr > 126)
          goto nonAsciiChar_fun07_sec04;
+      rowPixSS = 0;
 
-      charUC = (unsigned char) *textStr;
+      charUC =
+         (unsigned char)
+         *textStr - def_asciiOffset_pngFont;
       ++textStr;
       endRowSL = 0;
       pixSS = 0;
-      lastPixSL = byteSL + fontSTPtr->widthArySS[charUC];
+      rowPixSS = 0; /*keep track of pixel on in the row*/
 
       for(
          charByteSS = 0;
@@ -696,8 +697,8 @@ drawHorzText_font_pngFont(
             pixSS < def_bitsPerChar_64bit;
             ++pixSS
          ){ /*Loop: fill each row of the character*/
-            if(byteSL > lastPixSL)
-              break;
+            if(rowPixSS >= fontSTPtr->widthArySS[charUC])
+               break;
 
             addPixels_fun07_sec03_sub01:;
               if(pixelsUC & 1)
@@ -710,6 +711,7 @@ drawHorzText_font_pngFont(
 
               pixelsUC >>= 1;
               ++byteSL;
+              ++rowPixSS;
          }  /*Loop: fill each row of the character*/
 
          /***********************************************\
@@ -717,7 +719,9 @@ drawHorzText_font_pngFont(
          *   - draw the gap between characters
          \***********************************************/
 
-         if(*textStr && byteSL > lastPixSL)
+         if(! *textStr)
+            ;
+         else if(rowPixSS >=fontSTPtr->widthArySS[charUC])
          { /*If: need to print the gap*/
             for(
                widthSS = 0;
@@ -728,19 +732,22 @@ drawHorzText_font_pngFont(
                   pngSTPtr->pixelAryUC[byteSL] = bgColSC;
                ++byteSL;
             }  /*Loop: add the gap between characters*/
-
-            if(! endRowSL)
-               endRowSL = byteSL;
          } /*If: need to print the gap*/
 
-         byteSL = nextRowSL;
-         nextRowSL += pngSTPtr->widthUS;
-         lastPixSL=byteSL + fontSTPtr->widthArySS[charUC];
-         ++heightSS;
+         if(rowPixSS >=fontSTPtr->widthArySS[charUC])
+         { /*If: need to move to the next row*/
+            if(! endRowSL)
+               endRowSL = byteSL;
+            rowPixSS = 0;
+
+            byteSL = nextRowSL;
+            nextRowSL += pngSTPtr->widthUS;
+            ++heightSS;
+         } /*If: need to move to the next row*/
 
          if(heightSS >= fontSTPtr->heightSS)
             break; /*done with the character*/
-         else if(nextRowSL > pngSTPtr->usedBytesSL)
+         else if(nextRowSL > pngSTPtr->numPixelSL)
             goto overflowErr_fun07_sec04;
          else if(pixSS < def_bitsPerChar_64bit)
             goto addPixels_fun07_sec03_sub01;
@@ -752,11 +759,17 @@ drawHorzText_font_pngFont(
       *   - move to the next character
       \**************************************************/
 
-      ++textStr;
+      if(! *textStr)
+         break; /*done*/
+
       byteSL = endRowSL;
       nextRowSL = endRowSL + pngSTPtr->widthUS;
+      heightSS = 0;
+      pixSS = 0;
 
-      if(! *textStr && nextRowSL > pngSTPtr->usedBytesSL)
+      if(! *textStr)
+         ;
+      else if(rowPixSS >=fontSTPtr->widthArySS[charUC])
          goto overflowErr_fun07_sec04;
    } /*Loop: add the text to the png*/
 
@@ -765,12 +778,20 @@ drawHorzText_font_pngFont(
    ^   - return the result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   return 0;
+   yUS = byteSL / pngSTPtr->widthUS;
+      /*get the row on; I am reallying on truncation to
+      `  floor the number
+      */
+   byteSL -= (yUS * pngSTPtr->widthUS);
+      /*get the start of the row on and subtract from the
+      `  position
+      */
+   return byteSL; /*column on (x-axis)*/
 
    overflowErr_fun07_sec04:;
-      return 1;
+      return -1;
    nonAsciiChar_fun07_sec04:;
-      return 2;
+      return -2;
 } /*drawHorzText_font_pngFont*/
 
 /*-------------------------------------------------------\
@@ -801,7 +822,7 @@ drawHorzText_font_pngFont(
 |     o 1 if the coordinates were out of bounds
 |     o 2 if textStr has a non-ascii character
 \-------------------------------------------------------*/
-signed char
+signed int
 drawVertText_font_pngFont(
    signed char *textStr,    /*text to draw*/
    unsigned short xUS,      /*x coordinate*/
@@ -834,7 +855,7 @@ drawVertText_font_pngFont(
 
    signed long byteSL = 0;    /*byte adding to*/
    signed long nextRowSL = 0; /*start of the next row*/
-   signed long lastPixSL = 0;
+   signed short rowPixSS = 0;
       /*last pixel for char in a row*/
 
    signed short charByteSS = 0;/*has one byte of pixel*/
@@ -868,17 +889,19 @@ drawVertText_font_pngFont(
    *   - print the character
    \*****************************************************/
 
-   while(textStr)
+   while(*textStr)
    { /*Loop: add the text to the png*/
-      if(byteSL >= pngSTPtr->usedBytesSL)
-         goto overflowErr_fun08_sec04;
-      else if(*textStr < 32 || *textStr > 126)
+      if(*textStr < 32 || *textStr > 126)
          goto nonAsciiChar_fun08_sec04;
+      heightSS = 0;
 
-      charUC = (unsigned char) *textStr;
+      charUC =
+         (unsigned char)
+         *textStr - def_asciiOffset_pngFont;
       ++textStr;
-      lastPixSL = byteSL + fontSTPtr->widthArySS[charUC];
-         /*get the last pixel to fill in*/
+      rowPixSS = 0; /*keep track of pixel on in the row*/
+      if(nextRowSL >= pngSTPtr->numPixelSL)
+         goto overflowErr_fun08_sec04;
 
       for(
          charByteSS = 0;
@@ -893,7 +916,7 @@ drawVertText_font_pngFont(
             pixSS < def_bitsPerChar_64bit;
             ++pixSS
          ){ /*Loop: fill each row of the character*/
-            if(byteSL > lastPixSL)
+            if(rowPixSS >= fontSTPtr->widthArySS[charUC])
                break;
 
             addPixels_fun08_sec03_sub01:;
@@ -907,24 +930,24 @@ drawVertText_font_pngFont(
 
                pixelsUC >>= 1;
                ++byteSL;
+               ++rowPixSS;
          }  /*Loop: fill each row of the character*/
 
 
-         if(byteSL > lastPixSL)
+         if(rowPixSS >= fontSTPtr->widthArySS[charUC])
          { /*If: I need to move to the next line*/
+            rowPixSS = 0;
             byteSL = nextRowSL;
             nextRowSL += pngSTPtr->widthUS;
-
-            lastPixSL =
-               byteSL + fontSTPtr->widthArySS[charUC];
             ++heightSS;
+
+            if(nextRowSL >= pngSTPtr->numPixelSL)
+               goto overflowErr_fun08_sec04;
          } /*If: I need to move to the next line*/
 
          if(heightSS >= fontSTPtr->heightSS)
             break; /*done with the character*/
-         if(nextRowSL > pngSTPtr->usedBytesSL)
-            goto overflowErr_fun08_sec04;
-         if(pixSS < def_bitsPerChar_64bit)
+         else if(pixSS < def_bitsPerChar_64bit)
             goto addPixels_fun08_sec03_sub01;
             /*this reduces the amount of duplicate code*/
       }  /*Loop: fill in pixels for the character*/
@@ -941,26 +964,23 @@ drawVertText_font_pngFont(
             heightSS < fontSTPtr->gapSS;
             ++heightSS
          ){ /*Loop: add in the gap for vertical text*/
-            if(bgColSC >= 0)
-            { /*If: have a background color*/
-              for(
-                pixSS = 0;
-                pixSS < fontSTPtr->widthArySS[charUC];
-                ++pixSS
-              ){ /*Loop: add the gap between characters*/
-                  pngSTPtr->pixelAryUC[byteSL] = bgColSC;
-                  ++byteSL;
-              }  /*Loop: add the gap between characters*/
-            } /*If: have a background color*/
+            for(
+              pixSS = 0;
+              pixSS < fontSTPtr->widthArySS[charUC];
+              ++pixSS
+            ){ /*Loop: add the gap between characters*/
+                if(bgColSC >= 0)
+                   pngSTPtr->pixelAryUC[byteSL] = bgColSC;
+                ++byteSL;
+            }  /*Loop: add the gap between characters*/
 
             /*I need to keep track of the next row*/
             byteSL = nextRowSL;
             nextRowSL += pngSTPtr->widthUS;
 
-            lastPixSL =
-               byteSL + fontSTPtr->widthArySS[charUC];
-
-            if(nextRowSL > pngSTPtr->usedBytesSL)
+            if(! *textStr)
+               ;
+            else if(nextRowSL >= pngSTPtr->numPixelSL)
                goto overflowErr_fun08_sec04;
          }  /*Loop: add in the gap for vertical text*/
       } /*If: need to print the gap*/
@@ -971,13 +991,16 @@ drawVertText_font_pngFont(
    ^   - return the result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   return 0;
+   return byteSL / pngSTPtr->widthUS;
+      /*get the row on; I am reallying on truncation to
+      `  floor the number
+      */
 
    overflowErr_fun08_sec04:;
-      return 1;
+      return -1;
 
    nonAsciiChar_fun08_sec04:;
-      return 2;
+      return -2;
 } /*drawVertText_font_pngFont*/
 
 /*-------------------------------------------------------\
@@ -1120,34 +1143,34 @@ fontToC_font_pngFont(
    */
    fprintf(
      outFILE,
-     "/*_______________________________________________\n"
+     "/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
    );
-   fprintf(outFILE, " Hidden libraries:\n");
-   fprintf(outFILE, "   - std #include <stdio.h>\n");
+   fprintf(outFILE, "! Hidden libraries:\n");
+   fprintf(outFILE, "!   - std #include <stdio.h>\n");
    fprintf(
       outFILE,
-      "   - .c  #include \"../genLib/ulCp.h\"\n"
-   );
-   fprintf(
-      outFILE,
-      "   - .c  #include \"../genLib/base10str.h\"\n"
+      "!   - .c  #include \"../genLib/ulCp.h\"\n"
    );
    fprintf(
       outFILE,
-      "   - .c  #include \"../genLib/endin.h\"\n"
+      "!   - .c  #include \"../genLib/base10str.h\"\n"
    );
    fprintf(
       outFILE,
-      "   - .c  #include \"../genLib/checksum.h\"\n"
+      "!   - .c  #include \"../genLib/endin.h\"\n"
    );
-   fprintf( outFILE, "   - .c  #include \"mkPng.h\"\n");
    fprintf(
       outFILE,
-      "   - .h  #include \"../genLib/64bit.h\"\n"
+      "!   - .c  #include \"../genLib/checksum.h\"\n"
+   );
+   fprintf( outFILE, "!   - .c  #include \"mkPng.h\"\n");
+   fprintf(
+      outFILE,
+      "!   - .h  #include \"../genLib/64bit.h\"\n"
    );
    fprintf(
      outFILE,
-     "_______________________________________________*/\n"
+     "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/\n"
    );
    fprintf(outFILE, "\n");
 
@@ -1163,14 +1186,19 @@ fontToC_font_pngFont(
    ){ /*Loop: print functions to print each character*/
       fprintf(
          outFILE,
-         "/*Fun%2i: add%c_%s _______________\n",
+         "/*___________________________________________\n"
+      );
+      fprintf(
+         outFILE,
+         "` Fun%02i: addAscii%i_%s\n",
          charUC,
          charUC + 32,
          prefixStr
       );
       fprintf(
          outFILE,
-         "`  - adds character %c to the font\n",
+         "`  - adds character `%c` (ascii %i) to font\n",
+         charUC + 32,
          charUC + 32
       );
       fprintf(
@@ -1179,7 +1207,7 @@ fontToC_font_pngFont(
       );
       fprintf(
          outFILE,
-         "___________________________________________*/n"
+         "`__________________________________________*/\n"
       );
 
       /**************************************************\
@@ -1191,7 +1219,7 @@ fontToC_font_pngFont(
 
       fprintf(
          outFILE,
-         "add%c_%s(\n",
+         "addAscii%i_%s(\n",
          charUC + 32,
          prefixStr
       );
@@ -1210,31 +1238,31 @@ fontToC_font_pngFont(
       fprintf(
          outFILE,
          "   if(fontSTPtr->pixAryUC[%u])\n",
-         charUC + 32
+         charUC
       ); /*check if need to free memory*/
 
       fprintf(
          outFILE,
          "      free(fontSTPtr->pixAryUC[%u]);\n\n",
-         charUC + 32
+         charUC
       ); /*free memory*/
 
       fprintf(
          outFILE,
-         "  fontSTPtr->pixAryUC[%u] =\n",
-         charUC + 32
+         "   fontSTPtr->pixAryUC[%u] =\n",
+         charUC
       ); /*add memroy*/
 
       fprintf(
          outFILE,
          "     calloc(%i, sizeof(unsigned char));\n",
-         fontSTPtr->widthArySS[charUC + 32]
+         fontSTPtr->lenArySS[charUC]
       ); /*add memory calloc call*/
 
       fprintf(
          outFILE,
          "   if(! fontSTPtr->pixAryUC[%u])\n",
-         charUC + 32
+         charUC
       ); /*check if failed to add memroy*/
 
       fprintf(outFILE, "      return 1;\n\n");
@@ -1242,16 +1270,16 @@ fontToC_font_pngFont(
 
       fprintf(
          outFILE,
-         "    fontSTPtr->widthArySS[%i] = %i;\n",
-         charUC + 32,
-         fontSTPtr->widthArySS[charUC + 32]
+         "   fontSTPtr->widthArySS[%i] = %i;\n",
+         charUC,
+         fontSTPtr->widthArySS[charUC]
       ); /*add the width of the character*/
 
       fprintf(
          outFILE,
-         "    fontSTPtr->lenArySS[%i] = %i;\n",
-         charUC + 32,
-         fontSTPtr->lenArySS[charUC + 32]
+         "   fontSTPtr->lenArySS[%i] = %i;\n\n",
+         charUC,
+         fontSTPtr->lenArySS[charUC]
       ); /*add thh number bytes used to store the char*/
 
       /**************************************************\
@@ -1261,22 +1289,22 @@ fontToC_font_pngFont(
 
       for(
          pixSS = 0;
-         pixSS < fontSTPtr->widthArySS[charUC];
+         pixSS < fontSTPtr->lenArySS[charUC];
          ++pixSS
       ){ /*Loop: add each pixel indivdually*/
          fprintf(
             outFILE,
             "   fontSTPtr->pixAryUC[%u][%i] = %i;\n",
-            charUC + 32,
+            charUC,
             pixSS,
-            fontSTPtr->pixAryUC[charUC + 32][pixSS]
+            fontSTPtr->pixAryUC[charUC][pixSS]
          );
       }  /*Loop: add each pixel indivdually*/
 
-      fprintf(outFILE, "   return 0;\n");
+      fprintf(outFILE, "\n   return 0;\n");
       fprintf(
          outFILE,
-         "} /*add%c_%s*/\n\n",
+         "} /*addAscii%i_%s*/\n\n",
          charUC + 32,
          prefixStr
       );
@@ -1298,7 +1326,11 @@ fontToC_font_pngFont(
 
    fprintf(
       outFILE,
-      "/*Fun%2i: loadFont_%s _______________\n",
+      "/*_____________________________________________\n"
+   );
+   fprintf(
+      outFILE,
+      "` Fun%02i: loadFont_%s\n",
       charUC,
       prefixStr
    );
@@ -1317,7 +1349,7 @@ fontToC_font_pngFont(
    );
    fprintf(
       outFILE,
-      "___________________________________________*/n"
+      "`_____________________________________________*/\n"
    );
 
    /*****************************************************\
@@ -1336,16 +1368,12 @@ fontToC_font_pngFont(
 
    fprintf(
       outFILE,
-      "   blank_font_pngFont(fontSTPtr);\n"
-   );
-   fprintf(
-      outFILE,
       "   fontSTPtr->heightSS = %i;\n",
       fontSTPtr->heightSS
    );
    fprintf(
       outFILE,
-      "   fontSTPtr->gapSS = %i;\n",
+      "   fontSTPtr->gapSS = %i;\n\n",
       fontSTPtr->gapSS
    );
 
@@ -1356,7 +1384,7 @@ fontToC_font_pngFont(
    ){ /*Loop: print the user function*/
       fprintf(
          outFILE,
-         "   if( add%c_%s(fontSTPtr) )\n",
+         "   if( addAscii%i_%s(fontSTPtr) )\n",
          charUC + 32,
          prefixStr
       ); /*add each character to the function*/
@@ -1401,10 +1429,11 @@ fontToC_font_pngFont(
    { /*Loop: convert the prefix to uppercase*/
       if(outStr[lenSS] >= 'a')
          outStr[lenSS] &= ~32; /*lower case letter*/
+      ++lenSS;
    } /*Loop: convert the prefix to uppercase*/
 
 
-   prefixStr[lenSS] = 0;
+   outStr[lenSS] = 0;
 
    fprintf(
       outFILE,
@@ -1413,7 +1442,7 @@ fontToC_font_pngFont(
    );
    fprintf(
       outFILE,
-      "#define LOAD_THE_%s_FONT_H\n",
+      "#define LOAD_THE_%s_FONT_H\n\n",
       outStr
    );
    fprintf(outFILE, "struct font_pngFont;\n\n");
@@ -1425,7 +1454,11 @@ fontToC_font_pngFont(
 
    fprintf(
       outFILE,
-      "/*Fun%2i: loadFont_%s _______________\n",
+      "/*______________________________________________\n"
+   );
+   fprintf(
+      outFILE,
+      "` Fun%02i: loadFont_%s\n",
       charUC,
       prefixStr
    );
@@ -1444,7 +1477,7 @@ fontToC_font_pngFont(
    );
    fprintf(
       outFILE,
-      "___________________________________________*/n"
+      "`_____________________________________________*/\n"
    );
 
    fprintf(outFILE, "signed char\n");

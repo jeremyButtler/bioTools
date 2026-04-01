@@ -417,6 +417,37 @@ Sometimes you want your font to be embed in your code.
   font\_pngFont structure to load the font into and
   returns 0 for success and 1 for a memory error.
 
+After making your font file you will need to open the
+  `<font_name>.c` file and change the `#include pngFont.h`
+  line to have the path to the pngFont.h file. The
+  default output assumes this file is in genPng.
+
+In the output font file change:
+
+```
+#ifdef PLAN9
+   #include <u.h>
+   #include <libc.h>
+#else
+   #include <stdlib.h>
+#endif
+
+#include "pngFont.h"
+```
+
+To:
+
+```
+#ifdef PLAN9
+   #include <u.h>
+   #include <libc.h>
+#else
+   #include <stdlib.h>
+#endif
+
+#include "path/to/pngFont.h"
+```
+
 - Input:
   1. pointer to a font\_pngFont structure with the font to
      embed
@@ -430,6 +461,8 @@ Sometimes you want your font to be embed in your code.
   - 1 if the c-string (input 2) was not valid
   - 2 if could not open the .c file
   - 3 if could not open the .h file
+
+Example: saving a font to a .c and .h file
 
 ```
 #ifdef PLAN9
@@ -477,6 +510,48 @@ main(
    
    err_main:;
       errSL = 1;
+      goto ret_main;
+   
+   ret_main:;
+      freeStack_font_pngFont(&fontStackST);
+   
+      if(fontFILE)
+         fclose(fontFILE);
+      fontFILE = 0;
+   
+      return errSL;
+} /*main*/
+```
+
+Loading the saved front (from .c and .h file):
+
+```
+#ifdef PLAN9
+   #include <u.h>
+   #include <libc.h>
+#endif
+
+#include <stdio.h>
+#include "pngFont.h"
+#include "myCoolFont.h"
+
+int
+main(
+   void
+){
+   signed long errSL = 0;
+   struct font_pngFont fontStackST;
+   
+   init_font_pngFont(&fontStackST);
+   if(loadFont_myCoolFont(&fontStackST))
+      goto err_main;
+   
+   errSL = 0;
+   goto ret_main;
+   
+   err_main:;
+      errSL = 1;
+      goto ret_main;
    
    ret_main:;
       freeStack_font_pngFont(&fontStackST);

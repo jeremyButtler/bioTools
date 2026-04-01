@@ -34,8 +34,12 @@
 #define PNG_FONT_LOADING_AND_DRAWING_H
 struct st_mkPng;
 
-#define def_numAsciiChar_pngFont 94
-   /*number of visible ascii characters*/
+#define def_asciiOffset_pngFont 32
+   /*converts visible + space range from 32 to 126 to
+   `   0 to 93
+   */
+#define def_numAsciiChar_pngFont 95
+   /*number of ascii characters*/
 
 /*-------------------------------------------------------\
 | ST01: font_pngFont
@@ -200,11 +204,11 @@ measureText_font_pngFont(
 |   - Modifies:
 |     o pngSTPtr to have the drawn text
 |   - Returns:
-|     o 0 for no errors
-|     o 1 if the coordinates were out of bounds
-|     o 2 if textStr has a non-ascii character
+|     o column (x-axis) ended on (>= 0) for no errors
+|     o -1 if the coordinates were out of bounds
+|     o -2 if textStr has a non-ascii character
 \-------------------------------------------------------*/
-signed char
+signed int
 drawHorzText_font_pngFont(
    signed char *textStr,    /*text to draw*/
    unsigned short xUS,      /*x coordinate*/
@@ -239,11 +243,11 @@ drawHorzText_font_pngFont(
 |   - Modifies:
 |     o pngSTPtr to have the drawn text
 |   - Returns:
-|     o 0 for no errors
-|     o 1 if the coordinates were out of bounds
-|     o 2 if textStr has a non-ascii character
+|     o last row (y-axis position) on (>= 0) for no errors
+|     o -1 if the coordinates were out of bounds
+|     o -2 if textStr has a non-ascii character
 \-------------------------------------------------------*/
-signed char
+signed int
 drawVertText_font_pngFont(
    signed char *textStr,    /*text to draw*/
    unsigned short xUS,      /*x coordinate*/
