@@ -88,8 +88,8 @@
    `  png size
    */
 #define def_idatEnd_mkPng 8 /*idat ends in 8 extra bytes*/
-#define def_width_mkPng 960
-#define def_height_mkPng 720
+#define def_width_mkPng 700
+#define def_height_mkPng 700
 
 /*-------------------------------------------------------\
 | ST01: st_mkPng
