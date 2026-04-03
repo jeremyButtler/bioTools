@@ -201,8 +201,6 @@ addBar_pngDraw(
    /*convert start and end to bytes*/
    startSL = bytesToNumUL_64bit(startSL);
    endSL = bytesToNumUL_64bit(endSL);
-   if(endSL)
-      --endSL;
 
    /*move to first pixel to change position*/
    pixAryUL += ySL * lenRowSL;
@@ -243,7 +241,7 @@ addBar_pngDraw(
    if(startSL == endSL)
    { /*If: only coloring one limb*/
 
-      for(xSL = ySL; xSL < heightUS; ++xSL)
+      for(xSL = ySL; xSL < heightUS + ySL; ++xSL)
       { /*Loop: apply color*/
          pixAryUL[startSL] &= maskStartUL;
          pixAryUL[startSL] |= colStartUL;
@@ -260,7 +258,7 @@ addBar_pngDraw(
    else if((startSL + 1) == endSL)
    { /*Else If: only coloring two limbs*/
 
-      for(xSL = ySL; xSL < heightUS; ++xSL)
+      for(xSL = ySL; xSL < heightUS + ySL; ++xSL)
       { /*Loop: apply color*/
          pixAryUL[startSL] &= maskStartUL;
          pixAryUL[startSL] |= colStartUL;
@@ -280,7 +278,7 @@ addBar_pngDraw(
    else
    { /*Else If: coloring three or more limbs*/
 
-      for(xSL = ySL; xSL < heightUS; ++xSL)
+      for(xSL = ySL; xSL < heightUS + ySL; ++xSL)
       { /*Loop: apply color*/
          pixAryUL[startSL] &= maskStartUL;
          pixAryUL[startSL] |= colStartUL;
