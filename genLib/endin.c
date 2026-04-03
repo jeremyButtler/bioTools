@@ -35,6 +35,8 @@
    #include <libc.h>
 #endif
 
+#include "endin.h"
+
 /*these are assumptions that are not rigid, but if false
 `  would be devisitating to the coding community. So,
 `  though the number of bits in a byte is not formal it
