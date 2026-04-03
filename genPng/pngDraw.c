@@ -145,6 +145,8 @@ addBar_pngDraw(
 
 
    unsigned char bitUC = 0;    /*for building mask*/
+   unsigned char *swapStartUCPtr = 0;
+   unsigned char *swapEndUCPtr = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun02 Sec02:
@@ -182,25 +184,38 @@ addBar_pngDraw(
    endSL = startSL + widthUS;
 
    /*_________________build_start_mask__________________*/
-   maskStartUL = (xSL % def_bytesInUL_64bit);
+   maskStartUL = xSL & def_modUL_64bit;
       /*find number of pixels not changing at start*/
-   maskStartUL = ((ul_64bit) -1) >> (maskStartUL << 3);
+   if(maskStartUL)
+      maskStartUL = ((ul_64bit) -1) >> (maskStartUL << 3);
+      /*shifts out the bytes to change, setting sets bytes
+      `  not to change to 0xff and bytes to change to 0x00
+      */
+      /*I need the if to handel the 0 case always messing
+      `  up
+      */
    maskStartUL = ulToLittle_endin(maskStartUL);
       /*make sure is in little endin format*/
 
    /*_________________build_end_mask____________________*/
    maskEndUL =
-        def_bytesInUL_64bit
-      - ((xSL + widthUS) % def_bytesInUL_64bit);
+      ((xSL + widthUS) % def_bytesInUL_64bit);
       /*gives number of extra pixels at end*/
-   maskEndUL = ((ul_64bit) -1) >> (maskEndUL << 3);
+   if(maskEndUL)
+      maskEndUL = ((ul_64bit) -1) >> (maskEndUL << 3);
+      /*shifts out the bytes to change, setting sets bytes
+      `  not to change to 0xff and bytes to change to 0x00
+      */
+      /*I need the if to handel the 0 case always messing
+      `  up
+      */
    maskEndUL = ulToLittle_endin(maskEndUL);
       /*make sure is in little endin format*/
 
    /*_________________find_positions____________________*/
    /*convert start and end to bytes*/
-   startSL = bytesToNumUL_64bit(startSL);
-   endSL = bytesToNumUL_64bit(endSL);
+   startSL = byteLenToFullULLen_64bit(startSL);
+   endSL = bytesToNumUL_64bit(endSL) - 1;
 
    /*move to first pixel to change position*/
    pixAryUL += ySL * lenRowSL;
@@ -214,13 +229,34 @@ addBar_pngDraw(
       bitUC = 0;
       bitUC < def_bitsInUL_64bit;
       bitUC += def_bitsPerChar_64bit
-   ) colByteUL |= (((ul_64bit) colUC) << bitUC);
+   ){ /*Loop: build color long*/
+      colByteUL |= (((ul_64bit) colUC) << bitUC);
+   }  /*Loop: build color long*/
 
-   colStartUL = colByteUL & maskStartUL;
-   colEndUL = colByteUL & maskEndUL;
+   swapStartUCPtr = (unsigned char *) &maskStartUL;
+   swapEndUCPtr = (unsigned char *) &maskEndUL;
 
-   maskStartUL = ~maskStartUL;
-   maskEndUL = ~maskEndUL;
+   for(bitUC=0; bitUC < def_bytesInUL_64bit>>1;++bitUC)
+   { /*Loop: invert masks*/
+      swapStartUCPtr[bitUC] ^=
+         swapStartUCPtr[def_bytesInUL_64bit - bitUC-1];
+      swapStartUCPtr[def_bytesInUL_64bit - bitUC-1] ^=
+         swapStartUCPtr[bitUC];
+      swapStartUCPtr[bitUC] ^=
+         swapStartUCPtr[def_bytesInUL_64bit - bitUC-1];
+
+      swapEndUCPtr[bitUC] ^=
+         swapEndUCPtr[def_bytesInUL_64bit - bitUC - 1];
+      swapEndUCPtr[def_bytesInUL_64bit - bitUC - 1] ^=
+         swapEndUCPtr[bitUC];
+      swapEndUCPtr[bitUC] ^=
+         swapEndUCPtr[def_bytesInUL_64bit - bitUC - 1];
+   } /*Loop: invert masks*/
+
+   colStartUL = colByteUL & ~maskStartUL;
+   colEndUL = colByteUL & ~maskEndUL;
+   maskStartUL = maskStartUL;
+   maskEndUL = maskEndUL;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun02 Sec03:
