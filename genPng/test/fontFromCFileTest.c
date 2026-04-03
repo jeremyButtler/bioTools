@@ -33,7 +33,7 @@ main(
    FILE *outFILE = 0;
 
    init_font_pngFont(&fontStackST);
-   loadFont_delete(&fontStackST);
+   loadFont_defaultFont(&fontStackST);
 
    pngHeapST = mk_st_mkPng(0, 0, 0);
    if(! pngHeapST)
