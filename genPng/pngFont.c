@@ -565,6 +565,7 @@ measureText_font_pngFont(
       lenSL +=
         fontSTPtr->widthArySS[(unsigned char) *textStr];
       lenSL += fontSTPtr->gapSS;
+      ++textStr;
    } /*Loop: get the length*/
 
    return lenSL;
