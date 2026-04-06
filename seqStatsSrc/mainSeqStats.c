@@ -168,6 +168,11 @@ phelp_mainSeqStats(
       "    o print read stats to stdout, do not filter%s",
       str_endLine
    );
+   fprintf(
+      (FILE *) outFILE,
+      "    o disable with `-no-stats`%s",
+      str_endLine
+   );
 
 
    if(def_mode_mainSeqStats == def_statsMode_mainSeqStats)
@@ -186,6 +191,12 @@ phelp_mainSeqStats(
    fprintf(
       (FILE *) outFILE,
       "    o print filtred reads to stdout%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "    o disable with `-no-filter`%s",
       str_endLine
    );
 
@@ -290,6 +301,9 @@ phelp_mainSeqStats(
 |     o float pointer to get minimum median q-score
 |   - modeFlagSCPtr:
 |     o signed char pointer to get mode working in
+|     o def_statsMode_mainSeqStats (1) if printing stats
+|       (not reads)
+|     o def_filterMode_mainSeqStats (2) if filtering
 | Output:
 |   - Prints:
 |     o errors to stderr
@@ -444,14 +458,28 @@ input_mainSeqStats(
             (signed char *) "-filter",
             (signed char *) argAryStr[siArg]
          )
-      ) *modeFlagSCPtr = def_filterMode_mainSeqStats;
+      ) *modeFlagSCPtr |= def_filterMode_mainSeqStats;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-no-filter",
+            (signed char *) argAryStr[siArg]
+         )
+      ) *modeFlagSCPtr &= ~def_filterMode_mainSeqStats;
 
       else if(
          ! eqlNull_ulCp(
             (signed char *) "-stats",
             (signed char *) argAryStr[siArg]
          )
-      ) *modeFlagSCPtr = def_statsMode_mainSeqStats;
+      ) *modeFlagSCPtr |= def_statsMode_mainSeqStats;
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-no-stats",
+            (signed char *) argAryStr[siArg]
+         )
+      ) *modeFlagSCPtr &= ~def_statsMode_mainSeqStats;
 
       /**************************************************\
       * Fun03 Sec02 Sub05:
@@ -726,24 +754,8 @@ main(
 
       while(! errSC)
       { /*Loop: get stats for fastq file*/
-         if(modeFlagSC == def_statsMode_mainSeqStats)
-            pReadStats_seqStats(
-               seqStackST.qStr,
-               seqStackST.seqLenSL,
-               seqStackST.idStr,
-               &pHeadBl,
-               0,
-               1, /*ONT only*/
-               outFILE
-            );
-
-         /***********************************************\
-         * Main Sec03 Sub03:
-         *   - filter reads for filter reads mode
-         \***********************************************/
-
-         else if(modeFlagSC==def_filterMode_mainSeqStats)
-         { /*Else If: filtering the read*/
+         if(modeFlagSC & def_filterMode_mainSeqStats)
+         { /*If: filtering the read*/
             if(seqStackST.seqLenSL < minLenSI)
                goto nextRead_main_sec03_sub04;
 
@@ -759,7 +771,26 @@ main(
                goto nextRead_main_sec03_sub04;
             if(medianQF < minMedianQF)
                goto nextRead_main_sec03_sub04;
+         } /*If: filtering the read*/
 
+         if(modeFlagSC & def_statsMode_mainSeqStats)
+            pReadStats_seqStats(
+               seqStackST.qStr,
+               seqStackST.seqLenSL,
+               seqStackST.idStr,
+               &pHeadBl,
+               0,
+               1, /*ONT only*/
+               outFILE
+            );
+
+         /***********************************************\
+         * Main Sec03 Sub03:
+         *   - filter reads for filter reads mode
+         \***********************************************/
+
+         else
+         { /*Else If: printing reads*/
             fprintf(
                (FILE *) outFILE,
                "%s\tmeanQ=%.2f\tmedianQ=%.2f",
@@ -779,7 +810,7 @@ main(
                seqStackST.qStr,
                str_endLine
             );
-         } /*Else If: filtering the read*/
+         } /*Else If: printing reads*/
 
          /***********************************************\
          * Main Sec03 Sub04:

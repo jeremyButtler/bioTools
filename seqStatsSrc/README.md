@@ -29,7 +29,7 @@ seqStats reads.fastq > stats.tsv
 or to filter reads
 
 ```
-seqStats -filter reads.fastq > filtered-reads.fastq
+seqStats -filter -no-stats reads.fastq > filtered-reads.fastq
 ```
 
 Output:
