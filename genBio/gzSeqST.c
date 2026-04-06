@@ -814,8 +814,15 @@ get_gzSeqST(
 
       if(errSC == def_memErr_inflate)
          goto memErr_fun01_sec06;
+
       else if(errSC == def_eof_inflate)
-         goto eof_fun01_sec06;
+      { /*Else If: hit the end of the file*/
+         if(seqSTPtr->qLenSL == seqSTPtr->seqLenSL)
+            ; /*read in full entry*/
+         else
+            goto eof_fun01_sec06;
+      } /*Else If: hit the end of the file*/
+
       else if(errSC)
          goto fileErr_fun01_sec06;
    } /*If: reading gz file*/
