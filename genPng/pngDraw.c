@@ -78,6 +78,7 @@ addPixel_pngDraw(
       return def_overflow_pngDraw;
 }  /*addPixel_pngDraw*/
 
+#ifndef ULONG_MODE
 /*-------------------------------------------------------\
 | Fun02: addBar_pngDraw
 |   - adds a bar to a st_mkPng image
@@ -88,15 +89,18 @@ addPixel_pngDraw(
 |     o x coordinate of left conner; start of bar; index 0
 |   - ySL:
 |     o y coordiante of bottom of bar (index 0)
-|   - widthUS:
+|   - widthSL:
 |     o width in pixels of bar
-|   - heightUS:
+|   - heightSL:
 |     o heigth in pixels of bar
 |   - colUC:
 |     o index of color in pallete to assign
 | Output:
 |   - Modifies:
 |     o pixelAryUC in pngSTPtr to have bar
+|   - Returns:
+|     o 0 for no errors
+|     o def_overflow_pngDraw if went out of bounds
 | Note:
 |   o the minimum width is at least one byte worth,
 |     otherwise, do single pixel modifications
@@ -107,8 +111,72 @@ addBar_pngDraw(
    struct st_mkPng *pngSTPtr, /*add bar to png*/
    signed long xSL,           /*x coordinate (pixels)*/
    signed long ySL,           /*y coordiante (pixels)*/
-   signed long widthUS,       /*pixels wide of bar*/
-   signed long heightUS,      /*pixels high of bar*/
+   signed long widthSL,       /*pixels wide of bar*/
+   signed long heightSL,      /*pixels high of bar*/
+   signed char colUC          /*color of bar*/
+){
+   signed long yPosSL = 0;
+   signed long byteSL = 0;
+   signed long xPosSL = 0;
+
+   if(widthSL + xSL >= (signed int) pngSTPtr->widthUS)
+      goto overflow_fun02;
+   if(heightSL + ySL >= (signed int) pngSTPtr->heightUS)
+      goto overflow_fun02;
+
+   byteSL = (pngSTPtr->widthUS * ySL) + xSL;
+
+   for(yPosSL = ySL; yPosSL < ySL + heightSL; ++yPosSL)
+   { /*Loop: draw a line for each row (the bar)*/
+      for(xPosSL = 0; xPosSL < widthSL; ++xPosSL)
+         pngSTPtr->pixelAryUC[byteSL++] = colUC;
+      byteSL += pngSTPtr->widthUS - xPosSL;
+   } /*Loop: draw a line for each row (the bar)*/
+
+   return 0;
+
+   overflow_fun02:;
+      return def_overflow_pngDraw;
+} /*addBar_pngDraw*/
+
+/*I never got this to work correctly, but was supposed to
+`  use longs like SIMD to save time
+*/
+#else
+/*-------------------------------------------------------\
+| Fun02: addBar_pngDraw
+|   - adds a bar to a st_mkPng image
+| Input:
+|   - pngSTPtr:
+|     o pointer to st_mkPng struct to add bar to
+|   - xSL:
+|     o x coordinate of left conner; start of bar; index 0
+|   - ySL:
+|     o y coordiante of bottom of bar (index 0)
+|   - widthSL:
+|     o width in pixels of bar
+|   - heightSL:
+|     o heigth in pixels of bar
+|   - colUC:
+|     o index of color in pallete to assign
+| Output:
+|   - Modifies:
+|     o pixelAryUC in pngSTPtr to have bar
+|   - Returns:
+|     o 0 for no errors
+|     o def_overflow_pngDraw if went out of bounds
+| Note:
+|   o the minimum width is at least one byte worth,
+|     otherwise, do single pixel modifications
+|     with addPixel_pngDraw
+\-------------------------------------------------------*/
+signed char
+addBar_pngDraw(
+   struct st_mkPng *pngSTPtr, /*add bar to png*/
+   signed long xSL,           /*x coordinate (pixels)*/
+   signed long ySL,           /*y coordiante (pixels)*/
+   signed long widthSL,       /*pixels wide of bar*/
+   signed long heightSL,      /*pixels high of bar*/
    signed char colUC          /*color of bar*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun02 addBar_pngDraw
@@ -164,9 +232,9 @@ addBar_pngDraw(
    *   - check if have overflow and find row length
    \*****************************************************/
 
-   if(widthUS + xSL >= pngSTPtr->widthUS)
+   if(widthSL + xSL >= (signed int) pngSTPtr->widthUS)
       goto overflow_fun02;
-   if(heightUS + ySL >= pngSTPtr->heightUS)
+   if(heightSL + ySL >= (signed int) pngSTPtr->heightUS)
       goto overflow_fun02;
 
    /*this is safe because setup enforces that width must
@@ -181,15 +249,28 @@ addBar_pngDraw(
    \*****************************************************/
 
    startSL = xSL;
-   endSL = startSL + widthUS;
+   endSL = startSL + widthSL - 1;
 
    /*_________________build_start_mask__________________*/
    maskStartUL = xSL & def_modUL_64bit;
       /*find number of pixels not changing at start*/
+
+   if((unsigned long) widthSL < maskStartUL)
+   { /*If: the starting long can hold all bits*/
+      maskStartUL = widthSL;
+      if(maskStartUL)
+         maskStartUL = ((ul_64bit) -1)>>(maskStartUL <<3);
+      maskStartUL = ulToLittle_endin(maskStartUL);
+
+      startSL = byteLenToFullULLen_64bit(startSL);
+      endSL = startSL;
+      goto moveToFirstPixel_fun02_sec02_sub02;
+   } /*If: the starting long can hold all bits*/
+
    if(maskStartUL)
       maskStartUL = ((ul_64bit) -1) >> (maskStartUL << 3);
-      /*shifts out the bytes to change, setting sets bytes
-      `  not to change to 0xff and bytes to change to 0x00
+      /*shifts out the bytes to change, sets bytes not to
+      `   change to 0xff and bytes to change to 0x00
       */
       /*I need the if to handel the 0 case always messing
       `  up
@@ -199,7 +280,7 @@ addBar_pngDraw(
 
    /*_________________build_end_mask____________________*/
    maskEndUL =
-      ((xSL + widthUS) % def_bytesInUL_64bit);
+      ((xSL + widthSL) % def_bytesInUL_64bit);
       /*gives number of extra pixels at end*/
    if(maskEndUL)
       maskEndUL = ((ul_64bit) -1) >> (maskEndUL << 3);
@@ -218,7 +299,8 @@ addBar_pngDraw(
    endSL = bytesToNumUL_64bit(endSL) - 1;
 
    /*move to first pixel to change position*/
-   pixAryUL += ySL * lenRowSL;
+   moveToFirstPixel_fun02_sec02_sub02:;
+      pixAryUL += ySL * lenRowSL;
 
    /*****************************************************\
    * Fun02 Sec02 Sub03:
@@ -277,7 +359,7 @@ addBar_pngDraw(
    if(startSL == endSL)
    { /*If: only coloring one limb*/
 
-      for(xSL = ySL; xSL < heightUS + ySL; ++xSL)
+      for(xSL = ySL; xSL < heightSL + ySL; ++xSL)
       { /*Loop: apply color*/
          pixAryUL[startSL] &= maskStartUL;
          pixAryUL[startSL] |= colStartUL;
@@ -294,7 +376,7 @@ addBar_pngDraw(
    else if((startSL + 1) == endSL)
    { /*Else If: only coloring two limbs*/
 
-      for(xSL = ySL; xSL < heightUS + ySL; ++xSL)
+      for(xSL = ySL; xSL < heightSL + ySL; ++xSL)
       { /*Loop: apply color*/
          pixAryUL[startSL] &= maskStartUL;
          pixAryUL[startSL] |= colStartUL;
@@ -314,7 +396,7 @@ addBar_pngDraw(
    else
    { /*Else If: coloring three or more limbs*/
 
-      for(xSL = ySL; xSL < heightUS + ySL; ++xSL)
+      for(xSL = ySL; xSL < heightSL + ySL; ++xSL)
       { /*Loop: apply color*/
          pixAryUL[startSL] &= maskStartUL;
          pixAryUL[startSL] |= colStartUL;
@@ -340,6 +422,7 @@ addBar_pngDraw(
    overflow_fun02:;
       return def_overflow_pngDraw;
 }  /*addBar_pngDraw*/
+#endif
 
 /*=======================================================\
 : License:

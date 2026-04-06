@@ -71,6 +71,9 @@ addPixel_pngDraw(
 | Output:
 |   - Modifies:
 |     o pixelAryUC in pngSTPtr to have bar
+|   - Returns:
+|     o 0 for no errors
+|     o def_overflow_pngDraw if went out of bounds
 | Note:
 |   o the minimum width is at least one byte worth,
 |     otherwise, do single pixel modifications
@@ -81,8 +84,8 @@ addBar_pngDraw(
    struct st_mkPng *pngSTPtr, /*add bar to png*/
    signed long xSL,           /*x coordinate (pixels)*/
    signed long ySL,           /*y coordiante (pixels)*/
-   signed long widthUS,       /*pixels wide of bar*/
-   signed long heightUS,      /*pixels high of bar*/
+   signed long widthSL,       /*pixels wide of bar*/
+   signed long heightSL,      /*pixels high of bar*/
    signed char colUC          /*color of bar*/
 );
 
