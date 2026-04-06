@@ -599,7 +599,7 @@ pdepth_ampDepth(
          "%s\t%s\t%i\t%i%s",
          refStr,
          flagStr,
-         indexSI,
+         indexSI + 1,
          depthArySI[indexSI],
          str_endLine
       );
@@ -662,7 +662,7 @@ pGeneDepth_ampDepth(
             "%s\t%s\t%u\t%i%s",
             refStr,
             geneCoordSTPtr->idStrAry[geneSI],
-            indexUI,
+            indexUI + 1,
             depthArySI[indexUI],
             str_endLine
          );
