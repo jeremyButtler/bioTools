@@ -793,7 +793,7 @@ main(
          { /*Else If: printing reads*/
             fprintf(
                (FILE *) outFILE,
-               "%s\tmeanQ=%.2f\tmedianQ=%.2f",
+               "@%s\tmeanQ=%.2f\tmedianQ=%.2f",
                seqStackST.idStr,
                meanQF,
                medianQF
