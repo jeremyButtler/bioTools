@@ -6,6 +6,8 @@ Has a list of updates I have tracked for bioTools
   - fixed some bugs in seqStats were multi fastq file
     support would not work and added in individual stats
     and filtering flags
+  - fixed error were ampDepth was printing index 0 for
+    read depth table coordinates
 -2026-03-04:
   - added or updated mkMST (make minimum spanning tree),
     genSort (sorting libraries), and genTree (tree
