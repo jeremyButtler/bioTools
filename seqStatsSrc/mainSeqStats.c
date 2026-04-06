@@ -568,6 +568,11 @@ input_mainSeqStats(
 
       else
       { /*Else: if unkown input*/
+         if(
+               argAryStr[siArg][0] == '-'
+            && ! argAryStr[siArg][1]
+         ) goto ret_fun03_sec03; /*stdin input*/
+
          inFILE = fopen(argAryStr[siArg], "r");
          if(inFILE)
             goto ret_fun03_sec03;
@@ -746,6 +751,9 @@ main(
          );
       seqFILE = 0;
       seqSL = 1;
+
+      if(errSC == def_EOF_seqST && seqStackST.idStr[0])
+         errSC = 0;
 
       /**************************************************\
       * Main Sec03 Sub02:
