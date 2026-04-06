@@ -59,22 +59,22 @@
 \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
 /*default color scheme*/
-   /*white*/
-   #define def_1stColRed_mkPng 0xFF
-   #define def_1stColBlu_mkPng 0xFF
-   #define def_1stColGre_mkPng 0xFF
-   
-   /*magma yellow*/
-   #define def_2ndColRed_mkPng 0xFD
-   #define def_2ndColBlu_mkPng 0xE7
-   #define def_2ndColGre_mkPng 0x25
+   /*pale yellow (as close to white as viridis maga gets*/
+   #define def_1stColRed_mkPng 0xFC
+   #define def_1stColBlu_mkPng 0xFD
+   #define def_1stColGre_mkPng 0xBF
    
    /*magma pink*/
-   #define def_3rdColRed_mkPng 0xF1
-   #define def_3rdColBlu_mkPng 0x60
-   #define def_3rdColGre_mkPng 0x5D
+   #define def_2ndColRed_mkPng 0xF1
+   #define def_2ndColBlu_mkPng 0x60
+   #define def_2ndColGre_mkPng 0x5d
    
-   /*magma dark purple*/
+   /*magma purple*/
+   #define def_3rdColRed_mkPng 0x72
+   #define def_3rdColBlu_mkPng 0x1f
+   #define def_3rdColGre_mkPng 0x81
+   
+   /*magma black*/
    #define def_4thColRed_mkPng 0x00
    #define def_4thColBlu_mkPng 0x00
    #define def_4thColGre_mkPng 0x04
