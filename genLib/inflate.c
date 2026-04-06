@@ -2572,7 +2572,7 @@ next_file_inflate(
                1,
                fileSTPtr->zipFILE
             )
-         ) goto eofErr_fun26_sec05;
+         ) goto eof_fun26_sec05;
 
          if(
             ! fread(
