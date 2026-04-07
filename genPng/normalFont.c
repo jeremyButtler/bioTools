@@ -19,12 +19,12 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 
 /*___________________________________________
-` Fun00: addAscii32_defaultFont
+` Fun00: addAscii32_normalFont
 `  - adds character ` ` (ascii 32) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii32_defaultFont(
+addAscii32_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[0])
@@ -65,15 +65,15 @@ addAscii32_defaultFont(
    fontSTPtr->pixAryUC[0][24] = 0;
 
    return 0;
-} /*addAscii32_defaultFont*/
+} /*addAscii32_normalFont*/
 
 /*___________________________________________
-` Fun01: addAscii33_defaultFont
+` Fun01: addAscii33_normalFont
 `  - adds character `!` (ascii 33) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii33_defaultFont(
+addAscii33_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[1])
@@ -114,15 +114,15 @@ addAscii33_defaultFont(
    fontSTPtr->pixAryUC[1][24] = 0;
 
    return 0;
-} /*addAscii33_defaultFont*/
+} /*addAscii33_normalFont*/
 
 /*___________________________________________
-` Fun02: addAscii34_defaultFont
+` Fun02: addAscii34_normalFont
 `  - adds character `"` (ascii 34) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii34_defaultFont(
+addAscii34_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[2])
@@ -163,15 +163,15 @@ addAscii34_defaultFont(
    fontSTPtr->pixAryUC[2][24] = 0;
 
    return 0;
-} /*addAscii34_defaultFont*/
+} /*addAscii34_normalFont*/
 
 /*___________________________________________
-` Fun03: addAscii35_defaultFont
+` Fun03: addAscii35_normalFont
 `  - adds character `#` (ascii 35) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii35_defaultFont(
+addAscii35_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[3])
@@ -212,15 +212,15 @@ addAscii35_defaultFont(
    fontSTPtr->pixAryUC[3][24] = 0;
 
    return 0;
-} /*addAscii35_defaultFont*/
+} /*addAscii35_normalFont*/
 
 /*___________________________________________
-` Fun04: addAscii36_defaultFont
+` Fun04: addAscii36_normalFont
 `  - adds character `$` (ascii 36) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii36_defaultFont(
+addAscii36_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[4])
@@ -261,15 +261,15 @@ addAscii36_defaultFont(
    fontSTPtr->pixAryUC[4][24] = 0;
 
    return 0;
-} /*addAscii36_defaultFont*/
+} /*addAscii36_normalFont*/
 
 /*___________________________________________
-` Fun05: addAscii37_defaultFont
+` Fun05: addAscii37_normalFont
 `  - adds character `%` (ascii 37) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii37_defaultFont(
+addAscii37_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[5])
@@ -310,15 +310,15 @@ addAscii37_defaultFont(
    fontSTPtr->pixAryUC[5][24] = 0;
 
    return 0;
-} /*addAscii37_defaultFont*/
+} /*addAscii37_normalFont*/
 
 /*___________________________________________
-` Fun06: addAscii38_defaultFont
+` Fun06: addAscii38_normalFont
 `  - adds character `&` (ascii 38) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii38_defaultFont(
+addAscii38_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[6])
@@ -359,15 +359,15 @@ addAscii38_defaultFont(
    fontSTPtr->pixAryUC[6][24] = 0;
 
    return 0;
-} /*addAscii38_defaultFont*/
+} /*addAscii38_normalFont*/
 
 /*___________________________________________
-` Fun07: addAscii39_defaultFont
+` Fun07: addAscii39_normalFont
 `  - adds character `'` (ascii 39) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii39_defaultFont(
+addAscii39_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[7])
@@ -408,15 +408,15 @@ addAscii39_defaultFont(
    fontSTPtr->pixAryUC[7][24] = 0;
 
    return 0;
-} /*addAscii39_defaultFont*/
+} /*addAscii39_normalFont*/
 
 /*___________________________________________
-` Fun08: addAscii40_defaultFont
+` Fun08: addAscii40_normalFont
 `  - adds character `(` (ascii 40) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii40_defaultFont(
+addAscii40_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[8])
@@ -457,15 +457,15 @@ addAscii40_defaultFont(
    fontSTPtr->pixAryUC[8][24] = 0;
 
    return 0;
-} /*addAscii40_defaultFont*/
+} /*addAscii40_normalFont*/
 
 /*___________________________________________
-` Fun09: addAscii41_defaultFont
+` Fun09: addAscii41_normalFont
 `  - adds character `)` (ascii 41) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii41_defaultFont(
+addAscii41_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[9])
@@ -506,15 +506,15 @@ addAscii41_defaultFont(
    fontSTPtr->pixAryUC[9][24] = 0;
 
    return 0;
-} /*addAscii41_defaultFont*/
+} /*addAscii41_normalFont*/
 
 /*___________________________________________
-` Fun10: addAscii42_defaultFont
+` Fun10: addAscii42_normalFont
 `  - adds character `*` (ascii 42) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii42_defaultFont(
+addAscii42_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[10])
@@ -555,15 +555,15 @@ addAscii42_defaultFont(
    fontSTPtr->pixAryUC[10][24] = 0;
 
    return 0;
-} /*addAscii42_defaultFont*/
+} /*addAscii42_normalFont*/
 
 /*___________________________________________
-` Fun11: addAscii43_defaultFont
+` Fun11: addAscii43_normalFont
 `  - adds character `+` (ascii 43) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii43_defaultFont(
+addAscii43_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[11])
@@ -604,15 +604,15 @@ addAscii43_defaultFont(
    fontSTPtr->pixAryUC[11][24] = 0;
 
    return 0;
-} /*addAscii43_defaultFont*/
+} /*addAscii43_normalFont*/
 
 /*___________________________________________
-` Fun12: addAscii44_defaultFont
+` Fun12: addAscii44_normalFont
 `  - adds character `,` (ascii 44) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii44_defaultFont(
+addAscii44_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[12])
@@ -653,15 +653,15 @@ addAscii44_defaultFont(
    fontSTPtr->pixAryUC[12][24] = 0;
 
    return 0;
-} /*addAscii44_defaultFont*/
+} /*addAscii44_normalFont*/
 
 /*___________________________________________
-` Fun13: addAscii45_defaultFont
+` Fun13: addAscii45_normalFont
 `  - adds character `-` (ascii 45) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii45_defaultFont(
+addAscii45_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[13])
@@ -702,15 +702,15 @@ addAscii45_defaultFont(
    fontSTPtr->pixAryUC[13][24] = 0;
 
    return 0;
-} /*addAscii45_defaultFont*/
+} /*addAscii45_normalFont*/
 
 /*___________________________________________
-` Fun14: addAscii46_defaultFont
+` Fun14: addAscii46_normalFont
 `  - adds character `.` (ascii 46) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii46_defaultFont(
+addAscii46_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[14])
@@ -751,15 +751,15 @@ addAscii46_defaultFont(
    fontSTPtr->pixAryUC[14][24] = 0;
 
    return 0;
-} /*addAscii46_defaultFont*/
+} /*addAscii46_normalFont*/
 
 /*___________________________________________
-` Fun15: addAscii47_defaultFont
+` Fun15: addAscii47_normalFont
 `  - adds character `/` (ascii 47) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii47_defaultFont(
+addAscii47_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[15])
@@ -800,15 +800,15 @@ addAscii47_defaultFont(
    fontSTPtr->pixAryUC[15][24] = 0;
 
    return 0;
-} /*addAscii47_defaultFont*/
+} /*addAscii47_normalFont*/
 
 /*___________________________________________
-` Fun16: addAscii48_defaultFont
+` Fun16: addAscii48_normalFont
 `  - adds character `0` (ascii 48) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii48_defaultFont(
+addAscii48_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[16])
@@ -849,15 +849,15 @@ addAscii48_defaultFont(
    fontSTPtr->pixAryUC[16][24] = 0;
 
    return 0;
-} /*addAscii48_defaultFont*/
+} /*addAscii48_normalFont*/
 
 /*___________________________________________
-` Fun17: addAscii49_defaultFont
+` Fun17: addAscii49_normalFont
 `  - adds character `1` (ascii 49) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii49_defaultFont(
+addAscii49_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[17])
@@ -898,15 +898,15 @@ addAscii49_defaultFont(
    fontSTPtr->pixAryUC[17][24] = 0;
 
    return 0;
-} /*addAscii49_defaultFont*/
+} /*addAscii49_normalFont*/
 
 /*___________________________________________
-` Fun18: addAscii50_defaultFont
+` Fun18: addAscii50_normalFont
 `  - adds character `2` (ascii 50) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii50_defaultFont(
+addAscii50_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[18])
@@ -947,15 +947,15 @@ addAscii50_defaultFont(
    fontSTPtr->pixAryUC[18][24] = 0;
 
    return 0;
-} /*addAscii50_defaultFont*/
+} /*addAscii50_normalFont*/
 
 /*___________________________________________
-` Fun19: addAscii51_defaultFont
+` Fun19: addAscii51_normalFont
 `  - adds character `3` (ascii 51) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii51_defaultFont(
+addAscii51_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[19])
@@ -996,15 +996,15 @@ addAscii51_defaultFont(
    fontSTPtr->pixAryUC[19][24] = 0;
 
    return 0;
-} /*addAscii51_defaultFont*/
+} /*addAscii51_normalFont*/
 
 /*___________________________________________
-` Fun20: addAscii52_defaultFont
+` Fun20: addAscii52_normalFont
 `  - adds character `4` (ascii 52) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii52_defaultFont(
+addAscii52_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[20])
@@ -1045,15 +1045,15 @@ addAscii52_defaultFont(
    fontSTPtr->pixAryUC[20][24] = 0;
 
    return 0;
-} /*addAscii52_defaultFont*/
+} /*addAscii52_normalFont*/
 
 /*___________________________________________
-` Fun21: addAscii53_defaultFont
+` Fun21: addAscii53_normalFont
 `  - adds character `5` (ascii 53) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii53_defaultFont(
+addAscii53_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[21])
@@ -1094,15 +1094,15 @@ addAscii53_defaultFont(
    fontSTPtr->pixAryUC[21][24] = 0;
 
    return 0;
-} /*addAscii53_defaultFont*/
+} /*addAscii53_normalFont*/
 
 /*___________________________________________
-` Fun22: addAscii54_defaultFont
+` Fun22: addAscii54_normalFont
 `  - adds character `6` (ascii 54) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii54_defaultFont(
+addAscii54_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[22])
@@ -1143,15 +1143,15 @@ addAscii54_defaultFont(
    fontSTPtr->pixAryUC[22][24] = 0;
 
    return 0;
-} /*addAscii54_defaultFont*/
+} /*addAscii54_normalFont*/
 
 /*___________________________________________
-` Fun23: addAscii55_defaultFont
+` Fun23: addAscii55_normalFont
 `  - adds character `7` (ascii 55) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii55_defaultFont(
+addAscii55_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[23])
@@ -1192,15 +1192,15 @@ addAscii55_defaultFont(
    fontSTPtr->pixAryUC[23][24] = 0;
 
    return 0;
-} /*addAscii55_defaultFont*/
+} /*addAscii55_normalFont*/
 
 /*___________________________________________
-` Fun24: addAscii56_defaultFont
+` Fun24: addAscii56_normalFont
 `  - adds character `8` (ascii 56) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii56_defaultFont(
+addAscii56_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[24])
@@ -1241,15 +1241,15 @@ addAscii56_defaultFont(
    fontSTPtr->pixAryUC[24][24] = 0;
 
    return 0;
-} /*addAscii56_defaultFont*/
+} /*addAscii56_normalFont*/
 
 /*___________________________________________
-` Fun25: addAscii57_defaultFont
+` Fun25: addAscii57_normalFont
 `  - adds character `9` (ascii 57) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii57_defaultFont(
+addAscii57_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[25])
@@ -1290,15 +1290,15 @@ addAscii57_defaultFont(
    fontSTPtr->pixAryUC[25][24] = 0;
 
    return 0;
-} /*addAscii57_defaultFont*/
+} /*addAscii57_normalFont*/
 
 /*___________________________________________
-` Fun26: addAscii58_defaultFont
+` Fun26: addAscii58_normalFont
 `  - adds character `:` (ascii 58) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii58_defaultFont(
+addAscii58_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[26])
@@ -1339,15 +1339,15 @@ addAscii58_defaultFont(
    fontSTPtr->pixAryUC[26][24] = 0;
 
    return 0;
-} /*addAscii58_defaultFont*/
+} /*addAscii58_normalFont*/
 
 /*___________________________________________
-` Fun27: addAscii59_defaultFont
+` Fun27: addAscii59_normalFont
 `  - adds character `;` (ascii 59) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii59_defaultFont(
+addAscii59_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[27])
@@ -1388,15 +1388,15 @@ addAscii59_defaultFont(
    fontSTPtr->pixAryUC[27][24] = 0;
 
    return 0;
-} /*addAscii59_defaultFont*/
+} /*addAscii59_normalFont*/
 
 /*___________________________________________
-` Fun28: addAscii60_defaultFont
+` Fun28: addAscii60_normalFont
 `  - adds character `<` (ascii 60) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii60_defaultFont(
+addAscii60_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[28])
@@ -1437,15 +1437,15 @@ addAscii60_defaultFont(
    fontSTPtr->pixAryUC[28][24] = 0;
 
    return 0;
-} /*addAscii60_defaultFont*/
+} /*addAscii60_normalFont*/
 
 /*___________________________________________
-` Fun29: addAscii61_defaultFont
+` Fun29: addAscii61_normalFont
 `  - adds character `=` (ascii 61) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii61_defaultFont(
+addAscii61_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[29])
@@ -1486,15 +1486,15 @@ addAscii61_defaultFont(
    fontSTPtr->pixAryUC[29][24] = 0;
 
    return 0;
-} /*addAscii61_defaultFont*/
+} /*addAscii61_normalFont*/
 
 /*___________________________________________
-` Fun30: addAscii62_defaultFont
+` Fun30: addAscii62_normalFont
 `  - adds character `>` (ascii 62) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii62_defaultFont(
+addAscii62_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[30])
@@ -1535,15 +1535,15 @@ addAscii62_defaultFont(
    fontSTPtr->pixAryUC[30][24] = 0;
 
    return 0;
-} /*addAscii62_defaultFont*/
+} /*addAscii62_normalFont*/
 
 /*___________________________________________
-` Fun31: addAscii63_defaultFont
+` Fun31: addAscii63_normalFont
 `  - adds character `?` (ascii 63) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii63_defaultFont(
+addAscii63_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[31])
@@ -1584,15 +1584,15 @@ addAscii63_defaultFont(
    fontSTPtr->pixAryUC[31][24] = 0;
 
    return 0;
-} /*addAscii63_defaultFont*/
+} /*addAscii63_normalFont*/
 
 /*___________________________________________
-` Fun32: addAscii64_defaultFont
+` Fun32: addAscii64_normalFont
 `  - adds character `@` (ascii 64) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii64_defaultFont(
+addAscii64_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[32])
@@ -1633,15 +1633,15 @@ addAscii64_defaultFont(
    fontSTPtr->pixAryUC[32][24] = 0;
 
    return 0;
-} /*addAscii64_defaultFont*/
+} /*addAscii64_normalFont*/
 
 /*___________________________________________
-` Fun33: addAscii65_defaultFont
+` Fun33: addAscii65_normalFont
 `  - adds character `A` (ascii 65) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii65_defaultFont(
+addAscii65_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[33])
@@ -1682,15 +1682,15 @@ addAscii65_defaultFont(
    fontSTPtr->pixAryUC[33][24] = 0;
 
    return 0;
-} /*addAscii65_defaultFont*/
+} /*addAscii65_normalFont*/
 
 /*___________________________________________
-` Fun34: addAscii66_defaultFont
+` Fun34: addAscii66_normalFont
 `  - adds character `B` (ascii 66) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii66_defaultFont(
+addAscii66_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[34])
@@ -1731,15 +1731,15 @@ addAscii66_defaultFont(
    fontSTPtr->pixAryUC[34][24] = 0;
 
    return 0;
-} /*addAscii66_defaultFont*/
+} /*addAscii66_normalFont*/
 
 /*___________________________________________
-` Fun35: addAscii67_defaultFont
+` Fun35: addAscii67_normalFont
 `  - adds character `C` (ascii 67) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii67_defaultFont(
+addAscii67_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[35])
@@ -1780,15 +1780,15 @@ addAscii67_defaultFont(
    fontSTPtr->pixAryUC[35][24] = 0;
 
    return 0;
-} /*addAscii67_defaultFont*/
+} /*addAscii67_normalFont*/
 
 /*___________________________________________
-` Fun36: addAscii68_defaultFont
+` Fun36: addAscii68_normalFont
 `  - adds character `D` (ascii 68) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii68_defaultFont(
+addAscii68_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[36])
@@ -1829,15 +1829,15 @@ addAscii68_defaultFont(
    fontSTPtr->pixAryUC[36][24] = 0;
 
    return 0;
-} /*addAscii68_defaultFont*/
+} /*addAscii68_normalFont*/
 
 /*___________________________________________
-` Fun37: addAscii69_defaultFont
+` Fun37: addAscii69_normalFont
 `  - adds character `E` (ascii 69) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii69_defaultFont(
+addAscii69_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[37])
@@ -1878,15 +1878,15 @@ addAscii69_defaultFont(
    fontSTPtr->pixAryUC[37][24] = 0;
 
    return 0;
-} /*addAscii69_defaultFont*/
+} /*addAscii69_normalFont*/
 
 /*___________________________________________
-` Fun38: addAscii70_defaultFont
+` Fun38: addAscii70_normalFont
 `  - adds character `F` (ascii 70) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii70_defaultFont(
+addAscii70_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[38])
@@ -1927,15 +1927,15 @@ addAscii70_defaultFont(
    fontSTPtr->pixAryUC[38][24] = 0;
 
    return 0;
-} /*addAscii70_defaultFont*/
+} /*addAscii70_normalFont*/
 
 /*___________________________________________
-` Fun39: addAscii71_defaultFont
+` Fun39: addAscii71_normalFont
 `  - adds character `G` (ascii 71) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii71_defaultFont(
+addAscii71_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[39])
@@ -1976,15 +1976,15 @@ addAscii71_defaultFont(
    fontSTPtr->pixAryUC[39][24] = 0;
 
    return 0;
-} /*addAscii71_defaultFont*/
+} /*addAscii71_normalFont*/
 
 /*___________________________________________
-` Fun40: addAscii72_defaultFont
+` Fun40: addAscii72_normalFont
 `  - adds character `H` (ascii 72) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii72_defaultFont(
+addAscii72_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[40])
@@ -2025,15 +2025,15 @@ addAscii72_defaultFont(
    fontSTPtr->pixAryUC[40][24] = 0;
 
    return 0;
-} /*addAscii72_defaultFont*/
+} /*addAscii72_normalFont*/
 
 /*___________________________________________
-` Fun41: addAscii73_defaultFont
+` Fun41: addAscii73_normalFont
 `  - adds character `I` (ascii 73) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii73_defaultFont(
+addAscii73_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[41])
@@ -2074,15 +2074,15 @@ addAscii73_defaultFont(
    fontSTPtr->pixAryUC[41][24] = 0;
 
    return 0;
-} /*addAscii73_defaultFont*/
+} /*addAscii73_normalFont*/
 
 /*___________________________________________
-` Fun42: addAscii74_defaultFont
+` Fun42: addAscii74_normalFont
 `  - adds character `J` (ascii 74) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii74_defaultFont(
+addAscii74_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[42])
@@ -2123,15 +2123,15 @@ addAscii74_defaultFont(
    fontSTPtr->pixAryUC[42][24] = 0;
 
    return 0;
-} /*addAscii74_defaultFont*/
+} /*addAscii74_normalFont*/
 
 /*___________________________________________
-` Fun43: addAscii75_defaultFont
+` Fun43: addAscii75_normalFont
 `  - adds character `K` (ascii 75) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii75_defaultFont(
+addAscii75_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[43])
@@ -2172,15 +2172,15 @@ addAscii75_defaultFont(
    fontSTPtr->pixAryUC[43][24] = 0;
 
    return 0;
-} /*addAscii75_defaultFont*/
+} /*addAscii75_normalFont*/
 
 /*___________________________________________
-` Fun44: addAscii76_defaultFont
+` Fun44: addAscii76_normalFont
 `  - adds character `L` (ascii 76) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii76_defaultFont(
+addAscii76_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[44])
@@ -2221,15 +2221,15 @@ addAscii76_defaultFont(
    fontSTPtr->pixAryUC[44][24] = 0;
 
    return 0;
-} /*addAscii76_defaultFont*/
+} /*addAscii76_normalFont*/
 
 /*___________________________________________
-` Fun45: addAscii77_defaultFont
+` Fun45: addAscii77_normalFont
 `  - adds character `M` (ascii 77) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii77_defaultFont(
+addAscii77_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[45])
@@ -2270,15 +2270,15 @@ addAscii77_defaultFont(
    fontSTPtr->pixAryUC[45][24] = 0;
 
    return 0;
-} /*addAscii77_defaultFont*/
+} /*addAscii77_normalFont*/
 
 /*___________________________________________
-` Fun46: addAscii78_defaultFont
+` Fun46: addAscii78_normalFont
 `  - adds character `N` (ascii 78) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii78_defaultFont(
+addAscii78_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[46])
@@ -2319,15 +2319,15 @@ addAscii78_defaultFont(
    fontSTPtr->pixAryUC[46][24] = 0;
 
    return 0;
-} /*addAscii78_defaultFont*/
+} /*addAscii78_normalFont*/
 
 /*___________________________________________
-` Fun47: addAscii79_defaultFont
+` Fun47: addAscii79_normalFont
 `  - adds character `O` (ascii 79) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii79_defaultFont(
+addAscii79_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[47])
@@ -2368,15 +2368,15 @@ addAscii79_defaultFont(
    fontSTPtr->pixAryUC[47][24] = 0;
 
    return 0;
-} /*addAscii79_defaultFont*/
+} /*addAscii79_normalFont*/
 
 /*___________________________________________
-` Fun48: addAscii80_defaultFont
+` Fun48: addAscii80_normalFont
 `  - adds character `P` (ascii 80) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii80_defaultFont(
+addAscii80_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[48])
@@ -2417,15 +2417,15 @@ addAscii80_defaultFont(
    fontSTPtr->pixAryUC[48][24] = 0;
 
    return 0;
-} /*addAscii80_defaultFont*/
+} /*addAscii80_normalFont*/
 
 /*___________________________________________
-` Fun49: addAscii81_defaultFont
+` Fun49: addAscii81_normalFont
 `  - adds character `Q` (ascii 81) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii81_defaultFont(
+addAscii81_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[49])
@@ -2466,15 +2466,15 @@ addAscii81_defaultFont(
    fontSTPtr->pixAryUC[49][24] = 0;
 
    return 0;
-} /*addAscii81_defaultFont*/
+} /*addAscii81_normalFont*/
 
 /*___________________________________________
-` Fun50: addAscii82_defaultFont
+` Fun50: addAscii82_normalFont
 `  - adds character `R` (ascii 82) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii82_defaultFont(
+addAscii82_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[50])
@@ -2515,15 +2515,15 @@ addAscii82_defaultFont(
    fontSTPtr->pixAryUC[50][24] = 0;
 
    return 0;
-} /*addAscii82_defaultFont*/
+} /*addAscii82_normalFont*/
 
 /*___________________________________________
-` Fun51: addAscii83_defaultFont
+` Fun51: addAscii83_normalFont
 `  - adds character `S` (ascii 83) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii83_defaultFont(
+addAscii83_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[51])
@@ -2564,15 +2564,15 @@ addAscii83_defaultFont(
    fontSTPtr->pixAryUC[51][24] = 0;
 
    return 0;
-} /*addAscii83_defaultFont*/
+} /*addAscii83_normalFont*/
 
 /*___________________________________________
-` Fun52: addAscii84_defaultFont
+` Fun52: addAscii84_normalFont
 `  - adds character `T` (ascii 84) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii84_defaultFont(
+addAscii84_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[52])
@@ -2613,15 +2613,15 @@ addAscii84_defaultFont(
    fontSTPtr->pixAryUC[52][24] = 0;
 
    return 0;
-} /*addAscii84_defaultFont*/
+} /*addAscii84_normalFont*/
 
 /*___________________________________________
-` Fun53: addAscii85_defaultFont
+` Fun53: addAscii85_normalFont
 `  - adds character `U` (ascii 85) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii85_defaultFont(
+addAscii85_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[53])
@@ -2662,15 +2662,15 @@ addAscii85_defaultFont(
    fontSTPtr->pixAryUC[53][24] = 0;
 
    return 0;
-} /*addAscii85_defaultFont*/
+} /*addAscii85_normalFont*/
 
 /*___________________________________________
-` Fun54: addAscii86_defaultFont
+` Fun54: addAscii86_normalFont
 `  - adds character `V` (ascii 86) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii86_defaultFont(
+addAscii86_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[54])
@@ -2711,15 +2711,15 @@ addAscii86_defaultFont(
    fontSTPtr->pixAryUC[54][24] = 0;
 
    return 0;
-} /*addAscii86_defaultFont*/
+} /*addAscii86_normalFont*/
 
 /*___________________________________________
-` Fun55: addAscii87_defaultFont
+` Fun55: addAscii87_normalFont
 `  - adds character `W` (ascii 87) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii87_defaultFont(
+addAscii87_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[55])
@@ -2760,15 +2760,15 @@ addAscii87_defaultFont(
    fontSTPtr->pixAryUC[55][24] = 0;
 
    return 0;
-} /*addAscii87_defaultFont*/
+} /*addAscii87_normalFont*/
 
 /*___________________________________________
-` Fun56: addAscii88_defaultFont
+` Fun56: addAscii88_normalFont
 `  - adds character `X` (ascii 88) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii88_defaultFont(
+addAscii88_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[56])
@@ -2809,15 +2809,15 @@ addAscii88_defaultFont(
    fontSTPtr->pixAryUC[56][24] = 0;
 
    return 0;
-} /*addAscii88_defaultFont*/
+} /*addAscii88_normalFont*/
 
 /*___________________________________________
-` Fun57: addAscii89_defaultFont
+` Fun57: addAscii89_normalFont
 `  - adds character `Y` (ascii 89) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii89_defaultFont(
+addAscii89_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[57])
@@ -2858,15 +2858,15 @@ addAscii89_defaultFont(
    fontSTPtr->pixAryUC[57][24] = 0;
 
    return 0;
-} /*addAscii89_defaultFont*/
+} /*addAscii89_normalFont*/
 
 /*___________________________________________
-` Fun58: addAscii90_defaultFont
+` Fun58: addAscii90_normalFont
 `  - adds character `Z` (ascii 90) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii90_defaultFont(
+addAscii90_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[58])
@@ -2907,15 +2907,15 @@ addAscii90_defaultFont(
    fontSTPtr->pixAryUC[58][24] = 0;
 
    return 0;
-} /*addAscii90_defaultFont*/
+} /*addAscii90_normalFont*/
 
 /*___________________________________________
-` Fun59: addAscii91_defaultFont
+` Fun59: addAscii91_normalFont
 `  - adds character `[` (ascii 91) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii91_defaultFont(
+addAscii91_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[59])
@@ -2956,15 +2956,15 @@ addAscii91_defaultFont(
    fontSTPtr->pixAryUC[59][24] = 0;
 
    return 0;
-} /*addAscii91_defaultFont*/
+} /*addAscii91_normalFont*/
 
 /*___________________________________________
-` Fun60: addAscii92_defaultFont
+` Fun60: addAscii92_normalFont
 `  - adds character `\` (ascii 92) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii92_defaultFont(
+addAscii92_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[60])
@@ -3005,15 +3005,15 @@ addAscii92_defaultFont(
    fontSTPtr->pixAryUC[60][24] = 0;
 
    return 0;
-} /*addAscii92_defaultFont*/
+} /*addAscii92_normalFont*/
 
 /*___________________________________________
-` Fun61: addAscii93_defaultFont
+` Fun61: addAscii93_normalFont
 `  - adds character `]` (ascii 93) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii93_defaultFont(
+addAscii93_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[61])
@@ -3054,15 +3054,15 @@ addAscii93_defaultFont(
    fontSTPtr->pixAryUC[61][24] = 0;
 
    return 0;
-} /*addAscii93_defaultFont*/
+} /*addAscii93_normalFont*/
 
 /*___________________________________________
-` Fun62: addAscii94_defaultFont
+` Fun62: addAscii94_normalFont
 `  - adds character `^` (ascii 94) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii94_defaultFont(
+addAscii94_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[62])
@@ -3103,15 +3103,15 @@ addAscii94_defaultFont(
    fontSTPtr->pixAryUC[62][24] = 0;
 
    return 0;
-} /*addAscii94_defaultFont*/
+} /*addAscii94_normalFont*/
 
 /*___________________________________________
-` Fun63: addAscii95_defaultFont
+` Fun63: addAscii95_normalFont
 `  - adds character `_` (ascii 95) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii95_defaultFont(
+addAscii95_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[63])
@@ -3152,15 +3152,15 @@ addAscii95_defaultFont(
    fontSTPtr->pixAryUC[63][24] = 3;
 
    return 0;
-} /*addAscii95_defaultFont*/
+} /*addAscii95_normalFont*/
 
 /*___________________________________________
-` Fun64: addAscii96_defaultFont
+` Fun64: addAscii96_normalFont
 `  - adds character ``` (ascii 96) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii96_defaultFont(
+addAscii96_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[64])
@@ -3201,15 +3201,15 @@ addAscii96_defaultFont(
    fontSTPtr->pixAryUC[64][24] = 0;
 
    return 0;
-} /*addAscii96_defaultFont*/
+} /*addAscii96_normalFont*/
 
 /*___________________________________________
-` Fun65: addAscii97_defaultFont
+` Fun65: addAscii97_normalFont
 `  - adds character `a` (ascii 97) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii97_defaultFont(
+addAscii97_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[65])
@@ -3250,15 +3250,15 @@ addAscii97_defaultFont(
    fontSTPtr->pixAryUC[65][24] = 0;
 
    return 0;
-} /*addAscii97_defaultFont*/
+} /*addAscii97_normalFont*/
 
 /*___________________________________________
-` Fun66: addAscii98_defaultFont
+` Fun66: addAscii98_normalFont
 `  - adds character `b` (ascii 98) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii98_defaultFont(
+addAscii98_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[66])
@@ -3299,15 +3299,15 @@ addAscii98_defaultFont(
    fontSTPtr->pixAryUC[66][24] = 0;
 
    return 0;
-} /*addAscii98_defaultFont*/
+} /*addAscii98_normalFont*/
 
 /*___________________________________________
-` Fun67: addAscii99_defaultFont
+` Fun67: addAscii99_normalFont
 `  - adds character `c` (ascii 99) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii99_defaultFont(
+addAscii99_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[67])
@@ -3348,15 +3348,15 @@ addAscii99_defaultFont(
    fontSTPtr->pixAryUC[67][24] = 0;
 
    return 0;
-} /*addAscii99_defaultFont*/
+} /*addAscii99_normalFont*/
 
 /*___________________________________________
-` Fun68: addAscii100_defaultFont
+` Fun68: addAscii100_normalFont
 `  - adds character `d` (ascii 100) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii100_defaultFont(
+addAscii100_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[68])
@@ -3397,15 +3397,15 @@ addAscii100_defaultFont(
    fontSTPtr->pixAryUC[68][24] = 0;
 
    return 0;
-} /*addAscii100_defaultFont*/
+} /*addAscii100_normalFont*/
 
 /*___________________________________________
-` Fun69: addAscii101_defaultFont
+` Fun69: addAscii101_normalFont
 `  - adds character `e` (ascii 101) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii101_defaultFont(
+addAscii101_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[69])
@@ -3446,15 +3446,15 @@ addAscii101_defaultFont(
    fontSTPtr->pixAryUC[69][24] = 0;
 
    return 0;
-} /*addAscii101_defaultFont*/
+} /*addAscii101_normalFont*/
 
 /*___________________________________________
-` Fun70: addAscii102_defaultFont
+` Fun70: addAscii102_normalFont
 `  - adds character `f` (ascii 102) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii102_defaultFont(
+addAscii102_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[70])
@@ -3495,15 +3495,15 @@ addAscii102_defaultFont(
    fontSTPtr->pixAryUC[70][24] = 0;
 
    return 0;
-} /*addAscii102_defaultFont*/
+} /*addAscii102_normalFont*/
 
 /*___________________________________________
-` Fun71: addAscii103_defaultFont
+` Fun71: addAscii103_normalFont
 `  - adds character `g` (ascii 103) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii103_defaultFont(
+addAscii103_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[71])
@@ -3544,15 +3544,15 @@ addAscii103_defaultFont(
    fontSTPtr->pixAryUC[71][24] = 0;
 
    return 0;
-} /*addAscii103_defaultFont*/
+} /*addAscii103_normalFont*/
 
 /*___________________________________________
-` Fun72: addAscii104_defaultFont
+` Fun72: addAscii104_normalFont
 `  - adds character `h` (ascii 104) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii104_defaultFont(
+addAscii104_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[72])
@@ -3593,15 +3593,15 @@ addAscii104_defaultFont(
    fontSTPtr->pixAryUC[72][24] = 0;
 
    return 0;
-} /*addAscii104_defaultFont*/
+} /*addAscii104_normalFont*/
 
 /*___________________________________________
-` Fun73: addAscii105_defaultFont
+` Fun73: addAscii105_normalFont
 `  - adds character `i` (ascii 105) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii105_defaultFont(
+addAscii105_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[73])
@@ -3642,15 +3642,15 @@ addAscii105_defaultFont(
    fontSTPtr->pixAryUC[73][24] = 0;
 
    return 0;
-} /*addAscii105_defaultFont*/
+} /*addAscii105_normalFont*/
 
 /*___________________________________________
-` Fun74: addAscii106_defaultFont
+` Fun74: addAscii106_normalFont
 `  - adds character `j` (ascii 106) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii106_defaultFont(
+addAscii106_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[74])
@@ -3691,15 +3691,15 @@ addAscii106_defaultFont(
    fontSTPtr->pixAryUC[74][24] = 0;
 
    return 0;
-} /*addAscii106_defaultFont*/
+} /*addAscii106_normalFont*/
 
 /*___________________________________________
-` Fun75: addAscii107_defaultFont
+` Fun75: addAscii107_normalFont
 `  - adds character `k` (ascii 107) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii107_defaultFont(
+addAscii107_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[75])
@@ -3740,15 +3740,15 @@ addAscii107_defaultFont(
    fontSTPtr->pixAryUC[75][24] = 0;
 
    return 0;
-} /*addAscii107_defaultFont*/
+} /*addAscii107_normalFont*/
 
 /*___________________________________________
-` Fun76: addAscii108_defaultFont
+` Fun76: addAscii108_normalFont
 `  - adds character `l` (ascii 108) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii108_defaultFont(
+addAscii108_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[76])
@@ -3789,15 +3789,15 @@ addAscii108_defaultFont(
    fontSTPtr->pixAryUC[76][24] = 0;
 
    return 0;
-} /*addAscii108_defaultFont*/
+} /*addAscii108_normalFont*/
 
 /*___________________________________________
-` Fun77: addAscii109_defaultFont
+` Fun77: addAscii109_normalFont
 `  - adds character `m` (ascii 109) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii109_defaultFont(
+addAscii109_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[77])
@@ -3838,15 +3838,15 @@ addAscii109_defaultFont(
    fontSTPtr->pixAryUC[77][24] = 0;
 
    return 0;
-} /*addAscii109_defaultFont*/
+} /*addAscii109_normalFont*/
 
 /*___________________________________________
-` Fun78: addAscii110_defaultFont
+` Fun78: addAscii110_normalFont
 `  - adds character `n` (ascii 110) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii110_defaultFont(
+addAscii110_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[78])
@@ -3887,15 +3887,15 @@ addAscii110_defaultFont(
    fontSTPtr->pixAryUC[78][24] = 0;
 
    return 0;
-} /*addAscii110_defaultFont*/
+} /*addAscii110_normalFont*/
 
 /*___________________________________________
-` Fun79: addAscii111_defaultFont
+` Fun79: addAscii111_normalFont
 `  - adds character `o` (ascii 111) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii111_defaultFont(
+addAscii111_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[79])
@@ -3936,15 +3936,15 @@ addAscii111_defaultFont(
    fontSTPtr->pixAryUC[79][24] = 0;
 
    return 0;
-} /*addAscii111_defaultFont*/
+} /*addAscii111_normalFont*/
 
 /*___________________________________________
-` Fun80: addAscii112_defaultFont
+` Fun80: addAscii112_normalFont
 `  - adds character `p` (ascii 112) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii112_defaultFont(
+addAscii112_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[80])
@@ -3985,15 +3985,15 @@ addAscii112_defaultFont(
    fontSTPtr->pixAryUC[80][24] = 0;
 
    return 0;
-} /*addAscii112_defaultFont*/
+} /*addAscii112_normalFont*/
 
 /*___________________________________________
-` Fun81: addAscii113_defaultFont
+` Fun81: addAscii113_normalFont
 `  - adds character `q` (ascii 113) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii113_defaultFont(
+addAscii113_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[81])
@@ -4034,15 +4034,15 @@ addAscii113_defaultFont(
    fontSTPtr->pixAryUC[81][24] = 0;
 
    return 0;
-} /*addAscii113_defaultFont*/
+} /*addAscii113_normalFont*/
 
 /*___________________________________________
-` Fun82: addAscii114_defaultFont
+` Fun82: addAscii114_normalFont
 `  - adds character `r` (ascii 114) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii114_defaultFont(
+addAscii114_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[82])
@@ -4083,15 +4083,15 @@ addAscii114_defaultFont(
    fontSTPtr->pixAryUC[82][24] = 0;
 
    return 0;
-} /*addAscii114_defaultFont*/
+} /*addAscii114_normalFont*/
 
 /*___________________________________________
-` Fun83: addAscii115_defaultFont
+` Fun83: addAscii115_normalFont
 `  - adds character `s` (ascii 115) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii115_defaultFont(
+addAscii115_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[83])
@@ -4132,15 +4132,15 @@ addAscii115_defaultFont(
    fontSTPtr->pixAryUC[83][24] = 0;
 
    return 0;
-} /*addAscii115_defaultFont*/
+} /*addAscii115_normalFont*/
 
 /*___________________________________________
-` Fun84: addAscii116_defaultFont
+` Fun84: addAscii116_normalFont
 `  - adds character `t` (ascii 116) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii116_defaultFont(
+addAscii116_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[84])
@@ -4181,15 +4181,15 @@ addAscii116_defaultFont(
    fontSTPtr->pixAryUC[84][24] = 0;
 
    return 0;
-} /*addAscii116_defaultFont*/
+} /*addAscii116_normalFont*/
 
 /*___________________________________________
-` Fun85: addAscii117_defaultFont
+` Fun85: addAscii117_normalFont
 `  - adds character `u` (ascii 117) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii117_defaultFont(
+addAscii117_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[85])
@@ -4230,15 +4230,15 @@ addAscii117_defaultFont(
    fontSTPtr->pixAryUC[85][24] = 0;
 
    return 0;
-} /*addAscii117_defaultFont*/
+} /*addAscii117_normalFont*/
 
 /*___________________________________________
-` Fun86: addAscii118_defaultFont
+` Fun86: addAscii118_normalFont
 `  - adds character `v` (ascii 118) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii118_defaultFont(
+addAscii118_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[86])
@@ -4279,15 +4279,15 @@ addAscii118_defaultFont(
    fontSTPtr->pixAryUC[86][24] = 0;
 
    return 0;
-} /*addAscii118_defaultFont*/
+} /*addAscii118_normalFont*/
 
 /*___________________________________________
-` Fun87: addAscii119_defaultFont
+` Fun87: addAscii119_normalFont
 `  - adds character `w` (ascii 119) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii119_defaultFont(
+addAscii119_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[87])
@@ -4328,15 +4328,15 @@ addAscii119_defaultFont(
    fontSTPtr->pixAryUC[87][24] = 0;
 
    return 0;
-} /*addAscii119_defaultFont*/
+} /*addAscii119_normalFont*/
 
 /*___________________________________________
-` Fun88: addAscii120_defaultFont
+` Fun88: addAscii120_normalFont
 `  - adds character `x` (ascii 120) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii120_defaultFont(
+addAscii120_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[88])
@@ -4377,15 +4377,15 @@ addAscii120_defaultFont(
    fontSTPtr->pixAryUC[88][24] = 0;
 
    return 0;
-} /*addAscii120_defaultFont*/
+} /*addAscii120_normalFont*/
 
 /*___________________________________________
-` Fun89: addAscii121_defaultFont
+` Fun89: addAscii121_normalFont
 `  - adds character `y` (ascii 121) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii121_defaultFont(
+addAscii121_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[89])
@@ -4426,15 +4426,15 @@ addAscii121_defaultFont(
    fontSTPtr->pixAryUC[89][24] = 0;
 
    return 0;
-} /*addAscii121_defaultFont*/
+} /*addAscii121_normalFont*/
 
 /*___________________________________________
-` Fun90: addAscii122_defaultFont
+` Fun90: addAscii122_normalFont
 `  - adds character `z` (ascii 122) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii122_defaultFont(
+addAscii122_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[90])
@@ -4475,15 +4475,15 @@ addAscii122_defaultFont(
    fontSTPtr->pixAryUC[90][24] = 0;
 
    return 0;
-} /*addAscii122_defaultFont*/
+} /*addAscii122_normalFont*/
 
 /*___________________________________________
-` Fun91: addAscii123_defaultFont
+` Fun91: addAscii123_normalFont
 `  - adds character `{` (ascii 123) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii123_defaultFont(
+addAscii123_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[91])
@@ -4524,15 +4524,15 @@ addAscii123_defaultFont(
    fontSTPtr->pixAryUC[91][24] = 0;
 
    return 0;
-} /*addAscii123_defaultFont*/
+} /*addAscii123_normalFont*/
 
 /*___________________________________________
-` Fun92: addAscii124_defaultFont
+` Fun92: addAscii124_normalFont
 `  - adds character `|` (ascii 124) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii124_defaultFont(
+addAscii124_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[92])
@@ -4573,15 +4573,15 @@ addAscii124_defaultFont(
    fontSTPtr->pixAryUC[92][24] = 0;
 
    return 0;
-} /*addAscii124_defaultFont*/
+} /*addAscii124_normalFont*/
 
 /*___________________________________________
-` Fun93: addAscii125_defaultFont
+` Fun93: addAscii125_normalFont
 `  - adds character `}` (ascii 125) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii125_defaultFont(
+addAscii125_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[93])
@@ -4625,15 +4625,15 @@ addAscii125_defaultFont(
    fontSTPtr->pixAryUC[93][27] = 0;
 
    return 0;
-} /*addAscii125_defaultFont*/
+} /*addAscii125_normalFont*/
 
 /*___________________________________________
-` Fun94: addAscii126_defaultFont
+` Fun94: addAscii126_normalFont
 `  - adds character `~` (ascii 126) to font
 `  - returns 1 for success or 0 for failure
 `__________________________________________*/
 signed char
-addAscii126_defaultFont(
+addAscii126_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[94])
@@ -4674,211 +4674,211 @@ addAscii126_defaultFont(
    fontSTPtr->pixAryUC[94][24] = 0;
 
    return 0;
-} /*addAscii126_defaultFont*/
+} /*addAscii126_normalFont*/
 
 /*_____________________________________________
-` Fun95: loadFont_defaultFont
-`  - loads the font in defaultFont.c/h to the input
+` Fun95: loadFont_normalFont
+`  - loads the font in normalFont.c/h to the input
 `    font_pngFont struct (as pionter)
 `  - returns 1 for success or 0 for failure
 `_____________________________________________*/
 signed char
-loadFont_defaultFont(
+loadFont_normalFont(
    struct font_pngFont *fontSTPtr
 ){
    fontSTPtr->heightSS = 14;
    fontSTPtr->gapSS = 0;
 
-   if( addAscii32_defaultFont(fontSTPtr) )
+   if( addAscii32_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii33_defaultFont(fontSTPtr) )
+   if( addAscii33_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii34_defaultFont(fontSTPtr) )
+   if( addAscii34_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii35_defaultFont(fontSTPtr) )
+   if( addAscii35_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii36_defaultFont(fontSTPtr) )
+   if( addAscii36_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii37_defaultFont(fontSTPtr) )
+   if( addAscii37_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii38_defaultFont(fontSTPtr) )
+   if( addAscii38_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii39_defaultFont(fontSTPtr) )
+   if( addAscii39_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii40_defaultFont(fontSTPtr) )
+   if( addAscii40_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii41_defaultFont(fontSTPtr) )
+   if( addAscii41_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii42_defaultFont(fontSTPtr) )
+   if( addAscii42_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii43_defaultFont(fontSTPtr) )
+   if( addAscii43_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii44_defaultFont(fontSTPtr) )
+   if( addAscii44_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii45_defaultFont(fontSTPtr) )
+   if( addAscii45_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii46_defaultFont(fontSTPtr) )
+   if( addAscii46_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii47_defaultFont(fontSTPtr) )
+   if( addAscii47_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii48_defaultFont(fontSTPtr) )
+   if( addAscii48_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii49_defaultFont(fontSTPtr) )
+   if( addAscii49_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii50_defaultFont(fontSTPtr) )
+   if( addAscii50_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii51_defaultFont(fontSTPtr) )
+   if( addAscii51_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii52_defaultFont(fontSTPtr) )
+   if( addAscii52_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii53_defaultFont(fontSTPtr) )
+   if( addAscii53_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii54_defaultFont(fontSTPtr) )
+   if( addAscii54_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii55_defaultFont(fontSTPtr) )
+   if( addAscii55_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii56_defaultFont(fontSTPtr) )
+   if( addAscii56_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii57_defaultFont(fontSTPtr) )
+   if( addAscii57_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii58_defaultFont(fontSTPtr) )
+   if( addAscii58_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii59_defaultFont(fontSTPtr) )
+   if( addAscii59_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii60_defaultFont(fontSTPtr) )
+   if( addAscii60_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii61_defaultFont(fontSTPtr) )
+   if( addAscii61_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii62_defaultFont(fontSTPtr) )
+   if( addAscii62_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii63_defaultFont(fontSTPtr) )
+   if( addAscii63_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii64_defaultFont(fontSTPtr) )
+   if( addAscii64_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii65_defaultFont(fontSTPtr) )
+   if( addAscii65_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii66_defaultFont(fontSTPtr) )
+   if( addAscii66_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii67_defaultFont(fontSTPtr) )
+   if( addAscii67_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii68_defaultFont(fontSTPtr) )
+   if( addAscii68_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii69_defaultFont(fontSTPtr) )
+   if( addAscii69_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii70_defaultFont(fontSTPtr) )
+   if( addAscii70_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii71_defaultFont(fontSTPtr) )
+   if( addAscii71_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii72_defaultFont(fontSTPtr) )
+   if( addAscii72_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii73_defaultFont(fontSTPtr) )
+   if( addAscii73_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii74_defaultFont(fontSTPtr) )
+   if( addAscii74_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii75_defaultFont(fontSTPtr) )
+   if( addAscii75_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii76_defaultFont(fontSTPtr) )
+   if( addAscii76_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii77_defaultFont(fontSTPtr) )
+   if( addAscii77_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii78_defaultFont(fontSTPtr) )
+   if( addAscii78_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii79_defaultFont(fontSTPtr) )
+   if( addAscii79_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii80_defaultFont(fontSTPtr) )
+   if( addAscii80_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii81_defaultFont(fontSTPtr) )
+   if( addAscii81_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii82_defaultFont(fontSTPtr) )
+   if( addAscii82_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii83_defaultFont(fontSTPtr) )
+   if( addAscii83_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii84_defaultFont(fontSTPtr) )
+   if( addAscii84_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii85_defaultFont(fontSTPtr) )
+   if( addAscii85_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii86_defaultFont(fontSTPtr) )
+   if( addAscii86_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii87_defaultFont(fontSTPtr) )
+   if( addAscii87_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii88_defaultFont(fontSTPtr) )
+   if( addAscii88_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii89_defaultFont(fontSTPtr) )
+   if( addAscii89_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii90_defaultFont(fontSTPtr) )
+   if( addAscii90_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii91_defaultFont(fontSTPtr) )
+   if( addAscii91_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii92_defaultFont(fontSTPtr) )
+   if( addAscii92_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii93_defaultFont(fontSTPtr) )
+   if( addAscii93_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii94_defaultFont(fontSTPtr) )
+   if( addAscii94_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii95_defaultFont(fontSTPtr) )
+   if( addAscii95_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii96_defaultFont(fontSTPtr) )
+   if( addAscii96_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii97_defaultFont(fontSTPtr) )
+   if( addAscii97_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii98_defaultFont(fontSTPtr) )
+   if( addAscii98_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii99_defaultFont(fontSTPtr) )
+   if( addAscii99_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii100_defaultFont(fontSTPtr) )
+   if( addAscii100_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii101_defaultFont(fontSTPtr) )
+   if( addAscii101_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii102_defaultFont(fontSTPtr) )
+   if( addAscii102_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii103_defaultFont(fontSTPtr) )
+   if( addAscii103_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii104_defaultFont(fontSTPtr) )
+   if( addAscii104_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii105_defaultFont(fontSTPtr) )
+   if( addAscii105_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii106_defaultFont(fontSTPtr) )
+   if( addAscii106_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii107_defaultFont(fontSTPtr) )
+   if( addAscii107_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii108_defaultFont(fontSTPtr) )
+   if( addAscii108_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii109_defaultFont(fontSTPtr) )
+   if( addAscii109_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii110_defaultFont(fontSTPtr) )
+   if( addAscii110_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii111_defaultFont(fontSTPtr) )
+   if( addAscii111_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii112_defaultFont(fontSTPtr) )
+   if( addAscii112_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii113_defaultFont(fontSTPtr) )
+   if( addAscii113_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii114_defaultFont(fontSTPtr) )
+   if( addAscii114_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii115_defaultFont(fontSTPtr) )
+   if( addAscii115_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii116_defaultFont(fontSTPtr) )
+   if( addAscii116_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii117_defaultFont(fontSTPtr) )
+   if( addAscii117_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii118_defaultFont(fontSTPtr) )
+   if( addAscii118_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii119_defaultFont(fontSTPtr) )
+   if( addAscii119_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii120_defaultFont(fontSTPtr) )
+   if( addAscii120_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii121_defaultFont(fontSTPtr) )
+   if( addAscii121_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii122_defaultFont(fontSTPtr) )
+   if( addAscii122_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii123_defaultFont(fontSTPtr) )
+   if( addAscii123_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii124_defaultFont(fontSTPtr) )
+   if( addAscii124_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii125_defaultFont(fontSTPtr) )
+   if( addAscii125_normalFont(fontSTPtr) )
       return 1;
-   if( addAscii126_defaultFont(fontSTPtr) )
+   if( addAscii126_normalFont(fontSTPtr) )
       return 1;
 
    return 0;
-} /*loadFont_defaultFont*/
+} /*loadFont_normalFont*/
