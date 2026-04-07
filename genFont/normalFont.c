@@ -5,7 +5,7 @@
    #include <stdlib.h>
 #endif
 
-#include "pngFont.h"
+#include "fontST.h"
 
 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Hidden libraries:
@@ -25,7 +25,7 @@
 `__________________________________________*/
 signed char
 addAscii32_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[0])
       free(fontSTPtr->pixAryUC[0]);
@@ -74,7 +74,7 @@ addAscii32_normalFont(
 `__________________________________________*/
 signed char
 addAscii33_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[1])
       free(fontSTPtr->pixAryUC[1]);
@@ -123,7 +123,7 @@ addAscii33_normalFont(
 `__________________________________________*/
 signed char
 addAscii34_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[2])
       free(fontSTPtr->pixAryUC[2]);
@@ -172,7 +172,7 @@ addAscii34_normalFont(
 `__________________________________________*/
 signed char
 addAscii35_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[3])
       free(fontSTPtr->pixAryUC[3]);
@@ -221,7 +221,7 @@ addAscii35_normalFont(
 `__________________________________________*/
 signed char
 addAscii36_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[4])
       free(fontSTPtr->pixAryUC[4]);
@@ -270,7 +270,7 @@ addAscii36_normalFont(
 `__________________________________________*/
 signed char
 addAscii37_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[5])
       free(fontSTPtr->pixAryUC[5]);
@@ -319,7 +319,7 @@ addAscii37_normalFont(
 `__________________________________________*/
 signed char
 addAscii38_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[6])
       free(fontSTPtr->pixAryUC[6]);
@@ -368,7 +368,7 @@ addAscii38_normalFont(
 `__________________________________________*/
 signed char
 addAscii39_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[7])
       free(fontSTPtr->pixAryUC[7]);
@@ -417,7 +417,7 @@ addAscii39_normalFont(
 `__________________________________________*/
 signed char
 addAscii40_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[8])
       free(fontSTPtr->pixAryUC[8]);
@@ -466,7 +466,7 @@ addAscii40_normalFont(
 `__________________________________________*/
 signed char
 addAscii41_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[9])
       free(fontSTPtr->pixAryUC[9]);
@@ -515,7 +515,7 @@ addAscii41_normalFont(
 `__________________________________________*/
 signed char
 addAscii42_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[10])
       free(fontSTPtr->pixAryUC[10]);
@@ -564,7 +564,7 @@ addAscii42_normalFont(
 `__________________________________________*/
 signed char
 addAscii43_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[11])
       free(fontSTPtr->pixAryUC[11]);
@@ -613,7 +613,7 @@ addAscii43_normalFont(
 `__________________________________________*/
 signed char
 addAscii44_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[12])
       free(fontSTPtr->pixAryUC[12]);
@@ -662,7 +662,7 @@ addAscii44_normalFont(
 `__________________________________________*/
 signed char
 addAscii45_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[13])
       free(fontSTPtr->pixAryUC[13]);
@@ -711,7 +711,7 @@ addAscii45_normalFont(
 `__________________________________________*/
 signed char
 addAscii46_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[14])
       free(fontSTPtr->pixAryUC[14]);
@@ -760,7 +760,7 @@ addAscii46_normalFont(
 `__________________________________________*/
 signed char
 addAscii47_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[15])
       free(fontSTPtr->pixAryUC[15]);
@@ -809,7 +809,7 @@ addAscii47_normalFont(
 `__________________________________________*/
 signed char
 addAscii48_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[16])
       free(fontSTPtr->pixAryUC[16]);
@@ -858,7 +858,7 @@ addAscii48_normalFont(
 `__________________________________________*/
 signed char
 addAscii49_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[17])
       free(fontSTPtr->pixAryUC[17]);
@@ -907,7 +907,7 @@ addAscii49_normalFont(
 `__________________________________________*/
 signed char
 addAscii50_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[18])
       free(fontSTPtr->pixAryUC[18]);
@@ -956,7 +956,7 @@ addAscii50_normalFont(
 `__________________________________________*/
 signed char
 addAscii51_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[19])
       free(fontSTPtr->pixAryUC[19]);
@@ -1005,7 +1005,7 @@ addAscii51_normalFont(
 `__________________________________________*/
 signed char
 addAscii52_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[20])
       free(fontSTPtr->pixAryUC[20]);
@@ -1054,7 +1054,7 @@ addAscii52_normalFont(
 `__________________________________________*/
 signed char
 addAscii53_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[21])
       free(fontSTPtr->pixAryUC[21]);
@@ -1103,7 +1103,7 @@ addAscii53_normalFont(
 `__________________________________________*/
 signed char
 addAscii54_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[22])
       free(fontSTPtr->pixAryUC[22]);
@@ -1152,7 +1152,7 @@ addAscii54_normalFont(
 `__________________________________________*/
 signed char
 addAscii55_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[23])
       free(fontSTPtr->pixAryUC[23]);
@@ -1201,7 +1201,7 @@ addAscii55_normalFont(
 `__________________________________________*/
 signed char
 addAscii56_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[24])
       free(fontSTPtr->pixAryUC[24]);
@@ -1250,7 +1250,7 @@ addAscii56_normalFont(
 `__________________________________________*/
 signed char
 addAscii57_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[25])
       free(fontSTPtr->pixAryUC[25]);
@@ -1299,7 +1299,7 @@ addAscii57_normalFont(
 `__________________________________________*/
 signed char
 addAscii58_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[26])
       free(fontSTPtr->pixAryUC[26]);
@@ -1348,7 +1348,7 @@ addAscii58_normalFont(
 `__________________________________________*/
 signed char
 addAscii59_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[27])
       free(fontSTPtr->pixAryUC[27]);
@@ -1397,7 +1397,7 @@ addAscii59_normalFont(
 `__________________________________________*/
 signed char
 addAscii60_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[28])
       free(fontSTPtr->pixAryUC[28]);
@@ -1446,7 +1446,7 @@ addAscii60_normalFont(
 `__________________________________________*/
 signed char
 addAscii61_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[29])
       free(fontSTPtr->pixAryUC[29]);
@@ -1495,7 +1495,7 @@ addAscii61_normalFont(
 `__________________________________________*/
 signed char
 addAscii62_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[30])
       free(fontSTPtr->pixAryUC[30]);
@@ -1544,7 +1544,7 @@ addAscii62_normalFont(
 `__________________________________________*/
 signed char
 addAscii63_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[31])
       free(fontSTPtr->pixAryUC[31]);
@@ -1593,7 +1593,7 @@ addAscii63_normalFont(
 `__________________________________________*/
 signed char
 addAscii64_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[32])
       free(fontSTPtr->pixAryUC[32]);
@@ -1642,7 +1642,7 @@ addAscii64_normalFont(
 `__________________________________________*/
 signed char
 addAscii65_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[33])
       free(fontSTPtr->pixAryUC[33]);
@@ -1691,7 +1691,7 @@ addAscii65_normalFont(
 `__________________________________________*/
 signed char
 addAscii66_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[34])
       free(fontSTPtr->pixAryUC[34]);
@@ -1740,7 +1740,7 @@ addAscii66_normalFont(
 `__________________________________________*/
 signed char
 addAscii67_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[35])
       free(fontSTPtr->pixAryUC[35]);
@@ -1789,7 +1789,7 @@ addAscii67_normalFont(
 `__________________________________________*/
 signed char
 addAscii68_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[36])
       free(fontSTPtr->pixAryUC[36]);
@@ -1838,7 +1838,7 @@ addAscii68_normalFont(
 `__________________________________________*/
 signed char
 addAscii69_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[37])
       free(fontSTPtr->pixAryUC[37]);
@@ -1887,7 +1887,7 @@ addAscii69_normalFont(
 `__________________________________________*/
 signed char
 addAscii70_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[38])
       free(fontSTPtr->pixAryUC[38]);
@@ -1936,7 +1936,7 @@ addAscii70_normalFont(
 `__________________________________________*/
 signed char
 addAscii71_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[39])
       free(fontSTPtr->pixAryUC[39]);
@@ -1985,7 +1985,7 @@ addAscii71_normalFont(
 `__________________________________________*/
 signed char
 addAscii72_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[40])
       free(fontSTPtr->pixAryUC[40]);
@@ -2034,7 +2034,7 @@ addAscii72_normalFont(
 `__________________________________________*/
 signed char
 addAscii73_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[41])
       free(fontSTPtr->pixAryUC[41]);
@@ -2083,7 +2083,7 @@ addAscii73_normalFont(
 `__________________________________________*/
 signed char
 addAscii74_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[42])
       free(fontSTPtr->pixAryUC[42]);
@@ -2132,7 +2132,7 @@ addAscii74_normalFont(
 `__________________________________________*/
 signed char
 addAscii75_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[43])
       free(fontSTPtr->pixAryUC[43]);
@@ -2181,7 +2181,7 @@ addAscii75_normalFont(
 `__________________________________________*/
 signed char
 addAscii76_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[44])
       free(fontSTPtr->pixAryUC[44]);
@@ -2230,7 +2230,7 @@ addAscii76_normalFont(
 `__________________________________________*/
 signed char
 addAscii77_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[45])
       free(fontSTPtr->pixAryUC[45]);
@@ -2279,7 +2279,7 @@ addAscii77_normalFont(
 `__________________________________________*/
 signed char
 addAscii78_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[46])
       free(fontSTPtr->pixAryUC[46]);
@@ -2328,7 +2328,7 @@ addAscii78_normalFont(
 `__________________________________________*/
 signed char
 addAscii79_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[47])
       free(fontSTPtr->pixAryUC[47]);
@@ -2377,7 +2377,7 @@ addAscii79_normalFont(
 `__________________________________________*/
 signed char
 addAscii80_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[48])
       free(fontSTPtr->pixAryUC[48]);
@@ -2426,7 +2426,7 @@ addAscii80_normalFont(
 `__________________________________________*/
 signed char
 addAscii81_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[49])
       free(fontSTPtr->pixAryUC[49]);
@@ -2475,7 +2475,7 @@ addAscii81_normalFont(
 `__________________________________________*/
 signed char
 addAscii82_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[50])
       free(fontSTPtr->pixAryUC[50]);
@@ -2524,7 +2524,7 @@ addAscii82_normalFont(
 `__________________________________________*/
 signed char
 addAscii83_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[51])
       free(fontSTPtr->pixAryUC[51]);
@@ -2573,7 +2573,7 @@ addAscii83_normalFont(
 `__________________________________________*/
 signed char
 addAscii84_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[52])
       free(fontSTPtr->pixAryUC[52]);
@@ -2622,7 +2622,7 @@ addAscii84_normalFont(
 `__________________________________________*/
 signed char
 addAscii85_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[53])
       free(fontSTPtr->pixAryUC[53]);
@@ -2671,7 +2671,7 @@ addAscii85_normalFont(
 `__________________________________________*/
 signed char
 addAscii86_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[54])
       free(fontSTPtr->pixAryUC[54]);
@@ -2720,7 +2720,7 @@ addAscii86_normalFont(
 `__________________________________________*/
 signed char
 addAscii87_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[55])
       free(fontSTPtr->pixAryUC[55]);
@@ -2769,7 +2769,7 @@ addAscii87_normalFont(
 `__________________________________________*/
 signed char
 addAscii88_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[56])
       free(fontSTPtr->pixAryUC[56]);
@@ -2818,7 +2818,7 @@ addAscii88_normalFont(
 `__________________________________________*/
 signed char
 addAscii89_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[57])
       free(fontSTPtr->pixAryUC[57]);
@@ -2867,7 +2867,7 @@ addAscii89_normalFont(
 `__________________________________________*/
 signed char
 addAscii90_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[58])
       free(fontSTPtr->pixAryUC[58]);
@@ -2916,7 +2916,7 @@ addAscii90_normalFont(
 `__________________________________________*/
 signed char
 addAscii91_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[59])
       free(fontSTPtr->pixAryUC[59]);
@@ -2965,7 +2965,7 @@ addAscii91_normalFont(
 `__________________________________________*/
 signed char
 addAscii92_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[60])
       free(fontSTPtr->pixAryUC[60]);
@@ -3014,7 +3014,7 @@ addAscii92_normalFont(
 `__________________________________________*/
 signed char
 addAscii93_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[61])
       free(fontSTPtr->pixAryUC[61]);
@@ -3063,7 +3063,7 @@ addAscii93_normalFont(
 `__________________________________________*/
 signed char
 addAscii94_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[62])
       free(fontSTPtr->pixAryUC[62]);
@@ -3112,7 +3112,7 @@ addAscii94_normalFont(
 `__________________________________________*/
 signed char
 addAscii95_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[63])
       free(fontSTPtr->pixAryUC[63]);
@@ -3161,7 +3161,7 @@ addAscii95_normalFont(
 `__________________________________________*/
 signed char
 addAscii96_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[64])
       free(fontSTPtr->pixAryUC[64]);
@@ -3210,7 +3210,7 @@ addAscii96_normalFont(
 `__________________________________________*/
 signed char
 addAscii97_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[65])
       free(fontSTPtr->pixAryUC[65]);
@@ -3259,7 +3259,7 @@ addAscii97_normalFont(
 `__________________________________________*/
 signed char
 addAscii98_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[66])
       free(fontSTPtr->pixAryUC[66]);
@@ -3308,7 +3308,7 @@ addAscii98_normalFont(
 `__________________________________________*/
 signed char
 addAscii99_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[67])
       free(fontSTPtr->pixAryUC[67]);
@@ -3357,7 +3357,7 @@ addAscii99_normalFont(
 `__________________________________________*/
 signed char
 addAscii100_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[68])
       free(fontSTPtr->pixAryUC[68]);
@@ -3406,7 +3406,7 @@ addAscii100_normalFont(
 `__________________________________________*/
 signed char
 addAscii101_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[69])
       free(fontSTPtr->pixAryUC[69]);
@@ -3455,7 +3455,7 @@ addAscii101_normalFont(
 `__________________________________________*/
 signed char
 addAscii102_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[70])
       free(fontSTPtr->pixAryUC[70]);
@@ -3504,7 +3504,7 @@ addAscii102_normalFont(
 `__________________________________________*/
 signed char
 addAscii103_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[71])
       free(fontSTPtr->pixAryUC[71]);
@@ -3553,7 +3553,7 @@ addAscii103_normalFont(
 `__________________________________________*/
 signed char
 addAscii104_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[72])
       free(fontSTPtr->pixAryUC[72]);
@@ -3602,7 +3602,7 @@ addAscii104_normalFont(
 `__________________________________________*/
 signed char
 addAscii105_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[73])
       free(fontSTPtr->pixAryUC[73]);
@@ -3651,7 +3651,7 @@ addAscii105_normalFont(
 `__________________________________________*/
 signed char
 addAscii106_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[74])
       free(fontSTPtr->pixAryUC[74]);
@@ -3700,7 +3700,7 @@ addAscii106_normalFont(
 `__________________________________________*/
 signed char
 addAscii107_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[75])
       free(fontSTPtr->pixAryUC[75]);
@@ -3749,7 +3749,7 @@ addAscii107_normalFont(
 `__________________________________________*/
 signed char
 addAscii108_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[76])
       free(fontSTPtr->pixAryUC[76]);
@@ -3798,7 +3798,7 @@ addAscii108_normalFont(
 `__________________________________________*/
 signed char
 addAscii109_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[77])
       free(fontSTPtr->pixAryUC[77]);
@@ -3847,7 +3847,7 @@ addAscii109_normalFont(
 `__________________________________________*/
 signed char
 addAscii110_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[78])
       free(fontSTPtr->pixAryUC[78]);
@@ -3896,7 +3896,7 @@ addAscii110_normalFont(
 `__________________________________________*/
 signed char
 addAscii111_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[79])
       free(fontSTPtr->pixAryUC[79]);
@@ -3945,7 +3945,7 @@ addAscii111_normalFont(
 `__________________________________________*/
 signed char
 addAscii112_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[80])
       free(fontSTPtr->pixAryUC[80]);
@@ -3994,7 +3994,7 @@ addAscii112_normalFont(
 `__________________________________________*/
 signed char
 addAscii113_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[81])
       free(fontSTPtr->pixAryUC[81]);
@@ -4043,7 +4043,7 @@ addAscii113_normalFont(
 `__________________________________________*/
 signed char
 addAscii114_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[82])
       free(fontSTPtr->pixAryUC[82]);
@@ -4092,7 +4092,7 @@ addAscii114_normalFont(
 `__________________________________________*/
 signed char
 addAscii115_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[83])
       free(fontSTPtr->pixAryUC[83]);
@@ -4141,7 +4141,7 @@ addAscii115_normalFont(
 `__________________________________________*/
 signed char
 addAscii116_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[84])
       free(fontSTPtr->pixAryUC[84]);
@@ -4190,7 +4190,7 @@ addAscii116_normalFont(
 `__________________________________________*/
 signed char
 addAscii117_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[85])
       free(fontSTPtr->pixAryUC[85]);
@@ -4239,7 +4239,7 @@ addAscii117_normalFont(
 `__________________________________________*/
 signed char
 addAscii118_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[86])
       free(fontSTPtr->pixAryUC[86]);
@@ -4288,7 +4288,7 @@ addAscii118_normalFont(
 `__________________________________________*/
 signed char
 addAscii119_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[87])
       free(fontSTPtr->pixAryUC[87]);
@@ -4337,7 +4337,7 @@ addAscii119_normalFont(
 `__________________________________________*/
 signed char
 addAscii120_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[88])
       free(fontSTPtr->pixAryUC[88]);
@@ -4386,7 +4386,7 @@ addAscii120_normalFont(
 `__________________________________________*/
 signed char
 addAscii121_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[89])
       free(fontSTPtr->pixAryUC[89]);
@@ -4435,7 +4435,7 @@ addAscii121_normalFont(
 `__________________________________________*/
 signed char
 addAscii122_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[90])
       free(fontSTPtr->pixAryUC[90]);
@@ -4484,7 +4484,7 @@ addAscii122_normalFont(
 `__________________________________________*/
 signed char
 addAscii123_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[91])
       free(fontSTPtr->pixAryUC[91]);
@@ -4533,7 +4533,7 @@ addAscii123_normalFont(
 `__________________________________________*/
 signed char
 addAscii124_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[92])
       free(fontSTPtr->pixAryUC[92]);
@@ -4582,7 +4582,7 @@ addAscii124_normalFont(
 `__________________________________________*/
 signed char
 addAscii125_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[93])
       free(fontSTPtr->pixAryUC[93]);
@@ -4634,7 +4634,7 @@ addAscii125_normalFont(
 `__________________________________________*/
 signed char
 addAscii126_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    if(fontSTPtr->pixAryUC[94])
       free(fontSTPtr->pixAryUC[94]);
@@ -4679,12 +4679,12 @@ addAscii126_normalFont(
 /*_____________________________________________
 ` Fun95: loadFont_normalFont
 `  - loads the font in normalFont.c/h to the input
-`    font_pngFont struct (as pionter)
+`    font_fontST struct (as pionter)
 `  - returns 1 for success or 0 for failure
 `_____________________________________________*/
 signed char
 loadFont_normalFont(
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    fontSTPtr->heightSS = 14;
    fontSTPtr->gapSS = 0;

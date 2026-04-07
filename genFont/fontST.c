@@ -1,30 +1,28 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-' pngFont SOF: Start Of File
+' fontST SOF: Start Of File
 '   - handels loading and drawing png fonts
 '   - I am avoidng using longs here in the drawing step to
 '     avoid additional complexity
 '   o header:
 '     - libraries
-'   o .h st01: font_pngFont
+'   o .h st01: font_fontST
 '     - holds the font to draw into the png
-'   o fun01: blank_font_pngFont
-'     - blanks a font_pngFont struct
-'   o fun02: init_font_pngFont
-'     - initializes a font_pngFont struct
-'   o fun03: freeStack_font_pngFont
-'     - frees all variables in a font_pngFont struct
-'   o fun04: freeHeap_font_pngFont
-'     - frees a font_pngFont struct
-'   o fun05: getFont_font_pngFont
+'   o fun01: blank_font_fontST
+'     - blanks a font_fontST struct
+'   o fun02: init_font_fontST
+'     - initializes a font_fontST struct
+'   o fun03: freeStack_font_fontST
+'     - frees all variables in a font_fontST struct
+'   o fun04: freeHeap_font_fontST
+'     - frees a font_fontST struct
+'   o fun05: getFont_font_fontST
 '     - get a font from my ascii font file
-'   o fun06: measureText_font_pngFont
+'   o fun06: measureText_font_fontST
 '     - measure how many pixels long a cstring is
-'   o fun07: drawHorzText_font_pngFont
-'     - draw horizontal text to a png
-'   o fun08: drawVertText_font_pngFont
-'     - draw text vertically to a png
-'   o fun09: fontToC_font_pngFont
-'     - convert a font_pngFont to to .c and .h files
+'   o fun07: fontToC_font_fontST
+'     - convert a font_fontST to to .c and .h files
+'   o license:
+'     - licensing for this code (CC0)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*-------------------------------------------------------\
@@ -41,26 +39,19 @@
 
 #include <stdio.h>
 
-#include "pngFont.h"
+#include "fontST.h"
 #include "../genLib/base10str.h"
 #include "../genLib/ulCp.h"
-#include "mkPng.h"
 
 /*only using the .h files*/
 #include "../genLib/64bit.h"
 
-/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
-! Hidden libraries:
-!   - .c  #include "../genLib/endin.h"
-!   - .c  #include "../genLib/checksum.h"
-\%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
-
 /*-------------------------------------------------------\
-| Fun01: blank_font_pngFont
-|   - blanks a font_pngFont struct
+| Fun01: blank_font_fontST
+|   - blanks a font_fontST struct
 | Input:
 |   - fontSTPtr:
-|     o font_pngFont struct pointer to blank
+|     o font_fontST struct pointer to blank
 | Output:
 |   - Modifies:
 |     o all elements in pixAryUC and widthArySS to be
@@ -68,43 +59,43 @@
 |     o frees all pionters in pixAryUC
 \-------------------------------------------------------*/
 void
-blank_font_pngFont(
-   struct font_pngFont *fontSTPtr
+blank_font_fontST(
+   struct font_fontST *fontSTPtr
 ){
    signed int siPos = 0;
 
    if(! fontSTPtr)
       return;
 
-   for(siPos=0; siPos < def_numAsciiChar_pngFont; ++siPos)
+   for(siPos=0; siPos < def_numAsciiChar_fontST; ++siPos)
    { /*Loop: free all characters*/
       if(fontSTPtr->pixAryUC[siPos])
          free(fontSTPtr->pixAryUC[siPos]);
    } /*Loop: free all characters*/
 
-   init_font_pngFont(fontSTPtr);
+   init_font_fontST(fontSTPtr);
       /*calling init or freeing memory is unusal in a
       `  blank function for me. However, I do not want to
       `  deal with keeping track of memory size for each
       `  character. So, it is easier to free on blank and
       `  reallocate later
       */
-} /*blank_font_pngFont*/
+} /*blank_font_fontST*/
 
 /*-------------------------------------------------------\
-| Fun02: init_font_pngFont
-|   - initializes a font_pngFont struct
+| Fun02: init_font_fontST
+|   - initializes a font_fontST struct
 | Input:
 |   - fontSTPtr:
-|     o font_pngFont struct pointer to initialize
+|     o font_fontST struct pointer to initialize
 | Output:
 |   - Modifies:
 |     o all elements in pixAryUC and widthArySS to be
 |       set to null/0
 \-------------------------------------------------------*/
 void
-init_font_pngFont(
-   struct font_pngFont *fontSTPtr
+init_font_fontST(
+   struct font_fontST *fontSTPtr
 ){
    signed int siPos = 0;
 
@@ -114,7 +105,7 @@ init_font_pngFont(
    fontSTPtr->heightSS = 0;
    fontSTPtr->gapSS = 0;
 
-   for(siPos=0; siPos < def_numAsciiChar_pngFont; ++siPos)
+   for(siPos=0; siPos < def_numAsciiChar_fontST; ++siPos)
    { /*Loop: set all values to 0*/
       fontSTPtr->pixAryUC[siPos] = 0;
       fontSTPtr->widthArySS[siPos] = 0;
@@ -124,58 +115,58 @@ init_font_pngFont(
    /*I would often call a blank function, but in this case
    `  it is more efficent to initialize
    */
-} /*init_font_pngFont*/
+} /*init_font_fontST*/
 
 /*-------------------------------------------------------\
-| Fun03: freeStack_font_pngFont
-|   - frees all variables in a font_pngFont struct
+| Fun03: freeStack_font_fontST
+|   - frees all variables in a font_fontST struct
 | Input:
 |   - fontSTPtr:
-|     o font_pngFont struct pointer with variables to free
+|     o font_fontST struct pointer with variables to free
 | Output:
 |   - Modifies:
 |     o frees all variables and initialize
 \-------------------------------------------------------*/
 void
-freeStack_font_pngFont(
-   struct font_pngFont *fontSTPtr
+freeStack_font_fontST(
+   struct font_fontST *fontSTPtr
 ){
    if(! fontSTPtr)
       return;
 
-   blank_font_pngFont(fontSTPtr);
+   blank_font_fontST(fontSTPtr);
       /*the blank function frees and initializes*/
-} /*freeStack_font_pngFont*/
+} /*freeStack_font_fontST*/
 
 /*-------------------------------------------------------\
-| Fun04: freeHeap_font_pngFont
-|   - frees a font_pngFont struct
+| Fun04: freeHeap_font_fontST
+|   - frees a font_fontST struct
 | Input:
 |   - fontSTPtr:
-|     o font_pngFont struct pointer to free
+|     o font_fontST struct pointer to free
 | Output:
 |   - Modifies:
 |     o frees hte fontSTPtr struct, you must set the
 |       pointer to 0/null
 \-------------------------------------------------------*/
 void
-freeHeap_font_pngFont(
-   struct font_pngFont *fontSTPtr
+freeHeap_font_fontST(
+   struct font_fontST *fontSTPtr
 ){
    if(! fontSTPtr)
       return;
 
-   freeStack_font_pngFont(fontSTPtr);
+   freeStack_font_fontST(fontSTPtr);
       /*the blank function frees and initializes*/
    free(fontSTPtr);
-} /*freeHeap_font_pngFont*/
+} /*freeHeap_font_fontST*/
 
 /*-------------------------------------------------------\
-| Fun05: getFont_font_pngFont
+| Fun05: getFont_font_fontST
 |   - get a font from my ascii font file
 | Input:
 |   - fontSTPtr:
-|     o font_pngFont struct pionter to get the new font
+|     o font_fontST struct pionter to get the new font
 |   - fontFILE:
 |     o FILE pointer to file to get the font from
 | Output:
@@ -202,8 +193,8 @@ freeHeap_font_pngFont(
 |       * max width is 504 pixels
 \-------------------------------------------------------*/
 signed long
-getFont_font_pngFont(
-   struct font_pngFont *fontSTPtr,
+getFont_font_fontST(
+   struct font_fontST *fontSTPtr,
    void *fontFILE
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun05 TOC:
@@ -241,7 +232,7 @@ getFont_font_pngFont(
    ^   - get the height for the font
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   blank_font_pngFont(fontSTPtr);
+   blank_font_fontST(fontSTPtr);
 
    while(
       ! fontSTPtr->heightSS
@@ -365,7 +356,7 @@ getFont_font_pngFont(
            ++posSI;
            charUC =
               (unsigned char)
-              buffStr[posSI] - def_asciiOffset_pngFont;
+              buffStr[posSI] - def_asciiOffset_fontST;
               /*- 32 to convert space to 0*/
            ++posSI;
         } /*Else: have a character*/
@@ -539,24 +530,24 @@ getFont_font_pngFont(
       return lineSL;
    duplicateChar_fun05_sec04:;
       return -1 * (lineSL + 4);
-} /*getFont_font_pngFont*/
+} /*getFont_font_fontST*/
 
 /*-------------------------------------------------------\
-| Fun06: measureText_font_pngFont
+| Fun06: measureText_font_fontST
 |   - measure how many pixels long a cstring is
 | Input:
 |   - textStr:
 |     o cstring with text to get the length of
 |   - fontSTPtr:
-|     o font_pngFont struct pointer with the font to use
+|     o font_fontST struct pointer with the font to use
 | Output:
 |   - Returns:
 |     o length in pixels of the text
 \-------------------------------------------------------*/
 signed short
-measureText_font_pngFont(
+measureText_font_fontST(
    signed char *textStr,
-   struct font_pngFont *fontSTPtr
+   struct font_fontST *fontSTPtr
 ){
    signed long lenSL = 0;
 
@@ -569,447 +560,14 @@ measureText_font_pngFont(
    } /*Loop: get the length*/
 
    return lenSL;
-} /*measureText_font_pngFont*/
+} /*measureText_font_fontST*/
 
 /*-------------------------------------------------------\
-| Fun07: drawHorzText_font_pngFont
-|   - draw horizontal text to a png
-| Input:
-|   - textStr:
-|     o cstring with a single line of text to draw
-|   - xUS:
-|     o x coordinate in the png (index 0)
-|   - yUS:
-|     o y coordinate in the png (index 0)
-|   - fgColSC:
-|     o index of the forground color to use with the font
-|     o use -1 for no color
-|   - bgColSC:
-|     o index of the background color to use with the font
-|     o use -1 for no color
-|   - fontSTPtr:
-|     o font_pngFont struct pionter to get the new font
-|   - pngSTPtr:
-|     o st_mkPng struct pointer to draw the text to
-| Output:
-|   - Modifies:
-|     o pngSTPtr to have the drawn text
-|   - Returns:
-|     o column (x-axis) ended on (>= 0) for no errors
-|     o -1 if the coordinates were out of bounds
-|     o -2 if textStr has a non-ascii character
-\-------------------------------------------------------*/
-signed int
-drawHorzText_font_pngFont(
-   signed char *textStr,    /*text to draw*/
-   unsigned short xUS,      /*x coordinate*/
-   unsigned short yUS,      /*y coordinate*/
-   signed char fgColSC,     /*index of forground color*/
-   signed char bgColSC,     /*index of background color*/
-   struct font_pngFont *fontSTPtr, /*has the font to use*/
-   struct st_mkPng *pngSTPtr /*has png to draw on*/
-){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun07 TOC:
-   '   - draw text to a png
-   '   o fun07 sec01:
-   '     - variable declarations
-   '   o fun07 sec02:
-   '     - setup the color long and get initial position
-   '   o fun07 Sec03:
-   '     - draw the text
-   '   o fun07 sec04:
-   '     - return the result
-   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun07 Sec01:
-   ^   - variable declarations
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   unsigned char charUC = 0;   /*character to add*/
-   unsigned char pixelsUC = 0; /*has pixels for font*/
-   signed char colSC = 0;
-
-   signed long byteSL = 0;     /*byte adding to*/
-   signed long endRowSL = 0;   /*byte adding to*/
-   signed long nextRowSL = 0;  /*start of the next row*/
-   signed short rowPixSS = 0;
-
-   signed short charByteSS = 0;/*has one byte of pixel*/
-   signed short heightSS = 0;  /*number of rows printed*/
-   signed short pixSS = 0;     /*the pix on in my byte*/
-   signed short widthSS = 0;   /*width of the gap*/
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun07 Sec02:
-   ^   - setup the color long and get initial position
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   if(xUS >= pngSTPtr->widthUS)
-      goto overflowErr_fun07_sec04;
-   if(yUS >= pngSTPtr->heightUS)
-      goto overflowErr_fun07_sec04;
-
-   byteSL = (yUS * pngSTPtr->widthUS) + xUS;
-   nextRowSL = byteSL + pngSTPtr->widthUS;
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun07 Sec03:
-   ^   - draw the text
-   ^   o fun07 sec03 sub01:
-   ^     - draw each character
-   ^   o fun07 sec03 sub02:
-   ^     - draw the gap between characters
-   ^   o fun07 sec03 sub03:
-   ^     - move to the next character
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   /*****************************************************\
-   * Fun07 Sec03 Sub01:
-   *   - draw each character
-   \*****************************************************/
-
-   while(*textStr)
-   { /*Loop: add the text to the png*/
-      if(byteSL >= pngSTPtr->numPixelSL)
-         goto overflowErr_fun07_sec04; /*out of bounds*/
-      else if(*textStr < 32 || *textStr > 126)
-         goto nonAsciiChar_fun07_sec04;
-      rowPixSS = 0;
-
-      charUC =
-         (unsigned char)
-         *textStr - def_asciiOffset_pngFont;
-      ++textStr;
-      endRowSL = 0;
-      pixSS = 0;
-      rowPixSS = 0; /*keep track of pixel on in the row*/
-
-      for(
-         charByteSS = 0;
-         charByteSS < fontSTPtr->lenArySS[charUC];
-         ++charByteSS
-      ){ /*Loop: fill in pixels for the character*/
-         pixelsUC =
-            fontSTPtr->pixAryUC[charUC][charByteSS];
-
-         for(
-            pixSS = 0;
-            pixSS < def_bitsPerChar_64bit;
-            ++pixSS
-         ){ /*Loop: fill each row of the character*/
-            if(rowPixSS >= fontSTPtr->widthArySS[charUC])
-               break;
-
-            addPixels_fun07_sec03_sub01:;
-              if(pixelsUC & 1)
-                 colSC = fgColSC;
-              else
-                 colSC = bgColSC;
-
-              if(colSC >= 0)
-                 pngSTPtr->pixelAryUC[byteSL] = colSC;
-
-              pixelsUC >>= 1;
-              ++byteSL;
-              ++rowPixSS;
-         }  /*Loop: fill each row of the character*/
-
-         /***********************************************\
-         * Fun07 Sec03 Sub02:
-         *   - draw the gap between characters
-         \***********************************************/
-
-         if(! *textStr)
-            ;
-         else if(rowPixSS >=fontSTPtr->widthArySS[charUC])
-         { /*If: need to print the gap*/
-            for(
-               widthSS = 0;
-               widthSS < fontSTPtr->gapSS;
-               ++widthSS
-            ){ /*Loop: add the gap between characters*/
-               if(bgColSC >= 0)
-                  pngSTPtr->pixelAryUC[byteSL] = bgColSC;
-               ++byteSL;
-            }  /*Loop: add the gap between characters*/
-         } /*If: need to print the gap*/
-
-         if(rowPixSS >=fontSTPtr->widthArySS[charUC])
-         { /*If: need to move to the next row*/
-            if(! endRowSL)
-               endRowSL = byteSL;
-            rowPixSS = 0;
-
-            byteSL = nextRowSL;
-            nextRowSL += pngSTPtr->widthUS;
-            ++heightSS;
-         } /*If: need to move to the next row*/
-
-         if(heightSS >= fontSTPtr->heightSS)
-            break; /*done with the character*/
-         else if(nextRowSL > pngSTPtr->numPixelSL)
-            goto overflowErr_fun07_sec04;
-         else if(pixSS < def_bitsPerChar_64bit)
-            goto addPixels_fun07_sec03_sub01;
-            /*the byte still has pixels left*/
-      }  /*Loop: fill in pixels for the character*/
-
-      /**************************************************\
-      * Fun07 Sec03 Sub03:
-      *   - move to the next character
-      \**************************************************/
-
-      if(! *textStr)
-         break; /*done*/
-
-      byteSL = endRowSL;
-      nextRowSL = endRowSL + pngSTPtr->widthUS;
-      heightSS = 0;
-      pixSS = 0;
-
-      if(! *textStr)
-         ;
-      else if(rowPixSS >=fontSTPtr->widthArySS[charUC])
-         goto overflowErr_fun07_sec04;
-   } /*Loop: add the text to the png*/
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun07 Sec04:
-   ^   - return the result
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   yUS = byteSL / pngSTPtr->widthUS;
-      /*get the row on; I am reallying on truncation to
-      `  floor the number
-      */
-   byteSL -= (yUS * pngSTPtr->widthUS);
-      /*get the start of the row on and subtract from the
-      `  position
-      */
-   return byteSL; /*column on (x-axis)*/
-
-   overflowErr_fun07_sec04:;
-      return -1;
-   nonAsciiChar_fun07_sec04:;
-      return -2;
-} /*drawHorzText_font_pngFont*/
-
-/*-------------------------------------------------------\
-| Fun08: drawVertText_font_pngFont
-|   - draw text vertically to a png
-| Input:
-|   - textStr:
-|     o cstring with a single line of text to draw
-|   - xUS:
-|     o x coordinate in the png (index 0)
-|   - yUS:
-|     o y coordinate in the png (index 0)
-|   - fgColSC:
-|     o index of the forground color to use with the font
-|     o use -1 for no color
-|   - bgColSC:
-|     o index of the background color to use with the font
-|     o use -1 for no color
-|   - fontSTPtr:
-|     o font_pngFont struct pionter to get the new font
-|   - pngSTPtr:
-|     o st_mkPng struct pointer to draw the text to
-| Output:
-|   - Modifies:
-|     o pngSTPtr to have the drawn text
-|   - Returns:
-|     o 0 for no errors
-|     o 1 if the coordinates were out of bounds
-|     o 2 if textStr has a non-ascii character
-\-------------------------------------------------------*/
-signed int
-drawVertText_font_pngFont(
-   signed char *textStr,    /*text to draw*/
-   unsigned short xUS,      /*x coordinate*/
-   unsigned short yUS,      /*y coordinate*/
-   signed char fgColSC,     /*index of forground color*/
-   signed char bgColSC,     /*index of background color*/
-   struct font_pngFont *fontSTPtr, /*has the font to use*/
-   struct st_mkPng *pngSTPtr /*has png to draw on*/
-){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun08 TOC:
-   '   - draw text to a png
-   '   o fun08 sec01:
-   '     - variable declarations
-   '   o fun08 sec02:
-   '     - setup the color long and get initial position
-   '   o fun08 sec03:
-   '     - draw the text
-   '   o fun08 sec04:
-   '     - return the result
-   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun08 Sec01:
-   ^   - variable declarations
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   unsigned char charUC = 0;  /*character to add*/
-   unsigned char pixelsUC = 0;/*has pixels to add*/
-   signed char colSC = 0;     /*color to use for a pixel*/
-
-   signed long byteSL = 0;    /*byte adding to*/
-   signed long nextRowSL = 0; /*start of the next row*/
-   signed short rowPixSS = 0;
-      /*last pixel for char in a row*/
-
-   signed short charByteSS = 0;/*has one byte of pixel*/
-   signed short heightSS = 0; /*number of rows printed*/
-   signed short pixSS = 0;    /*the pix on in my byte*/
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun08 Sec02:
-   ^   - setup the color long and get initial position
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   if(xUS >= pngSTPtr->widthUS)
-      goto overflowErr_fun08_sec04;
-   if(yUS >= pngSTPtr->heightUS)
-      goto overflowErr_fun08_sec04;
-
-   byteSL = (yUS * pngSTPtr->widthUS) + xUS;
-   nextRowSL = byteSL + pngSTPtr->widthUS;
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun08 Sec03:
-   ^   - draw the text
-   ^   o fun08 sec03 sub01:
-   ^     - print the character
-   ^   o fun08 sec03 sub02:
-   ^     - print the gap between characters
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   /*****************************************************\
-   * Fun08 Sec03 Sub01:
-   *   - print the character
-   \*****************************************************/
-
-   while(*textStr)
-   { /*Loop: add the text to the png*/
-      if(*textStr < 32 || *textStr > 126)
-         goto nonAsciiChar_fun08_sec04;
-      heightSS = 0;
-
-      charUC =
-         (unsigned char)
-         *textStr - def_asciiOffset_pngFont;
-      ++textStr;
-      rowPixSS = 0; /*keep track of pixel on in the row*/
-      if(nextRowSL >= pngSTPtr->numPixelSL)
-         goto overflowErr_fun08_sec04;
-
-      for(
-         charByteSS = 0;
-         charByteSS < fontSTPtr->lenArySS[charUC];
-         ++charByteSS
-      ){ /*Loop: fill in pixels for the character*/
-         pixelsUC =
-            fontSTPtr->pixAryUC[charUC][charByteSS];
-
-         for(
-            pixSS = 0;
-            pixSS < def_bitsPerChar_64bit;
-            ++pixSS
-         ){ /*Loop: fill each row of the character*/
-            if(rowPixSS >= fontSTPtr->widthArySS[charUC])
-               break;
-
-            addPixels_fun08_sec03_sub01:;
-               if(pixelsUC & 1)
-                  colSC = fgColSC;
-               else
-                  colSC = bgColSC;
-
-               if(colSC >= 0)
-                  pngSTPtr->pixelAryUC[byteSL] = colSC;
-
-               pixelsUC >>= 1;
-               ++byteSL;
-               ++rowPixSS;
-         }  /*Loop: fill each row of the character*/
-
-
-         if(rowPixSS >= fontSTPtr->widthArySS[charUC])
-         { /*If: I need to move to the next line*/
-            rowPixSS = 0;
-            byteSL = nextRowSL;
-            nextRowSL += pngSTPtr->widthUS;
-            ++heightSS;
-
-            if(nextRowSL >= pngSTPtr->numPixelSL)
-               goto overflowErr_fun08_sec04;
-         } /*If: I need to move to the next line*/
-
-         if(heightSS >= fontSTPtr->heightSS)
-            break; /*done with the character*/
-         else if(pixSS < def_bitsPerChar_64bit)
-            goto addPixels_fun08_sec03_sub01;
-            /*this reduces the amount of duplicate code*/
-      }  /*Loop: fill in pixels for the character*/
-
-      /**************************************************\
-      * Fun08 Sec03 Sub02:
-      *   - print the gap between characters
-      \**************************************************/
-
-      if(*textStr)
-      { /*If: need to print the gap*/
-         for(
-            heightSS = 0;
-            heightSS < fontSTPtr->gapSS;
-            ++heightSS
-         ){ /*Loop: add in the gap for vertical text*/
-            for(
-              pixSS = 0;
-              pixSS < fontSTPtr->widthArySS[charUC];
-              ++pixSS
-            ){ /*Loop: add the gap between characters*/
-                if(bgColSC >= 0)
-                   pngSTPtr->pixelAryUC[byteSL] = bgColSC;
-                ++byteSL;
-            }  /*Loop: add the gap between characters*/
-
-            /*I need to keep track of the next row*/
-            byteSL = nextRowSL;
-            nextRowSL += pngSTPtr->widthUS;
-
-            if(! *textStr)
-               ;
-            else if(nextRowSL >= pngSTPtr->numPixelSL)
-               goto overflowErr_fun08_sec04;
-         }  /*Loop: add in the gap for vertical text*/
-      } /*If: need to print the gap*/
-   } /*Loop: add the text to the png*/
-
-   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun08 Sec04:
-   ^   - return the result
-   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
-
-   return byteSL / pngSTPtr->widthUS;
-      /*get the row on; I am reallying on truncation to
-      `  floor the number
-      */
-
-   overflowErr_fun08_sec04:;
-      return -1;
-
-   nonAsciiChar_fun08_sec04:;
-      return -2;
-} /*drawVertText_font_pngFont*/
-
-/*-------------------------------------------------------\
-| Fun09: fontToC_font_pngFont
-|   - convert a font_pngFont to to .c and .h files
+| Fun07: fontToC_font_fontST
+|   - convert a font_fontST to to .c and .h files
 | Input:
 |   - fontSTPtr:
-|     o font_pngFont struct pointer to convert to a .c and
+|     o font_fontST struct pointer to convert to a .c and
 |       .h file
 |   - prefixStr:
 |     o cstring with name of the font file
@@ -1017,6 +575,7 @@ drawVertText_font_pngFont(
 |       * valid characters are letters (a-z, A-Z), numeric
 |         (0-9), or an `_`
 |       * the first character can not be a number
+|       * can include a file path `.` or `/`
 | Output:
 |   - Prints:
 |     o code to auto load the font to a .c and .h file
@@ -1030,55 +589,59 @@ drawVertText_font_pngFont(
 |     o 3 if could not open the .h file
 \-------------------------------------------------------*/
 signed char
-fontToC_font_pngFont(
-   struct font_pngFont *fontSTPtr,
+fontToC_font_fontST(
+   struct font_fontST *fontSTPtr,
    signed char *prefixStr
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun09 TOC:
-   '   - convert pngFont ascii font file to .c & .h files
-   '   o fun09 sec01:
+   ' Fun07 TOC:
+   '   - convert fontST ascii font file to .c & .h files
+   '   o fun07 sec01:
    '     - variable declarations
-   '   o fun09 sec02:
+   '   o fun07 sec02:
    '     - print to the .c file
-   '   o fun09 sec03:
+   '   o fun07 sec03:
    '     - print the main function in the .c file
-   '   o fun09 sec04:
+   '   o fun07 sec04:
    '     - print the .h file
-   '   o fun09 sec05:
+   '   o fun07 sec05:
    '     - return the result
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun09 Sec01:
+   ^ Fun07 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    signed char outStr[1024];
    signed short lenSS = 0;   /*end of output file name*/
+
+   signed char funPrefixStr[128];
+   signed short funPrefixLenSS = 0;
+
    unsigned char charUC = 0; /*character I am on*/
    signed short pixSS = 0;   /*pixel I am on*/
 
    FILE *outFILE = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun09 Sec02:
+   ^ Fun07 Sec02:
    ^   - print to the .c file
-   ^   o fun09 sec02 sub01:
+   ^   o fun07 sec02 sub01:
    ^     - open the .c file
-   ^   o fun09 sec02 sub02:
+   ^   o fun07 sec02 sub02:
    ^     - print the libraries used
-   ^   o fun09 sec02 sub03:
+   ^   o fun07 sec02 sub03:
    ^     - print the header for each character
-   ^   o fun09 sec02 sub04:
+   ^   o fun07 sec02 sub04:
    ^     - print function name and input
-   ^   o fun09 sec02 sub05:
+   ^   o fun07 sec02 sub05:
    ^     - add memory allocation
-   ^   o fun09 sec02 sub06:
+   ^   o fun07 sec02 sub06:
    ^     - add each pixel and end the function
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun09 Sec02 Sub01:
+   * Fun07 Sec02 Sub01:
    *   - open the .c file
    \*****************************************************/
 
@@ -1088,6 +651,8 @@ fontToC_font_pngFont(
    else if(prefixStr[0] >='a' && prefixStr[0] <='z')
       ;
    else if(prefixStr[0] =='_')
+      ;
+   else if(prefixStr[0] =='.')
       ;
    else
       goto badPrefix_fun08_sec05;
@@ -1111,11 +676,27 @@ fontToC_font_pngFont(
       else if(prefixStr[lenSS] =='_')
          outStr[lenSS] = prefixStr[lenSS];
 
+      else if(prefixStr[lenSS] =='.')
+         outStr[lenSS] = prefixStr[lenSS];
+
+      else if(prefixStr[lenSS] =='/')
+         outStr[lenSS] = prefixStr[lenSS];
+         /*user is making a file path*/
+
       else
          goto badPrefix_fun08_sec05;
 
+      if(outStr[lenSS] == '.')
+         funPrefixLenSS = 0;
+      else if(outStr[lenSS] == '/')
+         funPrefixLenSS = 0;
+      else
+         funPrefixStr[funPrefixLenSS++] = outStr[lenSS];
+
       ++lenSS;
    } /*Loop: check for invalid characters*/
+
+   funPrefixStr[funPrefixLenSS] = 0;
 
    outStr[lenSS] = '.';
    outStr[lenSS + 1] = 'c';
@@ -1123,10 +704,10 @@ fontToC_font_pngFont(
 
    outFILE = fopen((char *) outStr, "w");
    if(! outFILE)
-      goto noCFile_fun09_sec05;
+      goto noCFile_fun07_sec05;
  
    /*****************************************************\
-   * Fun09 Sec02 Sub02:
+   * Fun07 Sec02 Sub02:
    *   - print the libraries used
    \*****************************************************/
 
@@ -1137,10 +718,10 @@ fontToC_font_pngFont(
    fprintf(outFILE, "   #include <stdlib.h>\n");
    fprintf(outFILE, "#endif\n\n");
 
-   fprintf(outFILE, "#include \"pngFont.h\"\n\n");
+   fprintf(outFILE, "#include \"fontST.h\"\n\n");
 
    /*these are libraries that are included in the
-   `  pngFont library
+   `  fontST library
    */
    fprintf(
      outFILE,
@@ -1176,13 +757,13 @@ fontToC_font_pngFont(
    fprintf(outFILE, "\n");
 
    /*****************************************************\
-   * Fun09 Sec02 Sub03:
+   * Fun07 Sec02 Sub03:
    *   - print the header for each character
    \*****************************************************/
 
    for(
       charUC = 0;
-      charUC < def_numAsciiChar_pngFont;
+      charUC < def_numAsciiChar_fontST;
       ++charUC
    ){ /*Loop: print functions to print each character*/
       fprintf(
@@ -1194,7 +775,7 @@ fontToC_font_pngFont(
          "` Fun%02i: addAscii%i_%s\n",
          charUC,
          charUC + 32,
-         prefixStr
+         funPrefixStr
       );
       fprintf(
          outFILE,
@@ -1212,7 +793,7 @@ fontToC_font_pngFont(
       );
 
       /**************************************************\
-      * Fun09 Sec02 Sub04:
+      * Fun07 Sec02 Sub04:
       *   - print function name and input
       \**************************************************/
 
@@ -1222,17 +803,17 @@ fontToC_font_pngFont(
          outFILE,
          "addAscii%i_%s(\n",
          charUC + 32,
-         prefixStr
+         funPrefixStr
       );
 
       fprintf(
          outFILE,
-         "   struct font_pngFont *fontSTPtr\n"
+         "   struct font_fontST *fontSTPtr\n"
       );
       fprintf(outFILE, "){\n");
 
       /**************************************************\
-      * Fun09 Sec02 Sub05:
+      * Fun07 Sec02 Sub05:
       *   - add memory allocation
       \**************************************************/
 
@@ -1284,7 +865,7 @@ fontToC_font_pngFont(
       ); /*add thh number bytes used to store the char*/
 
       /**************************************************\
-      * Fun09 Sec02 Sub06:
+      * Fun07 Sec02 Sub06:
       *   - add each pixel and end the function
       \**************************************************/
 
@@ -1307,21 +888,21 @@ fontToC_font_pngFont(
          outFILE,
          "} /*addAscii%i_%s*/\n\n",
          charUC + 32,
-         prefixStr
+         funPrefixStr
       );
    }  /*Loop: print functions to print each character*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun09 Sec03:
+   ^ Fun07 Sec03:
    ^   - print the main function in the .c file
-   ^   o fun09 sec03 sub01:
+   ^   o fun07 sec03 sub01:
    ^     - print the header for the function
-   ^   o fun09 sec03 sub02:
+   ^   o fun07 sec03 sub02:
    ^     - print the function
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun09 Sec03 Sub01:
+   * Fun07 Sec03 Sub01:
    *   - print the header for the function
    \*****************************************************/
 
@@ -1333,16 +914,16 @@ fontToC_font_pngFont(
       outFILE,
       "` Fun%02i: loadFont_%s\n",
       charUC,
-      prefixStr
+      funPrefixStr
    );
    fprintf(
       outFILE,
       "`  - loads the font in %s.c/h to the input\n",
-      prefixStr
+      funPrefixStr
    );
    fprintf(
       outFILE,
-      "`    font_pngFont struct (as pionter)\n"
+      "`    font_fontST struct (as pionter)\n"
    );
    fprintf(
       outFILE,
@@ -1354,15 +935,15 @@ fontToC_font_pngFont(
    );
 
    /*****************************************************\
-   * Fun09 Sec03 Sub02:
+   * Fun07 Sec03 Sub02:
    *   - print the function
    \*****************************************************/
 
    fprintf(outFILE, "signed char\n");
-   fprintf(outFILE, "loadFont_%s(\n", prefixStr);
+   fprintf(outFILE, "loadFont_%s(\n", funPrefixStr);
    fprintf(
       outFILE,
-      "   struct font_pngFont *fontSTPtr\n"
+      "   struct font_fontST *fontSTPtr\n"
    );
    fprintf(outFILE, "){\n");
 
@@ -1380,14 +961,14 @@ fontToC_font_pngFont(
 
    for(
       charUC = 0;
-      charUC < def_numAsciiChar_pngFont;
+      charUC < def_numAsciiChar_fontST;
       ++charUC
    ){ /*Loop: print the user function*/
       fprintf(
          outFILE,
          "   if( addAscii%i_%s(fontSTPtr) )\n",
          charUC + 32,
-         prefixStr
+         funPrefixStr
       ); /*add each character to the function*/
 
       fprintf(
@@ -1397,19 +978,19 @@ fontToC_font_pngFont(
    }  /*Loop: print the user function*/
 
    fprintf(outFILE, "\n   return 0;\n");
-   fprintf(outFILE, "} /*loadFont_%s*/\n", prefixStr);
+   fprintf(outFILE, "} /*loadFont_%s*/\n", funPrefixStr);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun09 Sec04:
+   ^ Fun07 Sec04:
    ^   - print the .h file
-   ^   o fun09 sec04 sub01:
+   ^   o fun07 sec04 sub01:
    ^     - print the header for the .h file
-   ^   o fun09 sec04 sub02:
+   ^   o fun07 sec04 sub02:
    ^     - print the font load function
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun09 Sec04 Sub01:
+   * Fun07 Sec04 Sub01:
    *   - print the header for the .h file
    \*****************************************************/
 
@@ -1422,15 +1003,29 @@ fontToC_font_pngFont(
 
    outFILE = fopen((char *) outStr, "w");
    if(! outFILE)
-      goto noHFile_fun09_sec05;
+      goto noHFile_fun07_sec05;
 
    outStr[lenSS] = 0;
    lenSS = 0;
-   while(outStr[lenSS])
+   pixSS = 0;
+   while(funPrefixStr[pixSS])
    { /*Loop: convert the prefix to uppercase*/
-      if(outStr[lenSS] >= 'a')
-         outStr[lenSS] &= ~32; /*lower case letter*/
-      ++lenSS;
+      if(funPrefixStr[pixSS] >= 'a')
+         outStr[lenSS++] = funPrefixStr[pixSS] & ~32;
+
+      else if(funPrefixStr[pixSS] < 'A')
+         outStr[lenSS++] = funPrefixStr[pixSS];
+
+      else if(funPrefixStr[pixSS] > 'Z')
+         outStr[lenSS++] = funPrefixStr[pixSS];
+
+      else
+      { /*Else: is an uppercase letter*/
+         outStr[lenSS++] = '_';
+         outStr[lenSS++] = funPrefixStr[pixSS];
+      } /*Else: is an uppercase letter*/
+
+      ++pixSS;
    } /*Loop: convert the prefix to uppercase*/
 
 
@@ -1446,10 +1041,10 @@ fontToC_font_pngFont(
       "#define LOAD_THE_%s_FONT_H\n\n",
       outStr
    );
-   fprintf(outFILE, "struct font_pngFont;\n\n");
+   fprintf(outFILE, "struct font_fontST;\n\n");
 
    /*****************************************************\
-   * Fun09 Sec04 Sub02:
+   * Fun07 Sec04 Sub02:
    *   - print the font load function
    \*****************************************************/
 
@@ -1461,16 +1056,16 @@ fontToC_font_pngFont(
       outFILE,
       "` Fun%02i: loadFont_%s\n",
       charUC,
-      prefixStr
+      funPrefixStr
    );
    fprintf(
       outFILE,
       "`  - loads the font in %s.c/h to the input\n",
-      prefixStr
+      funPrefixStr
    );
    fprintf(
       outFILE,
-      "`    font_pngFont struct (as pionter)\n"
+      "`    font_fontST struct (as pionter)\n"
    );
    fprintf(
       outFILE,
@@ -1482,10 +1077,10 @@ fontToC_font_pngFont(
    );
 
    fprintf(outFILE, "signed char\n");
-   fprintf(outFILE, "loadFont_%s(\n", prefixStr);
+   fprintf(outFILE, "loadFont_%s(\n", funPrefixStr);
    fprintf(
       outFILE,
-      "   struct font_pngFont *fontSTPtr\n"
+      "   struct font_fontST *fontSTPtr\n"
    );
    fprintf(outFILE, ");\n\n");
    fprintf(outFILE, "#endif\n");
@@ -1495,29 +1090,188 @@ fontToC_font_pngFont(
    outFILE = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun09 Sec05:
+   ^ Fun07 Sec05:
    ^   - return the result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    lenSS = 0;
-   goto ret_fun09_sec05;
+   goto ret_fun07_sec05;
 
    badPrefix_fun08_sec05:;
       lenSS = 1;
-      goto ret_fun09_sec05;
+      goto ret_fun07_sec05;
 
-   noCFile_fun09_sec05:;
+   noCFile_fun07_sec05:;
       lenSS = 2;
-      goto ret_fun09_sec05;
+      goto ret_fun07_sec05;
 
-   noHFile_fun09_sec05:;
+   noHFile_fun07_sec05:;
       lenSS = 3;
-      goto ret_fun09_sec05;
+      goto ret_fun07_sec05;
 
-   ret_fun09_sec05:;
+   ret_fun07_sec05:;
       if(outFILE)
          fclose(outFILE);
       outFILE = 0;
 
       return (signed char) lenSS;
-} /*fontToC_font_pngFont*/
+} /*fontToC_font_fontST*/
+
+/*=======================================================\
+: License:
+: 
+: Creative Commons Legal Code
+: 
+: CC0 1.0 Universal
+: 
+:     CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND
+:     DOES NOT PROVIDE LEGAL SERVICES. DISTRIBUTION OF
+:     THIS DOCUMENT DOES NOT CREATE AN ATTORNEY-CLIENT
+:     RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS
+:     INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS
+:     MAKES NO WARRANTIES REGARDING THE USE OF THIS
+:     DOCUMENT OR THE INFORMATION OR WORKS PROVIDED
+:     HEREUNDER, AND DISCLAIMS LIABILITY FOR DAMAGES
+:     RESULTING FROM THE USE OF THIS DOCUMENT OR THE
+:     INFORMATION OR WORKS PROVIDED HEREUNDER.
+: 
+: Statement of Purpose
+: 
+: The laws of most jurisdictions throughout the world
+: automatically confer exclusive Copyright and Related
+: Rights (defined below) upon the creator and subsequent
+: owner(s) (each and all, an "owner") of an original work
+: of authorship and/or a database (each, a "Work").
+: 
+: Certain owners wish to permanently relinquish those
+: rights to a Work for the purpose of contributing to a
+: commons of creative, cultural and scientific works
+: ("Commons") that the public can reliably and without
+: fear of later claims of infringement build upon, modify,
+: incorporate in other works, reuse and redistribute as
+: freely as possible in any form whatsoever and for any
+: purposes, including without limitation commercial
+: purposes. These owners may contribute to the Commons to
+: promote the ideal of a free culture and the further
+: production of creative, cultural and scientific works,
+: or to gain reputation or greater distribution for their
+: Work in part through the use and efforts of others.
+: 
+: For these and/or other purposes and motivations, and
+: without any expectation of additional consideration or
+: compensation, the person associating CC0 with a Work
+: (the "Affirmer"), to the extent that he or she is an
+: owner of Copyright and Related Rights in the Work,
+: voluntarily elects to apply CC0 to the Work and publicly
+: distribute the Work under its terms, with knowledge of
+: his or her Copyright and Related Rights in the Work and
+: the meaning and intended legal effect of CC0 on those
+: rights.
+: 
+: 1. Copyright and Related Rights. A Work made available
+:    under CC0 may be protected by copyright and related
+:    or neighboring rights ("Copyright and Related
+:    Rights"). Copyright and Related Rights include, but
+:    are not limited to, the following:
+: 
+:   i. the right to reproduce, adapt, distribute, perform,
+:      display, communicate, and translate a Work;
+:  ii. moral rights retained by the original author(s)
+:      and/or performer(s);
+: iii. publicity and privacy rights pertaining to a
+:      person's image or likeness depicted in a Work;
+:  iv. rights protecting against unfair competition in
+:      regards to a Work, subject to the limitations in
+:      paragraph 4(a), below;
+:   v. rights protecting the extraction, dissemination,
+:      use and reuse of data in a Work;
+:  vi. database rights (such as those arising under
+:      Directive 96/9/EC of the European Parliament and of
+:      the Council of 11 March 1996 on the legal
+:      protection of databases, and under any national
+:      implementation thereof, including any amended or
+:      successor version of such directive); and
+: vii. other similar, equivalent or corresponding rights
+:      throughout the world based on applicable law or
+:      treaty, and any national implementations thereof.
+: 
+: 2. Waiver. To the greatest extent permitted by, but not
+:    in contravention of, applicable law, Affirmer hereby
+:    overtly, fully, permanently, irrevocably and
+:    unconditionally waives, abandons, and surrenders all
+:    of Affirmer's Copyright and Related Rights and
+:    associated claims and causes of action, whether now
+:    known or unknown (including existing as well as
+:    future claims and causes of action), in the Work (i)
+:    in all territories worldwide, (ii) for the maximum
+:    duration provided by applicable law or treaty
+:    (including future time extensions), (iii) in any
+:    current or future medium and for any number of
+:    copies, and (iv) for any purpose whatsoever,
+:    including without limitation commercial, advertising
+:    or promotional purposes (the "Waiver"). Affirmer
+:    makes the Waiver for the benefit of each member of
+:    the public at large and to the detriment of
+:    Affirmer's heirs and successors, fully intending that
+:    such Waiver shall not be subject to revocation,
+:    rescission, cancellation, termination, or any other
+:    legal or equitable action to disrupt the quiet
+:    enjoyment of the Work by the public as contemplated
+:    by Affirmer's express Statement of Purpose.
+: 
+: 3. Public License Fallback. Should any part of the
+:    Waiver for any reason be judged legally invalid or
+:    ineffective under applicable law, then the Waiver
+:    shall be preserved to the maximum extent permitted
+:    taking into account Affirmer's express Statement of
+:    Purpose. In addition, to the extent the Waiver is so
+:    judged Affirmer hereby grants to each affected person
+:    a royalty-free, non transferable, non sublicensable,
+:    non exclusive, irrevocable and unconditional license
+:    to exercise Affirmer's Copyright and Related Rights
+:    in the Work (i) in all territories worldwide, (ii)
+:    for the maximum duration provided by applicable law
+:    or treaty (including future time extensions), (iii)
+:    in any current or future medium and for any number of
+:    copies, and (iv) for any purpose whatsoever,
+:    including without limitation commercial, advertising
+:    or promotional purposes (the "License"). The License
+:    shall be deemed effective as of the date CC0 was
+:    applied by Affirmer to the Work. Should any part of
+:    the License for any reason be judged legally invalid
+:    or ineffective under applicable law, such partial
+:    invalidity or ineffectiveness shall not invalidate
+:    the remainder of the License, and in such case
+:    Affirmer hereby affirms that he or she will not (i)
+:    exercise any of his or her remaining Copyright and
+:    Related Rights in the Work or (ii) assert any
+:    associated claims and causes of action with respect
+:    to the Work, in either case contrary to Affirmer's
+:    express Statement of Purpose.
+: 
+: 4. Limitations and Disclaimers.
+: 
+:  a. No trademark or patent rights held by Affirmer are
+:     waived, abandoned, surrendered, licensed or
+:     otherwise affected by this document.
+:  b. Affirmer offers the Work as-is and makes no
+:     representations or warranties of any kind concerning
+:     the Work, express, implied, statutory or otherwise,
+:     including without limitation warranties of title,
+:     merchantability, fitness for a particular purpose,
+:     non infringement, or the absence of latent or other
+:     defects, accuracy, or the present or absence of
+:     errors, whether or not discoverable, all to the
+:     greatest extent permissible under applicable law.
+:  c. Affirmer disclaims responsibility for clearing
+:     rights of other persons that may apply to the Work
+:     or any use thereof, including without limitation any
+:     person's Copyright and Related Rights in the Work.
+:     Further, Affirmer disclaims responsibility for
+:     obtaining any necessary consents, permissions or
+:     other rights required for any use of the Work.
+:  d. Affirmer understands and acknowledges that Creative
+:     Commons is not a party to this document and has no
+:     duty or obligation with respect to this CC0 or use
+:     of the Work.
+\=======================================================*/
