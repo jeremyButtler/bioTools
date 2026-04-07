@@ -2,6 +2,10 @@
 
 Has a list of updates I have tracked for bioTools
 
+-2026-03-07:
+  - separated the font from the png drawing
+  - created a smaller font
+  - slowly updating to cc0 liences
 -2026-03-06:
   - fixed some bugs in seqStats were multi fastq file
     support would not work and added in individual stats
