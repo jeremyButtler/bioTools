@@ -11,22 +11,23 @@
 #endif
 
 #include <stdio.h>
-#include "../pngFont.h"
+#include "../../genFont/fontST.h"
 
 int
 main(
    void
 ){
    signed long errSL = 0;
-   struct font_pngFont fontStackST;
-   FILE *fontFILE = fopen("../asciifont.txt", "r");
+   struct font_fontST fontStackST;
+   FILE *fontFILE =
+      fopen("../../genFont/asciiNormalFont.txt", "r");
 
-   init_font_pngFont(&fontStackST);
+   init_font_fontST(&fontStackST);
    if(! fontFILE)
       goto err_main;
 
 
-   errSL = getFont_font_pngFont(&fontStackST, fontFILE);
+   errSL = getFont_font_fontST(&fontStackST, fontFILE);
 
    if(! errSL)
       ;
@@ -67,7 +68,7 @@ main(
       goto ret_main;
 
    ret_main:;
-      freeStack_font_pngFont(&fontStackST);
+      freeStack_font_fontST(&fontStackST);
 
       if(fontFILE)
          fclose(fontFILE);

@@ -9,8 +9,12 @@
 '   o fun02: addBar_pngDraw
 '     - adds a bar (vertical or hoziontal line) to a png
 '       (in st_mkPng struct)
+'   o fun03: drawHorizText_pngDraw
+'     - draw horizontal text to a png
+'   o fun04: drawVertText_pngDraw
+'     - draw text vertically to a png
 '   o license:
-'     - licensing for this code (public domain / mit)
+'     - licensing for this code (CC0)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*-------------------------------------------------------\
@@ -20,10 +24,15 @@
 
 #ifdef PLAN9
    #include <u.h>
+   #include <libc.h>
+#else
+   #include <stdlib.h>
 #endif
 
 #include "pngDraw.h"
+
 #include "../genLib/endin.h"
+#include "../genFont/fontST.h"
 #include "mkPng.h"
 
 /*.h files only*/
@@ -31,8 +40,9 @@
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 ! Hidden Libraries:
-!   - std #include <stdlib.h> or for plan9 <libc.h>
 !   - std #include <stdio.h.h>
+!   - .c  #include "../genLib/base10str.h"
+!   - .c  #include "../genLib/ulCp.h"
 !   - .c  #include "../genLib/checkSum.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -78,7 +88,6 @@ addPixel_pngDraw(
       return def_overflow_pngDraw;
 }  /*addPixel_pngDraw*/
 
-#ifndef ULONG_MODE
 /*-------------------------------------------------------\
 | Fun02: addBar_pngDraw
 |   - adds a bar to a st_mkPng image
@@ -139,358 +148,594 @@ addBar_pngDraw(
       return def_overflow_pngDraw;
 } /*addBar_pngDraw*/
 
-/*I never got this to work correctly, but was supposed to
-`  use longs like SIMD to save time
-*/
-#else
 /*-------------------------------------------------------\
-| Fun02: addBar_pngDraw
-|   - adds a bar to a st_mkPng image
+| Fun03: drawHorizText_pngDraw
+|   - draw horizontal text to a png
 | Input:
+|   - textStr:
+|     o cstring with a single line of text to draw
+|   - xUS:
+|     o x coordinate in the png (index 0)
+|   - yUS:
+|     o y coordinate in the png (index 0)
+|   - fgColSC:
+|     o index of the forground color to use with the font
+|     o use -1 for no color
+|   - bgColSC:
+|     o index of the background color to use with the font
+|     o use -1 for no color
+|   - fontSTPtr:
+|     o font_fontST struct pionter to get the new font
 |   - pngSTPtr:
-|     o pointer to st_mkPng struct to add bar to
-|   - xSL:
-|     o x coordinate of left conner; start of bar; index 0
-|   - ySL:
-|     o y coordiante of bottom of bar (index 0)
-|   - widthSL:
-|     o width in pixels of bar
-|   - heightSL:
-|     o heigth in pixels of bar
-|   - colUC:
-|     o index of color in pallete to assign
+|     o st_mkPng struct pointer to draw the text to
 | Output:
 |   - Modifies:
-|     o pixelAryUC in pngSTPtr to have bar
+|     o pngSTPtr to have the drawn text
 |   - Returns:
-|     o 0 for no errors
-|     o def_overflow_pngDraw if went out of bounds
-| Note:
-|   o the minimum width is at least one byte worth,
-|     otherwise, do single pixel modifications
-|     with addPixel_pngDraw
+|     o column (x-axis) ended on (>= 0) for no errors
+|     o -1 if the coordinates were out of bounds
+|     o -2 if textStr has a non-ascii character
 \-------------------------------------------------------*/
-signed char
-addBar_pngDraw(
-   struct st_mkPng *pngSTPtr, /*add bar to png*/
-   signed long xSL,           /*x coordinate (pixels)*/
-   signed long ySL,           /*y coordiante (pixels)*/
-   signed long widthSL,       /*pixels wide of bar*/
-   signed long heightSL,      /*pixels high of bar*/
-   signed char colUC          /*color of bar*/
+signed int
+drawHorizText_pngDraw(
+   signed char *textStr,    /*text to draw*/
+   unsigned short xUS,      /*x coordinate*/
+   unsigned short yUS,      /*y coordinate*/
+   signed char fgColSC,     /*index of forground color*/
+   signed char bgColSC,     /*index of background color*/
+   struct font_fontST *fontSTPtr, /*has the font to use*/
+   struct st_mkPng *pngSTPtr /*has png to draw on*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun02 addBar_pngDraw
-   '   - adds a bar to a st_mkPng image
-   '   o fun02 sec01:
+   ' Fun03 TOC:
+   '   - draw text to a png
+   '   o fun03 sec01:
    '     - variable declarations
-   '   o fun02 sec02:
-   '     - setup + create color stamp
-   '   o fun02 sec03:
-   '     - make bar
-   '   o fun02 sec04:
-   '     - return result
+   '   o fun03 sec02:
+   '     - setup the color long and get initial position
+   '   o fun03 Sec03:
+   '     - draw the text
+   '   o fun03 sec04:
+   '     - return the result
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun02 Sec01:
+   ^ Fun03 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   ul_64bit maskStartUL = 0;/*mask to clear start*/
-   ul_64bit colStartUL = 0; /*color stamp for mask start*/
+   unsigned char charUC = 0;   /*character to add*/
+   unsigned char pixelsUC = 0; /*has pixels for font*/
+   signed char colSC = 0;
 
-   ul_64bit maskEndUL = 0;  /*ending mask to clear bits*/
-   ul_64bit colEndUL = 0;   /*color stamp for mask end*/
+   signed long byteSL = 0;     /*byte adding to*/
+   signed long endRowSL = 0;   /*byte adding to*/
+   signed long nextRowSL = 0;  /*start of the next row*/
+   signed short rowPixSS = 0;
 
-   ul_64bit colByteUL = 0;  /*byte full of color*/
-   ul_64bit *pixAryUL = (ul_64bit *) pngSTPtr->pixelAryUC;
-     /*pixel array as long*/
-
-   signed long startSL = 0;    /*start of bar on row*/
-   signed long endSL = 0;      /*start of bar on row*/
-   signed long cpIndexSL = 0;  /*index copying at*/
-   signed long lenRowSL = 0;   /*length of one row*/
-
-
-   unsigned char bitUC = 0;    /*for building mask*/
-   unsigned char *swapStartUCPtr = 0;
-   unsigned char *swapEndUCPtr = 0;
+   signed short charByteSS = 0;/*has one byte of pixel*/
+   signed short heightSS = 0;  /*number of rows printed*/
+   signed short pixSS = 0;     /*the pix on in my byte*/
+   signed short widthSS = 0;   /*width of the gap*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun02 Sec02:
-   ^   - setup + create color stamp
-   ^   o fun02 sec02 sub01:
-   ^     - check if have overflow and find row length
-   ^   o fun02 sec02 sub02:
-   ^     - find start, end, and setup masks
-   ^   o fun02 sec02 sub03:
-   ^     - setup color stamps
+   ^ Fun03 Sec02:
+   ^   - setup the color long and get initial position
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(xUS >= pngSTPtr->widthUS)
+      goto overflowErr_fun03_sec04;
+   if(yUS >= pngSTPtr->heightUS)
+      goto overflowErr_fun03_sec04;
+
+   byteSL = (yUS * pngSTPtr->widthUS) + xUS;
+   nextRowSL = byteSL + pngSTPtr->widthUS;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec03:
+   ^   - draw the text
+   ^   o fun03 sec03 sub01:
+   ^     - draw each character
+   ^   o fun03 sec03 sub02:
+   ^     - draw the gap between characters
+   ^   o fun03 sec03 sub03:
+   ^     - move to the next character
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun02 Sec02 Sub01:
-   *   - check if have overflow and find row length
+   * Fun03 Sec03 Sub01:
+   *   - draw each character
    \*****************************************************/
 
-   if(widthSL + xSL >= (signed int) pngSTPtr->widthUS)
-      goto overflow_fun02;
-   if(heightSL + ySL >= (signed int) pngSTPtr->heightUS)
-      goto overflow_fun02;
+   while(*textStr)
+   { /*Loop: add the text to the png*/
+      if(byteSL >= pngSTPtr->numPixelSL)
+         goto overflowErr_fun03_sec04; /*out of bounds*/
+      else if(*textStr < 32 || *textStr > 126)
+         goto nonAsciiChar_fun03_sec04;
+      rowPixSS = 0;
 
-   /*this is safe because setup enforces that width must
-   `   be a multiple of bits per byte
-   */
-   lenRowSL = bytesToNumUL_64bit(pngSTPtr->widthUS) - 1;
-      /*get number of longs in a row*/
+      charUC =
+         (unsigned char)
+         *textStr - def_asciiOffset_fontST;
+      ++textStr;
+      endRowSL = 0;
+      pixSS = 0;
+      rowPixSS = 0; /*keep track of pixel on in the row*/
 
-   /*****************************************************\
-   * Fun02 Sec02 Sub02:
-   *   - find start, end, and setup masks
-   \*****************************************************/
+      for(
+         charByteSS = 0;
+         charByteSS < fontSTPtr->lenArySS[charUC];
+         ++charByteSS
+      ){ /*Loop: fill in pixels for the character*/
+         pixelsUC =
+            fontSTPtr->pixAryUC[charUC][charByteSS];
 
-   startSL = xSL;
-   endSL = startSL + widthSL - 1;
+         for(
+            pixSS = 0;
+            pixSS < def_bitsPerChar_64bit;
+            ++pixSS
+         ){ /*Loop: fill each row of the character*/
+            if(rowPixSS >= fontSTPtr->widthArySS[charUC])
+               break;
 
-   /*_________________build_start_mask__________________*/
-   maskStartUL = xSL & def_modUL_64bit;
-      /*find number of pixels not changing at start*/
+            addPixels_fun03_sec03_sub01:;
+              if(pixelsUC & 1)
+                 colSC = fgColSC;
+              else
+                 colSC = bgColSC;
 
-   if((unsigned long) widthSL < maskStartUL)
-   { /*If: the starting long can hold all bits*/
-      maskStartUL = widthSL;
-      if(maskStartUL)
-         maskStartUL = ((ul_64bit) -1)>>(maskStartUL <<3);
-      maskStartUL = ulToLittle_endin(maskStartUL);
+              if(colSC >= 0)
+                 pngSTPtr->pixelAryUC[byteSL] = colSC;
 
-      startSL = byteLenToFullULLen_64bit(startSL);
-      endSL = startSL;
-      goto moveToFirstPixel_fun02_sec02_sub02;
-   } /*If: the starting long can hold all bits*/
+              pixelsUC >>= 1;
+              ++byteSL;
+              ++rowPixSS;
+         }  /*Loop: fill each row of the character*/
 
-   if(maskStartUL)
-      maskStartUL = ((ul_64bit) -1) >> (maskStartUL << 3);
-      /*shifts out the bytes to change, sets bytes not to
-      `   change to 0xff and bytes to change to 0x00
-      */
-      /*I need the if to handel the 0 case always messing
-      `  up
-      */
-   maskStartUL = ulToLittle_endin(maskStartUL);
-      /*make sure is in little endin format*/
+         /***********************************************\
+         * Fun03 Sec03 Sub02:
+         *   - draw the gap between characters
+         \***********************************************/
 
-   /*_________________build_end_mask____________________*/
-   maskEndUL =
-      ((xSL + widthSL) % def_bytesInUL_64bit);
-      /*gives number of extra pixels at end*/
-   if(maskEndUL)
-      maskEndUL = ((ul_64bit) -1) >> (maskEndUL << 3);
-      /*shifts out the bytes to change, setting sets bytes
-      `  not to change to 0xff and bytes to change to 0x00
-      */
-      /*I need the if to handel the 0 case always messing
-      `  up
-      */
-   maskEndUL = ulToLittle_endin(maskEndUL);
-      /*make sure is in little endin format*/
+         if(! *textStr)
+            ;
+         else if(rowPixSS >=fontSTPtr->widthArySS[charUC])
+         { /*If: need to print the gap*/
+            for(
+               widthSS = 0;
+               widthSS < fontSTPtr->gapSS;
+               ++widthSS
+            ){ /*Loop: add the gap between characters*/
+               if(bgColSC >= 0)
+                  pngSTPtr->pixelAryUC[byteSL] = bgColSC;
+               ++byteSL;
+            }  /*Loop: add the gap between characters*/
+         } /*If: need to print the gap*/
 
-   /*_________________find_positions____________________*/
-   /*convert start and end to bytes*/
-   startSL = byteLenToFullULLen_64bit(startSL);
-   endSL = bytesToNumUL_64bit(endSL) - 1;
+         if(rowPixSS >=fontSTPtr->widthArySS[charUC])
+         { /*If: need to move to the next row*/
+            if(! endRowSL)
+               endRowSL = byteSL;
+            rowPixSS = 0;
 
-   /*move to first pixel to change position*/
-   moveToFirstPixel_fun02_sec02_sub02:;
-      pixAryUL += ySL * lenRowSL;
+            byteSL = nextRowSL;
+            nextRowSL += pngSTPtr->widthUS;
+            ++heightSS;
+         } /*If: need to move to the next row*/
 
-   /*****************************************************\
-   * Fun02 Sec02 Sub03:
-   *   - setup color stamps
-   \*****************************************************/
+         if(heightSS >= fontSTPtr->heightSS)
+            break; /*done with the character*/
+         else if(nextRowSL > pngSTPtr->numPixelSL)
+            goto overflowErr_fun03_sec04;
+         else if(pixSS < def_bitsPerChar_64bit)
+            goto addPixels_fun03_sec03_sub01;
+            /*the byte still has pixels left*/
+      }  /*Loop: fill in pixels for the character*/
 
-   for(
-      bitUC = 0;
-      bitUC < def_bitsInUL_64bit;
-      bitUC += def_bitsPerChar_64bit
-   ){ /*Loop: build color long*/
-      colByteUL |= (((ul_64bit) colUC) << bitUC);
-   }  /*Loop: build color long*/
+      /**************************************************\
+      * Fun03 Sec03 Sub03:
+      *   - move to the next character
+      \**************************************************/
 
-   swapStartUCPtr = (unsigned char *) &maskStartUL;
-   swapEndUCPtr = (unsigned char *) &maskEndUL;
+      if(! *textStr)
+         break; /*done*/
 
-   for(bitUC=0; bitUC < def_bytesInUL_64bit>>1;++bitUC)
-   { /*Loop: invert masks*/
-      swapStartUCPtr[bitUC] ^=
-         swapStartUCPtr[def_bytesInUL_64bit - bitUC-1];
-      swapStartUCPtr[def_bytesInUL_64bit - bitUC-1] ^=
-         swapStartUCPtr[bitUC];
-      swapStartUCPtr[bitUC] ^=
-         swapStartUCPtr[def_bytesInUL_64bit - bitUC-1];
+      byteSL = endRowSL;
+      nextRowSL = endRowSL + pngSTPtr->widthUS;
+      heightSS = 0;
+      pixSS = 0;
 
-      swapEndUCPtr[bitUC] ^=
-         swapEndUCPtr[def_bytesInUL_64bit - bitUC - 1];
-      swapEndUCPtr[def_bytesInUL_64bit - bitUC - 1] ^=
-         swapEndUCPtr[bitUC];
-      swapEndUCPtr[bitUC] ^=
-         swapEndUCPtr[def_bytesInUL_64bit - bitUC - 1];
-   } /*Loop: invert masks*/
-
-   colStartUL = colByteUL & ~maskStartUL;
-   colEndUL = colByteUL & ~maskEndUL;
-   maskStartUL = maskStartUL;
-   maskEndUL = maskEndUL;
+      if(! *textStr)
+         ;
+      else if(rowPixSS >=fontSTPtr->widthArySS[charUC])
+         goto overflowErr_fun03_sec04;
+   } /*Loop: add the text to the png*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun02 Sec03:
-   ^   - make bar
-   ^   o fun02 sec03 sub01:
-   ^     - one limb coloring
-   ^   o fun02 sec03 sub02:
-   ^     - two limb coloring
-   ^   o fun02 sec03 sub03:
-   ^     - three or more limb coloring
+   ^ Fun03 Sec04:
+   ^   - return the result
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   yUS = byteSL / pngSTPtr->widthUS;
+      /*get the row on; I am reallying on truncation to
+      `  floor the number
+      */
+   byteSL -= (yUS * pngSTPtr->widthUS);
+      /*get the start of the row on and subtract from the
+      `  position
+      */
+   return byteSL; /*column on (x-axis)*/
+
+   overflowErr_fun03_sec04:;
+      return -1;
+   nonAsciiChar_fun03_sec04:;
+      return -2;
+} /*drawHorizText_pngDraw*/
+
+/*-------------------------------------------------------\
+| Fun04: drawVertText_pngDraw
+|   - draw text vertically to a png
+| Input:
+|   - textStr:
+|     o cstring with a single line of text to draw
+|   - xUS:
+|     o x coordinate in the png (index 0)
+|   - yUS:
+|     o y coordinate in the png (index 0)
+|   - fgColSC:
+|     o index of the forground color to use with the font
+|     o use -1 for no color
+|   - bgColSC:
+|     o index of the background color to use with the font
+|     o use -1 for no color
+|   - fontSTPtr:
+|     o font_fontST struct pionter to get the new font
+|   - pngSTPtr:
+|     o st_mkPng struct pointer to draw the text to
+| Output:
+|   - Modifies:
+|     o pngSTPtr to have the drawn text
+|   - Returns:
+|     o 0 for no errors
+|     o 1 if the coordinates were out of bounds
+|     o 2 if textStr has a non-ascii character
+\-------------------------------------------------------*/
+signed int
+drawVertText_pngDraw(
+   signed char *textStr,    /*text to draw*/
+   unsigned short xUS,      /*x coordinate*/
+   unsigned short yUS,      /*y coordinate*/
+   signed char fgColSC,     /*index of forground color*/
+   signed char bgColSC,     /*index of background color*/
+   struct font_fontST *fontSTPtr, /*has the font to use*/
+   struct st_mkPng *pngSTPtr /*has png to draw on*/
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun04 TOC:
+   '   - draw text to a png
+   '   o fun04 sec01:
+   '     - variable declarations
+   '   o fun04 sec02:
+   '     - setup the color long and get initial position
+   '   o fun04 sec03:
+   '     - draw the text
+   '   o fun04 sec04:
+   '     - return the result
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun04 Sec01:
+   ^   - variable declarations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   unsigned char charUC = 0;  /*character to add*/
+   unsigned char pixelsUC = 0;/*has pixels to add*/
+   signed char colSC = 0;     /*color to use for a pixel*/
+
+   signed long byteSL = 0;    /*byte adding to*/
+   signed long nextRowSL = 0; /*start of the next row*/
+   signed short rowPixSS = 0;
+      /*last pixel for char in a row*/
+
+   signed short charByteSS = 0;/*has one byte of pixel*/
+   signed short heightSS = 0; /*number of rows printed*/
+   signed short pixSS = 0;    /*the pix on in my byte*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun04 Sec02:
+   ^   - setup the color long and get initial position
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(xUS >= pngSTPtr->widthUS)
+      goto overflowErr_fun04_sec04;
+   if(yUS >= pngSTPtr->heightUS)
+      goto overflowErr_fun04_sec04;
+
+   byteSL = (yUS * pngSTPtr->widthUS) + xUS;
+   nextRowSL = byteSL + pngSTPtr->widthUS;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun04 Sec03:
+   ^   - draw the text
+   ^   o fun04 sec03 sub01:
+   ^     - print the character
+   ^   o fun04 sec03 sub02:
+   ^     - print the gap between characters
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-	* Fun02 Sec03 Sub01:
-   *   - one limb coloring
+   * Fun04 Sec03 Sub01:
+   *   - print the character
    \*****************************************************/
 
-   if(startSL == endSL)
-   { /*If: only coloring one limb*/
+   while(*textStr)
+   { /*Loop: add the text to the png*/
+      if(*textStr < 32 || *textStr > 126)
+         goto nonAsciiChar_fun04_sec04;
+      heightSS = 0;
 
-      for(xSL = ySL; xSL < heightSL + ySL; ++xSL)
-      { /*Loop: apply color*/
-         pixAryUL[startSL] &= maskStartUL;
-         pixAryUL[startSL] |= colStartUL;
+      charUC =
+         (unsigned char)
+         *textStr - def_asciiOffset_fontST;
+      ++textStr;
+      rowPixSS = 0; /*keep track of pixel on in the row*/
+      if(nextRowSL >= pngSTPtr->numPixelSL)
+         goto overflowErr_fun04_sec04;
 
-         pixAryUL += lenRowSL;
-      }  /*Loop: apply color*/
-   } /*If: only coloring one limb*/
+      for(
+         charByteSS = 0;
+         charByteSS < fontSTPtr->lenArySS[charUC];
+         ++charByteSS
+      ){ /*Loop: fill in pixels for the character*/
+         pixelsUC =
+            fontSTPtr->pixAryUC[charUC][charByteSS];
 
-   /*****************************************************\
-	* Fun02 Sec03 Sub02:
-   *   - two limb coloring
-   \*****************************************************/
+         for(
+            pixSS = 0;
+            pixSS < def_bitsPerChar_64bit;
+            ++pixSS
+         ){ /*Loop: fill each row of the character*/
+            if(rowPixSS >= fontSTPtr->widthArySS[charUC])
+               break;
 
-   else if((startSL + 1) == endSL)
-   { /*Else If: only coloring two limbs*/
+            addPixels_fun04_sec03_sub01:;
+               if(pixelsUC & 1)
+                  colSC = fgColSC;
+               else
+                  colSC = bgColSC;
 
-      for(xSL = ySL; xSL < heightSL + ySL; ++xSL)
-      { /*Loop: apply color*/
-         pixAryUL[startSL] &= maskStartUL;
-         pixAryUL[startSL] |= colStartUL;
+               if(colSC >= 0)
+                  pngSTPtr->pixelAryUC[byteSL] = colSC;
 
-         pixAryUL[endSL] &= maskEndUL;
-         pixAryUL[endSL] |= colEndUL;
+               pixelsUC >>= 1;
+               ++byteSL;
+               ++rowPixSS;
+         }  /*Loop: fill each row of the character*/
 
-         pixAryUL += lenRowSL;
-      }  /*Loop: apply color*/
-   } /*Else If: only coloring two limbs*/
 
-   /*****************************************************\
-   * Fun02 Sec03 Sub03:
-   *   - three or more limb coloring
-   \*****************************************************/
+         if(rowPixSS >= fontSTPtr->widthArySS[charUC])
+         { /*If: I need to move to the next line*/
+            rowPixSS = 0;
+            byteSL = nextRowSL;
+            nextRowSL += pngSTPtr->widthUS;
+            ++heightSS;
 
-   else
-   { /*Else If: coloring three or more limbs*/
+            if(nextRowSL >= pngSTPtr->numPixelSL)
+               goto overflowErr_fun04_sec04;
+         } /*If: I need to move to the next line*/
 
-      for(xSL = ySL; xSL < heightSL + ySL; ++xSL)
-      { /*Loop: apply color*/
-         pixAryUL[startSL] &= maskStartUL;
-         pixAryUL[startSL] |= colStartUL;
+         if(heightSS >= fontSTPtr->heightSS)
+            break; /*done with the character*/
+         else if(pixSS < def_bitsPerChar_64bit)
+            goto addPixels_fun04_sec03_sub01;
+            /*this reduces the amount of duplicate code*/
+      }  /*Loop: fill in pixels for the character*/
 
-         cpIndexSL = startSL;
-         while(cpIndexSL < endSL)
-            pixAryUL[cpIndexSL++] = colByteUL;
+      /**************************************************\
+      * Fun04 Sec03 Sub02:
+      *   - print the gap between characters
+      \**************************************************/
 
-         pixAryUL[endSL] &= maskEndUL;
-         pixAryUL[endSL] |= colEndUL;
+      if(*textStr)
+      { /*If: need to print the gap*/
+         for(
+            heightSS = 0;
+            heightSS < fontSTPtr->gapSS;
+            ++heightSS
+         ){ /*Loop: add in the gap for vertical text*/
+            for(
+              pixSS = 0;
+              pixSS < fontSTPtr->widthArySS[charUC];
+              ++pixSS
+            ){ /*Loop: add the gap between characters*/
+                if(bgColSC >= 0)
+                   pngSTPtr->pixelAryUC[byteSL] = bgColSC;
+                ++byteSL;
+            }  /*Loop: add the gap between characters*/
 
-         pixAryUL += lenRowSL;
-      }  /*Loop: apply color*/
-   } /*Else If: coloring three or more  limbs*/
+            /*I need to keep track of the next row*/
+            byteSL = nextRowSL;
+            nextRowSL += pngSTPtr->widthUS;
+
+            if(! *textStr)
+               ;
+            else if(nextRowSL >= pngSTPtr->numPixelSL)
+               goto overflowErr_fun04_sec04;
+         }  /*Loop: add in the gap for vertical text*/
+      } /*If: need to print the gap*/
+   } /*Loop: add the text to the png*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun02 Sec04:
-   ^   - return result
+   ^ Fun04 Sec04:
+   ^   - return the result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   return 0;
+   return byteSL / pngSTPtr->widthUS;
+      /*get the row on; I am reallying on truncation to
+      `  floor the number
+      */
 
-   overflow_fun02:;
-      return def_overflow_pngDraw;
-}  /*addBar_pngDraw*/
-#endif
+   overflowErr_fun04_sec04:;
+      return -1;
+
+   nonAsciiChar_fun04_sec04:;
+      return -2;
+} /*drawVertText_pngDraw*/
 
 /*=======================================================\
 : License:
 : 
-: This code is under the unlicense (public domain).
-:   However, for cases were the public domain is not
-:   suitable, such as countries that do not respect the
-:   public domain or were working with the public domain
-:   is inconvient / not possible, this code is under the
-:   MIT license.
+: Creative Commons Legal Code
 : 
-: Public domain:
+: CC0 1.0 Universal
 : 
-: This is free and unencumbered software released into the
-:   public domain.
+:     CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND
+:     DOES NOT PROVIDE LEGAL SERVICES. DISTRIBUTION OF
+:     THIS DOCUMENT DOES NOT CREATE AN ATTORNEY-CLIENT
+:     RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS
+:     INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS
+:     MAKES NO WARRANTIES REGARDING THE USE OF THIS
+:     DOCUMENT OR THE INFORMATION OR WORKS PROVIDED
+:     HEREUNDER, AND DISCLAIMS LIABILITY FOR DAMAGES
+:     RESULTING FROM THE USE OF THIS DOCUMENT OR THE
+:     INFORMATION OR WORKS PROVIDED HEREUNDER.
 : 
-: Anyone is free to copy, modify, publish, use, compile,
-:   sell, or distribute this software, either in source
-:   code form or as a compiled binary, for any purpose,
-:   commercial or non-commercial, and by any means.
+: Statement of Purpose
 : 
-: In jurisdictions that recognize copyright laws, the
-:   author or authors of this software dedicate any and
-:   all copyright interest in the software to the public
-:   domain. We make this dedication for the benefit of the
-:   public at large and to the detriment of our heirs and
-:   successors. We intend this dedication to be an overt
-:   act of relinquishment in perpetuity of all present and
-:   future rights to this software under copyright law.
+: The laws of most jurisdictions throughout the world
+: automatically confer exclusive Copyright and Related
+: Rights (defined below) upon the creator and subsequent
+: owner(s) (each and all, an "owner") of an original work
+: of authorship and/or a database (each, a "Work").
 : 
-: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
-:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO
-:   EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM,
-:   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-:   CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
-:   IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-:   DEALINGS IN THE SOFTWARE.
+: Certain owners wish to permanently relinquish those
+: rights to a Work for the purpose of contributing to a
+: commons of creative, cultural and scientific works
+: ("Commons") that the public can reliably and without
+: fear of later claims of infringement build upon, modify,
+: incorporate in other works, reuse and redistribute as
+: freely as possible in any form whatsoever and for any
+: purposes, including without limitation commercial
+: purposes. These owners may contribute to the Commons to
+: promote the ideal of a free culture and the further
+: production of creative, cultural and scientific works,
+: or to gain reputation or greater distribution for their
+: Work in part through the use and efforts of others.
 : 
-: For more information, please refer to
-:   <https://unlicense.org>
+: For these and/or other purposes and motivations, and
+: without any expectation of additional consideration or
+: compensation, the person associating CC0 with a Work
+: (the "Affirmer"), to the extent that he or she is an
+: owner of Copyright and Related Rights in the Work,
+: voluntarily elects to apply CC0 to the Work and publicly
+: distribute the Work under its terms, with knowledge of
+: his or her Copyright and Related Rights in the Work and
+: the meaning and intended legal effect of CC0 on those
+: rights.
 : 
-: MIT License:
+: 1. Copyright and Related Rights. A Work made available
+:    under CC0 may be protected by copyright and related
+:    or neighboring rights ("Copyright and Related
+:    Rights"). Copyright and Related Rights include, but
+:    are not limited to, the following:
 : 
-: Copyright (c) 2026 jeremyButtler
+:   i. the right to reproduce, adapt, distribute, perform,
+:      display, communicate, and translate a Work;
+:  ii. moral rights retained by the original author(s)
+:      and/or performer(s);
+: iii. publicity and privacy rights pertaining to a
+:      person's image or likeness depicted in a Work;
+:  iv. rights protecting against unfair competition in
+:      regards to a Work, subject to the limitations in
+:      paragraph 4(a), below;
+:   v. rights protecting the extraction, dissemination,
+:      use and reuse of data in a Work;
+:  vi. database rights (such as those arising under
+:      Directive 96/9/EC of the European Parliament and of
+:      the Council of 11 March 1996 on the legal
+:      protection of databases, and under any national
+:      implementation thereof, including any amended or
+:      successor version of such directive); and
+: vii. other similar, equivalent or corresponding rights
+:      throughout the world based on applicable law or
+:      treaty, and any national implementations thereof.
 : 
-: Permission is hereby granted, free of charge, to any
-:   person obtaining a copy of this software and
-:   associated documentation files (the "Software"), to
-:   deal in the Software without restriction, including
-:   without limitation the rights to use, copy, modify,
-:   merge, publish, distribute, sublicense, and/or sell
-:   copies of the Software, and to permit persons to whom
-:   the Software is furnished to do so, subject to the
-:   following conditions:
+: 2. Waiver. To the greatest extent permitted by, but not
+:    in contravention of, applicable law, Affirmer hereby
+:    overtly, fully, permanently, irrevocably and
+:    unconditionally waives, abandons, and surrenders all
+:    of Affirmer's Copyright and Related Rights and
+:    associated claims and causes of action, whether now
+:    known or unknown (including existing as well as
+:    future claims and causes of action), in the Work (i)
+:    in all territories worldwide, (ii) for the maximum
+:    duration provided by applicable law or treaty
+:    (including future time extensions), (iii) in any
+:    current or future medium and for any number of
+:    copies, and (iv) for any purpose whatsoever,
+:    including without limitation commercial, advertising
+:    or promotional purposes (the "Waiver"). Affirmer
+:    makes the Waiver for the benefit of each member of
+:    the public at large and to the detriment of
+:    Affirmer's heirs and successors, fully intending that
+:    such Waiver shall not be subject to revocation,
+:    rescission, cancellation, termination, or any other
+:    legal or equitable action to disrupt the quiet
+:    enjoyment of the Work by the public as contemplated
+:    by Affirmer's express Statement of Purpose.
 : 
-: The above copyright notice and this permission notice
-:   shall be included in all copies or substantial
-:   portions of the Software.
+: 3. Public License Fallback. Should any part of the
+:    Waiver for any reason be judged legally invalid or
+:    ineffective under applicable law, then the Waiver
+:    shall be preserved to the maximum extent permitted
+:    taking into account Affirmer's express Statement of
+:    Purpose. In addition, to the extent the Waiver is so
+:    judged Affirmer hereby grants to each affected person
+:    a royalty-free, non transferable, non sublicensable,
+:    non exclusive, irrevocable and unconditional license
+:    to exercise Affirmer's Copyright and Related Rights
+:    in the Work (i) in all territories worldwide, (ii)
+:    for the maximum duration provided by applicable law
+:    or treaty (including future time extensions), (iii)
+:    in any current or future medium and for any number of
+:    copies, and (iv) for any purpose whatsoever,
+:    including without limitation commercial, advertising
+:    or promotional purposes (the "License"). The License
+:    shall be deemed effective as of the date CC0 was
+:    applied by Affirmer to the Work. Should any part of
+:    the License for any reason be judged legally invalid
+:    or ineffective under applicable law, such partial
+:    invalidity or ineffectiveness shall not invalidate
+:    the remainder of the License, and in such case
+:    Affirmer hereby affirms that he or she will not (i)
+:    exercise any of his or her remaining Copyright and
+:    Related Rights in the Work or (ii) assert any
+:    associated claims and causes of action with respect
+:    to the Work, in either case contrary to Affirmer's
+:    express Statement of Purpose.
 : 
-: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-:   ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
-:   LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-:   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
-:   EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
-:   FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-:   AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-:   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-:   USE OR OTHER DEALINGS IN THE SOFTWARE.
+: 4. Limitations and Disclaimers.
+: 
+:  a. No trademark or patent rights held by Affirmer are
+:     waived, abandoned, surrendered, licensed or
+:     otherwise affected by this document.
+:  b. Affirmer offers the Work as-is and makes no
+:     representations or warranties of any kind concerning
+:     the Work, express, implied, statutory or otherwise,
+:     including without limitation warranties of title,
+:     merchantability, fitness for a particular purpose,
+:     non infringement, or the absence of latent or other
+:     defects, accuracy, or the present or absence of
+:     errors, whether or not discoverable, all to the
+:     greatest extent permissible under applicable law.
+:  c. Affirmer disclaims responsibility for clearing
+:     rights of other persons that may apply to the Work
+:     or any use thereof, including without limitation any
+:     person's Copyright and Related Rights in the Work.
+:     Further, Affirmer disclaims responsibility for
+:     obtaining any necessary consents, permissions or
+:     other rights required for any use of the Work.
+:  d. Affirmer understands and acknowledges that Creative
+:     Commons is not a party to this document and has no
+:     duty or obligation with respect to this CC0 or use
+:     of the Work.
 \=======================================================*/

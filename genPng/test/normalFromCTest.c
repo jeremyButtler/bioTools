@@ -1,3 +1,9 @@
+/*goal is to see if I can load a font from a .c and .h
+`  file made using the fontToC_font_fontST() function
+`To use this you need the delete.c and delete.h files
+`  made using fontCFileTest.c
+*/
+
 #ifdef PLAN9
    #include <u.h>
    #include <libc.h>
@@ -7,6 +13,7 @@
 
 #include <stdio.h>
 #include "../../genFont/fontST.h"
+#include "../../genFont/normalFont.h"
 #include "../mkPng.h"
 #include "../pngDraw.h"
 
@@ -17,24 +24,17 @@ main(
    signed long errSL = 0;
    signed char forSC = 3;
 
-   signed short offsetSS = 0;
+   signed short offsetSS = 10;
    signed short tabSS = offsetSS + 20;
    signed char backSC = -1;
 
    struct st_mkPng *pngHeapST = 0;
    struct font_fontST fontStackST;
 
-   FILE *outFILE =
-      fopen("../../genFont/asciiNormalFont.txt", "r");
+   FILE *outFILE = 0;
 
    init_font_fontST(&fontStackST);
-   if(! outFILE)
-      goto err_main;
-   errSL = getFont_font_fontST(&fontStackST, outFILE);
-   if(errSL)
-      goto err_main;
-   fclose(outFILE);
-   outFILE = 0;
+   loadFont_normalFont(&fontStackST);
 
    pngHeapST = mk_st_mkPng(0, 0, 0);
    if(! pngHeapST)
@@ -122,68 +122,7 @@ main(
          pngHeapST
       );
 
-
-   errSL =
-      drawHorizText_pngDraw(
-         (signed char *) "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-         offsetSS, /*x-axis (column)*/
-         180, /*y-axis (row)*/
-         forSC,
-         backSC,
-         &fontStackST,
-         pngHeapST
-      );
-   errSL =
-      drawHorizText_pngDraw(
-         (signed char *) "abcdefghijklmnopqrstuvwxyz",
-         offsetSS, /*x-axis (column)*/
-         200, /*y-axis (row)*/
-         forSC,
-         backSC,
-         &fontStackST,
-         pngHeapST
-      );
-   errSL =
-      drawHorizText_pngDraw(
-         (signed char *) "0123456789",
-         offsetSS, /*x-axis (column)*/
-         220, /*y-axis (row)*/
-         forSC,
-         backSC,
-         &fontStackST,
-         pngHeapST
-      );
-   errSL =
-      drawHorizText_pngDraw(
-         (signed char *) ")!@#$%^&*(",
-         offsetSS, /*x-axis (column)*/
-         240, /*y-axis (row)*/
-         forSC,
-         backSC,
-         &fontStackST,
-         pngHeapST
-      );
-   errSL =
-      drawHorizText_pngDraw(
-         (signed char *) "<>?:\"{}|_+~",
-         offsetSS, /*x-axis (column)*/
-         260, /*y-axis (row)*/
-         forSC,
-         backSC,
-         &fontStackST,
-         pngHeapST
-      );
-   errSL =
-      drawHorizText_pngDraw(
-         (signed char *) ",./;'[]\\-=`",
-         offsetSS, /*x-axis (column)*/
-         280, /*y-axis (row)*/
-         forSC,
-         backSC,
-         &fontStackST,
-         pngHeapST
-      );
-   outFILE = fopen("delete-alphabet-font.png", "w");
+   outFILE = fopen("delete-fromC-normalFont.png", "w");
    if(! outFILE)
       goto err_main;
    print_st_mkPng(pngHeapST, outFILE);

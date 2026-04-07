@@ -1,5 +1,5 @@
 /*goal is to see if I can load a font from a .c and .h
-`  file made using the fontToC_font_pngFont() function
+`  file made using the fontToC_font_fontST() function
 `To use this you need the delete.c and delete.h files
 `  made using fontCFileTest.c
 */
@@ -12,9 +12,10 @@
 #endif
 
 #include <stdio.h>
-#include "../pngFont.h"
+#include "../../genFont/fontST.h"
+#include "../../genFont/smallFont.h"
 #include "../mkPng.h"
-#include "../defaultFont.h"
+#include "../pngDraw.h"
 
 int
 main(
@@ -28,12 +29,12 @@ main(
    signed char backSC = -1;
 
    struct st_mkPng *pngHeapST = 0;
-   struct font_pngFont fontStackST;
+   struct font_fontST fontStackST;
 
    FILE *outFILE = 0;
 
-   init_font_pngFont(&fontStackST);
-   loadFont_defaultFont(&fontStackST);
+   init_font_fontST(&fontStackST);
+   loadFont_smallFont(&fontStackST);
 
    pngHeapST = mk_st_mkPng(0, 0, 0);
    if(! pngHeapST)
@@ -41,7 +42,7 @@ main(
 
    /*draw some text*/
    errSL =
-      drawHorzText_font_pngFont(
+      drawHorizText_pngDraw(
          (signed char *) "A B C D E F G H I J K L M N O",
          offsetSS, /*x-axis (column)*/
          20, /*y-axis (row)*/
@@ -51,7 +52,7 @@ main(
          pngHeapST
       );
    errSL =
-      drawHorzText_font_pngFont(
+      drawHorizText_pngDraw(
          (signed char *) "P Q R S T U V W X Y Z",
          tabSS, /*x-axis (column)*/
          40, /*y-axis (row)*/
@@ -61,7 +62,7 @@ main(
          pngHeapST
       );
    errSL =
-      drawHorzText_font_pngFont(
+      drawHorizText_pngDraw(
          (signed char *) "a b c d e f g h i j k l m n o",
          offsetSS, /*x-axis (column)*/
          60, /*y-axis (row)*/
@@ -71,7 +72,7 @@ main(
          pngHeapST
       );
    errSL =
-      drawHorzText_font_pngFont(
+      drawHorizText_pngDraw(
          (signed char *) "p q r s t u v w x y z",
          tabSS, /*x-axis (column)*/
          80, /*y-axis (row)*/
@@ -81,7 +82,7 @@ main(
          pngHeapST
       );
    errSL =
-      drawHorzText_font_pngFont(
+      drawHorizText_pngDraw(
          (signed char *) "0 1 2 3 4 5 6 7 8 9",
          offsetSS, /*x-axis (column)*/
          100, /*y-axis (row)*/
@@ -91,7 +92,7 @@ main(
          pngHeapST
       );
    errSL =
-      drawHorzText_font_pngFont(
+      drawHorizText_pngDraw(
          (signed char *) ") ! @ # $ % ^ & * (",
          offsetSS, /*x-axis (column)*/
          120, /*y-axis (row)*/
@@ -101,7 +102,7 @@ main(
          pngHeapST
       );
    errSL =
-      drawHorzText_font_pngFont(
+      drawHorizText_pngDraw(
          (signed char *) "< > ? : \" { } | _ + ~",
          offsetSS, /*x-axis (column)*/
          140, /*y-axis (row)*/
@@ -111,7 +112,7 @@ main(
          pngHeapST
       );
    errSL =
-      drawHorzText_font_pngFont(
+      drawHorizText_pngDraw(
          (signed char *) ", . / ; ' [ ] \\ - = `",
          offsetSS, /*x-axis (column)*/
          160, /*y-axis (row)*/
@@ -121,7 +122,7 @@ main(
          pngHeapST
       );
 
-   outFILE = fopen("delete-fromC-font.png", "w");
+   outFILE = fopen("delete-fromC-smallFont.png", "w");
    if(! outFILE)
       goto err_main;
    print_st_mkPng(pngHeapST, outFILE);
@@ -138,7 +139,7 @@ main(
       goto ret_main;
 
    ret_main:;
-      freeStack_font_pngFont(&fontStackST);
+      freeStack_font_fontST(&fontStackST);
 
       if(pngHeapST)
          freeHeap_st_mkPng(pngHeapST);

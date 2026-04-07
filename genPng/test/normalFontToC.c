@@ -10,21 +10,22 @@
 #endif
 
 #include <stdio.h>
-#include "../pngFont.h"
+#include "../../genFont/fontST.h"
 
 int
 main(
    void
 ){
    signed long errSL = 0;
-   struct font_pngFont fontStackST;
-   FILE *outFILE = fopen("../asciifont.txt", "r");
+   struct font_fontST fontStackST;
+   FILE *outFILE =
+      fopen("../../genFont/asciiNormalFont.txt", "r");
 
-   init_font_pngFont(&fontStackST);
+   init_font_fontST(&fontStackST);
    if(! outFILE)
       goto err_main;
 
-   errSL = getFont_font_pngFont(&fontStackST, outFILE);
+   errSL = getFont_font_fontST(&fontStackST, outFILE);
    if(errSL)
       goto err_main;
    fclose(outFILE);
@@ -32,9 +33,9 @@ main(
 
    /*save the font to delete.c and delete.h*/
    if(
-      fontToC_font_pngFont(
+      fontToC_font_fontST(
          &fontStackST,
-         (signed char *) "delete"
+         (signed char *) "../../genFont/normalFont"
       )
    ) goto err_main;
 
@@ -46,7 +47,7 @@ main(
       goto ret_main;
 
    ret_main:;
-      freeStack_font_pngFont(&fontStackST);
+      freeStack_font_fontST(&fontStackST);
 
       if(outFILE)
          fclose(outFILE);
