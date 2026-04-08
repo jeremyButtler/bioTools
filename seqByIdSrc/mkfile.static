@@ -25,13 +25,13 @@ seqById.$O: seqById.c idSearch.$O $(genLib)/charCp.$O
 idSearch.$O: idSearch.c idSearch.h getSeq.$O searchST.$O
 	$(CC) -o idSearch.$O -c $(CFLAGS) $(coreCFLAGS) idSearch.c
 
-getSeq.$O: getSeq.c getSeq.h vectScan.$O $(genLib)/ulCp.$O $(genLib)/dataTypeShortHand.h
+getSeq.$O: getSeq.c getSeq.h vectScan.$O $(genLib)/ulCp.$O
 	$(CC) -o getSeq.$O -c $(CFLAGS) $(coreCFLAGS) getSeq.c
 
 vectScan.$O: vectScan.c vectScan.h $(genLib)/ulCp.$O
 	$(CC) -o vectScan.$O -c $(CFLAGS) $(coreCFLAGS) vectScan.c
 
-searchST.$O: searchST.c searchST.h idLkTbl.h $(genLib)/ulCp.$O $(genLib)/genMath.h $(genLib)/dataTypeShortHand.h
+searchST.$O: searchST.c searchST.h idLkTbl.h $(genLib)/ulCp.$O $(genLib)/genMath.h
 	$(CC) -o searchST.$O -c $(CFLAGS) $(coreCFLAGS) searchST.c
 
 $(genLib)/ulCp.$O: $(genLib)/ulCp.c $(genLib)/ulCp.h

@@ -3,7 +3,7 @@
 Holds small tools I have made for biology programs. The
   tools are either niche tools, re-inventing the wheel, or
   odd. They all should compile on Linux, BSDs, Mac, and
-  Windows. I use them, but I would be suprised if other
+  Windows. I use them, but I would be surprised if other
   people used them.
 
 These tools are often built to help me with my projects or
@@ -15,16 +15,14 @@ Still need to do OS tests on all tools. This is a spare
 
 # License
 
-Primary is unlicense (public domain), but if publice
-  domain does not work or is not desired it defaults to
-  MIT (alternate).
+CC0. Should be equal to public domain.
 
 # Installing
 
 ## Linux:
 
 For X86 64 bit (amd/intel CPUs) Linux I have compiled
-  static binaries with the musel libarary
+  static binaries with the musel library
   in `bin/x86_64_Linux`. Thanks to musl, these will be a
   bit smaller then what you can make.
 
@@ -44,7 +42,7 @@ You can build and install the entire repository using
   `mkfile.unix` or `mkfile.static` (do not use use static
   on Mac). You can also build and install individual
   programs. To get instructions for individual programs,
-  read the README.md file in the programs direcotry.
+  read the README.md file in the programs directory.
 
 ```
 if [ ! -d "/usr/local/bin" ];
