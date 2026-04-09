@@ -252,11 +252,18 @@ drawHorizText_pngDraw(
          goto overflowErr_fun03_sec04; /*out of bounds*/
       else if(*textStr < 32 || *textStr > 126)
          goto nonAsciiChar_fun03_sec04;
+
       rowPixSS = 0;
 
       charUC =
          (unsigned char)
          *textStr - def_asciiOffset_fontST;
+
+      endRowSL = byteSL % pngSTPtr->widthUS;/*x position*/
+      endRowSL += fontSTPtr->widthArySS[charUC];
+      if(endRowSL > pngSTPtr->widthUS)
+         goto overflowErr_fun03_sec04; /*out of bounds*/
+
       ++textStr;
       endRowSL = 0;
       pixSS = 0;
@@ -440,6 +447,8 @@ drawVertText_pngDraw(
    signed short heightSS = 0; /*number of rows printed*/
    signed short pixSS = 0;    /*the pix on in my byte*/
 
+   signed long tmpSL = 0;
+
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun04 Sec02:
    ^   - setup the color long and get initial position
@@ -479,6 +488,11 @@ drawVertText_pngDraw(
       ++textStr;
       rowPixSS = 0; /*keep track of pixel on in the row*/
       if(nextRowSL >= pngSTPtr->numPixelSL)
+         goto overflowErr_fun04_sec04;
+
+      tmpSL = byteSL % pngSTPtr->widthUS;/*x position*/
+      tmpSL += fontSTPtr->widthArySS[charUC];
+      if(tmpSL > pngSTPtr->widthUS)
          goto overflowErr_fun04_sec04;
 
       for(
