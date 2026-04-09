@@ -9,9 +9,11 @@
 '   o fun02: addBar_pngDraw
 '     - adds a bar (vertical or hoziontal line) to a png
 '       (in st_mkPng struct)
-'   o fun03: drawHorizText_pngDraw
+'   o fun03: addDiamond_pngDraw
+'     - adds a diamond to a st_mkPng image
+'   o fun04: drawHorizText_pngDraw
 '     - draw horizontal text to a png
-'   o fun04: drawVertText_pngDraw
+'   o fun05: drawVertText_pngDraw
 '     - draw text vertically to a png
 '   o license:
 '     - licensing for this code (CC0)
@@ -95,7 +97,40 @@ addBar_pngDraw(
 );
 
 /*-------------------------------------------------------\
-| Fun03: drawHorizText_pngDraw
+| Fun03: addDiamond_pngDraw
+|   - adds a diamond to a st_mkPng image
+| Input:
+|   - pngSTPtr:
+|     o pointer to st_mkPng struct to add bar to
+|   - xSL:
+|     o x coordinate of mid point to draw the diamond
+|   - ySL:
+|     o y coordinate of mid point to draw the diamond
+|   - widthSL:
+|     o width in pixels of diamond (min 3; should be odd)
+|   - heightSL:
+|     o heigth in pixels of diamond (min 3; should be odd)
+|   - colUC:
+|     o index of color in pallete to assign
+| Output:
+|   - Modifies:
+|     o pixelAryUC in pngSTPtr to have a diamond
+|   - Returns:
+|     o 0 for no errors
+|     o def_overflow_pngDraw if went out of bounds
+\-------------------------------------------------------*/
+signed char
+addDiamond_pngDraw(
+   struct st_mkPng *pngSTPtr, /*add bar to png*/
+   signed long xSL,           /*x coordinate (pixels)*/
+   signed long ySL,           /*y coordiante (pixels)*/
+   signed long widthSL,       /*pixels wide of diamond*/
+   signed long heightSL,      /*pixels high of diamond*/
+   signed char colUC          /*color of bar*/
+);
+
+/*-------------------------------------------------------\
+| Fun04: drawHorizText_pngDraw
 |   - draw horizontal text to a png
 | Input:
 |   - textStr:
@@ -134,7 +169,7 @@ drawHorizText_pngDraw(
 );
 
 /*-------------------------------------------------------\
-| Fun04: drawVertText_pngDraw
+| Fun05: drawVertText_pngDraw
 |   - draw text vertically to a png
 | Input:
 |   - textStr:

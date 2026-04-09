@@ -9,9 +9,11 @@
 '   o fun02: addBar_pngDraw
 '     - adds a bar (vertical or hoziontal line) to a png
 '       (in st_mkPng struct)
-'   o fun03: drawHorizText_pngDraw
+'   o fun03: addDiamond_pngDraw
+'     - adds a diamond to a st_mkPng image
+'   o fun04: drawHorizText_pngDraw
 '     - draw horizontal text to a png
-'   o fun04: drawVertText_pngDraw
+'   o fun05: drawVertText_pngDraw
 '     - draw text vertically to a png
 '   o license:
 '     - licensing for this code (CC0)
@@ -149,7 +151,157 @@ addBar_pngDraw(
 } /*addBar_pngDraw*/
 
 /*-------------------------------------------------------\
-| Fun03: drawHorizText_pngDraw
+| Fun03: addDiamond_pngDraw
+|   - adds a diamond to a st_mkPng image
+| Input:
+|   - pngSTPtr:
+|     o pointer to st_mkPng struct to add bar to
+|   - xSL:
+|     o x coordinate of mid point to draw the diamond
+|   - ySL:
+|     o y coordinate of mid point to draw the diamond
+|   - widthSL:
+|     o width in pixels of diamond (min 3; should be odd)
+|   - heightSL:
+|     o heigth in pixels of diamond (min 3; should be odd)
+|   - colUC:
+|     o index of color in pallete to assign
+| Output:
+|   - Modifies:
+|     o pixelAryUC in pngSTPtr to have a diamond
+|   - Returns:
+|     o 0 for no errors
+|     o def_overflow_pngDraw if went out of bounds
+\-------------------------------------------------------*/
+signed char
+addDiamond_pngDraw(
+   struct st_mkPng *pngSTPtr, /*add bar to png*/
+   signed long xSL,           /*x coordinate (pixels)*/
+   signed long ySL,           /*y coordiante (pixels)*/
+   signed long widthSL,       /*pixels wide of diamond*/
+   signed long heightSL,      /*pixels high of diamond*/
+   signed char colUC          /*color of bar*/
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun03 TOC:
+   '   - adds a diamond to a st_mkPng image
+   '   o fun03 sec01:
+   '     - variable declarations
+   '   o fun03 sec02:
+   '     - setup to draw the diamond
+   '   o fun03 sec03:
+   '     - draw the diamond
+   '   o fun03 sec04:
+   '     - return
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec01:
+   ^   - variable declarations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   signed long yPosSL = 0;
+   signed long byteSL = 0;
+   signed long xPosSL = 0;
+
+   signed long startSL = 0;
+   signed long endSL = 0;
+   signed long rowStartSL = 0;
+
+   float xDriftF = 0;
+   float xF = 0;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec02:
+   ^   - setup to draw the diamond
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(widthSL + xSL >= (signed int) pngSTPtr->widthUS)
+      goto overflow_fun03_sec04;
+   if(heightSL + ySL >= (signed int) pngSTPtr->heightUS)
+      goto overflow_fun03_sec04;
+
+   if(widthSL >=  3)
+      ;
+   else if(heightSL < 3)
+      addBar_pngDraw(
+         pngSTPtr,
+         xSL,
+         ySL,
+         widthSL,
+         heightSL,
+         colUC
+      );
+
+   /*make sure I have an odd width and height*/
+   widthSL |= 1;
+   heightSL |= 1;
+
+   xDriftF = (float) widthSL / (float) heightSL;
+
+   startSL = widthSL >> 1;
+   ++startSL;
+   endSL = startSL;
+
+   rowStartSL =
+      pngSTPtr->widthUS * (ySL - (heightSL >> 1));
+      /*- heightSL / 2 is to account for ySL being a 
+      `  midpoint
+      */
+   byteSL = rowStartSL + xSL;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec03:
+   ^   - draw the diamond
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   for(
+      yPosSL = ySL - (heightSL >> 1);
+      yPosSL <= ySL + (heightSL >> 1);
+      ++yPosSL
+   ){ /*Loop: draw a line for each row (the bar)*/
+      for(xPosSL = startSL; xPosSL <= endSL; ++xPosSL)
+         pngSTPtr->pixelAryUC[byteSL++] = colUC;
+
+      if(yPosSL == ySL)
+        xF = xDriftF;
+      else
+        xF += xDriftF;
+
+      if(xF >= 1)
+      { /*If: have enough drift to apply a change*/
+         if(yPosSL >= ySL)
+         { /*If: past the mid point*/
+            startSL += xF;
+            endSL -= xF;
+         } /*If: past the mid point*/
+
+         else
+         { /*Else: moving to the midpoint*/
+            startSL -= xF;
+            endSL += xF;
+         } /*Else: moving to the midpoint*/
+
+         xF -= (signed int) xF;
+      } /*If: have enough drift to apply a change*/
+
+      rowStartSL += pngSTPtr->widthUS;
+      byteSL =
+         rowStartSL + xSL - (1 + widthSL / 2 - startSL);
+   } /*Loop: draw a line for each row (the bar)*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun03 Sec04:
+   ^   - return
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   return 0;
+
+   overflow_fun03_sec04:;
+      return def_overflow_pngDraw;
+} /*addDiamond_pngDraw*/
+
+/*-------------------------------------------------------\
+| Fun04: drawHorizText_pngDraw
 |   - draw horizontal text to a png
 | Input:
 |   - textStr:
@@ -186,20 +338,20 @@ drawHorizText_pngDraw(
    struct font_fontST *fontSTPtr, /*has the font to use*/
    struct st_mkPng *pngSTPtr /*has png to draw on*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun03 TOC:
+   ' Fun04 TOC:
    '   - draw text to a png
-   '   o fun03 sec01:
+   '   o fun04 sec01:
    '     - variable declarations
-   '   o fun03 sec02:
+   '   o fun04 sec02:
    '     - setup the color long and get initial position
-   '   o fun03 Sec03:
+   '   o fun04 Sec03:
    '     - draw the text
-   '   o fun03 sec04:
+   '   o fun04 sec04:
    '     - return the result
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun03 Sec01:
+   ^ Fun04 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -218,40 +370,40 @@ drawHorizText_pngDraw(
    signed short widthSS = 0;   /*width of the gap*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun03 Sec02:
+   ^ Fun04 Sec02:
    ^   - setup the color long and get initial position
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    if(xUS >= pngSTPtr->widthUS)
-      goto overflowErr_fun03_sec04;
+      goto overflowErr_fun04_sec04;
    if(yUS >= pngSTPtr->heightUS)
-      goto overflowErr_fun03_sec04;
+      goto overflowErr_fun04_sec04;
 
    byteSL = (yUS * pngSTPtr->widthUS) + xUS;
    nextRowSL = byteSL + pngSTPtr->widthUS;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun03 Sec03:
+   ^ Fun04 Sec03:
    ^   - draw the text
-   ^   o fun03 sec03 sub01:
+   ^   o fun04 sec03 sub01:
    ^     - draw each character
-   ^   o fun03 sec03 sub02:
+   ^   o fun04 sec03 sub02:
    ^     - draw the gap between characters
-   ^   o fun03 sec03 sub03:
+   ^   o fun04 sec03 sub03:
    ^     - move to the next character
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun03 Sec03 Sub01:
+   * Fun04 Sec03 Sub01:
    *   - draw each character
    \*****************************************************/
 
    while(*textStr)
    { /*Loop: add the text to the png*/
       if(byteSL >= pngSTPtr->numPixelSL)
-         goto overflowErr_fun03_sec04; /*out of bounds*/
+         goto overflowErr_fun04_sec04; /*out of bounds*/
       else if(*textStr < 32 || *textStr > 126)
-         goto nonAsciiChar_fun03_sec04;
+         goto nonAsciiChar_fun04_sec04;
 
       rowPixSS = 0;
 
@@ -262,7 +414,7 @@ drawHorizText_pngDraw(
       endRowSL = byteSL % pngSTPtr->widthUS;/*x position*/
       endRowSL += fontSTPtr->widthArySS[charUC];
       if(endRowSL > pngSTPtr->widthUS)
-         goto overflowErr_fun03_sec04; /*out of bounds*/
+         goto overflowErr_fun04_sec04; /*out of bounds*/
 
       ++textStr;
       endRowSL = 0;
@@ -285,7 +437,7 @@ drawHorizText_pngDraw(
             if(rowPixSS >= fontSTPtr->widthArySS[charUC])
                break;
 
-            addPixels_fun03_sec03_sub01:;
+            addPixels_fun04_sec03_sub01:;
               if(pixelsUC & 1)
                  colSC = fgColSC;
               else
@@ -300,7 +452,7 @@ drawHorizText_pngDraw(
          }  /*Loop: fill each row of the character*/
 
          /***********************************************\
-         * Fun03 Sec03 Sub02:
+         * Fun04 Sec03 Sub02:
          *   - draw the gap between characters
          \***********************************************/
 
@@ -333,14 +485,14 @@ drawHorizText_pngDraw(
          if(heightSS >= fontSTPtr->heightSS)
             break; /*done with the character*/
          else if(nextRowSL > pngSTPtr->numPixelSL)
-            goto overflowErr_fun03_sec04;
+            goto overflowErr_fun04_sec04;
          else if(pixSS < def_bitsPerChar_64bit)
-            goto addPixels_fun03_sec03_sub01;
+            goto addPixels_fun04_sec03_sub01;
             /*the byte still has pixels left*/
       }  /*Loop: fill in pixels for the character*/
 
       /**************************************************\
-      * Fun03 Sec03 Sub03:
+      * Fun04 Sec03 Sub03:
       *   - move to the next character
       \**************************************************/
 
@@ -355,11 +507,11 @@ drawHorizText_pngDraw(
       if(! *textStr)
          ;
       else if(rowPixSS >=fontSTPtr->widthArySS[charUC])
-         goto overflowErr_fun03_sec04;
+         goto overflowErr_fun04_sec04;
    } /*Loop: add the text to the png*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun03 Sec04:
+   ^ Fun04 Sec04:
    ^   - return the result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -373,14 +525,14 @@ drawHorizText_pngDraw(
       */
    return byteSL; /*column on (x-axis)*/
 
-   overflowErr_fun03_sec04:;
+   overflowErr_fun04_sec04:;
       return -1;
-   nonAsciiChar_fun03_sec04:;
+   nonAsciiChar_fun04_sec04:;
       return -2;
 } /*drawHorizText_pngDraw*/
 
 /*-------------------------------------------------------\
-| Fun04: drawVertText_pngDraw
+| Fun05: drawVertText_pngDraw
 |   - draw text vertically to a png
 | Input:
 |   - textStr:
@@ -417,20 +569,20 @@ drawVertText_pngDraw(
    struct font_fontST *fontSTPtr, /*has the font to use*/
    struct st_mkPng *pngSTPtr /*has png to draw on*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
-   ' Fun04 TOC:
+   ' Fun05 TOC:
    '   - draw text to a png
-   '   o fun04 sec01:
+   '   o fun05 sec01:
    '     - variable declarations
-   '   o fun04 sec02:
+   '   o fun05 sec02:
    '     - setup the color long and get initial position
-   '   o fun04 sec03:
+   '   o fun05 sec03:
    '     - draw the text
-   '   o fun04 sec04:
+   '   o fun05 sec04:
    '     - return the result
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun04 Sec01:
+   ^ Fun05 Sec01:
    ^   - variable declarations
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -450,36 +602,36 @@ drawVertText_pngDraw(
    signed long tmpSL = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun04 Sec02:
+   ^ Fun05 Sec02:
    ^   - setup the color long and get initial position
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    if(xUS >= pngSTPtr->widthUS)
-      goto overflowErr_fun04_sec04;
+      goto overflowErr_fun05_sec04;
    if(yUS >= pngSTPtr->heightUS)
-      goto overflowErr_fun04_sec04;
+      goto overflowErr_fun05_sec04;
 
    byteSL = (yUS * pngSTPtr->widthUS) + xUS;
    nextRowSL = byteSL + pngSTPtr->widthUS;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun04 Sec03:
+   ^ Fun05 Sec03:
    ^   - draw the text
-   ^   o fun04 sec03 sub01:
+   ^   o fun05 sec03 sub01:
    ^     - print the character
-   ^   o fun04 sec03 sub02:
+   ^   o fun05 sec03 sub02:
    ^     - print the gap between characters
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    /*****************************************************\
-   * Fun04 Sec03 Sub01:
+   * Fun05 Sec03 Sub01:
    *   - print the character
    \*****************************************************/
 
    while(*textStr)
    { /*Loop: add the text to the png*/
       if(*textStr < 32 || *textStr > 126)
-         goto nonAsciiChar_fun04_sec04;
+         goto nonAsciiChar_fun05_sec04;
       heightSS = 0;
 
       charUC =
@@ -488,12 +640,12 @@ drawVertText_pngDraw(
       ++textStr;
       rowPixSS = 0; /*keep track of pixel on in the row*/
       if(nextRowSL >= pngSTPtr->numPixelSL)
-         goto overflowErr_fun04_sec04;
+         goto overflowErr_fun05_sec04;
 
       tmpSL = byteSL % pngSTPtr->widthUS;/*x position*/
       tmpSL += fontSTPtr->widthArySS[charUC];
       if(tmpSL > pngSTPtr->widthUS)
-         goto overflowErr_fun04_sec04;
+         goto overflowErr_fun05_sec04;
 
       for(
          charByteSS = 0;
@@ -511,7 +663,7 @@ drawVertText_pngDraw(
             if(rowPixSS >= fontSTPtr->widthArySS[charUC])
                break;
 
-            addPixels_fun04_sec03_sub01:;
+            addPixels_fun05_sec03_sub01:;
                if(pixelsUC & 1)
                   colSC = fgColSC;
                else
@@ -534,18 +686,18 @@ drawVertText_pngDraw(
             ++heightSS;
 
             if(nextRowSL >= pngSTPtr->numPixelSL)
-               goto overflowErr_fun04_sec04;
+               goto overflowErr_fun05_sec04;
          } /*If: I need to move to the next line*/
 
          if(heightSS >= fontSTPtr->heightSS)
             break; /*done with the character*/
          else if(pixSS < def_bitsPerChar_64bit)
-            goto addPixels_fun04_sec03_sub01;
+            goto addPixels_fun05_sec03_sub01;
             /*this reduces the amount of duplicate code*/
       }  /*Loop: fill in pixels for the character*/
 
       /**************************************************\
-      * Fun04 Sec03 Sub02:
+      * Fun05 Sec03 Sub02:
       *   - print the gap between characters
       \**************************************************/
 
@@ -573,13 +725,13 @@ drawVertText_pngDraw(
             if(! *textStr)
                ;
             else if(nextRowSL >= pngSTPtr->numPixelSL)
-               goto overflowErr_fun04_sec04;
+               goto overflowErr_fun05_sec04;
          }  /*Loop: add in the gap for vertical text*/
       } /*If: need to print the gap*/
    } /*Loop: add the text to the png*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun04 Sec04:
+   ^ Fun05 Sec04:
    ^   - return the result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -588,10 +740,10 @@ drawVertText_pngDraw(
       `  floor the number
       */
 
-   overflowErr_fun04_sec04:;
+   overflowErr_fun05_sec04:;
       return -1;
 
-   nonAsciiChar_fun04_sec04:;
+   nonAsciiChar_fun05_sec04:;
       return -2;
 } /*drawVertText_pngDraw*/
 
