@@ -4,7 +4,7 @@ CFLAGS= /O2 /Ot /Za /Tc
 O=o.win
 
 all: convertFontToFontSTC.$O
-	$(LD) /out:convertFontTOFontSTC.exe convertFontToFontSTC.$O fontST.$O ..\genLib\ulCp.$O ..\genLib\base10str.$O
+	$(LD) /out:convertFonttoFontSTC.exe convertFontToFontSTC.$O fontST.$O ..\genLib\ulCp.$O ..\genLib\base10str.$O
 
 convertFontToFontSTC.$O: convertFontToFontSTC.c fontST.$O
 	$(CC) /Fo:convertFontToFontSTC.$O /c $(CFLAGS) convertFontToFontSTC.c

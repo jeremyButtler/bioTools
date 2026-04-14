@@ -4,7 +4,7 @@ CFLAGS= -O3 -static -std=c89 -g -Werror -Wall -Wextra -Wpedantic -Wundef -Waggre
 O=o.static
 
 all: convertFontToFontSTC.$O
-	$(LD) -o convertFontTOFontSTC convertFontToFontSTC.$O fontST.$O ../genLib/ulCp.$O ../genLib/base10str.$O
+	$(LD) -o convertFonttoFontSTC convertFontToFontSTC.$O fontST.$O ../genLib/ulCp.$O ../genLib/base10str.$O
 
 convertFontToFontSTC.$O: convertFontToFontSTC.c fontST.$O
 	$(CC) -c $(CFLAGS) -o convertFontToFontSTC.$O $(CFLAGS) convertFontToFontSTC.c
