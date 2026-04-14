@@ -1,0 +1,22 @@
+CC=cl.exe
+LD=link.exe
+CFLAGS= /O2 /Ot /Za /Tc
+O=o.win
+
+all: convertFontToFontSTC.$O
+	$(LD) /out:convertFontTOFontSTC.exe convertFontToFontSTC.$O fontST.$O ..\genLib\ulCp.$O ..\genLib\base10str.$O
+
+convertFontToFontSTC.$O: convertFontToFontSTC.c fontST.$O
+	$(CC) /Fo:convertFontToFontSTC.$O /c $(CFLAGS) convertFontToFontSTC.c
+
+fontST.$O: fontST.h fontST.c ..\genLib\base10str.$O ..\genLib\ulCp.$O
+	$(CC) /Fo:fontST.$O /c $(CFLAGS) fontST.c
+
+..\genLib\ulCp.$O: ..\genLib\ulCp.c ..\genLib\ulCp.h
+	$(CC) /Fo:..\genLib\ulCp.$O /c $(CFLAGS) ..\genLib\ulCp.c
+
+..\genLib\base10str.$O: ..\genLib\base10str.c ..\genLib\base10str.h
+	$(CC) /Fo:..\genLib\base10str.$O /c $(CFLAGS) ..\genLib\base10str.c
+
+clean:
+	del ..\genLib\base10str.$O ..\genLib\ulCp.$O fontST.$O convertFontToFontSTC.$O;

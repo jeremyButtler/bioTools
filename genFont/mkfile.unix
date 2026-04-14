@@ -1,0 +1,25 @@
+LD=cc
+CC=cc
+CFLAGS= -O3 -std=c89 -g -Werror -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
+O=o.unix
+
+all: convertFontToFontSTC.$O
+	$(LD) -o convertFontTOFontSTC convertFontToFontSTC.$O fontST.$O ../genLib/ulCp.$O ../genLib/base10str.$O
+
+convertFontToFontSTC.$O: convertFontToFontSTC.c fontST.$O
+	$(CC) -c $(CFLAGS) -o convertFontToFontSTC.$O $(CFLAGS) convertFontToFontSTC.c
+
+fontST.$O: fontST.h fontST.c ../genLib/base10str.$O ../genLib/ulCp.$O
+	$(CC) -c $(CFLAGS) -o fontST.$O $(CFLAGS) fontST.c
+
+../genLib/ulCp.$O: ../genLib/ulCp.c ../genLib/ulCp.h
+	$(CC) -c $(CFLAGS) -o ../genLib/ulCp.$O $(CFLAGS) ../genLib/ulCp.c
+
+../genLib/base10str.$O: ../genLib/base10str.c ../genLib/base10str.h
+	$(CC) -c $(CFLAGS) -o ../genLib/base10str.$O $(CFLAGS) ../genLib/base10str.c
+
+clean:
+	if [ -f ../genLib/base10str.$O ]; then rm ../genLib/base10str.$O; fi;
+	if [ -f ../genLib/ulCp.$O ]; then rm ../genLib/ulCp.$O; fi;
+	if [ -f fontST.$O ]; then rm fontST.$O; fi;
+	if [ -f convertFontToFontSTC.$O ]; then rm convertFontToFontSTC.$O; fi;
