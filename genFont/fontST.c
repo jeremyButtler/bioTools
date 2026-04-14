@@ -657,8 +657,8 @@ fontToC_font_fontST(
    else
       goto badPrefix_fun08_sec05;
 
-   outStr[0] = prefixStr[0];
-   lenSS = 1;
+   lenSS = 0;
+   funPrefixLenSS = 0;
    while(prefixStr[lenSS])
    { /*Loop: check for invalid characters*/
       if(
