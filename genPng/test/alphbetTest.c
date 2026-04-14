@@ -25,7 +25,7 @@ main(
    struct font_fontST fontStackST;
 
    FILE *outFILE =
-      fopen("../../genFont/asciiNormalFont.txt", "r");
+      fopen("../../genFont/ibmSan9Row.txt", "r");
 
    init_font_fontST(&fontStackST);
    if(! outFILE)

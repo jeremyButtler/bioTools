@@ -2,7 +2,7 @@ LD=cc
 CFLAGS= -O0 -std=c89 -g -Werror -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
 O=o.test
 
-build: testMkPng fontLoadTest fontHorzDrawTest fontVertDrawTest normalFontToC alphbetTest smallFontToC normalFromCTest smallFromCTest
+build: testMkPng fontLoadTest fontHorzDrawTest fontVertDrawTest normalFontToC alphbetTest smallFontToC normalFromCTest smallFromCTest numberTest
 
 testMkPng: testMkPng.$O
 	$(LD) -o testMkPng ../../genLib/base10str.$O ../../genLib/endin.$O ../../genLib/checkSum.$O ../mkPng.$O ../pngDraw.$O ../../genFont/fontST.$O testMkPng.$O
@@ -53,6 +53,11 @@ alphbetTest: alphbetTest.$O
 alphbetTest.$O:	alphbetTest.c ../pngDraw.$O
 	$(CC) -c -o alphbetTest.$O $(CFLAGS) alphbetTest.c
 
+numberTest: numberTest.$O
+	$(LD) -o numberTest ../../genLib/ulCp.$O ../../genLib/base10str.$O ../../genLib/endin.$O ../../genLib/checkSum.$O ../pngDraw.$O ../mkPng.$O ../../genFont/fontST.$O numberTest.$O
+numberTest.$O:	numberTest.c ../pngDraw.$O
+	$(CC) -c -o numberTest.$O $(CFLAGS) numberTest.c
+
 
 ../pngDraw.$O: ../pngDraw.h ../pngDraw.c ../../genFont/fontST.$O ../mkPng.$O
 	$(CC) -c -o ../pngDraw.$O $(CFLAGS) ../pngDraw.c
@@ -99,6 +104,7 @@ clean:
 	if [ -f smallFontToC.$O ]; then rm smallFontToC.$O; fi;
 	if [ -f smallFromCTest.$O ]; then rm smallFromCTest.$O; fi;
 	if [ -f alphbetTest.$O ]; then rm alphbetTest.$O; fi;
+	if [ -f numberTest.$O ]; then rm numberTest.$O; fi;
 
 cleanBin:
 	if [ -f testMkPng ]; then rm testMkPng; fi;
@@ -110,3 +116,4 @@ cleanBin:
 	if [ -f smallFontToC ]; then rm smallFontToC; fi;
 	if [ -f smallFromCTest ]; then rm smallFromCTest; fi;
 	if [ -f alphbetTest ]; then rm alphbetTest; fi;
+	if [ -f numberTest ]; then rm numberTest; fi;
