@@ -554,7 +554,10 @@ measureText_font_fontST(
    while(*textStr)
    { /*Loop: get the length*/
       lenSL +=
-        fontSTPtr->widthArySS[(unsigned char) *textStr];
+        fontSTPtr->widthArySS[
+             ((unsigned char) *textStr)
+           - def_asciiOffset_fontST
+        ];
       lenSL += fontSTPtr->gapSS;
       ++textStr;
    } /*Loop: get the length*/
@@ -657,8 +660,8 @@ fontToC_font_fontST(
    else
       goto badPrefix_fun08_sec05;
 
-   lenSS = 0;
-   funPrefixLenSS = 0;
+   outStr[0] = prefixStr[0];
+   lenSS = 1;
    while(prefixStr[lenSS])
    { /*Loop: check for invalid characters*/
       if(
