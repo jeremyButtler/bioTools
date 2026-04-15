@@ -595,8 +595,9 @@ setup_st_mkPng(
       pngSTPtr->heightUS = heightUS;
 
    /*make sure every row ends in a byte*/
-   pngSTPtr->widthUS +=
+   /*pngSTPtr->widthUS +=
       pngSTPtr->widthUS % def_bytesInUL_64bit;
+   */ /*I orginally wanted to use longs, but no longer*/
 
    pngSTPtr->numPixelSL =
       pngSTPtr->widthUS * pngSTPtr->heightUS;
@@ -1042,12 +1043,12 @@ pIDAT_st_mkPng(
       `   of each row
       */
 
-   crc32Byte_checkSum('I', crc32UI);
-   crc32Byte_checkSum('D', crc32UI);
-   crc32Byte_checkSum('A', crc32UI);
-   crc32Byte_checkSum('T', crc32UI);
-   crc32Byte_checkSum(0x78, crc32UI);
-   crc32Byte_checkSum(0xda, crc32UI);
+   crc32UI = crc32Byte_checkSum('I', crc32UI);
+   crc32UI = crc32Byte_checkSum('D', crc32UI);
+   crc32UI = crc32Byte_checkSum('A', crc32UI);
+   crc32UI = crc32Byte_checkSum('T', crc32UI);
+   crc32UI = crc32Byte_checkSum(0x78, crc32UI);
+   crc32UI = crc32Byte_checkSum(0xda, crc32UI);
    
    fputc('I', (FILE *) outFILE);
    fputc('D', (FILE *) outFILE);
