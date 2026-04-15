@@ -17,7 +17,7 @@ main(
    signed int ySI = 0;
    signed char errSC = 0;
    struct st_mkPng *pngSTPtr = mk_st_mkPng(4, 1, 0);
-   FILE *outFILE = fopen("del.png", "wb");
+   FILE *outFILE = fopen("delete-idatCrc32Test.png", "wb");
 
    if(! pngSTPtr)
       goto memErr_main;

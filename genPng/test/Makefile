@@ -2,12 +2,17 @@ LD=cc
 CFLAGS= -O0 -std=c89 -g -Werror -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self
 O=o.test
 
-build: testMkPng fontLoadTest fontHorzDrawTest fontVertDrawTest normalFontToC alphbetTest smallFontToC normalFromCTest smallFromCTest numberTest
+build: testMkPng testIdatCrc32 fontLoadTest fontHorzDrawTest fontVertDrawTest normalFontToC alphbetTest smallFontToC normalFromCTest smallFromCTest numberTest
 
 testMkPng: testMkPng.$O
 	$(LD) -o testMkPng ../../genLib/base10str.$O ../../genLib/endin.$O ../../genLib/checkSum.$O ../mkPng.$O ../pngDraw.$O ../../genFont/fontST.$O testMkPng.$O
 testMkPng.$O:	testMkPng.c ../pngDraw.$O ../../genLib/endLine.h
 	$(CC) -c -o testMkPng.$O $(CFLAGS) testMkPng.c
+
+testIdatCrc32: testIdatCrc32.$O
+	$(LD) -o testIdatCrc32 ../../genLib/base10str.$O ../../genLib/endin.$O ../../genLib/checkSum.$O ../mkPng.$O ../pngDraw.$O ../../genFont/fontST.$O testIdatCrc32.$O
+testIdatCrc32.$O:	testIdatCrc32.c ../pngDraw.$O ../../genLib/endLine.h
+	$(CC) -c -o testIdatCrc32.$O $(CFLAGS) testIdatCrc32.c
 
 fontLoadTest: fontLoadTest.$O
 	$(LD) -o fontLoadTest ../../genLib/ulCp.$O ../../genLib/base10str.$O ../../genLib/endin.$O ../../genLib/checkSum.$O ../../genFont/fontST.$O fontLoadTest.$O
@@ -96,6 +101,7 @@ clean:
 	if [ -f ../../genFont/normalFont.$O ]; then rm ../../genFont/normalFont.$O; fi;
 	if [ -f ../../genFont/smallFont.$O ]; then rm ../../genFont/smallFont.$O; fi;
 	if [ -f testMkPng.$O ]; then rm testMkPng.$O; fi;
+	if [ -f testIdatCrc32.$O ]; then rm testIdatCrc32.$O; fi;
 	if [ -f fontLoadTest.$O ]; then rm fontLoadTest.$O; fi;
 	if [ -f fontHorzDrawTest.$O ]; then rm fontHorzDrawTest.$O; fi;
 	if [ -f fontVertDrawTest.$O ]; then rm fontVertDrawTest.$O; fi;
@@ -108,6 +114,7 @@ clean:
 
 cleanBin:
 	if [ -f testMkPng ]; then rm testMkPng; fi;
+	if [ -f testIdatCrc32 ]; then rm testIdatCrc32; fi;
 	if [ -f fontLoadTest ]; then rm fontLoadTest; fi;
 	if [ -f fontHorzDrawTest ]; then rm fontHorzDrawTest; fi;
 	if [ -f fontVertDrawTest ]; then rm fontVertDrawTest; fi;
