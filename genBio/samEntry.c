@@ -2149,6 +2149,7 @@ get_samEntry(
                   &ignoreSL
                );
             posSI = 1;
+            ++lenSL; /*account for first byte*/
          } /*Else: need to get more in buffer*/
       } /*If: end of buffer*/
 
