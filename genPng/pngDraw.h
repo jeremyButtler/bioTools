@@ -15,6 +15,9 @@
 '     - draw horizontal text to a png
 '   o fun05: drawVertText_pngDraw
 '     - draw text vertically to a png
+'   o fun06: drawVertNoAdjText_pngDraw
+'     - draw text vertically to a png, but does not adjust
+'       characters to be in a vertical form
 '   o license:
 '     - licensing for this code (CC0)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -198,6 +201,46 @@ drawHorizText_pngDraw(
 \-------------------------------------------------------*/
 signed int
 drawVertText_pngDraw(
+   signed char *textStr,    /*text to draw*/
+   unsigned short xUS,      /*x coordinate*/
+   unsigned short yUS,      /*y coordinate*/
+   signed char fgColSC,     /*index of forground color*/
+   signed char bgColSC,     /*index of background color*/
+   struct font_fontST *fontSTPtr, /*has the font to use*/
+   struct st_mkPng *pngSTPtr /*has png to draw on*/
+);
+
+/*-------------------------------------------------------\
+| Fun06: drawVertNoAdjText_pngDraw
+|   - draw text vertically to a png, but does not adjust
+|     characters to be in a vertical form
+| Input:
+|   - textStr:
+|     o cstring with a single line of text to draw
+|   - xUS:
+|     o x coordinate in the png (index 0)
+|   - yUS:
+|     o y coordinate in the png (index 0)
+|   - fgColSC:
+|     o index of the forground color to use with the font
+|     o use -1 for no color
+|   - bgColSC:
+|     o index of the background color to use with the font
+|     o use -1 for no color
+|   - fontSTPtr:
+|     o font_fontST struct pionter to get the new font
+|   - pngSTPtr:
+|     o st_mkPng struct pointer to draw the text to
+| Output:
+|   - Modifies:
+|     o pngSTPtr to have the drawn text
+|   - Returns:
+|     o 0 for no errors
+|     o 1 if the coordinates were out of bounds
+|     o 2 if textStr has a non-ascii character
+\-------------------------------------------------------*/
+signed int
+drawVertNoAdjText_pngDraw(
    signed char *textStr,    /*text to draw*/
    unsigned short xUS,      /*x coordinate*/
    unsigned short yUS,      /*y coordinate*/

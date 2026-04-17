@@ -548,19 +548,20 @@ addAscii49_ibmSan9(
       free(fontSTPtr->pixAryUC[17]);
 
    fontSTPtr->pixAryUC[17] =
-     calloc(6, sizeof(unsigned char));
+     calloc(7, sizeof(unsigned char));
    if(! fontSTPtr->pixAryUC[17])
       return 1;
 
-   fontSTPtr->widthArySS[17] = 5;
-   fontSTPtr->lenArySS[17] = 6;
+   fontSTPtr->widthArySS[17] = 6;
+   fontSTPtr->lenArySS[17] = 7;
 
-   fontSTPtr->pixAryUC[17][0] = 142;
-   fontSTPtr->pixAryUC[17][1] = 49;
-   fontSTPtr->pixAryUC[17][2] = 198;
-   fontSTPtr->pixAryUC[17][3] = 24;
-   fontSTPtr->pixAryUC[17][4] = 99;
-   fontSTPtr->pixAryUC[17][5] = 30;
+   fontSTPtr->pixAryUC[17][0] = 140;
+   fontSTPtr->pixAryUC[17][1] = 146;
+   fontSTPtr->pixAryUC[17][2] = 32;
+   fontSTPtr->pixAryUC[17][3] = 8;
+   fontSTPtr->pixAryUC[17][4] = 130;
+   fontSTPtr->pixAryUC[17][5] = 32;
+   fontSTPtr->pixAryUC[17][6] = 62;
 
    return 0;
 } /*addAscii49_ibmSan9*/
@@ -738,21 +739,22 @@ addAscii55_ibmSan9(
       free(fontSTPtr->pixAryUC[23]);
 
    fontSTPtr->pixAryUC[23] =
-     calloc(8, sizeof(unsigned char));
+     calloc(9, sizeof(unsigned char));
    if(! fontSTPtr->pixAryUC[23])
       return 1;
 
-   fontSTPtr->widthArySS[23] = 7;
-   fontSTPtr->lenArySS[23] = 8;
+   fontSTPtr->widthArySS[23] = 8;
+   fontSTPtr->lenArySS[23] = 9;
 
    fontSTPtr->pixAryUC[23][0] = 127;
-   fontSTPtr->pixAryUC[23][1] = 16;
-   fontSTPtr->pixAryUC[23][2] = 4;
-   fontSTPtr->pixAryUC[23][3] = 130;
-   fontSTPtr->pixAryUC[23][4] = 64;
-   fontSTPtr->pixAryUC[23][5] = 16;
-   fontSTPtr->pixAryUC[23][6] = 8;
+   fontSTPtr->pixAryUC[23][1] = 32;
+   fontSTPtr->pixAryUC[23][2] = 16;
+   fontSTPtr->pixAryUC[23][3] = 255;
+   fontSTPtr->pixAryUC[23][4] = 8;
+   fontSTPtr->pixAryUC[23][5] = 8;
+   fontSTPtr->pixAryUC[23][6] = 4;
    fontSTPtr->pixAryUC[23][7] = 4;
+   fontSTPtr->pixAryUC[23][8] = 4;
 
    return 0;
 } /*addAscii55_ibmSan9*/
@@ -1030,7 +1032,7 @@ addAscii64_ibmSan9(
    fontSTPtr->pixAryUC[32][4] = 90;
    fontSTPtr->pixAryUC[32][5] = 180;
    fontSTPtr->pixAryUC[32][6] = 104;
-   fontSTPtr->pixAryUC[32][7] = 78;
+   fontSTPtr->pixAryUC[32][7] = 110;
    fontSTPtr->pixAryUC[32][8] = 1;
    fontSTPtr->pixAryUC[32][9] = 124;
    fontSTPtr->pixAryUC[32][10] = 0;
@@ -1576,7 +1578,7 @@ addAscii81_ibmSan9(
    fontSTPtr->pixAryUC[49][2] = 65;
    fontSTPtr->pixAryUC[49][3] = 65;
    fontSTPtr->pixAryUC[49][4] = 65;
-   fontSTPtr->pixAryUC[49][5] = 81;
+   fontSTPtr->pixAryUC[49][5] = 89;
    fontSTPtr->pixAryUC[49][6] = 97;
    fontSTPtr->pixAryUC[49][7] = 65;
    fontSTPtr->pixAryUC[49][8] = 222;
@@ -1865,8 +1867,8 @@ addAscii90_ibmSan9(
 
    fontSTPtr->pixAryUC[58][0] = 127;
    fontSTPtr->pixAryUC[58][1] = 16;
-   fontSTPtr->pixAryUC[58][2] = 4;
-   fontSTPtr->pixAryUC[58][3] = 65;
+   fontSTPtr->pixAryUC[58][2] = 228;
+   fontSTPtr->pixAryUC[58][3] = 79;
    fontSTPtr->pixAryUC[58][4] = 16;
    fontSTPtr->pixAryUC[58][5] = 4;
    fontSTPtr->pixAryUC[58][6] = 2;
@@ -2070,21 +2072,22 @@ addAscii97_ibmSan9(
       free(fontSTPtr->pixAryUC[65]);
 
    fontSTPtr->pixAryUC[65] =
-     calloc(8, sizeof(unsigned char));
+     calloc(9, sizeof(unsigned char));
    if(! fontSTPtr->pixAryUC[65])
       return 1;
 
-   fontSTPtr->widthArySS[65] = 7;
-   fontSTPtr->lenArySS[65] = 8;
+   fontSTPtr->widthArySS[65] = 8;
+   fontSTPtr->lenArySS[65] = 9;
 
    fontSTPtr->pixAryUC[65][0] = 0;
    fontSTPtr->pixAryUC[65][1] = 0;
-   fontSTPtr->pixAryUC[65][2] = 15;
-   fontSTPtr->pixAryUC[65][3] = 232;
-   fontSTPtr->pixAryUC[65][4] = 11;
-   fontSTPtr->pixAryUC[65][5] = 133;
-   fontSTPtr->pixAryUC[65][6] = 66;
-   fontSTPtr->pixAryUC[65][7] = 62;
+   fontSTPtr->pixAryUC[65][2] = 28;
+   fontSTPtr->pixAryUC[65][3] = 32;
+   fontSTPtr->pixAryUC[65][4] = 32;
+   fontSTPtr->pixAryUC[65][5] = 62;
+   fontSTPtr->pixAryUC[65][6] = 33;
+   fontSTPtr->pixAryUC[65][7] = 161;
+   fontSTPtr->pixAryUC[65][8] = 126;
 
    return 0;
 } /*addAscii97_ibmSan9*/
@@ -2111,9 +2114,9 @@ addAscii98_ibmSan9(
 
    fontSTPtr->pixAryUC[66][0] = 129;
    fontSTPtr->pixAryUC[66][1] = 64;
-   fontSTPtr->pixAryUC[66][2] = 111;
-   fontSTPtr->pixAryUC[66][3] = 24;
-   fontSTPtr->pixAryUC[66][4] = 12;
+   fontSTPtr->pixAryUC[66][2] = 32;
+   fontSTPtr->pixAryUC[66][3] = 208;
+   fontSTPtr->pixAryUC[66][4] = 27;
    fontSTPtr->pixAryUC[66][5] = 6;
    fontSTPtr->pixAryUC[66][6] = 135;
    fontSTPtr->pixAryUC[66][7] = 61;
@@ -2165,21 +2168,22 @@ addAscii100_ibmSan9(
       free(fontSTPtr->pixAryUC[68]);
 
    fontSTPtr->pixAryUC[68] =
-     calloc(8, sizeof(unsigned char));
+     calloc(9, sizeof(unsigned char));
    if(! fontSTPtr->pixAryUC[68])
       return 1;
 
-   fontSTPtr->widthArySS[68] = 7;
-   fontSTPtr->lenArySS[68] = 8;
+   fontSTPtr->widthArySS[68] = 8;
+   fontSTPtr->lenArySS[68] = 9;
 
-   fontSTPtr->pixAryUC[68][0] = 32;
-   fontSTPtr->pixAryUC[68][1] = 144;
-   fontSTPtr->pixAryUC[68][2] = 55;
-   fontSTPtr->pixAryUC[68][3] = 28;
-   fontSTPtr->pixAryUC[68][4] = 12;
-   fontSTPtr->pixAryUC[68][5] = 6;
-   fontSTPtr->pixAryUC[68][6] = 195;
-   fontSTPtr->pixAryUC[68][7] = 94;
+   fontSTPtr->pixAryUC[68][0] = 64;
+   fontSTPtr->pixAryUC[68][1] = 64;
+   fontSTPtr->pixAryUC[68][2] = 64;
+   fontSTPtr->pixAryUC[68][3] = 64;
+   fontSTPtr->pixAryUC[68][4] = 94;
+   fontSTPtr->pixAryUC[68][5] = 97;
+   fontSTPtr->pixAryUC[68][6] = 65;
+   fontSTPtr->pixAryUC[68][7] = 97;
+   fontSTPtr->pixAryUC[68][8] = 222;
 
    return 0;
 } /*addAscii100_ibmSan9*/
@@ -2229,19 +2233,21 @@ addAscii102_ibmSan9(
       free(fontSTPtr->pixAryUC[70]);
 
    fontSTPtr->pixAryUC[70] =
-     calloc(6, sizeof(unsigned char));
+     calloc(8, sizeof(unsigned char));
    if(! fontSTPtr->pixAryUC[70])
       return 1;
 
-   fontSTPtr->widthArySS[70] = 5;
-   fontSTPtr->lenArySS[70] = 6;
+   fontSTPtr->widthArySS[70] = 7;
+   fontSTPtr->lenArySS[70] = 8;
 
-   fontSTPtr->pixAryUC[70][0] = 46;
-   fontSTPtr->pixAryUC[70][1] = 134;
-   fontSTPtr->pixAryUC[70][2] = 19;
-   fontSTPtr->pixAryUC[70][3] = 66;
-   fontSTPtr->pixAryUC[70][4] = 8;
-   fontSTPtr->pixAryUC[70][5] = 1;
+   fontSTPtr->pixAryUC[70][0] = 56;
+   fontSTPtr->pixAryUC[70][1] = 34;
+   fontSTPtr->pixAryUC[70][2] = 225;
+   fontSTPtr->pixAryUC[70][3] = 67;
+   fontSTPtr->pixAryUC[70][4] = 32;
+   fontSTPtr->pixAryUC[70][5] = 16;
+   fontSTPtr->pixAryUC[70][6] = 8;
+   fontSTPtr->pixAryUC[70][7] = 4;
 
    return 0;
 } /*addAscii102_ibmSan9*/
@@ -2270,10 +2276,10 @@ addAscii103_ibmSan9(
    fontSTPtr->pixAryUC[71][1] = 128;
    fontSTPtr->pixAryUC[71][2] = 63;
    fontSTPtr->pixAryUC[71][3] = 24;
-   fontSTPtr->pixAryUC[71][4] = 12;
-   fontSTPtr->pixAryUC[71][5] = 250;
-   fontSTPtr->pixAryUC[71][6] = 129;
-   fontSTPtr->pixAryUC[71][7] = 65;
+   fontSTPtr->pixAryUC[71][4] = 244;
+   fontSTPtr->pixAryUC[71][5] = 3;
+   fontSTPtr->pixAryUC[71][6] = 131;
+   fontSTPtr->pixAryUC[71][7] = 62;
 
    return 0;
 } /*addAscii103_ibmSan9*/
@@ -2291,21 +2297,22 @@ addAscii104_ibmSan9(
       free(fontSTPtr->pixAryUC[72]);
 
    fontSTPtr->pixAryUC[72] =
-     calloc(8, sizeof(unsigned char));
+     calloc(9, sizeof(unsigned char));
    if(! fontSTPtr->pixAryUC[72])
       return 1;
 
-   fontSTPtr->widthArySS[72] = 7;
-   fontSTPtr->lenArySS[72] = 8;
+   fontSTPtr->widthArySS[72] = 8;
+   fontSTPtr->lenArySS[72] = 9;
 
-   fontSTPtr->pixAryUC[72][0] = 129;
-   fontSTPtr->pixAryUC[72][1] = 64;
-   fontSTPtr->pixAryUC[72][2] = 111;
-   fontSTPtr->pixAryUC[72][3] = 20;
-   fontSTPtr->pixAryUC[72][4] = 10;
-   fontSTPtr->pixAryUC[72][5] = 133;
-   fontSTPtr->pixAryUC[72][6] = 66;
-   fontSTPtr->pixAryUC[72][7] = 33;
+   fontSTPtr->pixAryUC[72][0] = 1;
+   fontSTPtr->pixAryUC[72][1] = 1;
+   fontSTPtr->pixAryUC[72][2] = 1;
+   fontSTPtr->pixAryUC[72][3] = 1;
+   fontSTPtr->pixAryUC[72][4] = 61;
+   fontSTPtr->pixAryUC[72][5] = 35;
+   fontSTPtr->pixAryUC[72][6] = 33;
+   fontSTPtr->pixAryUC[72][7] = 161;
+   fontSTPtr->pixAryUC[72][8] = 97;
 
    return 0;
 } /*addAscii104_ibmSan9*/
@@ -2411,17 +2418,19 @@ addAscii108_ibmSan9(
       free(fontSTPtr->pixAryUC[76]);
 
    fontSTPtr->pixAryUC[76] =
-     calloc(4, sizeof(unsigned char));
+     calloc(6, sizeof(unsigned char));
    if(! fontSTPtr->pixAryUC[76])
       return 1;
 
-   fontSTPtr->widthArySS[76] = 3;
-   fontSTPtr->lenArySS[76] = 4;
+   fontSTPtr->widthArySS[76] = 5;
+   fontSTPtr->lenArySS[76] = 6;
 
-   fontSTPtr->pixAryUC[76][0] = 146;
-   fontSTPtr->pixAryUC[76][1] = 36;
-   fontSTPtr->pixAryUC[76][2] = 73;
-   fontSTPtr->pixAryUC[76][3] = 2;
+   fontSTPtr->pixAryUC[76][0] = 66;
+   fontSTPtr->pixAryUC[76][1] = 8;
+   fontSTPtr->pixAryUC[76][2] = 33;
+   fontSTPtr->pixAryUC[76][3] = 132;
+   fontSTPtr->pixAryUC[76][4] = 144;
+   fontSTPtr->pixAryUC[76][5] = 12;
 
    return 0;
 } /*addAscii108_ibmSan9*/
@@ -2474,21 +2483,22 @@ addAscii110_ibmSan9(
       free(fontSTPtr->pixAryUC[78]);
 
    fontSTPtr->pixAryUC[78] =
-     calloc(8, sizeof(unsigned char));
+     calloc(9, sizeof(unsigned char));
    if(! fontSTPtr->pixAryUC[78])
       return 1;
 
-   fontSTPtr->widthArySS[78] = 7;
-   fontSTPtr->lenArySS[78] = 8;
+   fontSTPtr->widthArySS[78] = 8;
+   fontSTPtr->lenArySS[78] = 9;
 
    fontSTPtr->pixAryUC[78][0] = 0;
-   fontSTPtr->pixAryUC[78][1] = 64;
-   fontSTPtr->pixAryUC[78][2] = 111;
-   fontSTPtr->pixAryUC[78][3] = 20;
-   fontSTPtr->pixAryUC[78][4] = 10;
-   fontSTPtr->pixAryUC[78][5] = 133;
-   fontSTPtr->pixAryUC[78][6] = 66;
-   fontSTPtr->pixAryUC[78][7] = 33;
+   fontSTPtr->pixAryUC[78][1] = 0;
+   fontSTPtr->pixAryUC[78][2] = 61;
+   fontSTPtr->pixAryUC[78][3] = 35;
+   fontSTPtr->pixAryUC[78][4] = 33;
+   fontSTPtr->pixAryUC[78][5] = 33;
+   fontSTPtr->pixAryUC[78][6] = 33;
+   fontSTPtr->pixAryUC[78][7] = 161;
+   fontSTPtr->pixAryUC[78][8] = 97;
 
    return 0;
 } /*addAscii110_ibmSan9*/
@@ -2549,8 +2559,8 @@ addAscii112_ibmSan9(
    fontSTPtr->pixAryUC[80][1] = 192;
    fontSTPtr->pixAryUC[80][2] = 47;
    fontSTPtr->pixAryUC[80][3] = 20;
-   fontSTPtr->pixAryUC[80][4] = 10;
-   fontSTPtr->pixAryUC[80][5] = 253;
+   fontSTPtr->pixAryUC[80][4] = 250;
+   fontSTPtr->pixAryUC[80][5] = 5;
    fontSTPtr->pixAryUC[80][6] = 2;
    fontSTPtr->pixAryUC[80][7] = 1;
 
@@ -2581,9 +2591,9 @@ addAscii113_ibmSan9(
    fontSTPtr->pixAryUC[81][1] = 128;
    fontSTPtr->pixAryUC[81][2] = 63;
    fontSTPtr->pixAryUC[81][3] = 20;
-   fontSTPtr->pixAryUC[81][4] = 10;
-   fontSTPtr->pixAryUC[81][5] = 249;
-   fontSTPtr->pixAryUC[81][6] = 65;
+   fontSTPtr->pixAryUC[81][4] = 242;
+   fontSTPtr->pixAryUC[81][5] = 131;
+   fontSTPtr->pixAryUC[81][6] = 64;
    fontSTPtr->pixAryUC[81][7] = 32;
 
    return 0;
@@ -2663,19 +2673,21 @@ addAscii116_ibmSan9(
       free(fontSTPtr->pixAryUC[84]);
 
    fontSTPtr->pixAryUC[84] =
-     calloc(6, sizeof(unsigned char));
+     calloc(8, sizeof(unsigned char));
    if(! fontSTPtr->pixAryUC[84])
       return 1;
 
-   fontSTPtr->widthArySS[84] = 5;
-   fontSTPtr->lenArySS[84] = 6;
+   fontSTPtr->widthArySS[84] = 7;
+   fontSTPtr->lenArySS[84] = 8;
 
-   fontSTPtr->pixAryUC[84][0] = 196;
-   fontSTPtr->pixAryUC[84][1] = 17;
-   fontSTPtr->pixAryUC[84][2] = 66;
-   fontSTPtr->pixAryUC[84][3] = 8;
-   fontSTPtr->pixAryUC[84][4] = 33;
-   fontSTPtr->pixAryUC[84][5] = 12;
+   fontSTPtr->pixAryUC[84][0] = 8;
+   fontSTPtr->pixAryUC[84][1] = 4;
+   fontSTPtr->pixAryUC[84][2] = 226;
+   fontSTPtr->pixAryUC[84][3] = 143;
+   fontSTPtr->pixAryUC[84][4] = 64;
+   fontSTPtr->pixAryUC[84][5] = 32;
+   fontSTPtr->pixAryUC[84][6] = 144;
+   fontSTPtr->pixAryUC[84][7] = 48;
 
    return 0;
 } /*addAscii116_ibmSan9*/
@@ -2833,12 +2845,12 @@ addAscii121_ibmSan9(
 
    fontSTPtr->pixAryUC[89][0] = 0;
    fontSTPtr->pixAryUC[89][1] = 64;
-   fontSTPtr->pixAryUC[89][2] = 48;
-   fontSTPtr->pixAryUC[89][3] = 40;
-   fontSTPtr->pixAryUC[89][4] = 18;
-   fontSTPtr->pixAryUC[89][5] = 81;
-   fontSTPtr->pixAryUC[89][6] = 40;
-   fontSTPtr->pixAryUC[89][7] = 8;
+   fontSTPtr->pixAryUC[89][2] = 80;
+   fontSTPtr->pixAryUC[89][3] = 68;
+   fontSTPtr->pixAryUC[89][4] = 65;
+   fontSTPtr->pixAryUC[89][5] = 16;
+   fontSTPtr->pixAryUC[89][6] = 4;
+   fontSTPtr->pixAryUC[89][7] = 1;
 
    return 0;
 } /*addAscii121_ibmSan9*/
@@ -2867,8 +2879,8 @@ addAscii122_ibmSan9(
    fontSTPtr->pixAryUC[90][1] = 192;
    fontSTPtr->pixAryUC[90][2] = 31;
    fontSTPtr->pixAryUC[90][3] = 4;
-   fontSTPtr->pixAryUC[90][4] = 65;
-   fontSTPtr->pixAryUC[90][5] = 16;
+   fontSTPtr->pixAryUC[90][4] = 249;
+   fontSTPtr->pixAryUC[90][5] = 19;
    fontSTPtr->pixAryUC[90][6] = 4;
    fontSTPtr->pixAryUC[90][7] = 127;
 

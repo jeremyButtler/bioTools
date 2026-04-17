@@ -15,6 +15,9 @@
 '     - draw horizontal text to a png
 '   o fun05: drawVertText_pngDraw
 '     - draw text vertically to a png
+'   o fun06: drawVertNoAdjText_pngDraw
+'     - draw text vertically to a png, but does not adjust
+'       characters to be in a vertical form
 '   o license:
 '     - licensing for this code (CC0)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -34,6 +37,8 @@
 #include "pngDraw.h"
 
 #include "../genLib/endin.h"
+#include "../genLib/ulCp.h"
+
 #include "../genFont/fontST.h"
 #include "mkPng.h"
 
@@ -44,7 +49,6 @@
 ! Hidden Libraries:
 !   - std #include <stdio.h.h>
 !   - .c  #include "../genLib/base10str.h"
-!   - .c  #include "../genLib/ulCp.h"
 !   - .c  #include "../genLib/checkSum.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
@@ -339,7 +343,7 @@ drawHorizText_pngDraw(
    struct st_mkPng *pngSTPtr /*has png to draw on*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun04 TOC:
-   '   - draw text to a png
+   '   - draw text horizontally to a png
    '   o fun04 sec01:
    '     - variable declarations
    '   o fun04 sec02:
@@ -570,7 +574,7 @@ drawVertText_pngDraw(
    struct st_mkPng *pngSTPtr /*has png to draw on*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun05 TOC:
-   '   - draw text to a png
+   '   - draw text vertitically to a png
    '   o fun05 sec01:
    '     - variable declarations
    '   o fun05 sec02:
@@ -598,8 +602,10 @@ drawVertText_pngDraw(
    signed short charByteSS = 0;/*has one byte of pixel*/
    signed short heightSS = 0; /*number of rows printed*/
    signed short pixSS = 0;    /*the pix on in my byte*/
+   signed short pixPosSS = 0;
 
    signed long tmpSL = 0;
+   signed int lenSI = 0;
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun05 Sec02:
@@ -613,6 +619,7 @@ drawVertText_pngDraw(
 
    byteSL = (yUS * pngSTPtr->widthUS) + xUS;
    nextRowSL = byteSL + pngSTPtr->widthUS;
+   lenSI = endStr_ulCp(textStr);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
    ^ Fun05 Sec03:
@@ -628,7 +635,10 @@ drawVertText_pngDraw(
    *   - print the character
    \*****************************************************/
 
-   while(*textStr)
+   textStr = textStr + lenSI - 1;
+   --lenSI;
+
+   while(lenSI >= 0)
    { /*Loop: add the text to the png*/
       if(*textStr < 32 || *textStr > 126)
          goto nonAsciiChar_fun05_sec04;
@@ -637,15 +647,240 @@ drawVertText_pngDraw(
       charUC =
          (unsigned char)
          *textStr - def_asciiOffset_fontST;
-      ++textStr;
-      rowPixSS = 0; /*keep track of pixel on in the row*/
+      --textStr;
       if(nextRowSL >= pngSTPtr->numPixelSL)
          goto overflowErr_fun05_sec04;
 
       tmpSL = byteSL % pngSTPtr->widthUS;/*x position*/
-      tmpSL += fontSTPtr->widthArySS[charUC];
+      tmpSL += fontSTPtr->heightSS;
       if(tmpSL > pngSTPtr->widthUS)
          goto overflowErr_fun05_sec04;
+
+      for(
+         charByteSS = fontSTPtr->widthArySS[charUC] - 1;
+         charByteSS >= 0;
+         --charByteSS
+      ){ /*Loop: fill in pixels for the character*/
+         for(
+            rowPixSS = 0;
+            rowPixSS < fontSTPtr->heightSS;
+            ++rowPixSS
+         ){ /*Loop: draw one column of pixels*/
+            pixSS =
+               fontSTPtr->widthArySS[charUC] * rowPixSS;
+               /*get the pixel I need to get*/
+            pixSS += charByteSS;
+               /*add in the column I am on*/
+            pixPosSS = pixSS % def_bitsPerChar_64bit;
+               /*pixel I am on in the byte*/
+            pixSS /= def_bitsPerChar_64bit;
+               /*the byte I am on*/
+            
+            pixelsUC = fontSTPtr->pixAryUC[charUC][pixSS];
+            pixelsUC &= (1 << pixPosSS);
+
+            if(pixelsUC)
+               colSC = fgColSC;
+            else
+               colSC = bgColSC;
+
+            if(colSC >= 0)
+               pngSTPtr->pixelAryUC[byteSL] = colSC;
+
+            ++byteSL;
+         }  /*Loop: fill each row of the character*/
+
+
+         for(
+           pixSS = 0;
+           pixSS < fontSTPtr->gapSS;
+           ++pixSS
+         ){ /*Loop: add the gap between characters*/
+             if(bgColSC >= 0)
+                pngSTPtr->pixelAryUC[byteSL] = bgColSC;
+             ++byteSL;
+         }  /*Loop: add the gap between characters*/
+
+         /*I need to keep track of the next row*/
+         byteSL = nextRowSL;
+         nextRowSL += pngSTPtr->widthUS;
+
+         if(nextRowSL >= pngSTPtr->numPixelSL)
+            goto overflowErr_fun05_sec04;
+         else if(heightSS >= fontSTPtr->heightSS)
+            break; /*done with the character*/
+      }  /*Loop: fill in pixels for the character*/
+
+      /**************************************************\
+      * Fun05 Sec03 Sub02:
+      *   - print the gap between characters
+      \**************************************************/
+
+      if(lenSI)
+      { /*If: need to print the gap*/
+         for(
+            heightSS = 0;
+            heightSS < fontSTPtr->gapSS;
+            ++heightSS
+         ){ /*Loop: add in the gap for vertical text*/
+            for(
+              pixSS = 0;
+              pixSS < fontSTPtr->widthArySS[charUC];
+              ++pixSS
+            ){ /*Loop: add the gap between characters*/
+                if(bgColSC >= 0)
+                   pngSTPtr->pixelAryUC[byteSL] = bgColSC;
+                ++byteSL;
+            }  /*Loop: add the gap between characters*/
+
+            /*I need to keep track of the next row*/
+            byteSL = nextRowSL;
+            nextRowSL += pngSTPtr->widthUS;
+
+            if(! *textStr)
+               ;
+            else if(nextRowSL >= pngSTPtr->numPixelSL)
+               goto overflowErr_fun05_sec04;
+         }  /*Loop: add in the gap for vertical text*/
+      } /*If: need to print the gap*/
+
+      --lenSI;
+   } /*Loop: add the text to the png*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun05 Sec04:
+   ^   - return the result
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   return byteSL / pngSTPtr->widthUS;
+      /*get the row on; I am reallying on truncation to
+      `  floor the number
+      */
+
+   overflowErr_fun05_sec04:;
+      return -1;
+
+   nonAsciiChar_fun05_sec04:;
+      return -2;
+} /*drawVertText_pngDraw*/
+
+/*-------------------------------------------------------\
+| Fun06: drawVertNoAdjText_pngDraw
+|   - draw text vertically to a png, but does not adjust
+|     characters to be in a vertical form
+| Input:
+|   - textStr:
+|     o cstring with a single line of text to draw
+|   - xUS:
+|     o x coordinate in the png (index 0)
+|   - yUS:
+|     o y coordinate in the png (index 0)
+|   - fgColSC:
+|     o index of the forground color to use with the font
+|     o use -1 for no color
+|   - bgColSC:
+|     o index of the background color to use with the font
+|     o use -1 for no color
+|   - fontSTPtr:
+|     o font_fontST struct pionter to get the new font
+|   - pngSTPtr:
+|     o st_mkPng struct pointer to draw the text to
+| Output:
+|   - Modifies:
+|     o pngSTPtr to have the drawn text
+|   - Returns:
+|     o 0 for no errors
+|     o 1 if the coordinates were out of bounds
+|     o 2 if textStr has a non-ascii character
+\-------------------------------------------------------*/
+signed int
+drawVertNoAdjText_pngDraw(
+   signed char *textStr,    /*text to draw*/
+   unsigned short xUS,      /*x coordinate*/
+   unsigned short yUS,      /*y coordinate*/
+   signed char fgColSC,     /*index of forground color*/
+   signed char bgColSC,     /*index of background color*/
+   struct font_fontST *fontSTPtr, /*has the font to use*/
+   struct st_mkPng *pngSTPtr /*has png to draw on*/
+){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+   ' Fun06 TOC:
+   '   - draw text vertically to a png, but does not
+   '     adjust characters to be in a vertical form
+   '   o fun06 sec01:
+   '     - variable declarations
+   '   o fun06 sec02:
+   '     - setup the color long and get initial position
+   '   o fun06 sec03:
+   '     - draw the text
+   '   o fun06 sec04:
+   '     - return the result
+   \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun06 Sec01:
+   ^   - variable declarations
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   unsigned char charUC = 0;  /*character to add*/
+   unsigned char pixelsUC = 0;/*has pixels to add*/
+   signed char colSC = 0;     /*color to use for a pixel*/
+
+   signed long byteSL = 0;    /*byte adding to*/
+   signed long nextRowSL = 0; /*start of the next row*/
+   signed short rowPixSS = 0;
+      /*last pixel for char in a row*/
+
+   signed short charByteSS = 0;/*has one byte of pixel*/
+   signed short heightSS = 0; /*number of rows printed*/
+   signed short pixSS = 0;    /*the pix on in my byte*/
+
+   signed long tmpSL = 0;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun06 Sec02:
+   ^   - setup the color long and get initial position
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   if(xUS >= pngSTPtr->widthUS)
+      goto overflowErr_fun06_sec04;
+   if(yUS >= pngSTPtr->heightUS)
+      goto overflowErr_fun06_sec04;
+
+   byteSL = (yUS * pngSTPtr->widthUS) + xUS;
+   nextRowSL = byteSL + pngSTPtr->widthUS;
+
+   /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
+   ^ Fun06 Sec03:
+   ^   - draw the text
+   ^   o fun06 sec03 sub01:
+   ^     - print the character
+   ^   o fun06 sec03 sub02:
+   ^     - print the gap between characters
+   \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+
+   /*****************************************************\
+   * Fun06 Sec03 Sub01:
+   *   - print the character
+   \*****************************************************/
+
+   while(*textStr)
+   { /*Loop: add the text to the png*/
+      if(*textStr < 32 || *textStr > 126)
+         goto nonAsciiChar_fun06_sec04;
+      heightSS = 0;
+
+      charUC =
+         (unsigned char)
+         *textStr - def_asciiOffset_fontST;
+      ++textStr;
+      rowPixSS = 0; /*keep track of pixel on in the row*/
+      if(nextRowSL >= pngSTPtr->numPixelSL)
+         goto overflowErr_fun06_sec04;
+
+      tmpSL = byteSL % pngSTPtr->widthUS;/*x position*/
+      tmpSL += fontSTPtr->widthArySS[charUC];
+      if(tmpSL > pngSTPtr->widthUS)
+         goto overflowErr_fun06_sec04;
 
       for(
          charByteSS = 0;
@@ -663,7 +898,7 @@ drawVertText_pngDraw(
             if(rowPixSS >= fontSTPtr->widthArySS[charUC])
                break;
 
-            addPixels_fun05_sec03_sub01:;
+            addPixels_fun06_sec03_sub01:;
                if(pixelsUC & 1)
                   colSC = fgColSC;
                else
@@ -686,18 +921,18 @@ drawVertText_pngDraw(
             ++heightSS;
 
             if(nextRowSL >= pngSTPtr->numPixelSL)
-               goto overflowErr_fun05_sec04;
+               goto overflowErr_fun06_sec04;
          } /*If: I need to move to the next line*/
 
          if(heightSS >= fontSTPtr->heightSS)
             break; /*done with the character*/
          else if(pixSS < def_bitsPerChar_64bit)
-            goto addPixels_fun05_sec03_sub01;
+            goto addPixels_fun06_sec03_sub01;
             /*this reduces the amount of duplicate code*/
       }  /*Loop: fill in pixels for the character*/
 
       /**************************************************\
-      * Fun05 Sec03 Sub02:
+      * Fun06 Sec03 Sub02:
       *   - print the gap between characters
       \**************************************************/
 
@@ -725,13 +960,13 @@ drawVertText_pngDraw(
             if(! *textStr)
                ;
             else if(nextRowSL >= pngSTPtr->numPixelSL)
-               goto overflowErr_fun05_sec04;
+               goto overflowErr_fun06_sec04;
          }  /*Loop: add in the gap for vertical text*/
       } /*If: need to print the gap*/
    } /*Loop: add the text to the png*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun05 Sec04:
+   ^ Fun06 Sec04:
    ^   - return the result
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -740,12 +975,13 @@ drawVertText_pngDraw(
       `  floor the number
       */
 
-   overflowErr_fun05_sec04:;
+   overflowErr_fun06_sec04:;
       return -1;
 
-   nonAsciiChar_fun05_sec04:;
+   nonAsciiChar_fun06_sec04:;
       return -2;
-} /*drawVertText_pngDraw*/
+} /*drawVertNoAdjText_pngDraw*/
+
 
 /*=======================================================\
 : License:
