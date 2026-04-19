@@ -47,6 +47,9 @@ struct seqST;
 |     o number of bases in the sequence (index 1)
 |   - medianQFPtr:
 |     o float pointer to get the median q-score
+|   - ignoreXNtSI:
+|     o number of nucleotides to ignore at the start of
+|       the read (ONT uses 60)
 | Output:
 |   - Modifies:
 |     o medainQFPtr to have the median q-score
@@ -57,7 +60,8 @@ float
 meanMedQ_seqStats(
    signed char *qStr,
    signed int seqLenSI,
-   float *medianQFPtr
+   float *medianQFPtr,
+   signed int ignoreXNtSI
 );
 
 /*-------------------------------------------------------\
@@ -71,9 +75,9 @@ meanMedQ_seqStats(
 |     o number of bases in the sequence (index 1)
 |   - medianQFPtr:
 |     o float pointer to get the median q-score
-|   - keepFirst60Bl:
-|     o 1: keep the first 60 bases in the read
-|     o 0: follow ONT and ingore first 60 bases
+|   - ignoreXNtSI:
+|     o number of nucleotides to ignore at the start of
+|       the read (ONT uses 60)
 | Output:
 |   - Modifies:
 |     o medainQFPtr to have the median q-score
@@ -85,7 +89,7 @@ ontMeanMedQ_seqStats(
    signed char *qStr,
    signed int seqLenSI,
    float *medianQFPtr,
-   signed char keepFirst60Bl
+   signed int ignoreXNtSI
 );
 
 /*-------------------------------------------------------\
@@ -101,9 +105,12 @@ ontMeanMedQ_seqStats(
 |   - pHeadBlPtr:
 |     o 1: print header and set to 0
 |     o 0: do not print header
-|   - keepFirst60Bl:
-|     o 1: for ONT mean keep the firt 60 bases
-|     o 0: for ONT mean discard the first 60 bases
+|   - ontNtSkipSI:
+|     o number of bases to skip for the ONT q-score
+|       calculation
+|   - regNtSkipSI:
+|     o number of bases to skip for the regular q-score
+|       calculation
 |   - statMedthodSC:
 |     o 1: use ONT stat only
 |     o 2: use mean/median (no error step) only
@@ -113,16 +120,15 @@ ontMeanMedQ_seqStats(
 | Output:
 |   - Prints;
 |     o read stats (and header if requested) to outFILE
-|   - Modifies:
-|     o pHeadBlPtr to be 0 (if is not 0)
 \-------------------------------------------------------*/
 void
 pReadStats_seqStats(
    signed char *qStr,        /*quality score entry*/
    signed int seqLenSI,      /*bases in quality score*/
    signed char *idStr,       /*read id/name to print*/
-   signed char *pHeadBlPtr,  /*1: print header*/
-   signed char keepFirst60Bl,/*1: ONT keep first 60 nt*/
+   signed char pHeadBl,      /*1: print header*/
+   signed int ontNtSkipSI,   /*number ONT bases to skip*/
+   signed int regNtSkipSI,   /*number reg bases to skip*/
    signed char statMethodSC, /*1:ONT, 2:mean/med; 3:both*/
    void *outFILE             /*file to print to*/
 );

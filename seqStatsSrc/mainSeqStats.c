@@ -46,9 +46,18 @@
 !   - .c  #include "../genLib/fileFun.h"
 \%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-#define def_minMeanQ_mainSeqStats 13.0
-#define def_minMedianQ_mainSeqStats 7.0
+#define def_ontMinMeanQ_mainSeqStats 13.0
+#define def_ontMinMedianQ_mainSeqStats 7.0
+
+#define def_regMinMeanQ_mainSeqStats 0.0f
+#define def_regMinMedianQ_mainSeqStats 0.0f
+
+/*bases to skip in q-score calculation*/
+#define def_ontSkip_mainSeqStats 60
+#define def_regSkip_mainSeqStats 60
+
 #define def_minLen_mainSeqStats 500
+#define def_maxLen_mainSeqStats 0
 
 #define def_statsMode_mainSeqStats 1
 #define def_filterMode_mainSeqStats 2
@@ -109,10 +118,40 @@ phelp_mainSeqStats(
 
    fprintf(
       (FILE *) outFILE,
-      "seqStats reads.fastq%s",
+      "Get stats as tsv file (id, length, q-scores):%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "   seqStats reads.fastq > out.tsv%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "Get Filtered Stats (id, length, q-scores):%s",
+      str_endLine
+   );
+   fprintf(
+     (FILE *) outFILE,
+     "   seqStats -filter [options...] reads.fastq ... > out.tsv%s",
+     str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "Filter Reads:%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "   seqStats -filter -no-stats [options...] reads.fastq ... > out.fastq%s",
       str_endLine
    );
 
+   fprintf(
+      (FILE *) outFILE,
+      "Use:%s",
+      str_endLine
+   );
    fprintf(
       (FILE *) outFILE,
       "  - prints the read id, length, mean q-score,%s",
@@ -126,7 +165,7 @@ phelp_mainSeqStats(
 
    fprintf(
       (FILE *) outFILE,
-      "  - also can filter reads by q-score/length%s",
+      "  - Can filter reads by q-score/length%s",
       str_endLine
    );
 
@@ -209,13 +248,30 @@ phelp_mainSeqStats(
 
    fprintf(
       (FILE *) outFILE,
-      "  -len %i: [Optional]%s",
+      "  -min-len %i: [Optional]%s",
       def_minLen_mainSeqStats,
       str_endLine
    );
    fprintf(
      (FILE *) outFILE,
      "    o minimum length to keep read with `-filter`%s",
+     str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -max-len %i: [Optional]%s",
+      def_maxLen_mainSeqStats,
+      str_endLine
+   );
+   fprintf(
+     (FILE *) outFILE,
+     "    o maximum length to keep read with `-filter`%s",
+     str_endLine
+   );
+   fprintf(
+     (FILE *) outFILE,
+     "    o use 0 for any length (no maximum length)%s",
      str_endLine
    );
 
@@ -226,13 +282,25 @@ phelp_mainSeqStats(
 
    fprintf(
       (FILE *) outFILE,
-      "  -meanq %f: [Optional]%s",
-      def_minMeanQ_mainSeqStats,
+      "  -ont-mean-q %f: [Optional]%s",
+      def_ontMinMeanQ_mainSeqStats,
       str_endLine
    );
    fprintf(
      (FILE *) outFILE,
-     "    o minimum mean q-score for `-filter`%s",
+     "    o ont's minimum mean q-score for `-filter`%s",
+     str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -reg-mean-q %f: [Optional]%s",
+      def_regMinMeanQ_mainSeqStats,
+      str_endLine
+   );
+   fprintf(
+     (FILE *) outFILE,
+     "    o regular minimum mean q-score for `-filter`%s",
      str_endLine
    );
 
@@ -243,18 +311,69 @@ phelp_mainSeqStats(
 
    fprintf(
       (FILE *) outFILE,
-      "  -medianq %f: [Optional]%s",
-      def_minMedianQ_mainSeqStats,
+      "  -ont-median-q %f: [Optional]%s",
+      def_ontMinMedianQ_mainSeqStats,
       str_endLine
    );
    fprintf(
      (FILE *) outFILE,
-     "    o minimum median q-score for `-filter`%s",
+     "    o ont's minimum median q-score for `-filter`%s",
+     str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -reg-median-q %f: [Optional]%s",
+      def_ontMinMedianQ_mainSeqStats,
+      str_endLine
+   );
+   fprintf(
+     (FILE *) outFILE,
+     "    o regular minimum median q-score for filter%s",
      str_endLine
    );
 
    /*****************************************************\
    * Fun02 Sec02 Sub05:
+   *   - fastq file input
+   \*****************************************************/
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -ont-skip %i: [Optional]%s",
+      def_ontSkip_mainSeqStats,
+      str_endLine
+   );
+   fprintf(
+     (FILE *) outFILE,
+     "    o first x bases to ignore in the ONT%s",
+     str_endLine
+   );
+   fprintf(
+     (FILE *) outFILE,
+     "      q-score calculation%s",
+     str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "  -reg-skip %i: [Optional]%s",
+      def_regSkip_mainSeqStats,
+      str_endLine
+   );
+   fprintf(
+     (FILE *) outFILE,
+     "    o first x bases to ignore in the regular%s",
+     str_endLine
+   );
+   fprintf(
+     (FILE *) outFILE,
+     "      q-score calculation%s",
+     str_endLine
+   );
+
+   /*****************************************************\
+   * Fun02 Sec02 Sub06:
    *   - fastq file input
    \*****************************************************/
 
@@ -295,12 +414,24 @@ phelp_mainSeqStats(
 |     o number of arguments the user input
 |   - argAryStr:
 |     o c-string array with user input
-|   - lenSIPtr:
+|   - minLenSIPtr:
 |     o signed int pointer to get minimum length
-|   - meanQFPtr:
-|     o float pointer to get minimum mean q-score
-|   - medianQFPtr:
-|     o float pointer to get minimum median q-score
+|   - maxLenSIPtr:
+|     o signed int pointer to get the maximum length
+|   - ontMeanQFPtr:
+|     o float pointer to get ont minimum mean q-score
+|   - ontMedianQFPtr:
+|     o float pointer to get ont minimum median q-score
+|   - regMeanQFPtr:
+|     o float pointer to get ont minimum mean q-score
+|   - regMedianQFPtr:
+|     o float pointer to get ont minimum median q-score
+|   - ontNtSkipSIPtr:
+|     o signed int pointer to get number of first bases to 
+|       skip in ONT q-score calculation
+|   - regNtSkipSIPtr:
+|     o signed int pointer to get number of first bases to 
+|       skip in regular q-score calculation
 |   - modeFlagSCPtr:
 |     o signed char pointer to get mode working in
 |     o def_statsMode_mainSeqStats (1) if printing stats
@@ -321,9 +452,14 @@ signed int
 input_mainSeqStats(
    signed int argLenSI,  /*number of arguments*/
    char *argAryStr[],    /*input arguments*/
-   signed int *lenSIPtr, /*gets minimum length*/
-   float *meanQFPtr,     /*gets minimum mean q-score*/
-   float *medianQFPtr,   /*gets minimum median q-score*/
+   signed int *minLenSIPtr, /*gets minimum length*/
+   signed int *maxLenSIPtr, /*gets maximum length*/
+   float *ontMeanQFPtr,  /*gets minimum mean q-score*/
+   float *ontMedianQFPtr,/*gets minimum median q-score*/
+   float *regMeanQFPtr,  /*gets minimum mean q-score*/
+   float *regMedianQFPtr,/*gets minimum median q-score*/
+   signed int *ontNtSkipSIPtr, /*ont bases to skip*/
+   signed int *regNtSkipSIPtr, /*regular bases to skip*/
    signed char *modeFlagSCPtr /*mode to work in*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
@@ -379,18 +515,39 @@ input_mainSeqStats(
    { /*Loop: get user input*/
       if(
          ! eqlNull_ulCp(
-            (signed char *) "-len",
+            (signed char *) "-min-len",
             (signed char *) argAryStr[siArg]
          )
       ){ /*If: minimum length*/
          tmpStr = (signed char *) argAryStr[++siArg];
-         tmpStr += strToSI_base10str(tmpStr, lenSIPtr);
+         tmpStr += strToSI_base10str(tmpStr, minLenSIPtr);
 
          if(*tmpStr)
          { /*If: non-numeric or to large*/
             fprintf(
                stderr,
-               "-len %s is non-numeric or to large%s",
+               "-min-len %s is non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*If: non-numeric or to large*/
+      }  /*If: minimum length*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-max-len",
+            (signed char *) argAryStr[siArg]
+         )
+      ){ /*If: minimum length*/
+         tmpStr = (signed char *) argAryStr[++siArg];
+         tmpStr += strToSI_base10str(tmpStr, maxLenSIPtr);
+
+         if(*tmpStr)
+         { /*If: non-numeric or to large*/
+            fprintf(
+               stderr,
+               "-max-len %s is non-numeric or to large%s",
                argAryStr[siArg],
                str_endLine
             );
@@ -405,24 +562,45 @@ input_mainSeqStats(
 
       else if(
          ! eqlNull_ulCp(
-            (signed char *) "-meanq",
+            (signed char *) "-ont-mean-q",
             (signed char *) argAryStr[siArg]
          )
-      ){ /*If: minimum mean q-score*/
+      ){ /*If: minimum ont mean q-score*/
          tmpStr = (signed char *) argAryStr[++siArg];
-         tmpStr += strToF_base10str(tmpStr, meanQFPtr);
+         tmpStr += strToF_base10str(tmpStr, ontMeanQFPtr);
 
          if(*tmpStr)
          { /*If: non-numeric or to large*/
             fprintf(
-               stderr,
-               "-meanq %s is non-numeric or to large%s",
-               argAryStr[siArg],
-               str_endLine
+              stderr,
+              "-ont-mean-q %s; non-numeric or to large%s",
+              argAryStr[siArg],
+              str_endLine
             );
             goto err_fun03_sec03;
          } /*If: non-numeric or to large*/
-      }  /*If: minimum mean q-score*/
+      }  /*If: minimum ont mean q-score*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-reg-mean-q",
+            (signed char *) argAryStr[siArg]
+         )
+      ){ /*Else If: regular minimum mean q-score*/
+         tmpStr = (signed char *) argAryStr[++siArg];
+         tmpStr += strToF_base10str(tmpStr, regMeanQFPtr);
+
+         if(*tmpStr)
+         { /*If: non-numeric or to large*/
+            fprintf(
+              stderr,
+              "-reg-mean-q %s; non-numeric or to large%s",
+              argAryStr[siArg],
+              str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*If: non-numeric or to large*/
+      }  /*Else If: regular minimum mean q-score*/
 
       /**************************************************\
       * Fun03 Sec02 Sub03:
@@ -431,27 +609,99 @@ input_mainSeqStats(
 
       else if(
          ! eqlNull_ulCp(
-            (signed char *) "-medianq",
+            (signed char *) "-ont-median-q",
             (signed char *) argAryStr[siArg]
          )
-      ){ /*Else If: minimum median q-score*/
+      ){ /*Else If: ont minimum median q-score*/
          tmpStr = (signed char *) argAryStr[++siArg];
-         tmpStr += strToF_base10str(tmpStr, medianQFPtr);
+         tmpStr +=
+            strToF_base10str(tmpStr, ontMedianQFPtr);
 
          if(*tmpStr)
          { /*If: non-numeric or to large*/
             fprintf(
                stderr,
-               "-medianq %s is non-numeric or to large%s",
+               "-ont-median-q %s; non-numeric/to large%s",
                argAryStr[siArg],
                str_endLine
             );
             goto err_fun03_sec03;
          } /*If: non-numeric or to large*/
-      }  /*Else If: minimum median q-score*/
+      }  /*Else If: ont minimum median q-score*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-reg-median-q",
+            (signed char *) argAryStr[siArg]
+         )
+      ){ /*Else If: regular minimum median q-score*/
+         tmpStr = (signed char *) argAryStr[++siArg];
+         tmpStr +=
+            strToF_base10str(tmpStr, regMedianQFPtr);
+
+         if(*tmpStr)
+         { /*If: non-numeric or to large*/
+            fprintf(
+               stderr,
+               "-reg-median-q %s; non-numeric/to large%s",
+               argAryStr[siArg],
+               str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*If: non-numeric or to large*/
+      }  /*Else If: regular minimum median q-score*/
 
       /**************************************************\
       * Fun03 Sec02 Sub04:
+      *   - get number bases to skip for q-score
+      \**************************************************/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-ont-skip",
+            (signed char *) argAryStr[siArg]
+         )
+      ){ /*Else If: ont number of bases to skip at start*/
+         tmpStr = (signed char *) argAryStr[++siArg];
+         tmpStr +=
+            strToSI_base10str(tmpStr, ontNtSkipSIPtr);
+
+         if(*tmpStr)
+         { /*If: non-numeric or to large*/
+            fprintf(
+               stderr,
+               "-ont-skip %s; non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*If: non-numeric or to large*/
+      }  /*Else If: ont number of bases to skip at start*/
+
+      else if(
+         ! eqlNull_ulCp(
+            (signed char *) "-reg-skip",
+            (signed char *) argAryStr[siArg]
+         )
+      ){ /*Else If: number of first bases to skip reg*/
+         tmpStr = (signed char *) argAryStr[++siArg];
+         tmpStr +=
+            strToSI_base10str(tmpStr, regNtSkipSIPtr);
+
+         if(*tmpStr)
+         { /*If: non-numeric or to large*/
+            fprintf(
+               stderr,
+               "-reg-skip %s; non-numeric or to large%s",
+               argAryStr[siArg],
+               str_endLine
+            );
+            goto err_fun03_sec03;
+         } /*If: non-numeric or to large*/
+      }  /*Else If: number of first bases to skip reg*/
+
+      /**************************************************\
+      * Fun03 Sec02 Sub05:
       *   - get mode using
       \**************************************************/
 
@@ -484,7 +734,7 @@ input_mainSeqStats(
       ) *modeFlagSCPtr &= ~def_statsMode_mainSeqStats;
 
       /**************************************************\
-      * Fun03 Sec02 Sub05:
+      * Fun03 Sec02 Sub06:
       *   - get help message
       \**************************************************/
 
@@ -524,7 +774,7 @@ input_mainSeqStats(
       ) goto phelp_fun03_sec03;
 
       /**************************************************\
-      * Fun03 Sec02 Sub06:
+      * Fun03 Sec02 Sub07:
       *   - get version number
       \**************************************************/
 
@@ -564,7 +814,7 @@ input_mainSeqStats(
       ) goto pversion_fun03_sec03;
 
       /**************************************************\
-      * Fun03 Sec02 Sub07:
+      * Fun03 Sec02 Sub08:
       *   - check if on files or invalid input
       \**************************************************/
 
@@ -588,7 +838,7 @@ input_mainSeqStats(
       } /*Else: if unkown input*/
 
       /**************************************************\
-      * Fun03 Sec02 Sub08:
+      * Fun03 Sec02 Sub09:
       *   - move to next argument
       \**************************************************/
 
@@ -672,13 +922,22 @@ main(
    signed char errSC = 0;
    signed long seqSL = 0;
 
-   float minMeanQF = def_minMeanQ_mainSeqStats;
-   float minMedianQF = def_minMedianQ_mainSeqStats;
+   float ontMinMeanQF = def_ontMinMeanQ_mainSeqStats;
+   float ontMinMedianQF = def_ontMinMedianQ_mainSeqStats;
+   signed int ontNtSkipSI = def_ontSkip_mainSeqStats;
+
+   float regMinMeanQF = def_regMinMeanQ_mainSeqStats;
+   float regMinMedianQF = def_regMinMedianQ_mainSeqStats;
+   signed int regNtSkipSI = def_regSkip_mainSeqStats;
+
    signed int minLenSI = def_minLen_mainSeqStats;
+   signed int maxLenSI = def_maxLen_mainSeqStats;
    signed char modeFlagSC = def_mode_mainSeqStats;
 
-   float meanQF = 0;
-   float medianQF = 0;
+   float ontMeanQF = 0;
+   float ontMedianQF = 0;
+   float regMeanQF = 0;
+   float regMedianQF = 0;
 
    FILE *seqFILE = 0;
    FILE *outFILE = stdout;
@@ -696,8 +955,13 @@ main(
          argLenSI,
          argAryStr,
          &minLenSI,
-         &minMeanQF,
-         &minMedianQF,
+         &maxLenSI,
+         &ontMinMeanQF,
+         &ontMinMedianQF,
+         &regMinMeanQF,
+         &regMinMedianQF,
+         &ontNtSkipSI,
+         &regNtSkipSI,
          &modeFlagSC
       );
 
@@ -768,31 +1032,53 @@ main(
          { /*If: filtering the read*/
             if(seqStackST.seqLenSL < minLenSI)
                goto nextRead_main_sec03_sub04;
+            else if(maxLenSI <= 0)
+               ; /*not filtering by length*/
+            else if(seqStackST.seqLenSL > maxLenSI)
+               goto nextRead_main_sec03_sub04;
 
-            meanQF =
+            regMeanQF =
+               meanMedQ_seqStats(
+                  seqStackST.qStr,
+                  seqStackST.seqLenSL,
+                  &regMedianQF,
+                  regNtSkipSI
+               );
+
+            ontMeanQF =
                ontMeanMedQ_seqStats(
                   seqStackST.qStr,
                   seqStackST.seqLenSL,
-                  &medianQF,
-                  0
+                  &ontMedianQF,
+                  ontNtSkipSI
                );
 
-            if(meanQF < minMeanQF)
+            if(ontMeanQF < ontMinMeanQF)
                goto nextRead_main_sec03_sub04;
-            if(medianQF < minMedianQF)
+            else if(ontMedianQF < ontMinMedianQF)
+               goto nextRead_main_sec03_sub04;
+            else if(regMeanQF < regMinMeanQF)
+               goto nextRead_main_sec03_sub04;
+            else if(regMedianQF < regMinMedianQF)
                goto nextRead_main_sec03_sub04;
          } /*If: filtering the read*/
 
          if(modeFlagSC & def_statsMode_mainSeqStats)
+         { /*If: only printing stats*/
             pReadStats_seqStats(
                seqStackST.qStr,
                seqStackST.seqLenSL,
                seqStackST.idStr,
-               &pHeadBl,
-               0,
-               1, /*ONT only*/
+               pHeadBl,
+               ontNtSkipSI,
+               regNtSkipSI,
+               3, /*both ONT and regular*/
                outFILE
             );
+
+            if(pHeadBl)
+               pHeadBl = 0;
+         } /*If: only printing stats*/
 
          /***********************************************\
          * Main Sec03 Sub03:
@@ -803,11 +1089,19 @@ main(
          { /*Else If: printing reads*/
             fprintf(
                (FILE *) outFILE,
-               "@%s\tmeanQ=%.2f\tmedianQ=%.2f",
+               "@%s\tontMeanQ=%.2f\tontMedianQ=%.2f",
                seqStackST.idStr,
-               meanQF,
-               medianQF
+               ontMeanQF,
+               ontMedianQF
             );
+
+            fprintf(
+               (FILE *) outFILE,
+               "\tregMeanQ=%.2f\tregMedianQ=%.2f",
+               regMeanQF,
+               regMedianQF
+            );
+
 
             fprintf(
                (FILE *) outFILE,

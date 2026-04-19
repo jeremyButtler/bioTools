@@ -21,6 +21,8 @@
 '   o fun07: ontMeanMedQ_seqStats
 '     - gets the mean and median q-score for a sequence
 '       using ONT's method
+'   o fun08: pReadStats_seqStats
+'     - prints stats for a single read
 '   o license:
 '     - licensing for this code (CC0)
 \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -214,6 +216,7 @@ qhistToMedQ_seqStats(
    signed int qSI = 0;
    signed int midSI = 0;
    float medianQF = 0;
+   float tmpF = 0;
 
    midSI = seqLenSI >> 1;
 
@@ -223,15 +226,45 @@ qhistToMedQ_seqStats(
 
       if(qSI >= midSI)
       { /*If: found the midpoint*/
+         medianQF = (float) siNt;
+
+         if(ontMethodBl)
+         { /*If: need to adjust for ONT*/
+            medianQF /= (float) -10;
+
+            #ifdef NO_MATH_H
+               medianQF = pow10_seqStats(medianQF);
+            #else
+               medianQF = pow(10, medianQF);
+            #endif
+         } /*If: need to adjust for ONT*/
+
          if(qSI > midSI || qSI & 1)
-            medianQF = (float) siNt;
+            ; /*If: one base for the median q-score*/
+
          else
          { /*Else: even & 2 differnt Q's at midpoint*/
-            qSI = siNt++;
             while(qhistArySI[siNt++] == 0)
                ;
             --siNt; /*account for being one off*/
-            medianQF = (qSI + siNt) / ((float) 2);
+
+            if(ontMethodBl)
+            { /*If: need to adjust to ONTs method*/
+               tmpF = siNt;
+               tmpF /= (float) -10;
+
+               #ifdef NO_MATH_H
+                  tmpF = pow10_seqStats(tmpF);
+               #else
+                  tmpF = pow(10, tmpF);
+               #endif
+            } /*If: need to adjust to ONTs method*/
+
+            else
+               tmpF = siNt;
+
+            medianQF += tmpF;
+            medianQF /= (float) 2;
          } /*Else: even & 2 differnt Q's at midpoint*/
 
          break;
@@ -240,13 +273,9 @@ qhistToMedQ_seqStats(
 
    if(ontMethodBl)
    { /*If: using ont's q-score method*/
-      medianQF /= (float) -10;
-
       #ifdef NO_MATH_H
-         medianQF = pow10_seqStats(medianQF);
          medianQF = -10 * log10_seqStats(medianQF);
       #else
-         medianQF = pow(10, medianQF);
          medianQF = -10 * log10(medianQF);
       #endif
    } /*If: using ont's q-score method*/
@@ -323,6 +352,9 @@ qhistToMeanQ_seqStats(
 |     o number of bases in the sequence (index 1)
 |   - medianQFPtr:
 |     o float pointer to get the median q-score
+|   - ignoreXNtSI:
+|     o number of nucleotides to ignore at the start of
+|       the read (ONT uses 60)
 | Output:
 |   - Modifies:
 |     o medainQFPtr to have the median q-score
@@ -333,7 +365,8 @@ float
 meanMedQ_seqStats(
    signed char *qStr,
    signed int seqLenSI,
-   float *medianQFPtr
+   float *medianQFPtr,
+   signed int ignoreXNtSI
 ){
    signed int histArySI[def_maxQ_seqStats];
    unsigned long totalQUL = 0;
@@ -345,11 +378,13 @@ meanMedQ_seqStats(
       return 0;
    else if(! qStr[0])
       return 0;
+   else if(ignoreXNtSI >= seqLenSI)
+      return 0;
 
    for(siNt = 0; siNt < def_maxQ_seqStats; ++siNt)
       histArySI[siNt] = 0;
 
-   for(siNt = 0; siNt < seqLenSI; ++siNt)
+   for(siNt = ignoreXNtSI; siNt < seqLenSI; ++siNt)
    { /*Loop: find the q-score*/
       qSI = qStr[siNt] - def_qAdj_seqStats;
       totalQUL += qSI;
@@ -357,8 +392,14 @@ meanMedQ_seqStats(
    } /*Loop: find the q-score*/
 
    *medianQFPtr =
-      qhistToMedQ_seqStats(histArySI, seqLenSI, 0);
-   return (double) totalQUL / (float) seqLenSI;
+      qhistToMedQ_seqStats(
+         histArySI,
+         seqLenSI - ignoreXNtSI,
+         0
+      );
+   return
+        (double) totalQUL
+      / (float) (seqLenSI - ignoreXNtSI);
 } /*meanMedQ_seqStats*/
 
 /*-------------------------------------------------------\
@@ -372,9 +413,9 @@ meanMedQ_seqStats(
 |     o number of bases in the sequence (index 1)
 |   - medianQFPtr:
 |     o float pointer to get the median q-score
-|   - keepFirst60Bl:
-|     o 1: keep the first 60 bases in the read
-|     o 0: follow ONT and ingore first 60 bases
+|   - ignoreXNtSI:
+|     o number of nucleotides to ignore at the start of
+|       the read (ONT uses 60)
 | Output:
 |   - Modifies:
 |     o medainQFPtr to have the median q-score
@@ -386,7 +427,7 @@ ontMeanMedQ_seqStats(
    signed char *qStr,
    signed int seqLenSI,
    float *medianQFPtr,
-   signed char keepFirst60Bl
+   signed int ignoreXNtSI
 ){
    signed int histArySI[def_maxQ_seqStats];
    signed int siNt = 0;
@@ -398,35 +439,30 @@ ontMeanMedQ_seqStats(
       return 0;
    else if(! qStr[0])
       return 0;
+   else if(ignoreXNtSI >= seqLenSI)
+      return 0;
 
    for(siNt = 0; siNt < def_maxQ_seqStats; ++siNt)
       histArySI[siNt] = 0;
 
-   if(seqLenSI > 60 && ! keepFirst60Bl)
-      siNt = 60;
-   else
-      siNt = 0;
-
-   while(siNt < seqLenSI)
+   for(siNt = ignoreXNtSI; siNt < seqLenSI; ++siNt)
    { /*Loop: find the q-score*/
       qSI = qStr[siNt++] - def_qAdj_seqStats;
       ++histArySI[qSI];
    } /*Loop: find the q-score*/
 
-   if(seqLenSI > 60 && ! keepFirst60Bl)
-   { /*If: ignoring the first 60 bases*/
-      *medianQFPtr =
-         qhistToMedQ_seqStats(histArySI, seqLenSI-60, 1);
-      qF = qhistToMeanQ_seqStats(histArySI,seqLenSI-60,1);
-   } /*If: ignoring the first 60 bases*/
-
-   else
-   { /*Else: keeping the first 60 bases*/
-      *medianQFPtr =
-         qhistToMedQ_seqStats(histArySI, seqLenSI, 1);
-            /*1 is for using ONT method*/
-      qF = qhistToMeanQ_seqStats(histArySI, seqLenSI, 1);
-   } /*Else: keeping the first 60 bases*/
+   *medianQFPtr =
+      qhistToMedQ_seqStats(
+         histArySI,
+         seqLenSI - ignoreXNtSI,
+         1
+      );
+   qF =
+      qhistToMeanQ_seqStats(
+          histArySI,
+          seqLenSI - ignoreXNtSI,
+          1
+      );
 
    return qF;
 } /*ontMeanMedQ_seqStats*/
@@ -441,12 +477,15 @@ ontMeanMedQ_seqStats(
 |     o number of bases in the sequence (index 1)
 |   - idStr:
 |     o c-string with id to print out
-|   - pHeadBlPtr:
+|   - pHeadBl:
 |     o 1: print header and set to 0
 |     o 0: do not print header
-|   - keepFirst60Bl:
-|     o 1: for ONT mean keep the firt 60 bases
-|     o 0: for ONT mean discard the first 60 bases
+|   - ontNtSkipSI:
+|     o number of bases to skip for the ONT q-score
+|       calculation
+|   - regNtSkipSI:
+|     o number of bases to skip for the regular q-score
+|       calculation
 |   - statMedthodSC:
 |     o 1: use ONT stat only
 |     o 2: use mean/median (no error step) only
@@ -456,16 +495,15 @@ ontMeanMedQ_seqStats(
 | Output:
 |   - Prints;
 |     o read stats (and header if requested) to outFILE
-|   - Modifies:
-|     o pHeadBlPtr to be 0 (if is not 0)
 \-------------------------------------------------------*/
 void
 pReadStats_seqStats(
    signed char *qStr,        /*quality score entry*/
    signed int seqLenSI,      /*bases in quality score*/
    signed char *idStr,       /*read id/name to print*/
-   signed char *pHeadBlPtr,  /*1: print header*/
-   signed char keepFirst60Bl,/*1: ONT keep first 60 nt*/
+   signed char pHeadBl,      /*1: print header*/
+   signed int ontNtSkipSI,   /*number ONT bases to skip*/
+   signed int regNtSkipSI,   /*number reg bases to skip*/
    signed char statMethodSC, /*1:ONT, 2:mean/med; 3:both*/
    void *outFILE             /*file to print to*/
 ){
@@ -475,7 +513,7 @@ pReadStats_seqStats(
    signed int siNt = 0;
 
 
-   if(*pHeadBlPtr)
+   if(pHeadBl)
    { /*If: printing the header*/
       fprintf((FILE *) outFILE, "id\tlength");
       if(statMethodSC & 1)
@@ -489,8 +527,6 @@ pReadStats_seqStats(
             "\tmean_q\tmedian_q%s",
             str_endLine
          );
-      fprintf((FILE *) outFILE, "%s", str_endLine);
-      *pHeadBlPtr = 0;
    } /*If: printing the header*/
 
 
@@ -510,7 +546,7 @@ pReadStats_seqStats(
             qStr,
             seqLenSI,
             &medianF,
-            keepFirst60Bl
+            ontNtSkipSI
          );
       fprintf(
          (FILE *) outFILE,
@@ -522,7 +558,13 @@ pReadStats_seqStats(
 
    if(statMethodSC & 2)
    { /*If: printing mean/median method*/
-      meanF = meanMedQ_seqStats(qStr, seqLenSI, &medianF);
+      meanF =
+         meanMedQ_seqStats(
+            qStr,
+            seqLenSI,
+            &medianF,
+            regNtSkipSI
+         );
       fprintf(
          (FILE *) outFILE,
          "\t%0.2f\t%0.2f%s",
