@@ -2,6 +2,14 @@
 
 Has a list of updates I have tracked for bioTools
 
+-2026-03-19:
+  - fixed an error were k2TaxaId would not create bins
+    for taxanoic levels with a high number of total reads
+    (went to child taxa), but a low level of actual
+    assigned reads.
+-2026-03-17:
+  - found an error were on rare cases the samEntry system
+    would skip a read
 -2026-03-07:
   - separated the font from the png drawing
   - created a smaller font
