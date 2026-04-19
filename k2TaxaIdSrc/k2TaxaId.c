@@ -645,6 +645,8 @@ getLevel_k2TaxaId(
 |     o min read depth to keep an id (taxa)
 |   - minPercDepthF:
 |     o min percent read depth (0 to 100) to keep an id
+|     o this is the percent column in the reprot, which
+|       includes all reads assigned to child taxa
 |   - miniRepBl:
 |     o 1: report is kraken2 minizer report (unique)
 |     o 0: report is normal kraken2  report
@@ -715,9 +717,13 @@ readReport_k2TaxaId(
       /*keeps track of were at in tree*/
 
    unsigned long readDepthUL = 0;
+   unsigned long totalDepthUL = 0;
+   float percDepthF = 0;
+      /*percent column in report; this is of all reads
+      `  that were assigned
+      */
 
    signed int depthSI = 0;     /*current depth in tree*/
-   float percDepthF = 0; /*percent read depth*/
    signed int tmpSI = 1;
    signed int posSI = 1;
    signed short levelSS = 0;
@@ -756,9 +762,9 @@ readReport_k2TaxaId(
    ^   o fun10 sec03 sub01:
    ^     - move past % entry and get first line
    ^   o fun10 sec03 sub02:
-   ^     - move past total reads count entry
+   ^     - get the total number of reads
    ^   o fun10 sec03 sub03:
-   ^     - move past reads only assigned to this organim
+   ^     - get reads assigned to this organim
    ^   o fun10 sec03 sub04:
    ^     - get level of organism in tree & move to name
    ^   o fun10 sec03 sub05:
@@ -805,23 +811,33 @@ readReport_k2TaxaId(
 
       /**************************************************\
       * Fun10 Sec03 Sub02:
-      *   - move past total reads count entry
+      *   - get the total number of reads
       \**************************************************/
 
-      /*get past number of reads*/
-      while(*tmpStr++ > 32) ;
+      tmpStr +=
+         strToUL_base10str(
+            tmpStr,
+            &totalDepthUL
+         );
 
-      while(*tmpStr < 33)
-      { /*Loop: move to number unique reads*/
-         ++tmpStr;
+      if(*tmpStr > 32)
+         goto fileErr_fun10_sec04;
+         /*incomplete conversion*/
 
-         if(*tmpStr == '\0')
-            goto fileErr_fun10_sec04;
-      } /*Loop: move to number unique reads*/
+      if(*tmpStr == '\0')
+         goto fileErr_fun10_sec04;
+
+      ++tmpStr;
+
+      if(*tmpStr == '\0')
+         goto fileErr_fun10_sec04;
+
+      if(*tmpStr < 32)
+         continue; /*unkown taxanomic level*/
 
       /**************************************************\
       * Fun10 Sec03 Sub03:
-      *   - move past reads only assigned to this organim
+      *   - get reads assigned to this organim
       \**************************************************/
 
       /*in some cases (viruses) kraken will assign tab
@@ -935,10 +951,8 @@ readReport_k2TaxaId(
       histLevArySS[depthSI] = levelSS;
 
       /*filtering*/
-      if(
-            ! mergeRootBl
-         && ! mergeTipBl
-      ){ /*If: not merging reads (do check later)*/
+      if(! mergeRootBl && ! mergeTipBl)
+      { /*If: not merging reads (do check later)*/
          if(levelSS <= endLevSS)
             continue; /*to high (near tip) level to keep*/
 
@@ -958,14 +972,8 @@ readReport_k2TaxaId(
          else
             histArySL[depthSI] = -1; /*no history yet*/
 
-         /*not safe for merging*/
-         /*if(readDepthUL < 1)
-            continue;*/ /*no reads for taxa id*/
-
-         if(
-               ! mergeTipBl
-            && levelSS <= endLevSS
-         ) continue; /*to high (near tip) level to keep*/
+         if(! mergeTipBl && levelSS <= endLevSS)
+            continue; /*to high (near tip) level to keep*/
       } /*Else: merging reads*/
 
       /**************************************************\
@@ -997,7 +1005,6 @@ readReport_k2TaxaId(
                   retTaxaHeapST,
                   retTaxaHeapST->sizeTaxaSL
                      + def_expand_fun10
-
                )
             ) goto memErr_fun10_sec04;
          } /*If: need to resize array*/
@@ -1087,6 +1094,9 @@ readReport_k2TaxaId(
                   continue;
              } /*If: to near tip*/
 
+             else if(totalDepthUL >= minDepthUL)
+                ; /*eventually I get enough depth*/
+
              else if(
                    readDepthUL < minDepthUL
                 || percDepthF < minPercDepthF
@@ -1146,6 +1156,9 @@ readReport_k2TaxaId(
                ++retTaxaHeapST->numTaxaSL;
                continue; /*not merging tip into root*/
             } /*Else If: merging tip only*/
+
+            else if(totalDepthUL >= minDepthUL)
+               ; /*eventually I get enough depth*/
 
             else if(
                   readDepthUL < minDepthUL

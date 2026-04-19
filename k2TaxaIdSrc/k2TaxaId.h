@@ -273,6 +273,8 @@ getLevel_k2TaxaId(
 |     o min read depth to keep an id (taxa)
 |   - minPercDepthF:
 |     o min percent read depth (0 to 100) to keep an id
+|     o this is the percent column in the reprot, which
+|       includes all reads assigned to child taxa
 |   - miniRepBl:
 |     o 1: report is kraken2 minizer report (unique)
 |     o 0: report is normal kraken2  report
