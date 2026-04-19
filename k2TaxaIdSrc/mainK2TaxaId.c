@@ -436,7 +436,12 @@ phelp_mainK2TaxaId(
    );
    fprintf(
       (FILE *) outFILE,
-      "        which holds the percent of all reads%s",
+      "        which has the percent of reads assigned%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "        to all taxa at this rank or lower%s",
       str_endLine
    );
 
