@@ -532,7 +532,7 @@ getFa_seqST(
 
     lineErr_fun03_sec04:;
        errSC = def_fileErr_seqST;
-       errSC = def_badLine_seqST;
+       errSC |= def_badLine_seqST;
        goto ret_fun03_sec04;
 
     ret_fun03_sec04:;
