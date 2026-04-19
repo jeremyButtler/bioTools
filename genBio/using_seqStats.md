@@ -30,8 +30,11 @@ You can get the regular mean and medain q-scores using the
 
 - Input:
   1. c-string with the quality score entry
-  2. lenght of the sequence
+  2. length of the sequence
   3. float pointer to get the median q-score
+  4. number of bases to skip at the start
+     - ONT often skips the first 60 bases because they are
+       low quality, so use 60. For Illumina use 0.
 - Output:
   - Modifies:
     - input 3 to have the median q-score
@@ -71,7 +74,8 @@ main(
          meanMedQ_seqStats(
             seqStackST.qStr,
             seqStackST.seqLenSL,
-            &medianQF
+            &medianQF,
+            60 /*ignore the first 60 bases*/
          );
       printf(
          "id=%s\tmean=%.1f\tmedian=%.1f\n", 
@@ -113,9 +117,9 @@ You can get the ONT mean and medain (sames as regular)
   1. c-string with the quality score entry
   2. lenght of the sequence
   3. float pointer to get the median q-score
-  4. 1: to keep the first 60 bases, 0 to remove
-     - ONT skips the first 60 bases because they are low
-       quality
+  4. number of bases to skip at the start
+     - ONT often skips the first 60 bases because they are
+       low quality, so use 60. For Illumina use 0.
 - Output:
   - Modifies:
     - input 3 to have the median q-score
@@ -156,7 +160,7 @@ main(
             seqStackST.qStr,
             seqStackST.seqLenSL,
             &medianQF,
-            0 /*0 means ingore the frist 60 bases*/
+            60 /*ingore the frist 60 bases*/
          );
       printf(
          "id=%s\tmean=%.1f\tmedian=%.1f\n", 
@@ -197,17 +201,21 @@ You can print the mean and median q-scores and some other
   1. c-string with the quality score entry
   2. lenght of the sequence
   3. c-string with the id to print out for the read
-  4. signed char pointer to print header
-     - 1: print header and set signed char pionter to 0
+  4. signed char telling if to print the header or not
+     - 1: print header
      - 0: do not print the header
-  5. 0: ignore the first 60 bases; 1 keep the frist 60
-     - ONT skips the first 60 bases because they are low
-       quality
-  6. method to print out (1 ONT; 2 non-ONT; 3 both)
-  7. File to print to
+  5. number of bases to skip at the start for the ONT
+     q-scores mentod
+     - ONT often skips the first 60 bases because they are
+       low quality, so use 60. For Illumina use 0.
+  6. number of bases to skip at the start for the ONT
+     q-scores mentod
+     - ONT often skips the first 60 bases because they are
+       low quality, so use 60. For Illumina use 0.
+  7. method to print out (1 ONT; 2 non-ONT; 3 both)
+  8. File to print to
 - Output:
   - Prints: the stats to the output file
-  - Modifies: input 4 to be 0
 
 **non-tested example**
 
@@ -245,7 +253,8 @@ main(
          seqStackST.seqLenSL,
          &medianQF,
          &printHeaderBl,
-         0, /*0 means ingore the frist 60 bases*/
+         60, /*ingore the frist 60 bases*/
+         60, /*ingore the frist 60 bases*/
          3, /*do ONT and non-ONT q-scores*/
          stdout /*print to stdout*/
       );

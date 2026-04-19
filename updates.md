@@ -7,6 +7,8 @@ Has a list of updates I have tracked for bioTools
     for taxanoic levels with a high number of total reads
     (went to child taxa), but a low level of actual
     assigned reads.
+  - added in an option to igonre the first x bases in
+    seqStats and some minor fixes
 -2026-03-17:
   - found an error were on rare cases the samEntry system
     would skip a read
