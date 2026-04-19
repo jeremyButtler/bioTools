@@ -49,7 +49,7 @@ signed char *glob_prefStr = (signed char *) "Hagrid";
 signed char *glob_startLevStr = (signed char *) "F";
 signed char *glob_endLevStr = (signed char *) "G";
 
-#define def_minDepth_mainK2TaxaId 10 /*at least 10 reads*/
+#define def_minDepth_mainK2TaxaId 30 /*at least 30 reads*/
 #define def_minPercDepth_mainK2TaxaId 0.0f
 #define def_minimizeRep_mainK2TaxaId 0
    /*1: report includes both minimzer columns*/
@@ -427,6 +427,16 @@ phelp_mainK2TaxaId(
    fprintf(
       (FILE *) outFILE,
       "      o minimum percent read depth to print ids%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      o first column in the kraken2 report,%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "        which holds the percent of all reads%s",
       str_endLine
    );
 
