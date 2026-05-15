@@ -1,7 +1,7 @@
 LD=cc
 coreCFLAGS= -O0 -std=c89 -g -Werror -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self -c
 CFLAGS=-DNONE
-NAME=adjCoordsSrc
+NAME=adjCoords
 PREFIX=/usr/local/bin
 O=o.bug
 

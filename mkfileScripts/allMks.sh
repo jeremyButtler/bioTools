@@ -5,7 +5,7 @@ cd "$scriptDirStr" || exit;
 retDirStr="$(basename "$scriptDirStr" | sed 's/\.\///;')";
 
 cd ../adjCoordsSrc || exit;
-sh "../$retDirStr/allOSMkfiles.sh"  adjCoordsSrc mainAdjCoords adjCoords charCp ../bioTools.h ../genLib/endLine.h
+sh "../$retDirStr/allOSMkfiles.sh"  adjCoords mainAdjCoords adjCoords charCp ../bioTools.h ../genLib/endLine.h
 cd "../$retDirStr" || exit;
 
 cd ../alnNeedleSrc || exit;

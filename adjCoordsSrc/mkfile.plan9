@@ -1,7 +1,7 @@
 </$objtype/mkfile
 coreCFLAGS=-DPLAN9
 CFLAGS=-DNONE
-NAME=adjCoordsSrc
+NAME=adjCoords
 PREFIX=$home/bin
 
 genBio=../genBio

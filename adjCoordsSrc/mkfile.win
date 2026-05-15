@@ -3,7 +3,7 @@ CC=cl.exe
 LD=link.exe
 coreCFLAGS= /c /O2 /Ot /Za /Tc
 CFLAGS=/DNONE
-NAME=adjCoordsSrc.exe
+NAME=adjCoords.exe
 PREFIX="%localAppData%"
 O=o.win
 
