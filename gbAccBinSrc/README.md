@@ -64,9 +64,12 @@ To process a text file with accession numbers you can
   accession ids. For non-assembly accession numbers it is
   `<prefix>-<accession>.txt`.
 
-To process a fasta or fasta.gz file do
+To process a fasta .gz file do
   `gbAccBin -fa <file>.fa -prefix out`. The assembly
   accession output is saved in
   `<prefix>-<accession>_<assembly_id>.fa`. For
    non-assembly accession numbers it is
   `<prefix>-<accession>.fa`.
+
+For fasta.gz files do
+   `cat <file>.fasta.gz | gunzip -c | gbAccBin -fa - prefix out`.

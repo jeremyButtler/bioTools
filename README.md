@@ -348,6 +348,7 @@ This is getting to long. see the updates.md file.
 5. unGz
    - has issue printing last Illumina reads in windows
      for stdout (not sure about stdout)
+   - fix error out in longer gz files
 
 # Thanks
 
