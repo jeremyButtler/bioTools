@@ -15,7 +15,9 @@ Still need to do OS tests on all tools. This is a spare
 
 # License
 
-CC0. Should be equal to public domain.
+CC0. Should be equal to public domain. Some readmes in
+  this repository may not be updated yet, but the code
+  should be.
 
 # Installing
 
@@ -267,6 +269,11 @@ The programs are built and debugged on Linux and then
       - default is mapped reference comparision, but you
         can compare two sam entries (less accurate)
     - works on linux and plan9
+  - gbAccBin (general analysis):
+    - Process genbank reads and bins accessions or
+      sequences in fasta files by Genbank accession number
+    - This is here because I did not want to parse a large
+      file manually
   - getLin (stopASF and freezeTB):
     - detects SNP, TRS, deletion, and insertions lineages
       using an input tsv spread sheet with lineages

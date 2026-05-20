@@ -2,6 +2,11 @@
 
 Has a list of updates I have tracked for bioTools
 
+-2026-05-20:
+  - gzSeqST had an array out of bounds hit for blank lines
+    in fasta files (fixed)
+  - add gbAccBin to bin genbank accession numbers by
+    assembly
 -2026-03-19:
   - fixed an error were k2TaxaId would not create bins
     for taxanoic levels with a high number of total reads
