@@ -229,16 +229,26 @@ get_gzSeqST(
          *typeSCPtr |= def_fqType_gzSeqST;
       else if(seqSTPtr->idStr[0] == '>')
          *typeSCPtr |= def_faType_gzSeqST;
+      else if(! seqSTPtr->idStr[0])
+         goto getPastBlank_seqST_fun01_sec02_sub02_cat02;
       else if(seqSTPtr->idStr[1] == '>')
          *typeSCPtr |= def_faType_gzSeqST;
+      else if(! seqSTPtr->idStr[1])
+         goto getPastBlank_seqST_fun01_sec02_sub02_cat02;
       else if(seqSTPtr->idStr[2] == '>')
          *typeSCPtr |= def_faType_gzSeqST;
       else
       { /*Else: may need to get past blank lines*/
+         getPastBlank_seqST_fun01_sec02_sub02_cat02:;
+
          if(seqSTPtr->idStr[0] > 32)
             goto fileErr_fun01_sec06; /*unkown file*/
+         else if(! seqSTPtr->idStr[0])
+            ; /*blank line*/
          else if(seqSTPtr->idStr[1] > 32)
             goto fileErr_fun01_sec06; /*unkown file*/
+         else if(! seqSTPtr->idStr[1])
+            ; /*blank line*/
          else if(seqSTPtr->idStr[2] > 32)
             goto fileErr_fun01_sec06; /*unkown file*/
 
