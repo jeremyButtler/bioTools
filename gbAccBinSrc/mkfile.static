@@ -1,0 +1,122 @@
+
+CC=cc
+LD=cc
+coreCFLAGS= -O3 -std=c89 -static -Wall -Wextra -Wpedantic -Wundef -Waggregate-return -Wwrite-strings -Wstrict-prototypes -Wpointer-arith -Wshadow -Wunreachable-code -Winit-self -c
+CFLAGS=-DNONE
+NAME=gbAccBin
+PREFIX=/usr/local/bin
+O=o.static
+
+genBio=../genBio
+genLib=../genLib
+
+objFiles= \
+   $(genBio)/accession.$O \
+   $(genBio)/gzSeqST.$O \
+   $(genLib)/numToStr.$O \
+   $(genLib)/inflate.$O \
+   $(genLib)/checkSum.$O \
+   $(genLib)/endin.$O \
+   $(genLib)/genMath.$O \
+   $(genLib)/ulCp.$O \
+   $(genBio)/seqST.$O \
+   $(genLib)/fileFun.$O \
+   gbAccBin.$O
+
+$(NAME): gbAccBin.$O
+	$(LD) -o $(NAME) $(objFiles) -lm
+
+gbAccBin.$O: \
+	gbAccBin.c \
+	$(genBio)/accession.$O \
+	$(genBio)/gzSeqST.$O \
+	$(genLib)/numToStr.$O \
+	../bioTools.h
+		$(CC) -o gbAccBin.$O \
+			$(CFLAGS) $(coreCFLAGS) gbAccBin.c
+
+$(genBio)/accession.$O: \
+	$(genBio)/accession.c \
+	$(genBio)/accession.h
+		$(CC) -o $(genBio)/accession.$O \
+			$(CFLAGS) $(coreCFLAGS) $(genBio)/accession.c
+
+$(genBio)/gzSeqST.$O: \
+	$(genBio)/gzSeqST.c \
+	$(genBio)/gzSeqST.h \
+	$(genBio)/seqST.$O \
+ 	$(genLib)/inflate.$O
+		$(CC) -o $(genBio)/gzSeqST.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genBio)/gzSeqST.c
+
+$(genLib)/numToStr.$O: \
+	$(genLib)/numToStr.c \
+	$(genLib)/numToStr.h
+		$(CC) -o $(genLib)/numToStr.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genLib)/numToStr.c
+
+$(genLib)/inflate.$O: \
+	$(genLib)/inflate.c \
+	$(genLib)/inflate.h \
+	$(genLib)/checkSum.$O \
+	$(genLib)/ulCp.$O \
+	$(genLib)/genMath.$O \
+	$(genLib)/endLine.h
+		$(CC) -o $(genLib)/inflate.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genLib)/inflate.c
+
+$(genLib)/checkSum.$O: \
+	$(genLib)/checkSum.c \
+	$(genLib)/checkSum.h \
+	$(genLib)/endin.$O
+	$(CC) -o $(genLib)/checkSum.$O \
+		$(CFLAGS) $(coreCFLAGS) \
+		$(genLib)/checkSum.c
+
+$(genLib)/endin.$O: \
+	$(genLib)/endin.c \
+	$(genLib)/endin.h
+		$(CC) -o $(genLib)/endin.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genLib)/endin.c
+
+$(genLib)/genMath.$O: \
+	$(genLib)/genMath.c \
+	$(genLib)/genMath.h
+		$(CC) -o $(genLib)/genMath.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genLib)/genMath.c
+
+$(genLib)/ulCp.$O: \
+	$(genLib)/ulCp.c \
+	$(genLib)/ulCp.h
+		$(CC) -o $(genLib)/ulCp.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genLib)/ulCp.c
+
+$(genBio)/seqST.$O: \
+	$(genBio)/seqST.c \
+	$(genBio)/seqST.h \
+	$(genLib)/fileFun.$O
+		$(CC) -o $(genBio)/seqST.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genBio)/seqST.c
+
+$(genLib)/fileFun.$O: \
+	$(genLib)/fileFun.c \
+	$(genLib)/fileFun.h \
+	$(genLib)/ulCp.$O
+		$(CC) -o $(genLib)/fileFun.$O \
+			$(CFLAGS) $(coreCFLAGS) \
+			$(genLib)/fileFun.c
+
+install:
+	if [ ! -d "$(PREFIX)" ]; then mkdir -p "$(PREFIX)"; fi;
+	mv $(NAME) $(PREFIX)
+	chmod a+x $(PREFIX)/$(NAME)
+
+clean:
+	rm $(objFiles)
