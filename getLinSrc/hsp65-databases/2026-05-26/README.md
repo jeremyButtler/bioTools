@@ -1,17 +1,8 @@
-# Use
-
-The databases here allows getLin to do species calling
-  using the *Mycobacterium tuberculosis* hsp65 gene. It
-  does not take into account alternate SNP mutations. For
-  that I would have to set up simple lineages that look
-  for two SNPs. This is possible in getLin, but I did
-  not want to take the time.
-
-# Database
-
-The original database is the limited database from
-  Ringuet et al. 1999. The 2026-05-26 database also used
-  the references genomes listed in Dai et al. 2011.
+This is a more up to date database using the reference
+  genomes from Dai et al. 2011 and the mutations from
+  Ringuet et al. 1999. I have no idea how well it will
+  actually work. See `00-notes.md` for a messy workflow
+  on how I got this database made.
 
 Dai J, Chen Y, Lauzardo M. Web-accessible database of
   hsp65 sequences from Mycobacterium reference strains.

@@ -71,6 +71,19 @@
 
 signed char *glob_outIdStr = (signed char *) "out";
 
+#define def_idBin_mainGetLin 0
+#define def_fqBin_mainGetLin 1
+#define def_samBin_mainGetLin 2
+
+#define def_pClass_mainGetLin 1
+#define def_pNoClass_mainGetLin 2
+#define def_pFragments_mainGetLin 4
+#define def_pSimpleAlways_mainGetLin 8
+#define def_pComplexAlways_mainGetLin 16
+
+#define def_pBins_mainGetLin 0 /*no bin printing*/
+#define def_binFileType_mainGetLin def_idBin_mainGetLin
+
 /*-------------------------------------------------------\
 | Fun01: pversion_mainGetLin
 |   - prints the version number for getLin
@@ -158,6 +171,10 @@ phelp_mainGetLin(
    ^   o fun02 sec02 sub08:
    ^     - maxiumum mixed infection print
    ^   o fun02 sec02 sub09:
+   ^     - bin print types
+   ^   o fun02 sec02 sub10:
+   ^     - print file types
+   ^   o fun02 sec02 sub11:
    ^     - help message and version number
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -411,6 +428,284 @@ phelp_mainGetLin(
 
    /*****************************************************\
    * Fun02 Sec02 Sub09:
+   *   - bin print types
+   *   o fun02 sec02 sub09 cat01:
+   *     - prefix for bins
+   *   o fun02 sec02 sub09 cat02:
+   *     - classified read binning
+   *   o fun02 sec02 sub09 cat03:
+   *     - unclassified (but full map) read printing
+   *   o fun02 sec02 sub09 cat04:
+   *     - print fragments to bin
+   *   o fun02 sec02 sub09 cat05:
+   *     - always print simple lineages
+   *   o fun02 sec02 sub09 cat06:
+   *     - always print complex lineages
+   \*****************************************************/
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub09 Cat01:
+   +   - prefix for bins
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   fprintf(
+      (FILE *) outFILE,
+      "  Binning:%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "    -bin-prefix fat_friar: [Optional]%s",
+      str_endLine
+   );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o prefix for output bin file names%s",
+      str_endLine
+   );
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub09 Cat02:
+   +   - classified read binning
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+
+   if(def_pBins_mainGetLin & def_pClass_mainGetLin)
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-call: [Optional; yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-call: [Optional; no]%s",
+         str_endLine
+      );
+
+   fprintf(
+     (FILE *) outFILE,
+     "      o print classified (called) reads to a bin%s",
+     str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      o disable with `-no-bin-call`%s",
+      str_endLine
+   );
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub09 Cat03:
+   +   - unclassified (but full map) read printing
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(def_pBins_mainGetLin & def_pNoClass_mainGetLin)
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-unkown: [Optional; yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-unkown: [Optional; no]%s",
+         str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o print unclassified (complete) reads to"
+   );
+   fprintf((FILE *) outFILE, " bins%s", str_endLine);
+   fprintf(
+      (FILE *) outFILE,
+      "      o disable with `-no-bin-unkown`%s",
+      str_endLine
+   );
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub09 Cat04:
+   +   - print fragments to bin
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+
+   if(def_pBins_mainGetLin & def_pFragments_mainGetLin)
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-fragment: [Optional; yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-fragment: [Optional; no]%s",
+         str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o print read fragments to bins%s",
+      str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      o disable with `-no-bin-fragments`%s",
+      str_endLine
+   );
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub09 Cat05:
+   +   - always print simple lineages
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(def_pBins_mainGetLin & def_pSimpleAlways_mainGetLin)
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-simple: [Optional; yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-simple: [Optional; no]%s",
+         str_endLine
+      );
+
+   fprintf(
+     (FILE *) outFILE,
+     "      o always print simple lineages;"
+   );
+   fprintf(
+     (FILE *) outFILE,
+     " ignore flags%s",
+     str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      o disable with `-no-bin-simple`%s",
+      str_endLine
+   );
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub09 Cat06:
+   +   - always print complex lineages
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(
+      def_pBins_mainGetLin & def_pComplexAlways_mainGetLin
+   ) fprintf(
+         (FILE *) outFILE,
+         "    -bin-complex: [Optional; yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-complex: [Optional; no]%s",
+         str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o always print complex lineages;"
+   );
+   fprintf(
+    (FILE *) outFILE,
+    " ignore flags%s",
+    str_endLine
+   );
+   fprintf(
+      (FILE *) outFILE,
+      "      o disable with `-no-bin-complex`%s",
+      str_endLine
+   );
+
+   /*****************************************************\
+   * Fun02 Sec02 Sub10:
+   *   - print file types
+   *   o fun02 sec02 sub10 cat01:
+   *     - read ids
+   *   o fun02 sec02 sub10 cat02:
+   *     - fastq files
+   *   o fun02 sec02 sub11 cat03:
+   *     - sam file
+   \*****************************************************/
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub10 Cat01:
+   +   - read ids
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(def_binFileType_mainGetLin == def_idBin_mainGetLin)
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-id: [Optional; yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-id: [Optional; no]%s",
+         str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o bin file format is read ids%s",
+      str_endLine
+   );
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub10 Cat02:
+   +   - fastq file
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(def_binFileType_mainGetLin == def_fqBin_mainGetLin)
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-fq: [Optional; yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-fq: [Optional; no]%s",
+         str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o bin file format are fastq files%s",
+      str_endLine
+   );
+
+   /*++++++++++++++++++++++++++++++++++++++++++++++++++++\
+   + Fun02 Sec02 Sub10 Cat03:
+   +   - sam file
+   \++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+   if(def_binFileType_mainGetLin == def_samBin_mainGetLin)
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-sam: [Optional; yes]%s",
+         str_endLine
+      );
+   else
+      fprintf(
+         (FILE *) outFILE,
+         "    -bin-sam: [Optional; no]%s",
+         str_endLine
+      );
+
+   fprintf(
+      (FILE *) outFILE,
+      "      o bin file format are sam files%s",
+      str_endLine
+   );
+
+   /*****************************************************\
+   * Fun02 Sec02 Sub11:
    *   - help message and version number
    \*****************************************************/
 
@@ -544,6 +839,13 @@ phelp_mainGetLin(
 |       print commands
 |     o 1: set to overwrite
 |     o 0: set to no overwrite
+|   - binPrefixStrPtr:
+|     o c-string pionter to get the bin prefix
+|   - binSetSCPtr:
+|     o signed char pointer to get what entries to print
+|       for binning
+|   - binFileSCPtr:
+|     o signed char pointer to get the bin file type
 | Output:
 |   - Modifies:
 |     o all input except argAryStr and argLenSI to have
@@ -569,7 +871,10 @@ input_mainGetLin(
    signed char *readModeBlPtr,   /*output mode to use*/
    signed int *minDepthSIPtr,    /*min read depth*/
    float *maxMixedFPtr,          /*max mixed support*/
-   signed char *pNoPrintBlPtr    /*print non-print vars*/
+   signed char *pNoPrintBlPtr,   /*print non-print vars*/
+   signed char **binPrefixStrPtr,/*prefix for bins*/
+   signed char *binSetSCPtr,     /*settings for bin*/
+   signed char *binFileTypeSCPtr /*bin file type*/
 ){ /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
    ' Fun03 TOC:
    '   - gets input for getLin
@@ -604,12 +909,16 @@ input_mainGetLin(
    ^   o fun03 sec02 sub04:
    ^     - max mixed infection support before not print
    ^   o fun03 sec02 sub05:
-   ^     - help message
+   ^     - output bin print modes
    ^   o fun03 sec02 sub06:
-   ^     - version number
+   ^     - bin file types
    ^   o fun03 sec02 sub07:
-   ^     - deal with unkown input
+   ^     - help message
    ^   o fun03 sec02 sub08:
+   ^     - version number
+   ^   o fun03 sec02 sub09:
+   ^     - deal with unkown input
+   ^   o fun03 sec02 sub10:
    ^     - move to the next argument
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -655,6 +964,17 @@ input_mainGetLin(
          ++siArg;
          *idStrPtr = (signed char *) argAryStr[siArg];
       }  /*Else If: id for read mode column*/
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-bin-prefix",
+           tmpStr
+        )
+      ){ /*Else If: bin prefix*/
+         ++siArg;
+         *binPrefixStrPtr =
+            (signed char *) argAryStr[siArg];
+      }  /*Else If: bin prefix*/
 
       /**************************************************\
       * Fun03 Sec02 Sub02:
@@ -768,6 +1088,111 @@ input_mainGetLin(
 
       /**************************************************\
       * Fun03 Sec02 Sub05:
+      *   - output bin print modes
+      \**************************************************/
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-bin-call",
+           tmpStr
+        )
+      ) *binSetSCPtr |= def_pClass_mainGetLin;
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-no-bin-call",
+           tmpStr
+        )
+      ) *binSetSCPtr &= ~def_pClass_mainGetLin;
+
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-bin-unkown",
+           tmpStr
+        )
+      ) *binSetSCPtr |= def_pNoClass_mainGetLin;
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-no-bin-unkown",
+           tmpStr
+        )
+      ) *binSetSCPtr &= ~def_pNoClass_mainGetLin;
+
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-bin-fragment",
+           tmpStr
+        )
+      ) *binSetSCPtr |= def_pFragments_mainGetLin;
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-no-bin-fragment",
+           tmpStr
+        )
+      ) *binSetSCPtr &= ~def_pFragments_mainGetLin;
+
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-bin-simple",
+           tmpStr
+        )
+      ) *binSetSCPtr |= def_pSimpleAlways_mainGetLin;
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-no-bin-simple",
+           tmpStr
+        )
+      ) *binSetSCPtr &= ~def_pSimpleAlways_mainGetLin;
+
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-bin-complex",
+           tmpStr
+        )
+      ) *binSetSCPtr |= def_pComplexAlways_mainGetLin;
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-no-bin-complex",
+           tmpStr
+        )
+      ) *binSetSCPtr &= ~def_pComplexAlways_mainGetLin;
+
+      /**************************************************\
+      * Fun03 Sec02 Sub06:
+      *   - bin file types
+      \**************************************************/
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-bin-id",
+           tmpStr
+        )
+      ) *binFileTypeSCPtr = def_idBin_mainGetLin;
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-bin-fq",
+           tmpStr
+        )
+      ) *binFileTypeSCPtr = def_fqBin_mainGetLin;
+
+      else if(
+        ! eqlNull_ulCp(
+           (signed char *) "-bin-sam",
+           tmpStr
+        )
+      ) *binFileTypeSCPtr = def_samBin_mainGetLin;
+
+      /**************************************************\
+      * Fun03 Sec02 Sub07:
       *   - help message
       \**************************************************/
 
@@ -792,7 +1217,7 @@ input_mainGetLin(
       ) goto phelp_fun03_sec03;
 
       /**************************************************\
-      * Fun03 Sec02 Sub06:
+      * Fun03 Sec02 Sub08:
       *   - version number
       \**************************************************/
 
@@ -817,7 +1242,7 @@ input_mainGetLin(
       ) goto pversion_fun03_sec03;
 
       /**************************************************\
-      * Fun03 Sec02 Sub07:
+      * Fun03 Sec02 Sub09:
       *   - deal with unkown input
       \**************************************************/
 
@@ -834,7 +1259,7 @@ input_mainGetLin(
       } /*Else: unkown input*/
 
       /**************************************************\
-      * Fun03 Sec02 Sub08:
+      * Fun03 Sec02 Sub10:
       *   - move to the next argument
       \**************************************************/
 
@@ -892,6 +1317,10 @@ main(
    '     - variable declarations
    '   o main sec02:
    '     - initialize, get input, and check and open input
+   '   o main sec03:
+   '     - get lineages
+   '   o main sec04:
+   '     - clean up and return
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -918,7 +1347,12 @@ main(
    signed long seqSL = 0;
    signed long lineSL = 0;
 
-   /*output variables for lineages*/
+   /*_____________for_printing_bins_____________________*/
+   signed char pBinsSC = def_pBins_mainGetLin;
+   signed char binFileTypeSC = def_binFileType_mainGetLin;
+   signed char *prefixStr = (signed char *) "fat_friar";
+
+   /*_________output_variables_for_lineages_____________*/
    signed int *simpleLinHeapArySI = 0;
    signed int *trsHeapArySI = 0;
    signed int simpleLenSI = 0;
@@ -983,14 +1417,17 @@ main(
          &pReadModeBl,
          &minDepthSI,
          &mixedInfectSupF,
-         &pAllVarsBl
+         &pAllVarsBl,
+         &prefixStr,
+         &pBinsSC,
+         &binFileTypeSC
       );
 
    if(errSC)
    { /*If: printed help/version or had error*/
       --errSC;
          /*convert help/version print to 0 (no error)*/
-      goto ret_main_sec0x;
+      goto ret_main_sec04;
    } /*If: printed help/version or had error*/
 
    if(
@@ -998,7 +1435,7 @@ main(
         &tblStackST,
         def_lenKmer_kmerFind
       )
-   ) goto memErr_main_sec0x;
+   ) goto memErr_main_sec04;
 
    /*****************************************************\
    * Main Sec02 Sub03:
@@ -1021,7 +1458,7 @@ main(
          "-simple has no input%s",
          str_endLine
       );
-      goto fileErr_main_sec0x;
+      goto fileErr_main_sec04;
    } /*If: no simple database input*/
 
    else if(*simpleDbStr == '-')
@@ -1042,7 +1479,7 @@ main(
             simpleDbStr,
             str_endLine
          );
-         goto fileErr_main_sec0x;
+         goto fileErr_main_sec04;
          
       } /*If: no simple database*/
    } /*Else: file input*/
@@ -1097,7 +1534,7 @@ main(
          );
       } /*Else: file or memory error*/
 
-      goto fileErr_main_sec0x;
+      goto fileErr_main_sec04;
    } /*If: failed to read in the simple database*/
 
    /*****************************************************\
@@ -1130,7 +1567,7 @@ main(
          "  only one input can come from stdin (`-`)%s",
          str_endLine
       );
-      goto fileErr_main_sec0x;
+      goto fileErr_main_sec04;
    } /*Else If: already have stdin input*/
 
    else if(*complexDbStr == '-')
@@ -1150,7 +1587,7 @@ main(
             complexDbStr,
             str_endLine
          );
-         goto fileErr_main_sec0x;
+         goto fileErr_main_sec04;
       } /*If: could not open the file*/
    } /*Else: user input a file*/
 
@@ -1199,7 +1636,7 @@ main(
          );
       } /*Else: file or memory error*/
 
-      goto fileErr_main_sec0x;
+      goto fileErr_main_sec04;
    } /*If: failed to read in the simple database*/
 
    /*****************************************************\
@@ -1228,7 +1665,7 @@ main(
          "  only one input can come from stdin (`-`)%s",
          str_endLine
       );
-      goto fileErr_main_sec0x;
+      goto fileErr_main_sec04;
    } /*If: reading two files from stdin*/
 
    else if(! samFileStr || *samFileStr == '-')
@@ -1249,7 +1686,7 @@ main(
             samFileStr,
             str_endLine
          );
-         goto fileErr_main_sec0x;
+         goto fileErr_main_sec04;
       } /*If: no input file*/
    } /*Else: user provided a file*/
 
@@ -1273,7 +1710,7 @@ main(
             outFileStr,
             str_endLine
          );
-         goto fileErr_main_sec0x;
+         goto fileErr_main_sec04;
       } /*If: no input file*/
    } /*Else: user provided a file*/
 
@@ -1332,10 +1769,10 @@ main(
             samFileStr,
             str_endLine
          );
-         goto memErr_main_sec0x;
+         goto memErr_main_sec04;
       } /*Else: had memor error*/
 
-      goto fileErr_main_sec0x;
+      goto fileErr_main_sec04;
    } /*If: had an error*/
 
    /*****************************************************\
@@ -1377,7 +1814,7 @@ main(
                "memory error getting simple lineages%s",
                str_endLine
             );
-            goto memErr_main_sec0x;
+            goto memErr_main_sec04;
          } /*If: had a memory error*/
 
          if(! pReadModeBl)
@@ -1427,7 +1864,7 @@ main(
                "memory error getting complex lineage%s",
                str_endLine
             );
-            goto memErr_main_sec0x;
+            goto memErr_main_sec04;
          } /*If: memory error*/
       } /*If: have comlex lineages*/
 
@@ -1456,8 +1893,24 @@ main(
                "memory error adding read lineages%s",
                str_endLine
             );
-            goto memErr_main_sec0x;
+            goto memErr_main_sec04;
          }  /*If: had memory error*/
+
+         if(
+           pReadBins_getLin(
+               &readStackST,
+               prefixStr,
+               binFileTypeSC,
+               pBinsSC,
+               simpleLinHeapArySI,
+               trsHeapArySI,
+               simpleLenSI,
+               simpleHeapST,
+               complexLinHeapArySI,
+               complexLenSI,
+               complexHeapST
+            )
+         ) goto fileErr_main_sec04;
       } /*If: finding lineages for mapped reads*/
  
       else
@@ -1479,10 +1932,10 @@ main(
          ){ /*If: had memory error*/
             fprintf(
                stderr,
-               "memory error printing genome lineages%s",
+               "file error printing bins%s",
                str_endLine
             );
-            goto memErr_main_sec0x;
+            goto fileErr_main_sec04;
          }  /*If: had memory error*/
       } /*Else: working with genomes*/
 
@@ -1540,7 +1993,7 @@ main(
             samFileStr,
             str_endLine
          );
-         goto fileErr_main_sec0x;
+         goto fileErr_main_sec04;
       } /*If: file error*/
 
       else
@@ -1557,7 +2010,7 @@ main(
             samFileStr,
             str_endLine
          );
-         goto memErr_main_sec0x;
+         goto memErr_main_sec04;
       } /*Else:  memory error*/
    } /*If: had error reading the sam file*/
 
@@ -1568,6 +2021,12 @@ main(
 
    if(pReadModeBl)
    { /*If: printing read lineage*/
+      setCounts_cnt_getLin(
+          simpleHeapST,
+          complexHeapST,
+          &cntStackST
+      );
+
       if(
          pReadLineages_getLin(
             idStr,
@@ -1582,7 +2041,7 @@ main(
             "memory error printing read lineages%s",
             str_endLine
          );
-         goto memErr_main_sec0x;
+         goto memErr_main_sec04;
       }  /*If: had memory error*/
    } /*If: printing read lineage*/
 
@@ -1593,21 +2052,21 @@ main(
    freeStack_cnt_getLin(&cntStackST);
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Main Sec0x:
+   ^ Main Sec04:
    ^   - clean up and return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
    errSC = 0;
-   goto ret_main_sec0x;
+   goto ret_main_sec04;
 
-   fileErr_main_sec0x:;
+   fileErr_main_sec04:;
       errSC = 1;
-      goto ret_main_sec0x;
-   memErr_main_sec0x:;
+      goto ret_main_sec04;
+   memErr_main_sec04:;
       errSC = 2;
-      goto ret_main_sec0x;
+      goto ret_main_sec04;
 
-   ret_main_sec0x:;
+   ret_main_sec04:;
       freeStack_samEntry(&readStackST);
       freeStack_cnt_getLin(&cntStackST);
       freeStack_tblST_kmerFind(&tblStackST);
