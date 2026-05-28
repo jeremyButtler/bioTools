@@ -4347,11 +4347,13 @@ complexLineage_getLin(
    \*****************************************************/
 
    if(simpleLinArySI && *simpleLenSIPtr)
-      firstLinSI = 
+      ;
+      /*this code caused to many problems*/
+      /*firstLinSI = 
          posFind_complex_linST(
-           simpleSTPtr->linAryST[simpleLinArySI[0]].endSI,
+           simpleSTPtr->linAryST[0].endSI,
            complexSTPtr
-         ); /*find the first possible complex lineage
+         );*/ /*find the first possible complex lineage
             `  given the simple lineages. This array is
             `  sorted by index, which in turn is sorted
             `  by the starting position and then ending
