@@ -5443,11 +5443,7 @@ pReadBins_getLin(
    '     - print simple lineages
    '   o fun28 sec03:
    '     - print complex lineages
-   '   o fun28 sec04:
-   '     - print unclassifed, but full mapped reads
-   '   o fun28 sec05:
-   '     - print the fragments
-   '   o fun28 sec06:
+   '   o fun28 sec0x:
    '     - return
    \~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -5462,8 +5458,6 @@ pReadBins_getLin(
 
    signed char *lastGroupStr = 0;
    signed char printBl = 0;
-
-   FILE *outFILE = 0;
 
    struct one_linST *linSTPtr = 0; /*for sanity*/
    struct multi_linST *mLinSTPtr = 0; /*for sanity*/
@@ -5487,7 +5481,7 @@ pReadBins_getLin(
    \*****************************************************/
 
    if(! pBinsSC)
-      goto done_fun28_sec06; /*not printing bins*/
+      goto done_fun28_sec05; /*not printing bins*/
 
    for(siLin = 0; siLin < simpLenSI; ++siLin)
    { /*Loop: check if have any simple lineage prints*/
@@ -5496,7 +5490,7 @@ pReadBins_getLin(
 
       if( ! (pBinsSC & 8) && ! linSTPtr->printLinBl)
          continue; /*this lineage is not printed*/
-      else if(linSTPtr->printLinBl)
+      else if(lineSTPtr->printLinBl)
       { /*Else If: printing the read*/
          printBl = 1;
 
@@ -5513,10 +5507,9 @@ pReadBins_getLin(
       \**************************************************/
 
       lenSI = cpStr_ulCp(fileStr, prefixStr);
-      fileStr[lenSI++] = '-';
-      lenSI +=
+      lenSI =
          cpStr_ulCp(&fileStr[lenSI], linSTPtr->groupStr);
-      fileStr[lenSI++] = '-';
+      idStr[lenSI++] = '.';
 
       if(linSTPtr->checkTypeSC == def_trsType_linST)
          lenSI +=
@@ -5579,7 +5572,7 @@ pReadBins_getLin(
 
       outFILE = fopen((char *) fileStr, "a");
       if(! outFILE)
-         goto fileErr_fun28_sec06;
+         goto fileErr_fun28_sec0x;
 
       if(fileTypeSC == 0)
          fprintf(outFILE, "%s\n", samSTPtr->qryIdStr);
@@ -5587,9 +5580,6 @@ pReadBins_getLin(
          pfq_samEntry(samSTPtr, outFILE);
       else
          p_samEntry(samSTPtr, 0, outFILE);
-
-      fclose(outFILE);
-      outFILE = 0;
    } /*Loop: check if have any simple lineage prints*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -5637,10 +5627,9 @@ pReadBins_getLin(
       \**************************************************/
 
       lenSI = cpStr_ulCp(fileStr, prefixStr);
-      fileStr[lenSI++] = '-';
-      lenSI +=
+      lenSI =
         cpStr_ulCp(&fileStr[lenSI],mLinSTPtr->groupIdStr);
-      fileStr[lenSI++] = '-';
+      fileStr[lenSI++] = '.';
       lenSI +=
         cpStr_ulCp(&fileStr[lenSI],mLinSTPtr->lineageStr);
 
@@ -5677,7 +5666,7 @@ pReadBins_getLin(
 
       outFILE = fopen((char *) fileStr, "a");
       if(! outFILE)
-         goto fileErr_fun28_sec06;
+         goto fileErr_fun28_sec0x;
 
       if(fileTypeSC == 0)
          fprintf(outFILE, "%s\n", samSTPtr->qryIdStr);
@@ -5685,9 +5674,6 @@ pReadBins_getLin(
          pfq_samEntry(samSTPtr, outFILE);
       else
          p_samEntry(samSTPtr, 0, outFILE);
-
-      fclose(outFILE);
-      outFILE = 0;
    } /*Loop: check if can print any complex lineages*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -5711,9 +5697,9 @@ pReadBins_getLin(
    pUnkown_fun28_sec04_sub01:;
 
    if(printBl)
-      goto done_fun28_sec06; /*reads were classified*/
+      goto done_fun28_sec0x; /*reads were classified*/
    else if(! complexSTPtr)
-      goto done_fun28_sec06; /*no complex lineages*/
+      goto done_fun28_sec0x; /*no complex lineages*/
    else if(! (pBinsSC & 2) && printBl )
       goto pfragment_fun28_sec05; /*not printing */
 
@@ -5732,21 +5718,22 @@ pReadBins_getLin(
 
    for( ; siLin < complexSTPtr->lenSI; ++siLin)
    { /*Loop: check all lineages to see if full mapping*/
-      mLinSTPtr = &complexSTPtr->linAryST[siLin];
+      mLinSTPtr =
+         &complexSTPtr->linAryST[complexLinArySI[siLin]];
 
       if(
            mLinSTPtr->startSI
-         < (signed int) samSTPtr->refStartUI
+         < (singed int) samSTPtr->refStartUI
       ) continue; /*read does not start early enough*/
 
       else if(
            mLinSTPtr->startSI
-         > (signed int) samSTPtr->refEndUI
+         > (singed int) samSTPtr->refEndUI
       ) continue; /*lineage starts afer read*/
 
       else if(
            mLinSTPtr->endSI
-         > (signed int) samSTPtr->refEndUI
+         > (singed int) samSTPtr->refEndUI
       ) continue; /*read does not get the last bases*/
 
       else if(! lastGroupStr)
@@ -5771,11 +5758,10 @@ pReadBins_getLin(
       \**************************************************/
 
       lenSI = cpStr_ulCp(fileStr, prefixStr);
-      fileStr[lenSI++] = '-';
-      lenSI +=
+      lenSI =
         cpStr_ulCp(&fileStr[lenSI],mLinSTPtr->groupIdStr);
-      fileStr[lenSI++] = '-';
-      lenSI +=
+      fileStr[lenSI++] = '.';
+      lenSI =
          cpStr_ulCp(
             &fileStr[lenSI],
             (signed char *) "unkown"
@@ -5814,7 +5800,7 @@ pReadBins_getLin(
 
       outFILE = fopen((char *) fileStr, "a");
       if(! outFILE)
-         goto fileErr_fun28_sec06;
+         goto fileErr_fun28_sec0x;
 
       if(fileTypeSC == 0)
          fprintf(outFILE, "%s\n", samSTPtr->qryIdStr);
@@ -5822,9 +5808,6 @@ pReadBins_getLin(
          pfq_samEntry(samSTPtr, outFILE);
       else
          p_samEntry(samSTPtr, 0, outFILE);
-
-      fclose(outFILE);
-      outFILE = 0;
    } /*Loop: check all lineages to see if full mapping*/
 
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
@@ -5835,14 +5818,12 @@ pReadBins_getLin(
     pfragment_fun28_sec05:;
 
     if(printBl)
-       goto done_fun28_sec06; /*printed the reads*/
+       goto done_fun28_sec0x; /*printed the reads*/
     else if(! (pBinsSC & 4) )
-       goto done_fun28_sec06; /*not printing fragments*/
+       goto done_fun28_sec0x; /*not printing fragments*/
 
-    else
-    { /*Else: printing the fragment*/
       lenSI = cpStr_ulCp(fileStr, prefixStr);
-      lenSI +=
+      lenSI =
          cpStr_ulCp(
             &fileStr[lenSI],
             (signed char *) "-fragments"
@@ -5876,7 +5857,7 @@ pReadBins_getLin(
 
       outFILE = fopen((char *) fileStr, "a");
       if(! outFILE)
-         goto fileErr_fun28_sec06;
+         goto fileErr_fun28_sec0x;
 
       if(fileTypeSC == 0)
          fprintf(outFILE, "%s\n", samSTPtr->qryIdStr);
@@ -5885,26 +5866,22 @@ pReadBins_getLin(
       else
          p_samEntry(samSTPtr, 0, outFILE);
 
-      fclose(outFILE);
-      outFILE = 0;
-    } /*Else: printing the fragment*/
-
    /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\
-   ^ Fun28 Sec06:
+   ^ Fun28 Sec0x:
    ^   - return
    \<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
-   goto done_fun28_sec06;
+   goto done_fun28_sec0x;
 
-   done_fun28_sec06:;
+   done_fun28_sec0x:;
       printBl = 0;
-      goto ret_fun28_sec06;
+      goto ret_fun28_sec0x;
 
-   fileErr_fun28_sec06:;
+   fileErr_fun28_sec0x:;
       printBl = 1;
-      goto ret_fun28_sec06;
+      goto ret_fun28_sec0x;
 
-   ret_fun28_sec06:;
+   ret_fun28_sec0x:;
       if(outFILE)
          fclose(outFILE);
       outFILE = 0;
