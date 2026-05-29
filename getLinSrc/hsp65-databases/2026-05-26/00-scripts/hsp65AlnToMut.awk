@@ -31,6 +31,8 @@ BEGIN{OFS="\t";};
       { # Loop: track mutations
          if(cigStr[siCig] == "M")
             ++siNt;
+         else if(cigStr[siCig] == "D")
+            ++siNt;
          else if(cigStr[siCig] == "X")
          { # Else If: have a mismatch
             if(seqStr[siCig] != "N")
